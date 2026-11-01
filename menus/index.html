@@ -291,7 +291,7 @@ img.art.ready{opacity:1}
       <div>
         <h2>Les menus de la semaine, pour toute la famille</h2>
         <p>Des plats du monde entier, faciles à préparer à l'avance. Chaque recette propose des options facultatives (féculent en plus, pain, fromage) à ajouter selon l'appétit de chacun.</p>
-        <p>Réglez le nombre de personnes du midi et du soir, puis ajustez une recette si besoin : les quantités suivent. Supprimez un repas avec la croix. Un repas peut aussi reprendre les restes du repas d'avant. La session de <a href="#batch">batch cooking</a> et la liste de courses suivent. Indiquez vos goûts dans <a href="#gouts">Mes goûts</a>.</p>
+        <p>Réglez le nombre de personnes du midi et du soir, puis ajustez un repas avec − et + si besoin : les quantités suivent. Supprimez un repas avec la croix. Un repas peut aussi reprendre les restes du repas d'avant. La session de <a href="#batch">batch cooking</a> et la liste de courses suivent. Indiquez vos goûts dans <a href="#gouts">Mes goûts</a>.</p>
       </div>
     </div>
     <div class="toolbar">
@@ -988,7 +988,7 @@ function renderWeek(){
       return `<div class="meal ${mode==="skip"?"is-off":""} ${isRest?"is-rest":""}">
         <div class="when"><span>${sl.when}</span><span class="wr">${mode!=="skip"?`<button class="del" type="button" data-skip="${sl.key}" aria-label="Supprimer le repas du ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" title="Supprimer ce repas">×</button>`:""}</span></div>
         ${body}
-        ${mode!=="skip"&&W.pers&&W.pers[src]?`<div class="prow"><span class="pcust">${PN(SK[src])} pers.</span></div>`:""}
+        ${mode!=="skip"?`<div class="prow"><span>Personnes</span><span class="pstep"><button type="button" class="pm" data-pers="${sl.key}" data-d="-1" aria-label="Une personne de moins, ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" ${PN(sl)<=1?"disabled":""}>−</button><b class="num ${W.pers&&W.pers[sl.key]?"custom":""}">${PN(sl)}</b><button type="button" class="pm" data-pers="${sl.key}" data-d="1" aria-label="Une personne de plus, ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" ${PN(sl)>=12?"disabled":""}>+</button></span></div>`:""}
         <div class="meta"><span class="num">${r&&mode!=="skip"?"≈ "+kcal(r)+" kcal":""}</span>${r&&!isRest&&mode!=="skip"?tagHTML(r):""}</div>
         <div class="ctrl"><select id="mode-${sl.key}" data-mode="${sl.key}" aria-label="${DAYS[i]} ${sl.when.toLowerCase()}">
           <option value="cook" ${mode==="cook"?"selected":""}>Cuisiné</option>
@@ -1136,7 +1136,7 @@ function renderDefaults(){
   document.getElementById("defaults").innerHTML=`<strong>Nombre de personnes</strong>
     <span class="dset">Midi ${st("midi",S.def.midi)}</span>
     <span class="dset">Soir ${st("soir",S.def.soir)}</span>
-    <span class="muted" style="font-size:13px">Pour un repas différent, changez le nombre dans sa recette.</span>`;
+    <span class="muted" style="font-size:13px">Pour un repas différent, utilisez − et + directement sur le repas.</span>`;
 }
 function renderAll(){renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();document.getElementById("kidBoost").checked=S.kid}
 
