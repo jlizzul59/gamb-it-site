@@ -151,9 +151,14 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 .ings{list-style:none;margin:0;padding:0;font-size:14px}
 .ings li{display:grid;grid-template-columns:82px minmax(0,1fr);gap:8px;padding:4px 0;border-bottom:1px dotted var(--line)}
 .ings .num{color:var(--accent);text-align:right}
+.ings li.opt span:last-child,.ings li.opt .num{color:var(--muted)}
+.ings li.opt em{font-style:normal;font-size:12px;color:var(--warm);font-weight:600}
 .steps{margin:0;padding:0;list-style:none;counter-reset:s;font-size:14.5px}
 .steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;margin-bottom:10px}
 .steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:12px;font-weight:800}
+.steps li.optstep{color:var(--muted)}
+.steps li.optstep::before{background:var(--warm)!important}
+.optb{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--warm);background:var(--warm-soft);border-radius:999px;padding:1px 7px;margin-right:4px}
 .bcnote{font-size:13px;background:var(--accent-soft);border-radius:10px;padding:10px 14px}
 .bcnote b{color:var(--accent)}
 .kid{font-size:13px;background:var(--warm-soft);border-radius:10px;padding:10px 14px}
@@ -713,6 +718,18 @@ function optionsFor(r){
   if(/pâtes|spaghetti|tagliatelles|coquillettes|gratin|lasagnes|gnocchis|risotto|polenta/i.test(r.n)&&!r.ing.some(([id])=>id==="parmesan"))out.push(["parmesan",8]);
   return out.filter((o,i,a)=>a.findIndex(x=>x[0]===o[0])===i);
 }
+
+// Étape dédiée à chaque ingrédient optionnel
+function optSteps(r,n){
+  return optionsFor(r).map(([id,q])=>{
+    const qty=fmt(q*n,I[id].u,false),nm=I[id].n.toLowerCase(),inR=r.ing.some(([x])=>x===id);
+    if(inR)return `Préparer ${qty} de ${nm} en plus, en même temps et de la même façon que le reste.`;
+    if(id==="baguette")return `Servir avec ${qty} de baguette, tranchée ou grillée.`;
+    if(id==="parmesan")return `Parsemer ${qty} de parmesan râpé au moment de servir.`;
+    return `Servir avec ${qty} de ${nm}.`;
+  });
+}
+const optStepHTML=(r,n)=>optSteps(r,n).map(s=>`<li class="optstep"><span><em class="optb">Optionnel</em> ${esc(s)}</span></li>`).join("");
 const optLabel=(id,q)=>{const u=I[id].u;const v=u==="g"?Math.round(q)+" g":q+"";return v+" de "+I[id].n.toLowerCase()+" par personne"};
 // Images retirées : seules les couleurs de région restent pour les repères visuels
 const ART={hydrate(){},BG:{"France":"#E9E1D2","Europe":"#CDB08A","Moyen-Orient":"#C97D55","Afrique":"#D49A3C","Asie":"#2E3B3A","Amériques":"#3D8987","Océanie":"#E6D3AE"}};
@@ -817,9 +834,8 @@ function openRecipe(id){
       <div class="facts"><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion</span>${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}
         <span class="serv">Portions <button type="button" class="sb" data-s="-1" aria-label="Une portion de moins">−</button><b class="num" id="servN">${servings}</b><button type="button" class="sb" data-s="1" aria-label="Une portion de plus">+</button></span></div>
       <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings" id="ings"></ul></div>
-        <div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li><span>${esc(s)}</span></li>`).join("")}</ol></div></div>
+        <div><h4>Préparation</h4><ol class="steps" id="steps"></ol></div></div>
       <div class="bcnote"><b>En batch cooking :</b> ${bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc.j)}</div>
-      ${optionsFor(r).length?`<div class="kid" id="opts"></div>`:""}
       <div class="addmenu"><strong>Mettre au menu de la semaine ${wk+1}</strong>
         <select id="addDay" aria-label="Jour">${DAYS.map((d,i)=>`<option value="${i}">${d}</option>`).join("")}</select>
         <select id="addWhen" aria-label="Repas"><option>Soir</option><option>Midi</option></select>
@@ -832,7 +848,8 @@ function fillIngs(){
   const r=RB[current];if(!r)return;
   document.getElementById("servN").textContent=servings;
   document.getElementById("ings").innerHTML=r.ing.map(([id,qq])=>`<li><span class="num">${fmt(qq*servings,I[id].u)}</span><span>${esc(I[id].n)}</span></li>`).join("");
-  const o=document.getElementById("opts");if(o)o.innerHTML=`<b>Options facultatives :</b> `+optionsFor(r).map(([id,qq])=>esc(I[id].n)+" ("+fmt(qq,I[id].u)+" par personne)").join(" · ");
+  document.getElementById("steps").innerHTML=r.st.map(s=>`<li><span>${esc(s)}</span></li>`).join("")+optStepHTML(r,servings);
+  document.getElementById("ings").innerHTML+=optionsFor(r).map(([id,qq])=>`<li class="opt"><span class="num">${fmt(qq*servings,I[id].u)}</span><span>${esc(I[id].n)}${r.ing.some(([x])=>x===id)?" en plus":""} <em>(optionnel)</em></span></li>`).join("");
 }
 function closeModal(){ov.hidden=true;ov.innerHTML="";current=null}
 let tT;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(tT);tT=setTimeout(()=>t.hidden=true,2600)}

@@ -262,6 +262,13 @@ img.art.ready{opacity:1}
 .rpers .muted{font-weight:400;font-size:13px}
 .pcust{font-size:12px;font-weight:700;color:var(--warm);background:var(--warm-soft);border-radius:999px;padding:1px 8px}
 
+.ings li.opt span:last-child{color:var(--muted)}
+.ings li.opt em{font-style:normal;font-size:12px;color:var(--warm);font-weight:600}
+.ings li.opt .num{color:var(--muted)}
+
+.steps li.optstep{color:var(--muted)}
+.optb{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--warm);background:var(--warm-soft);border-radius:999px;padding:1px 7px;margin-right:4px}
+
 /* Modale */
 .overlay{position:fixed;inset:0;background:rgba(10,20,14,.55);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
 .overlay .rcard{max-width:760px;width:100%;position:relative}
@@ -290,7 +297,7 @@ img.art.ready{opacity:1}
     <div class="lede">
       <div>
         <h2>Les menus de la semaine, pour toute la famille</h2>
-        <p>Des plats du monde entier, faciles à préparer à l'avance. Chaque recette propose des options facultatives (féculent en plus, pain, fromage) à ajouter selon l'appétit de chacun.</p>
+        <p>Des plats du monde entier, faciles à préparer à l'avance. Certains ingrédients sont marqués « optionnel » (féculent en plus, pain, fromage) : à ajouter selon l'appétit de chacun.</p>
         <p>Réglez le nombre de personnes du midi et du soir, puis ajustez un repas avec − et + si besoin : les quantités suivent. Supprimez un repas avec la croix. Un repas peut aussi reprendre les restes du repas d'avant. La session de <a href="#batch">batch cooking</a> et la liste de courses suivent. Indiquez vos goûts dans <a href="#gouts">Mes goûts</a>.</p>
       </div>
     </div>
@@ -834,6 +841,18 @@ function optionsFor(r){
   if(/pâtes|spaghetti|tagliatelles|coquillettes|gratin|lasagnes|gnocchis|risotto|polenta/i.test(r.n)&&!r.ing.some(([id])=>id==="parmesan"))out.push(["parmesan",8]);
   return out.filter((o,i,a)=>a.findIndex(x=>x[0]===o[0])===i);
 }
+
+// Étape dédiée à chaque ingrédient optionnel
+function optSteps(r,n){
+  return optionsFor(r).map(([id,q])=>{
+    const qty=fmt(q*n,I[id].u,false),nm=I[id].n.toLowerCase(),inR=r.ing.some(([x])=>x===id);
+    if(inR)return `Préparer ${qty} de ${nm} en plus, en même temps et de la même façon que le reste.`;
+    if(id==="baguette")return `Servir avec ${qty} de baguette, tranchée ou grillée.`;
+    if(id==="parmesan")return `Parsemer ${qty} de parmesan râpé au moment de servir.`;
+    return `Servir avec ${qty} de ${nm}.`;
+  });
+}
+const optStepHTML=(r,n)=>optSteps(r,n).map(s=>`<li class="optstep"><span><em class="optb">Optionnel</em> ${esc(s)}</span></li>`).join("");
 const optLabel=(id,q)=>{const u=I[id].u;const v=u==="g"?Math.round(q)+" g":q+"";return v+" de "+I[id].n.toLowerCase()+" par personne"};
 // Images retirées : seules les couleurs de région restent pour les repères visuels
 const ART={hydrate(){},BG:{"France":"#E9E1D2","Europe":"#CDB08A","Moyen-Orient":"#C97D55","Afrique":"#D49A3C","Asie":"#2E3B3A","Amériques":"#3D8987","Océanie":"#E6D3AE"}};
@@ -937,7 +956,7 @@ const WH=sl=>sl.when==="Midi"?"midi":"soir";
 const PN=sl=>(W&&W.pers&&W.pers[sl.key])||S.def[WH(sl)];
 const persOf=c=>c.eat.reduce((a,e)=>a+PN(e),0);
 function qtyBase(c,id,q){return c.eat.reduce((a,e)=>a+q*PN(e),0)}
-function optQty(c,id){if(!S.kid)return 0;const o=optionsFor(c.r).find(x=>x[0]===id);if(!o)return 0;return c.eat.reduce((a,e)=>a+Math.min(S.optN||2,PN(e))*o[1],0)}
+function optQty(c,id){if(!S.kid)return 0;const o=optionsFor(c.r).find(x=>x[0]===id);if(!o)return 0;return c.eat.reduce((a,e)=>a+PN(e)*o[1],0)}
 function qtyCook(c,id,q){return qtyBase(c,id,q)+optQty(c,id)}
 const slotLabel=s=>DAYS[s.day].toLowerCase()+" "+s.when.toLowerCase();
 const frozen=e=>{const k=srcKey(e.key);const ses=sessionOf(SK[k||e.key].day);return e.day-ses.ref>3};
@@ -1006,16 +1025,15 @@ function renderWeek(){
 function recipeHTML(c,modal){
   const r=c.r,pers=persOf(c);
   const ing=r.ing.map(([id,q])=>`<li><span class="num">${fmt(qtyBase(c,id,q),I[id].u,false)}</span><span>${esc(I[id].n)}</span></li>`).join("");
-  const opts=optionsFor(r),on=c.eat.reduce((a,e)=>a+Math.min(S.optN||2,PN(e)),0);
+  const optLines=optionsFor(r).map(([id,q])=>{const inR=r.ing.some(([x])=>x===id);return `<li class="opt"><span class="num">${fmt(q*pers,I[id].u,false)}</span><span>${esc(I[id].n)}${inR?" en plus":""} <em>(optionnel)</em></span></li>`}).join("");
   const extra=c.eat.filter(e=>e.key!==c.sl.key);
   const bt=BC[r.id].t;
   return `<article class="rcard">${modal?'<button class="close" type="button" data-close>Fermer ×</button>':""}
     <div class="rhead"><small>${DAYS[c.sl.day]} ${dateOf(c.sl.day)} · ${c.sl.when}${extra.length?" + restes "+extra.map(slotLabel).join(", "):""}</small><h3>${esc(r.n)}</h3>
     <div class="rfacts"><span>${esc(r.pays)}</span><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion</span>${tagHTML(r)}</div>
     <div class="rpers"><span>Personnes</span><span class="pstep"><button type="button" class="pm" data-pers="${c.sl.key}" data-d="-1" aria-label="Une personne de moins" ${PN(c.sl)<=1?"disabled":""}>−</button><b class="num ${W.pers&&W.pers[c.sl.key]?"custom":""}">${PN(c.sl)}</b><button type="button" class="pm" data-pers="${c.sl.key}" data-d="1" aria-label="Une personne de plus" ${PN(c.sl)>=12?"disabled":""}>+</button></span>${extra.length?`<span class="muted">+ ${extra.reduce((a,e)=>a+PN(e),0)} pour les restes · ${pers} portions au total</span>`:""}</div></div>
-    <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings">${ing}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
+    <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings">${ing}${optLines}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}${optStepHTML(r,pers)}</ol>
     <div class="bcnote"><b>Session du ${sessionOf(c.sl.day).short} :</b> ${bt.length?bt.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(BC[r.id].j)}</div></div></div>
-    ${opts.length?`<div class="kid"><b>Options facultatives${S.kid?" (prévues pour "+on+" pers.)":""} :</b> ${opts.map(([id,q])=>esc(S.kid?fmt(q*on,I[id].u,false)+" de "+I[id].n.toLowerCase():I[id].n)).join(" · ")}</div>`:""}
   </article>`;
 }
 function renderRecipes(){const cs=cooks();const el=document.getElementById("reclist");el.innerHTML=cs.length?cs.map(c=>recipeHTML(c,false)).join(""):'<p class="muted">Aucun repas prévu cette semaine.</p>';ART.hydrate(el)}
