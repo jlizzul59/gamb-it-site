@@ -53,6 +53,14 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 .stats div{display:flex;flex-direction:column}
 .stats b{font-family:var(--f-display);font-weight:400;font-size:30px;line-height:1}
 .stats span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+.picks{display:flex;flex-direction:column;gap:8px}
+.pick{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:14px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.pick i{width:10px;align-self:stretch;border-radius:6px}
+.pick b{font-size:16px;display:block}
+.pick small{color:var(--muted);font-size:13px}
+.pick em{font-style:normal;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pick:hover{border-color:var(--accent)}
+.picks h2{font-size:14px;font-family:var(--f-body);font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
 .mosaic{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px}
 .mosaic button{border:0;padding:0;border-radius:14px;overflow:hidden;position:relative;background:var(--line)}
 .mosaic button:nth-child(1){grid-column:1/3;grid-row:1/3}
@@ -106,7 +114,8 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 
 #results{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:16px}
 .card{display:flex;flex-direction:column;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0;overflow:hidden;min-width:0}
-.card .ph{position:relative}
+.card .ph{height:8px}
+.card .where{position:static!important;align-self:flex-start;background:var(--bg)!important;color:var(--muted)!important}
 .card .where{position:absolute;left:10px;top:10px;font-size:11px;font-weight:800;letter-spacing:.04em;background:rgba(255,255,255,.92);color:#1C2A20;border-radius:999px;padding:3px 9px}
 .card .kc{position:absolute;right:10px;bottom:10px;font-size:11px;background:rgba(28,42,32,.82);color:#fff;border-radius:999px;padding:2px 8px}
 .card .bd{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px}
@@ -123,7 +132,9 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 
 .overlay{position:fixed;inset:0;background:rgba(10,20,14,.62);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
 .sheet{background:var(--surface);border-radius:18px;max-width:860px;width:100%;position:relative;overflow:hidden}
-.sheet .hd{position:relative}
+.sheet .hd{position:relative;padding:28px 24px 22px}
+.sheet .hd .tt{position:static!important;color:inherit!important}
+.sheet .hd h3{text-shadow:none!important;margin-top:6px}
 .sheet .hd img.art{aspect-ratio:16/8}
 .sheet .hd .grad{position:absolute;inset:auto 0 0 0;height:60%;background:linear-gradient(transparent,rgba(0,0,0,.6))}
 .sheet .hd .tt{position:absolute;left:24px;right:24px;bottom:18px;color:#fff}
@@ -181,12 +192,12 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 <main class="wrap">
   <section class="hero">
     <div>
-      <span class="eyebrow">Recettes légères et gourmandes</span>
+      <span class="eyebrow">Recettes du semainier</span>
       <h1>De Lille à Lima, un plat différent chaque soir</h1>
-      <p>Des recettes de tous les continents, pensées pour perdre du poids sans priver les enfants. Choisissez vos ingrédients, le catalogue se resserre au fur et à mesure.</p>
+      <p>Des recettes de tous les continents, simples à préparer à l'avance et que toute la famille aime. Choisissez vos ingrédients, le catalogue se resserre au fur et à mesure.</p>
       <div class="stats" id="stats"></div>
     </div>
-    <div class="mosaic" id="mosaic"></div>
+    <div class="picks" id="mosaic"></div>
   </section>
 
   <nav class="regions" id="regions" aria-label="Régions du monde"></nav>
@@ -194,7 +205,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
   <div class="tools">
     <label class="search"><input type="search" id="q" placeholder="Rechercher : curry, gratin, Mexique, saumon…" autocomplete="off" aria-label="Rechercher une recette"></label>
     <div id="quick" style="display:flex;flex-wrap:wrap;gap:6px"></div>
-    <select class="sort" id="sort" aria-label="Trier les recettes"><option value="nom">Trier : nom</option><option value="kcal">Trier : les plus légères</option><option value="temps">Trier : les plus rapides</option><option value="region">Trier : par région</option></select>
+    <select class="sort" id="sort" aria-label="Trier les recettes"><option value="nom">Trier : nom</option><option value="temps">Trier : les plus rapides</option><option value="region">Trier : par région</option></select>
     <button type="button" id="toggleFacets" aria-expanded="false" aria-controls="side">Ingrédients</button>
   </div>
 
@@ -687,261 +698,26 @@ W_.forEach(([id,n,f,p,t,tag,ing,st,bc,j,pays,reg,kid])=>{
 R.forEach(r=>{if(!r.reg){const o=ORIG[r.id]||["France","France"];r.pays=o[0];r.reg=o[1]}});
 const REGIONS=["France","Europe","Moyen-Orient","Afrique","Asie","Amériques","Océanie"];
 
-// ---------- Illustrations : chaque plat est dessiné à partir de ses ingrédients et de sa région ----------
-const ART=(()=>{
-  // forme, couleur(s) de chaque ingrédient
-  const A={
-    poulet:["chunk","#E9C79C"],cuisse:["chunk","#C8874A"],dinde:["chunk","#EBD3AE"],boeuf:["mince","#7A4A33"],porc:["chunk","#D9A47E"],
-    jambon:["strip","#EE9F98"],lardons:["chunk","#D98478",0.55],saucisse:["sausage","#B4643E"],paleron:["chunk","#6B3A27"],rumsteck:["strip","#8A4634"],
-    agneau:["chunk","#8B4F37"],saumon:["chunk","#F2896A"],cabillaud:["chunk","#F6F1E7"],colin:["chunk","#F4EEE2"],crevettes:["shrimp","#F39A76"],
-    thon:["mince","#C9A381"],tofu:["chunk","#F2E9D2"],oeuf:["egg","#FFFFFF"],lentilles:["grain","#DE7B3E"],lentillesvertes:["grain","#6E6B3B"],
-    poischiches:["round","#E2BF79",6],haricotsrouges:["round","#8A2D2A",5],haricotsblancs:["round","#EFE6D3",5],haricotsnoirs:["round","#2C2427",5],
-    courgette:["slice","#5E9137","#E3ECB4"],brocoli:["floret","#4A7D2B"],champignons:["mushroom","#CDB596"],poivron:["strip",["#D9392A","#F2B331","#4E8A35"]],
-    epinards:["leaf","#3E6D29"],carotte:["slice","#EF8722","#F6B565"],haricotsverts:["bean","#5B8E2D"],choufleur:["floret","#F2ECDA"],tomate:["slice","#E0412F","#F07C5C"],
-    poireau:["ring","#CFE0A6"],potiron:["chunk","#F09B3E"],salade:["leaf","#8CBF4C"],concombre:["slice","#8DBA5C","#E4F0C4"],avocat:["avo","#9BBE58"],
-    mais:["round","#F4C542",3.5],oignon:["ring","#EBDDE6"],citron:["wedge","#F4D447"],citronvert:["wedge","#93C23A"],persil:["herb","#4E8A39"],menthe:["herb","#62A65A"],
-    pdt:["chunk","#F2D196",0.8],patatedouce:["chunk","#E8853A",0.8],riz:["grain","#FBF8F1"],pates:["pasta","#DDB06C"],nouilles:["noodle","#F1DBA1"],
-    quinoa:["grain","#E9D9AE"],semoule:["grain","#EFD38A"],boulgour:["grain","#CFAD6D"],polenta:["mash","#F2C94F"],gnocchis:["round","#F0D79F",7],
-    tortillas:["bread","#EBC98A"],pita:["bread","#E8C083"],painburger:["bun","#C4843B"],painmie:["toast","#D9A35A"],baguette:["toast","#D59A50"],
-    galette:["bread","#8A5831"],brick:["bread","#E6B866"],feuillesriz:["roll","#F2EEE3"],pateravioli:["dumpling","#F1E8D5"],farinemais:["bread","#EAC877"],
-    emmental:["cheese","#F6DF86"],parmesan:["cheese","#F2E5B4"],mozza:["patch","#FBF6E8"],feta:["cube","#FAF7EE"],cheddar:["patch","#F2A93B"],
-    reblochon:["patch","#F1DCA3"],chevre:["patch","#FBF7EC"],ricotta:["dollop","#FFFBF4"],halloumi:["chunk","#EFDDAE"],fromageblanc:["dollop","#FFFFFF"],
-    yaourt:["dollop","#FFFFFF"],fromagefrais:["dollop","#FFFDF6"],ananas:["chunk","#F7D04A",0.6],mangue:["chunk","#F7A733",0.6],pomme:["slice","#F2E2AE","#FBF2D6"],
-    plantain:["slice","#E6A23A","#F2C76E"],betterave:["chunk","#8C1E3E",0.7],chou:["shred","#D7E5B5"],endive:["leaf","#EFECC4"],aubergine:["slice","#4A2A4E","#E5D3AF"],
-    petitspois:["round","#7DB93B",3.5],pousses:["shred","#F3EFDA"],cacahuete:["nut","#C68F57"],cajou:["nut","#E8D1A6"],amandes:["nut","#E8D7B4"],abricots:["chunk","#EA9638",0.5],
-    olives:["round","#3B3524",4],sesame:["seed","#F2E6C6"]
-  };
-  const REGION={
-    "France":{bg:"#E9E1D2",tex:"check",tc:"#B8A88D",bowl:"#F4EFE6"},
-    "Europe":{bg:"#CDB08A",tex:"wood",tc:"#A88A63",bowl:"#F1ECE3"},
-    "Moyen-Orient":{bg:"#C97D55",tex:"tile",tc:"#E9B28F",bowl:"#2F6E8C"},
-    "Afrique":{bg:"#D49A3C",tex:"wax",tc:"#8E4B1C",bowl:"#7A3E1D"},
-    "Asie":{bg:"#2E3B3A",tex:"mat",tc:"#465756",bowl:"#1E2627"},
-    "Amériques":{bg:"#3D8987",tex:"dots",tc:"#F1D27A",bowl:"#F3EDE2"},
-    "Océanie":{bg:"#E6D3AE",tex:"sand",tc:"#C9B184",bowl:"#2F7F9A"}
-  };
-  const hash=s=>{let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0};
-  const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
-  const shade=(hex,a)=>{let n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;const f=x=>Math.max(0,Math.min(255,Math.round(a<0?x*(1+a):x+(255-x)*a)));return "rgb("+f(r)+","+f(g)+","+f(b)+")"};
-  const has=(r,id)=>r.ing.some(([x])=>x===id);
-
-  function formOf(r){
-    const n=r.n.toLowerCase();
-    if(/velouté|soupe|ramen|pho|laksa|harira|bortsch|minestrone|pozole/.test(n))return "soup";
-    if(/pizza|tarte|flammekueche|pide|khachapuri|quiche|tortilla espagnole|frittata|omelette|rösti|galettes/.test(n))return "flat";
-    if(/wrap|tacos|fajitas|pita|shawarma|banh mi|burger|quesadillas|arepas|empanadas|rouleaux|croque|smørrebrød|tostadas|briks|gyozas|falafel|pulled|cordon bleu/.test(n))return "board";
-    if(/gratin|lasagne|hachis|parmentier|moussaka|endives|cassoulet|dauphinois|bobotie|pastel|pâté chinois|tartiflette|pastilla|pain de viande|enchiladas|lorraine/.test(n))return "gratin";
-    if(/curry|dahl|chili|goulash|ragoût|stew|tajine|mafé|waterzooi|bowl|bol |poke|bibimbap|oyakodon|feijoada|moqueca|khoresh|colombo|cari|rendang|chana|blanquette|biryani|koshari|mujaddara|jollof|rougail|bigos|potée|mijoté|carbonade|stroganoff|kokoda|yassa|adobo|thiéboudienne|risotto|paella|jambalaya|ropa|dorowat|ragout|épinards au curry|butter/.test(n))return "bowl";
-    return "plate";
-  }
-  function liquidOf(r){
-    const n=r.n.toLowerCase();
-    if(has(r,"betterave"))return "#9B2346";
-    if(/velouté|soupe/.test(n)&&(has(r,"potiron")))return "#EE973D";
-    if(/velouté/.test(n)&&(has(r,"brocoli")||has(r,"epinards")))return "#86AD4A";
-    if(/velouté/.test(n)&&has(r,"poireau"))return "#E3E3BE";
-    if(has(r,"epinards")&&/curry|palak|épinards/.test(n))return "#4F7A2E";
-    if(has(r,"beurrecacahuete"))return "#B9743B";
-    if((has(r,"curry")||has(r,"patecurry"))&&has(r,"coco"))return has(r,"tomatecc")?"#E3934A":"#EBC56E";
-    if(has(r,"tomatecc")&&(has(r,"creme")||has(r,"yaourt")))return "#D9774A";
-    if(has(r,"tomatecc"))return "#C3402C";
-    if(has(r,"curry"))return "#E0A43C";
-    if(has(r,"lentilles"))return "#DD8840";
-    if(has(r,"coco")||has(r,"creme")||has(r,"lait"))return "#F1E6CF";
-    if(has(r,"soja"))return "#8A5A2E";
-    return "#D7A85E";
-  }
-
-  // ---------- primitives ----------
-  function texture(c,w,h,reg,R){
-    c.fillStyle=reg.bg;c.fillRect(0,0,w,h);
-    c.save();c.globalAlpha=0.35;c.strokeStyle=reg.tc;c.fillStyle=reg.tc;
-    if(reg.tex==="check"){c.lineWidth=w/22;for(let x=0;x<w+40;x+=w/8){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}for(let y=0;y<h+40;y+=w/8){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke()}}
-    else if(reg.tex==="wood"){c.lineWidth=1.5;for(let y=0;y<h;y+=7+R()*9){c.beginPath();c.moveTo(0,y);for(let x=0;x<=w;x+=40)c.quadraticCurveTo(x+20,y+(R()-.5)*8,x+40,y);c.stroke()}c.globalAlpha=.2;c.lineWidth=2;for(let x=w/5;x<w;x+=w/5){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}}
-    else if(reg.tex==="mat"){c.lineWidth=2;for(let x=0;x<w;x+=6){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}c.globalAlpha=.25;for(let y=0;y<h;y+=46){c.fillRect(0,y,w,3)}}
-    else if(reg.tex==="tile"){const s=w/7;c.lineWidth=2;for(let x=-s;x<w+s;x+=s)for(let y=-s;y<h+s;y+=s){c.beginPath();c.moveTo(x,y+s/2);c.lineTo(x+s/2,y);c.lineTo(x+s,y+s/2);c.lineTo(x+s/2,y+s);c.closePath();c.stroke();c.beginPath();c.arc(x+s/2,y+s/2,s*.12,0,7);c.fill()}}
-    else if(reg.tex==="wax"){const s=w/6;c.lineWidth=3;for(let x=0;x<w+s;x+=s)for(let y=0;y<h+s;y+=s){for(let k=1;k<4;k++){c.beginPath();c.arc(x,y,s*.13*k,0,7);c.stroke()}}}
-    else if(reg.tex==="dots"){const s=w/9;for(let x=s/2;x<w;x+=s)for(let y=s/2;y<h;y+=s){c.beginPath();for(let k=0;k<4;k++){const a=k*Math.PI/2;c.ellipse(x+Math.cos(a)*5,y+Math.sin(a)*5,4,2,a,0,7)}c.fill()}}
-    else{for(let i=0;i<900;i++){c.fillRect(R()*w,R()*h,1.6,1.6)}}
-    c.restore();
-  }
-  function shadowed(c,R0,fn){c.save();c.shadowColor="rgba(0,0,0,.32)";c.shadowBlur=R0*.22;c.shadowOffsetY=R0*.08;fn();c.restore()}
-  function circle(c,x,y,r,fill){c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fillStyle=fill;c.fill()}
-  const pickCol=(col,R)=>Array.isArray(col)?col[Math.floor(R()*col.length)]:col;
-
-  function piece(c,shape,col,x,y,s,R,col2){
-    const a=R()*Math.PI*2;
-    c.save();c.translate(x,y);c.rotate(a);
-    const fill=pickCol(col,R);
-    switch(shape){
-      case "grain":c.fillStyle=fill;c.beginPath();c.ellipse(0,0,s*.38,s*.17,0,0,7);c.fill();c.strokeStyle=shade(fill,-.22);c.lineWidth=.7;c.stroke();break;
-      case "chunk":{const w=s*(1.5+R()*.5)*(col2||1),h=s*(1.05+R()*.4)*(col2||1);const g=c.createLinearGradient(0,-h/2,0,h/2);g.addColorStop(0,shade(fill,.25));g.addColorStop(1,shade(fill,-.18));c.fillStyle=g;c.beginPath();c.roundRect(-w/2,-h/2,w,h,s*.35);c.fill();c.strokeStyle=shade(fill,-.3);c.globalAlpha=.35;c.lineWidth=1.4;c.beginPath();c.moveTo(-w*.3,-h*.15);c.lineTo(w*.3,-h*.15);c.moveTo(-w*.3,h*.15);c.lineTo(w*.3,h*.15);c.stroke();break}
-      case "mince":for(let i=0;i<5;i++){c.fillStyle=shade(fill,(R()-.5)*.35);c.beginPath();c.arc((R()-.5)*s*1.2,(R()-.5)*s*1.2,s*(.16+R()*.14),0,7);c.fill()}break;
-      case "strip":{const w=s*2.3,h=s*.55;c.fillStyle=fill;c.beginPath();c.roundRect(-w/2,-h/2,w,h,h/2);c.fill();c.fillStyle=shade(fill,.3);c.globalAlpha=.5;c.fillRect(-w/2+3,-h/2+1,w-6,h*.3);break}
-      case "bean":{const w=s*2.6,h=s*.32;c.fillStyle=fill;c.beginPath();c.roundRect(-w/2,-h/2,w,h,h/2);c.fill();break}
-      case "sausage":{const w=s*3,h=s*.9;const g=c.createLinearGradient(0,-h/2,0,h/2);g.addColorStop(0,shade(fill,.2));g.addColorStop(1,shade(fill,-.25));c.fillStyle=g;c.beginPath();c.roundRect(-w/2,-h/2,w,h,h/2);c.fill();c.strokeStyle=shade(fill,-.4);c.lineWidth=1.5;for(let k=-1;k<=1;k++){c.beginPath();c.moveTo(k*w*.22-3,-h*.3);c.lineTo(k*w*.22+3,h*.3);c.stroke()}break}
-      case "shrimp":{c.strokeStyle=fill;c.lineWidth=s*.55;c.lineCap="round";c.beginPath();c.arc(0,0,s*.7,0.2,Math.PI*1.35);c.stroke();c.strokeStyle=shade(fill,.4);c.lineWidth=s*.18;c.beginPath();c.arc(0,0,s*.7,0.5,Math.PI*1.2);c.stroke();break}
-      case "round":{const r=(col2||s*.4);circle(c,0,0,r,fill);circle(c,-r*.3,-r*.3,r*.35,shade(fill,.35));break}
-      case "slice":{circle(c,0,0,s*.75,fill);circle(c,0,0,s*.58,col2||shade(fill,.4));if(col2){c.fillStyle=shade(fill,-.1);for(let k=0;k<5;k++){const b=k*1.25;c.beginPath();c.arc(Math.cos(b)*s*.25,Math.sin(b)*s*.25,1.3,0,7);c.fill()}}break}
-      case "ring":{c.strokeStyle=fill;c.lineWidth=s*.22;c.beginPath();c.arc(0,0,s*.6,0,7);c.stroke();c.strokeStyle=shade(fill,-.15);c.lineWidth=1;c.beginPath();c.arc(0,0,s*.4,0,7);c.stroke();break}
-      case "leaf":{const L=s*(1.4+R()*.6);c.fillStyle=fill;c.beginPath();c.moveTo(-L,0);c.quadraticCurveTo(0,-L*.7,L,0);c.quadraticCurveTo(0,L*.7,-L,0);c.fill();c.strokeStyle=shade(fill,-.25);c.lineWidth=1.2;c.beginPath();c.moveTo(-L*.8,0);c.lineTo(L*.8,0);c.stroke();break}
-      case "floret":{for(let k=0;k<7;k++){circle(c,(R()-.5)*s*1.1,(R()-.5)*s*1.1-s*.2,s*(.32+R()*.15),shade(fill,(R()-.5)*.3))}c.fillStyle=shade(fill,.25);c.fillRect(-s*.15,s*.1,s*.3,s*.6);break}
-      case "mushroom":{c.fillStyle=fill;c.beginPath();c.arc(0,0,s*.7,Math.PI,0);c.lineTo(s*.25,0);c.lineTo(s*.25,s*.55);c.lineTo(-s*.25,s*.55);c.lineTo(-s*.25,0);c.closePath();c.fill();c.strokeStyle=shade(fill,-.3);c.lineWidth=1;c.stroke();break}
-      case "avo":{c.fillStyle="#2F4A1F";c.beginPath();c.ellipse(0,0,s*1.5,s*.55,0,0,Math.PI);c.fill();c.fillStyle=fill;c.beginPath();c.ellipse(0,0,s*1.35,s*.42,0,0,Math.PI);c.fill();c.fillStyle="#DCE69A";c.beginPath();c.ellipse(0,s*.05,s*1,s*.22,0,0,Math.PI);c.fill();break}
-      case "wedge":{c.fillStyle=shade(fill,-.2);c.beginPath();c.arc(0,0,s*1.1,0,Math.PI);c.fill();c.fillStyle=shade(fill,.45);c.beginPath();c.arc(0,0,s*.95,0,Math.PI);c.fill();c.strokeStyle=shade(fill,.1);c.lineWidth=1.2;for(let k=1;k<4;k++){const b=k*Math.PI/4;c.beginPath();c.moveTo(0,0);c.lineTo(Math.cos(b)*s*.9,Math.sin(b)*s*.9);c.stroke()}break}
-      case "herb":c.fillStyle=fill;for(let k=0;k<3;k++){c.beginPath();c.ellipse((R()-.5)*s,(R()-.5)*s,s*.22,s*.12,R()*3,0,7);c.fill()}break;
-      case "seed":c.fillStyle=fill;c.beginPath();c.ellipse(0,0,s*.14,s*.08,0,0,7);c.fill();break;
-      case "cheese":c.strokeStyle=fill;c.lineWidth=s*.16;c.lineCap="round";c.beginPath();c.moveTo(-s*.4,0);c.quadraticCurveTo(0,-s*.25,s*.4,0);c.stroke();break;
-      case "patch":{c.fillStyle=fill;c.beginPath();for(let k=0;k<8;k++){const b=k/8*Math.PI*2,rr=s*(.75+R()*.35);k?c.lineTo(Math.cos(b)*rr,Math.sin(b)*rr):c.moveTo(Math.cos(b)*rr,Math.sin(b)*rr)}c.closePath();c.fill();c.fillStyle=shade(fill,-.12);c.globalAlpha=.5;circle(c,s*.2,s*.15,s*.18,shade(fill,-.15));break}
-      case "cube":{c.fillStyle=fill;c.fillRect(-s*.4,-s*.4,s*.8,s*.8);c.strokeStyle=shade(fill,-.12);c.lineWidth=1;c.strokeRect(-s*.4,-s*.4,s*.8,s*.8);break}
-      case "dollop":{c.fillStyle=fill;c.beginPath();for(let k=0;k<10;k++){const b=k/10*Math.PI*2,rr=s*(1+R()*.25);k?c.lineTo(Math.cos(b)*rr,Math.sin(b)*rr):c.moveTo(Math.cos(b)*rr,Math.sin(b)*rr)}c.closePath();c.fill();c.strokeStyle="rgba(0,0,0,.08)";c.lineWidth=2;c.beginPath();c.arc(0,0,s*.5,0.5,3);c.stroke();break}
-      case "nut":c.fillStyle=fill;c.beginPath();c.ellipse(0,0,s*.42,s*.24,0,0,7);c.fill();c.strokeStyle=shade(fill,-.25);c.lineWidth=.8;c.stroke();break;
-      case "shred":c.strokeStyle=fill;c.lineWidth=s*.16;c.lineCap="round";c.beginPath();c.moveTo(-s,0);c.quadraticCurveTo(0,s*.4*(R()-.5),s,0);c.stroke();break;
-      case "pasta":{c.strokeStyle=fill;c.lineWidth=s*.42;c.lineCap="round";c.beginPath();c.arc(0,0,s*.6,0,Math.PI*1.1);c.stroke();c.strokeStyle=shade(fill,.3);c.lineWidth=s*.12;c.beginPath();c.arc(0,0,s*.6,.3,Math.PI*.9);c.stroke();break}
-      case "noodle":{c.strokeStyle=fill;c.lineWidth=s*.22;c.lineCap="round";c.beginPath();c.moveTo(-s*2,0);c.bezierCurveTo(-s,-s*1.2,s,s*1.2,s*2,0);c.stroke();break}
-      case "egg":{c.fillStyle="#FFFFFF";c.beginPath();for(let k=0;k<12;k++){const b=k/12*Math.PI*2,rr=s*(1.6+R()*.4);k?c.lineTo(Math.cos(b)*rr,Math.sin(b)*rr):c.moveTo(Math.cos(b)*rr,Math.sin(b)*rr)}c.closePath();c.fill();circle(c,s*.1,0,s*.7,"#F2A21F");circle(c,-s*.12,-s*.18,s*.22,"#FAD27A");break}
-      case "mash":circle(c,0,0,s,fill);break;
-    }
-    c.restore();
-  }
-  // répartir des morceaux dans une zone circulaire
-  function scatter(c,R,shape,col,n,cx,cy,rad,s,col2){for(let i=0;i<n;i++){const a=R()*Math.PI*2,d=rad*Math.sqrt(R());piece(c,shape,col,cx+Math.cos(a)*d,cy+Math.sin(a)*d,s,R,col2)}}
-  const BASE=new Set(["riz","quinoa","semoule","boulgour","pates","nouilles","polenta","gnocchis"]);
-  const SKIP=new Set(["ail","huile","soja","miel","moutarde","ketchup","bouillon","curry","paprika","cumin","ras","herbes","maizena","chapelure","cornflakes","lait","creme","coco","tomatecc","lasagne","patepizza","cannelle","piment","gingembre","patecurry","miso","tahin","beurrecacahuete","pesto"]);
-
-  function food(c,r,R,cx,cy,rad,form){
-    const items=r.ing.filter(([id])=>!SKIP.has(id)&&A[id]);
-    const crisp=has(r,"cornflakes")||has(r,"chapelure");
-    const base=items.filter(([id])=>BASE.has(id));
-    const rest=items.filter(([id])=>!BASE.has(id)&&!["persil","menthe","sesame","citron","citronvert","emmental","parmesan","oeuf"].includes(id));
-    const s=rad*.15;
-    // base de féculent
-    if(base.length&&form!=="soup"){
-      const [id]=base[0],[sh,col]=A[id];
-      const bx=form==="bowl"?cx:cx-rad*.32,by=form==="bowl"?cy:cy+rad*.05,br=form==="bowl"?rad*.95:rad*.62;
-      if(sh==="grain"){for(let i=0;i<(form==="bowl"?240:170);i++){const a=R()*Math.PI*2,d=br*Math.sqrt(R());piece(c,"grain",col,bx+Math.cos(a)*d,by+Math.sin(a)*d,s*.9,R)}}
-      else if(sh==="mash"){circle(c,bx,by,br*.85,col);circle(c,bx-br*.2,by-br*.2,br*.3,shade(col,.25))}
-      else if(sh==="noodle"){for(let i=0;i<34;i++){const a=R()*Math.PI*2,d=br*.7*Math.sqrt(R());piece(c,"noodle",col,bx+Math.cos(a)*d,by+Math.sin(a)*d,s*1.2,R)}}
-      else scatter(c,R,sh,col,form==="bowl"?40:30,bx,by,br*.85,s*1.1,A[id][2]);
-    }
-    // sauce sous la garniture pour les plats en sauce
-    const sauce=liquidOf(r);
-    if(form==="plate"&&(has(r,"tomatecc")||has(r,"creme")||has(r,"coco"))){c.save();c.globalAlpha=.85;circle(c,cx+rad*.3,cy-rad*.05,rad*.5,sauce);c.restore()}
-    // garnitures
-    const zx=form==="bowl"||form==="soup"?cx:cx+rad*.3,zy=form==="bowl"||form==="soup"?cy:cy-rad*.05,zr=form==="bowl"||form==="soup"?rad*.82:rad*.55;
-    rest.forEach(([id,q])=>{
-      const [sh,col,col2]=A[id];let fill=col;
-      if(sh==="chunk"&&crisp&&(I[id].c==="Viandes"||I[id].c==="Poissons & crevettes"))fill="#D49A44";
-      const unit=I[id].u==="g"?q:q*60;
-      let n=Math.max(3,Math.min(sh==="round"||sh==="seed"?26:13,Math.round(unit/(sh==="round"?6:11))));
-      if(["leaf","shred"].includes(sh))n=Math.min(14,n+3);
-      if(sh==="dollop"||sh==="avo")n=1;if(sh==="egg")n=Math.max(1,Math.round(q));if(sh==="wedge")n=1;
-      if(sh==="patch")n=Math.min(6,n);
-      const sc=sh==="dollop"?s*1.6:sh==="egg"?s*1.05:s*(sh==="round"?1:1.05);
-      if(sh==="dollop"){piece(c,"dollop",fill,zx+rad*.25,zy+rad*.3,sc,R);return}
-      if(sh==="egg"){for(let i=0;i<n;i++)piece(c,"egg",fill,zx+(i-.5*(n-1))*s*3,zy-rad*.15,sc,R);return}
-      scatter(c,R,sh,fill,n,zx,zy,zr,sc,col2);
-    });
-    // fromage, œufs, herbes et agrumes par-dessus
-    if(has(r,"oeuf")&&!["flat","gratin"].includes(form)){const q=r.ing.find(([x])=>x==="oeuf")[1];if(q>=.75){piece(c,"egg","#fff",zx-rad*.2,zy-rad*.25,s*1.05,R)}}
-    ["emmental","parmesan"].forEach(id=>{if(has(r,id))scatter(c,R,"cheese",A[id][1],24,zx,zy,zr,s*.9)});
-    ["persil","menthe"].forEach(id=>{if(has(r,id))scatter(c,R,"herb",A[id][1],18,cx,cy,rad*.85,s*.9)});
-    if(has(r,"sesame"))scatter(c,R,"seed",A.sesame[1],30,zx,zy,zr,s);
-    ["citron","citronvert"].forEach(id=>{if(has(r,id))piece(c,"wedge",A[id][1],cx+rad*.62,cy+rad*.48,s*1.4,R)});
-  }
-
-  function draw(c,r,w,h){
-    const R=rng(hash(r.id));const reg=REGION[r.reg]||REGION.France;
-    texture(c,w,h,reg,R);
-    const form=formOf(r);
-    const cx=w*.5+(R()-.5)*w*.05,cy=h*.53,Rad=h*.41;
-    // couverts
-    c.save();c.globalAlpha=.9;
-    if(r.reg==="Asie"){c.fillStyle="#3B2A1E";[-1,1].forEach(k=>{c.save();c.translate(cx+Rad*1.45+k*7,cy);c.rotate(.08*k);c.fillRect(-2.5,-Rad*.95,5,Rad*1.9);c.restore()})}
-    else{c.fillStyle="#C9CCCF";c.fillRect(cx+Rad*1.38,cy-Rad*.8,6,Rad*1.7);c.fillRect(cx-Rad*1.45,cy-Rad*.2,6,Rad*1.1);for(let k=0;k<4;k++)c.fillRect(cx-Rad*1.47+k*3,cy-Rad*.75,2,Rad*.55)}
-    c.restore();
-    if(form==="soup"||form==="bowl"){
-      shadowed(c,Rad,()=>circle(c,cx,cy,Rad*1.05,reg.bowl));
-      const g=c.createRadialGradient(cx-Rad*.3,cy-Rad*.3,Rad*.1,cx,cy,Rad*1.05);g.addColorStop(0,shade(reg.bowl,.25));g.addColorStop(1,shade(reg.bowl,-.15));circle(c,cx,cy,Rad*1.05,g);
-      const liq=form==="soup"?liquidOf(r):shade(liquidOf(r),.05);
-      circle(c,cx,cy,Rad*.88,shade(liq,-.12));circle(c,cx,cy,Rad*.84,liq);
-      c.save();c.globalAlpha=.18;circle(c,cx-Rad*.3,cy-Rad*.35,Rad*.25,"#ffffff");c.restore();
-      if(form==="soup"&&/velouté|potiron/.test(r.n.toLowerCase())){c.save();c.strokeStyle="rgba(255,252,245,.85)";c.lineWidth=Rad*.05;c.beginPath();for(let t=0;t<12;t+=.1){const rr=Rad*.05*t;c.lineTo(cx+Math.cos(t)*rr,cy+Math.sin(t)*rr)}c.stroke();c.restore();
-        ["persil","menthe"].forEach(id=>{if(has(r,id))scatter(c,R,"herb",A[id][1],12,cx,cy,Rad*.6,Rad*.08)});
-        if(has(r,"painmie")||has(r,"baguette"))piece(c,"toast",A.painmie[1],cx+Rad*1.2,cy+Rad*.55,Rad*.2,R);
-      }else food(c,r,R,cx,cy,Rad*.8,form);
-    }else if(form==="gratin"){
-      const rx=Rad*1.45,ry=Rad*.98;
-      shadowed(c,Rad,()=>{c.beginPath();c.ellipse(cx,cy,rx,ry,0,0,7);c.fillStyle="#F3EEE6";c.fill()});
-      c.beginPath();c.ellipse(cx,cy,rx*.86,ry*.8,0,0,7);c.fillStyle=has(r,"tomatecc")&&has(r,"lasagne")?"#C9542F":"#D9A447";c.fill();
-      const g=c.createRadialGradient(cx,cy,Rad*.1,cx,cy,rx*.86);g.addColorStop(0,"rgba(255,230,160,.6)");g.addColorStop(1,"rgba(120,60,20,.55)");c.fillStyle=g;c.beginPath();c.ellipse(cx,cy,rx*.86,ry*.8,0,0,7);c.fill();
-      for(let i=0;i<60;i++){const a=R()*Math.PI*2,d=Math.sqrt(R());circle(c,cx+Math.cos(a)*rx*.8*d,cy+Math.sin(a)*ry*.74*d,2+R()*6,`rgba(${120+R()*40|0},${60+R()*30|0},20,${.25+R()*.35})`)}
-      const peek=r.ing.filter(([id])=>A[id]&&!SKIP.has(id)&&!BASE.has(id)&&!["emmental","parmesan","mozza","reblochon","oeuf","lait"].includes(id)).slice(0,3);
-      peek.forEach(([id])=>scatter(c,R,A[id][0],A[id][1],4,cx,cy,Rad*.6,Rad*.09,A[id][2]));
-      ["persil"].forEach(id=>{if(has(r,id))scatter(c,R,"herb",A[id][1],14,cx,cy,Rad*.7,Rad*.08)});
-    }else if(form==="flat"){
-      shadowed(c,Rad,()=>circle(c,cx,cy,Rad*1.08,"#B98856"));
-      c.save();c.strokeStyle="rgba(90,55,25,.25)";c.lineWidth=1.5;for(let k=1;k<6;k++){c.beginPath();c.arc(cx,cy,Rad*1.08*k/6,0,7);c.stroke()}c.restore();
-      const isEgg=/omelette|tortilla espagnole|frittata|quiche|lorraine|rösti/.test(r.n.toLowerCase());
-      const isCrepe=/galettes/.test(r.n.toLowerCase());
-      circle(c,cx,cy,Rad*.92,isEgg?"#F0C85A":isCrepe?"#8A5831":"#E2B064");
-      circle(c,cx,cy,Rad*.8,isEgg?"#F4D677":isCrepe?"#9C6A3E":(has(r,"tomatecc")?"#C8432E":"#F2E6CC"));
-      food(c,r,R,cx,cy,Rad*.72,"bowl");
-      if(has(r,"mozza")||has(r,"reblochon"))scatter(c,R,"patch","#FBF5E4",5,cx,cy,Rad*.6,Rad*.12);
-      if(/khachapuri/.test(r.n.toLowerCase()))piece(c,"egg","#fff",cx,cy,Rad*.16,R);
-      c.save();c.strokeStyle="rgba(255,255,255,.18)";c.lineWidth=2;c.beginPath();c.moveTo(cx-Rad*.92,cy);c.lineTo(cx+Rad*.92,cy);c.moveTo(cx,cy-Rad*.92);c.lineTo(cx,cy+Rad*.92);c.stroke();c.restore();
-    }else if(form==="board"){
-      const bw=Rad*2.7,bh=Rad*1.75;
-      shadowed(c,Rad,()=>{c.beginPath();c.roundRect(cx-bw/2,cy-bh/2,bw,bh,18);c.fillStyle="#C4925C";c.fill()});
-      c.save();c.strokeStyle="rgba(110,70,30,.28)";c.lineWidth=1.4;for(let y=cy-bh/2+8;y<cy+bh/2;y+=9){c.beginPath();c.moveTo(cx-bw/2+10,y);c.quadraticCurveTo(cx,y+(R()-.5)*6,cx+bw/2-10,y);c.stroke()}c.restore();
-      const bread=r.ing.find(([id])=>A[id]&&["bread","bun","toast","roll","dumpling"].includes(A[id][0]));
-      const bx=cx-Rad*.35,by=cy;
-      if(bread){
-        const [sh,col]=A[bread[0]];
-        if(sh==="bun"){circle(c,bx,by,Rad*.62,shade(col,-.1));const g=c.createRadialGradient(bx-Rad*.2,by-Rad*.25,Rad*.05,bx,by,Rad*.62);g.addColorStop(0,shade(col,.35));g.addColorStop(1,col);circle(c,bx,by-Rad*.05,Rad*.56,g);scatter(c,R,"seed","#F6EBD0",22,bx,by-Rad*.1,Rad*.38,Rad*.11)}
-        else if(sh==="toast"){for(let k=0;k<2;k++){c.save();c.translate(bx+k*Rad*.25-Rad*.1,by+k*Rad*.12-Rad*.1);c.rotate(-.15+k*.25);c.fillStyle=shade(col,-.2);c.beginPath();c.roundRect(-Rad*.48,-Rad*.38,Rad*.96,Rad*.76,10);c.fill();c.fillStyle=col;c.beginPath();c.roundRect(-Rad*.42,-Rad*.32,Rad*.84,Rad*.64,8);c.fill();c.restore()}
-          food(c,{...r,ing:r.ing.filter(([id])=>id!==bread[0])},R,bx,by,Rad*.45,"bowl")}
-        else if(sh==="roll"||sh==="dumpling"){for(let k=0;k<5;k++){c.save();c.translate(bx-Rad*.5+k*Rad*.28,by+(k%2?Rad*.18:-Rad*.12));c.rotate(.3);c.fillStyle=col;c.beginPath();if(sh==="roll")c.roundRect(-Rad*.12,-Rad*.32,Rad*.24,Rad*.64,Rad*.12);else{c.ellipse(0,0,Rad*.24,Rad*.15,0,0,7)}c.fill();c.fillStyle="rgba(120,160,80,.45)";c.fillRect(-Rad*.05,-Rad*.2,Rad*.1,Rad*.3);c.restore()}}
-        else{for(let k=0;k<2;k++){c.save();c.translate(bx+k*Rad*.38-Rad*.12,by+k*Rad*.1);c.rotate(-.4+k*.5);c.fillStyle=shade(col,-.12);c.beginPath();c.arc(0,0,Rad*.5,Math.PI*.05,Math.PI*1.05);c.closePath();c.fill();c.fillStyle=col;c.beginPath();c.arc(0,-2,Rad*.46,Math.PI*.08,Math.PI*1.02);c.closePath();c.fill();
-          const fill=r.ing.filter(([id])=>A[id]&&!SKIP.has(id)&&id!==bread[0]).slice(0,4);fill.forEach(([id])=>scatter(c,R,A[id][0],A[id][1],3,0,-Rad*.22,Rad*.18,Rad*.08,A[id][2]));c.restore()}}
-      }else food(c,r,R,bx,by,Rad*.55,"plate");
-      // ramequin de sauce et crudités
-      const sx=cx+Rad*.85,sy=cy-Rad*.38;
-      circle(c,sx,sy,Rad*.3,"#F4EFE6");circle(c,sx,sy,Rad*.24,has(r,"ketchup")?"#B8312A":has(r,"tahin")?"#E3C99B":"#FBF8F2");
-      const side=r.ing.filter(([id])=>A[id]&&["salade","tomate","concombre","carotte","chou","avocat","pousses"].includes(id)).slice(0,2);
-      side.forEach(([id],k)=>scatter(c,R,A[id][0],A[id][1],7,cx+Rad*.8,cy+Rad*.35,Rad*.32,Rad*.09,A[id][2]));
-    }else{
-      shadowed(c,Rad,()=>circle(c,cx,cy,Rad*1.05,"#F7F4EE"));
-      const g=c.createRadialGradient(cx,cy,Rad*.6,cx,cy,Rad*1.05);g.addColorStop(0,"#FFFFFF");g.addColorStop(1,"#E9E4DA");circle(c,cx,cy,Rad*1.05,g);
-      circle(c,cx,cy,Rad*.78,"#FDFCF9");
-      food(c,r,R,cx,cy,Rad*.78,"plate");
-    }
-    // lumière douce
-    const v=c.createRadialGradient(w*.35,h*.25,h*.1,w*.5,h*.5,w*.75);v.addColorStop(0,"rgba(255,255,255,.10)");v.addColorStop(1,"rgba(0,0,0,.22)");c.fillStyle=v;c.fillRect(0,0,w,h);
-  }
-  // morceau de pain posé à côté d'une soupe
-  const _piece=piece;piece=function(c,shape,col,x,y,s,R,col2){if(shape==="toast"){c.save();c.translate(x,y);c.rotate(-.3);c.fillStyle=shade(col,-.2);c.beginPath();c.roundRect(-s*1.6,-s,s*3.2,s*2,s*.5);c.fill();c.fillStyle=col;c.beginPath();c.roundRect(-s*1.4,-s*.8,s*2.8,s*1.6,s*.4);c.fill();c.restore();return}return _piece(c,shape,col,x,y,s,R,col2)};
-
-  const cache={};
-  function url(id,w=480,h=320){
-    const k=id+":"+w;if(cache[k])return cache[k];
-    const r=RB[id];if(!r)return "";
-    try{const cv=document.createElement("canvas");const d=Math.min(2,(window.devicePixelRatio||1));cv.width=w*d;cv.height=h*d;const c=cv.getContext("2d");c.scale(d,d);draw(c,r,w,h);cache[k]=cv.toDataURL("image/jpeg",.84)}catch(e){cache[k]=""}
-    return cache[k];
-  }
-  // chargement paresseux des images visibles
-  let io=null;
-  function hydrate(root){
-    const imgs=(root||document).querySelectorAll("img[data-art]:not([src])");
-    if(!("IntersectionObserver" in window)){imgs.forEach(fill);return}
-    if(!io)io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){io.unobserve(e.target);fill(e.target)}}),{rootMargin:"300px"});
-    imgs.forEach(i=>io.observe(i));
-  }
-  function fill(img){const w=+img.dataset.w||480;img.src=url(img.dataset.art,w,Math.round(w*2/3));img.classList.add("ready")}
-  const BG=Object.fromEntries(Object.entries(REGION).map(([k,v])=>[k,v.bg]));
-  return {url,hydrate,BG,formOf};
-})();
-const artImg=(id,w,cls)=>`<img data-art="${id}" data-w="${w||480}" alt="" class="art ${cls||""}" style="background:${ART.BG[(RB[id]||{}).reg]||"#ddd"}">`;
+// ---------- Présentation neutre : noms, produits, options facultatives ----------
+const clean=s=>s.replace(/\s+(allégée?s?|légères?|légers?)(?=[\s,.:;)]|$)/gi,"").replace(/\s+,/g,",");
+R.forEach(r=>{r.n=clean(r.n);r.st=r.st.map(clean);delete r.kid});
+Object.values(BC).forEach(b=>{b.j=clean(b.j);b.t=b.t.map(([p,t])=>[p,clean(t)])});
+Object.assign(I.creme,{n:"Crème fraîche 15 %"});I.mozza.n="Mozzarella";I.lardons.n="Lardons";I.fromagefrais.n="Fromage frais";I.coco.n="Lait de coco";I.fromageblanc.n="Fromage blanc";
+// Options facultatives par recette : un accompagnement en plus, par personne
+const SOUPLIKE=/velouté|soupe|ramen|pho|laksa|harira|bortsch|minestrone|pozole|salade/i;
+function optionsFor(r){
+  const out=[];
+  const st=r.ing.find(([id])=>I[id].s&&!["patepizza","brick","pateravioli","lasagne"].includes(id));
+  if(st)out.push([st[0],Math.round(st[1]*0.5*10)/10]);
+  if(!st||SOUPLIKE.test(r.n))out.push(["baguette",40]);
+  if(/pâtes|spaghetti|tagliatelles|coquillettes|gratin|lasagnes|gnocchis|risotto|polenta/i.test(r.n)&&!r.ing.some(([id])=>id==="parmesan"))out.push(["parmesan",8]);
+  return out.filter((o,i,a)=>a.findIndex(x=>x[0]===o[0])===i);
+}
+const optLabel=(id,q)=>{const u=I[id].u;const v=u==="g"?Math.round(q)+" g":q+"";return v+" de "+I[id].n.toLowerCase()+" par personne"};
+// Images retirées : seules les couleurs de région restent pour les repères visuels
+const ART={hydrate(){},BG:{"France":"#E9E1D2","Europe":"#CDB08A","Moyen-Orient":"#C97D55","Afrique":"#D49A3C","Asie":"#2E3B3A","Amériques":"#3D8987","Océanie":"#E6D3AE"}};
+const DARKREG=new Set(["Asie","Amériques"]);
+const artImg=()=>"";
 
 // ---------- Page recettes ----------
 const BASICS=new Set(["oignon","ail","citron","persil","citronvert","menthe"]);
@@ -967,7 +743,7 @@ try{const s=JSON.parse(localStorage.getItem("recettes.filtres")||"null");if(s){s
 Object.keys(sel).forEach(k=>{if(!I[k])delete sel[k]});
 function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,quick:[...quick],servings,region,sort}))}catch(e){}}
 
-const QUICK=[["vege","Végétarien",r=>isVege(r)],["plaisir","Plaisir",r=>r.tag==="plaisir"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
+const QUICK=[["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")]];
 const has=(r,id)=>r.ing.some(([x])=>x===id);
 function matches(r,ignoreRegion){
   if(!ignoreRegion&&region&&r.reg!==region)return false;
@@ -976,14 +752,14 @@ function matches(r,ignoreRegion){
   if(q){const t=norm(r.n+" "+r.pays+" "+r.reg+" "+r.ing.map(([id])=>I[id].n).join(" "));if(!norm(q).split(/\s+/).every(w=>t.includes(w)))return false}
   return true;
 }
-const SORTS={nom:(a,b)=>a.n.localeCompare(b.n,"fr"),kcal:(a,b)=>kcal(a)-kcal(b),temps:(a,b)=>a.t-b.t||a.n.localeCompare(b.n,"fr"),region:(a,b)=>REGIONS.indexOf(a.reg)-REGIONS.indexOf(b.reg)||a.pays.localeCompare(b.pays,"fr")||a.n.localeCompare(b.n,"fr")};
+const SORTS={nom:(a,b)=>a.n.localeCompare(b.n,"fr"),temps:(a,b)=>a.t-b.t||a.n.localeCompare(b.n,"fr"),region:(a,b)=>REGIONS.indexOf(a.reg)-REGIONS.indexOf(b.reg)||a.pays.localeCompare(b.pays,"fr")||a.n.localeCompare(b.n,"fr")};
 
 // ---------- ouverture ----------
 function renderHero(){
   const countries=new Set(R.map(r=>r.pays)).size;
   document.getElementById("stats").innerHTML=`<div><b>${R.length}</b><span>recettes</span></div><div><b>${countries}</b><span>pays et régions</span></div><div><b>${REGIONS.length}</b><span>coins du monde</span></div>`;
-  const picks=["bibimbap","tajineagneau","moqueca","khachapuri"].filter(id=>RB[id]);
-  document.getElementById("mosaic").innerHTML=picks.map((id,i)=>`<button type="button" data-r="${id}" aria-label="${esc(RB[id].n)}">${artImg(id,i===0?560:360)}<span class="cap">${esc(RB[id].n)} · ${esc(RB[id].pays)}</span></button>`).join("");
+  const picks=["bibimbap","tajineagneau","moqueca","khachapuri","pho"].filter(id=>RB[id]);
+  document.getElementById("mosaic").innerHTML=`<h2>Pour commencer le voyage</h2>`+picks.map(id=>{const r=RB[id];return `<button type="button" class="pick" data-r="${id}"><i style="background:${ART.BG[r.reg]}"></i><span><b>${esc(r.n)}</b><small>${esc(r.pays)} · ${r.t} min</small></span><em>${esc(r.reg)}</em></button>`}).join("");
 }
 function renderRegions(){
   const base=R.filter(r=>matches(r,true));
@@ -1010,8 +786,8 @@ function render(){
   }).join("");
   document.getElementById("results").innerHTML=res.length?res.map(r=>{
     const main=r.ing.filter(([id])=>I[id].r!=="pl"&&!BASICS.has(id)).map(([id])=>sel[id]===1?`<mark>${esc(I[id].n.toLowerCase())}</mark>`:esc(I[id].n.toLowerCase())).join(", ");
-    return `<button type="button" class="card" data-r="${r.id}"><div class="ph">${artImg(r.id,420)}<span class="where">${esc(r.pays)}</span><span class="kc num">≈ ${kcal(r)} kcal</span></div>
-      <div class="bd"><span class="cname">${esc(r.n)}</span><span class="cmeta"><span>${r.t} min</span>${r.tag==="plaisir"?'<span class="tag plaisir">Plaisir</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span></div></button>`;
+    return `<button type="button" class="card" data-r="${r.id}"><div class="ph" style="background:${ART.BG[r.reg]}"></div>
+      <div class="bd"><span class="where tag">${esc(r.pays)}</span><span class="cname">${esc(r.n)}</span><span class="cmeta"><span>${r.t} min</span>${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span></div></button>`;
   }).join(""):`<div class="none"><b>Aucune recette avec cette combinaison.</b><br>Retirez un ingrédient, un filtre ou changez de région.</div>`;
   ART.hydrate(document.getElementById("results"));
 }
@@ -1036,14 +812,14 @@ function openRecipe(id){
   const S=planner(),wk=(S&&S.cur)||0;
   ov.innerHTML=`<article class="sheet" role="dialog" aria-modal="true" aria-label="${esc(r.n)}">
     <button class="close" type="button" data-close>Fermer ×</button>
-    <div class="hd">${artImg(r.id,860)}<div class="grad"></div><div class="tt"><small>${esc(r.pays)} · ${esc(r.reg)}</small><h3>${esc(r.n)}</h3></div></div>
+    <div class="hd" style="background:${ART.BG[r.reg]};color:${DARKREG.has(r.reg)?"#fff":"#1C2A20"}"><div class="tt"><small>${esc(r.pays)} · ${esc(r.reg)}</small><h3>${esc(r.n)}</h3></div></div>
     <div class="in">
-      <div class="facts"><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion adulte</span>${r.tag==="plaisir"?'<span class="tag plaisir">Plaisir</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}
+      <div class="facts"><span>${r.t} min</span>${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}
         <span class="serv">Portions <button type="button" class="sb" data-s="-1" aria-label="Une portion de moins">−</button><b class="num" id="servN">${servings}</b><button type="button" class="sb" data-s="1" aria-label="Une portion de plus">+</button></span></div>
       <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings" id="ings"></ul></div>
         <div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li><span>${esc(s)}</span></li>`).join("")}</ol></div></div>
       <div class="bcnote"><b>En batch cooking :</b> ${bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc.j)}</div>
-      ${r.kid?`<div class="kid"><b>Pour les enfants.</b> ${esc(r.kid)}</div>`:""}
+      ${optionsFor(r).length?`<div class="kid" id="opts"></div>`:""}
       <div class="addmenu"><strong>Mettre au menu de la semaine ${wk+1}</strong>
         <select id="addDay" aria-label="Jour">${DAYS.map((d,i)=>`<option value="${i}">${d}</option>`).join("")}</select>
         <select id="addWhen" aria-label="Repas"><option>Soir</option><option>Midi</option></select>
@@ -1056,6 +832,7 @@ function fillIngs(){
   const r=RB[current];if(!r)return;
   document.getElementById("servN").textContent=servings;
   document.getElementById("ings").innerHTML=r.ing.map(([id,qq])=>`<li><span class="num">${fmt(qq*servings,I[id].u)}</span><span>${esc(I[id].n)}</span></li>`).join("");
+  const o=document.getElementById("opts");if(o)o.innerHTML=`<b>Options facultatives :</b> `+optionsFor(r).map(([id,qq])=>esc(I[id].n)+" ("+fmt(qq,I[id].u)+" par personne)").join(" · ");
 }
 function closeModal(){ov.hidden=true;ov.innerHTML="";current=null}
 let tT;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(tT);tT=setTimeout(()=>t.hidden=true,2600)}
@@ -1077,7 +854,7 @@ document.addEventListener("click",e=>{
 document.getElementById("q").addEventListener("input",e=>{q=e.target.value;render()});
 document.getElementById("sort").addEventListener("change",e=>{sort=e.target.value;save();render()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeModal()});
-renderHero();render();ART.hydrate(document.getElementById("mosaic"));
+renderHero();render();
 </script>
 
 </html>
