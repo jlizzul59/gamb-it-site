@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
-<title>Recettes du semainier</title>
+<title>Le tour du monde en cuisine</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout : en-tête collant ; à gauche les ingrédients à cocher, à droite les recettes qui restent (pile sur mobile) */
+/* Layout : en-tête collant → ouverture avec mosaïque de plats → bandeau des régions → ingrédients à gauche, cartes illustrées à droite */
 :root{
   --bg:#F2F5EF; --surface:#FFFFFF; --ink:#1C2A20; --muted:#5B6A5F; --line:#D6DFD3;
   --accent:#2D6A42; --accent-ink:#FFFFFF; --accent-soft:#E2EEE4;
@@ -30,107 +30,188 @@
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
-.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;line-height:1.15;text-wrap:balance}
-button{font:inherit;color:inherit;cursor:pointer}
-button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;line-height:1.1;text-wrap:balance}
+button,select{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}
-header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-block:12px}
-.top h1{font-size:24px}
-.back{margin-left:auto;text-decoration:none;font-weight:600;font-size:14px;color:var(--accent);padding:7px 14px;border-radius:999px;border:1px solid var(--accent)}
-.back:hover{background:var(--accent-soft)}
-main{padding-block:24px 64px;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:28px;align-items:start}
-.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 72px);max-height:calc(100vh - 96px);overflow:auto;padding-right:6px}
-.side h2{font-size:20px;margin-bottom:4px}
-.side>p{margin:0 0 14px;font-size:13px;color:var(--muted)}
-#toggleFacets{display:none}
+img.art{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;max-width:100%;opacity:.0;transition:opacity .35s}
+img.art.ready{opacity:1}
+@media (prefers-reduced-motion:reduce){img.art{transition:none}}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:10px}
+.logo{font-family:var(--f-display);font-size:19px}
+.back{margin-left:auto;text-decoration:none;font-weight:700;font-size:14px;color:var(--accent-ink);background:var(--accent);padding:8px 16px;border-radius:999px}
+
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:36px;align-items:center;padding-block:36px 28px}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--warm)}
+.hero h1{font-size:clamp(34px,5vw,58px);margin:10px 0 14px}
+.hero p{margin:0;color:var(--muted);font-size:17px;max-width:46ch}
+.stats{display:flex;gap:26px;margin-top:22px;flex-wrap:wrap}
+.stats div{display:flex;flex-direction:column}
+.stats b{font-family:var(--f-display);font-weight:400;font-size:30px;line-height:1}
+.stats span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+.mosaic{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px}
+.mosaic button{border:0;padding:0;border-radius:14px;overflow:hidden;position:relative;background:var(--line)}
+.mosaic button:nth-child(1){grid-column:1/3;grid-row:1/3}
+.mosaic button:nth-child(2){grid-column:3/5}
+.mosaic button:nth-child(3){grid-column:3/4}
+.mosaic button:nth-child(4){grid-column:4/5}
+.mosaic button:nth-child(n+3) .cap{font-size:11px}
+.mosaic img.art{height:100%;aspect-ratio:auto}
+.mosaic button:nth-child(1) img.art{aspect-ratio:1/1.02}
+.mosaic .cap{position:absolute;left:8px;bottom:8px;right:8px;text-align:left;font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+
+.regions{display:flex;gap:8px;overflow-x:auto;padding:4px 0 14px;scrollbar-width:thin}
+.reg{flex:0 0 auto;display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:8px 14px 8px 8px;font-weight:700;font-size:14px}
+.reg i{width:30px;height:30px;border-radius:9px;display:block;flex:0 0 auto}
+.reg small{font-family:var(--f-mono);font-weight:500;color:var(--muted);font-size:12px}
+.reg[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.reg[aria-pressed="true"] small{color:inherit;opacity:.75}
+
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--line);border-bottom:2px solid var(--ink);position:sticky;top:calc(env(safe-area-inset-top,0px) + 55px);background:var(--bg);z-index:5}
+.search{flex:1 1 260px;min-width:0}
+.search input{font:inherit;width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font-size:15px}
+.qf{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--muted)}
+.qf[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.sort{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 10px;font-size:13px;font-weight:600}
+#toggleFacets{display:none;border:1px solid var(--ink);background:var(--surface);border-radius:999px;padding:6px 14px;font-weight:700;font-size:13px}
+
+.layout{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:28px;align-items:start;padding-block:20px 64px}
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 128px);max-height:calc(100vh - 150px);overflow:auto;padding-right:6px}
+.side h2{font-size:20px}
+.side>p{margin:4px 0 14px;font-size:13px;color:var(--muted)}
 .fgroup{margin-bottom:16px}
-.fgroup h3{font-family:var(--f-body);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.fgroup h3{font-family:var(--f-body);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
 .fchips{display:flex;flex-wrap:wrap;gap:5px}
 .fchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 6px 4px 11px;font-size:13px}
 .fchip .fc{font-size:11px;background:var(--bg);border-radius:999px;padding:0 6px;color:var(--muted)}
 .fchip:hover:not(:disabled){border-color:var(--accent)}
-.fchip.in{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
-.fchip.in .fc{background:color-mix(in srgb,var(--accent-ink) 25%,transparent);color:var(--accent-ink)}
+.fchip.in{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.fchip.in .fc{background:transparent;color:inherit}
 .fchip.out{background:var(--bad-soft);border-color:var(--bad);color:var(--bad);text-decoration:line-through}
-.fchip.out .fc{background:transparent;color:var(--bad);text-decoration:none}
-.fchip:disabled{opacity:.38;cursor:default}
-.content{display:flex;flex-direction:column;gap:14px;min-width:0}
-.search input{font:inherit;width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:16px}
-.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.qf{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--muted)}
-.qf[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.status{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:2px solid var(--ink)}
+.fchip.out .fc{background:transparent;color:var(--bad)}
+.fchip:disabled{opacity:.35;cursor:default}
+
+.status{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
 #count{font-size:15px}
-#count b{font-size:20px}
+#count b{font-family:var(--f-display);font-weight:400;font-size:26px}
 #active{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
-.pill{border:0;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600}
+.pill{border:0;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:700}
 .pill.in{background:var(--accent-soft);color:var(--accent)}
 .pill.out{background:var(--bad-soft);color:var(--bad)}
 .clear{border:0;background:none;text-decoration:underline;color:var(--muted);font-size:13px}
-#results{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:10px}
-.card{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
-.card:hover{border-color:var(--accent)}
-.cname{font-weight:700;font-size:15px;line-height:1.3}
+
+#results{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:16px}
+.card{display:flex;flex-direction:column;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0;overflow:hidden;min-width:0}
+.card .ph{position:relative}
+.card .where{position:absolute;left:10px;top:10px;font-size:11px;font-weight:800;letter-spacing:.04em;background:rgba(255,255,255,.92);color:#1C2A20;border-radius:999px;padding:3px 9px}
+.card .kc{position:absolute;right:10px;bottom:10px;font-size:11px;background:rgba(28,42,32,.82);color:#fff;border-radius:999px;padding:2px 8px}
+.card .bd{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px}
+.cname{font-weight:800;font-size:15px;line-height:1.3}
 .cmeta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--muted);align-items:center}
-.cing{font-size:13px;color:var(--muted)}
-.cing mark{background:var(--accent-soft);color:var(--accent);font-weight:600;border-radius:3px;padding:0 2px}
-.tag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px}
+.cing{font-size:12.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cing mark{background:var(--accent-soft);color:var(--accent);font-weight:700;border-radius:3px;padding:0 2px}
+@media (prefers-reduced-motion:no-preference){.card{transition:transform .18s,box-shadow .18s}.card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(20,40,25,.12)}}
+.tag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px}
 .tag.plaisir{background:var(--warm-soft);color:var(--warm)}
 .tag.vege{background:var(--accent-soft);color:var(--accent)}
-.none{grid-column:1/-1;padding:28px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:10px;color:var(--muted)}
-.none b{color:var(--ink)}
-.overlay{position:fixed;inset:0;background:rgba(10,20,14,.55);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
-.rcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px;max-width:760px;width:100%;position:relative}
-.close{position:absolute;top:12px;right:12px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;font-weight:600}
-.rhead h3{font-size:24px;padding-right:80px}
-.rfacts{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);margin-top:8px;align-items:center}
-.serv{display:inline-flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
-.sb{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:18px;line-height:1}
+.none{grid-column:1/-1;padding:36px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:14px;color:var(--muted)}
+.none b{color:var(--ink);font-size:17px}
+
+.overlay{position:fixed;inset:0;background:rgba(10,20,14,.62);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.sheet{background:var(--surface);border-radius:18px;max-width:860px;width:100%;position:relative;overflow:hidden}
+.sheet .hd{position:relative}
+.sheet .hd img.art{aspect-ratio:16/8}
+.sheet .hd .grad{position:absolute;inset:auto 0 0 0;height:60%;background:linear-gradient(transparent,rgba(0,0,0,.6))}
+.sheet .hd .tt{position:absolute;left:24px;right:24px;bottom:18px;color:#fff}
+.sheet .hd .tt small{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.9}
+.sheet .hd h3{font-size:clamp(24px,3.6vw,36px);text-shadow:0 2px 10px rgba(0,0,0,.4)}
+.close{position:absolute;top:14px;right:14px;z-index:2;border:0;background:rgba(255,255,255,.95);color:#1C2A20;border-radius:999px;padding:8px 14px;font-weight:800;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.sheet .in{padding:20px 24px 24px;display:flex;flex-direction:column;gap:18px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;color:var(--muted)}
+.serv{display:inline-flex;align-items:center;gap:10px;font-weight:700;color:var(--ink);margin-left:auto}
+.sb{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:18px;line-height:1}
 .serv b{min-width:2ch;text-align:center;font-size:18px}
-.rbody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px}
-.rbody h4{margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.rbody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:24px}
+.rbody h4{margin:0 0 8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .ings{list-style:none;margin:0;padding:0;font-size:14px}
-.ings li{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.ings li{display:grid;grid-template-columns:82px minmax(0,1fr);gap:8px;padding:4px 0;border-bottom:1px dotted var(--line)}
 .ings .num{color:var(--accent);text-align:right}
-.steps{margin:0;padding-left:20px;font-size:14px}
-.steps li{margin-bottom:6px}
-.bcnote{margin-top:12px;font-size:13px;background:var(--accent-soft);border-radius:8px;padding:8px 12px}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s;font-size:14.5px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;margin-bottom:10px}
+.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:12px;font-weight:800}
+.bcnote{font-size:13px;background:var(--accent-soft);border-radius:10px;padding:10px 14px}
 .bcnote b{color:var(--accent)}
-.kid{font-size:13px;background:var(--warm-soft);border-radius:8px;padding:8px 12px}
+.kid{font-size:13px;background:var(--warm-soft);border-radius:10px;padding:10px 14px}
 .kid b{color:var(--warm)}
-@media (max-width:860px){
-  main{grid-template-columns:1fr}
-  .side{position:static;max-height:none;overflow:visible;padding:0}
-  #toggleFacets{display:inline-flex;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:600;margin-bottom:8px}
-  #facetPanel{display:none}
-  #facetPanel.open{display:block}
+.addmenu{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px solid var(--line);padding-top:16px}
+.addmenu strong{font-size:14px}
+.addmenu select{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 10px;font-size:14px}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:9px 18px;font-weight:800;font-size:14px}
+.addmenu a{color:var(--accent);font-weight:700;font-size:14px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;z-index:30;font-weight:600}
+
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr;gap:22px;padding-block:24px 18px}
+  .layout{grid-template-columns:1fr}
+  .side{position:static;max-height:none;overflow:visible;padding:0;display:none}
+  .side.open{display:block}
+  #toggleFacets{display:inline-flex}
 }
-@media (max-width:560px){.rbody{grid-template-columns:1fr}}
+@media (max-width:620px){
+  .rbody{grid-template-columns:1fr}
+  .tools{position:static}
+  .serv{margin-left:0}
+  .mosaic{grid-template-columns:repeat(2,1fr);grid-template-rows:auto}
+  .mosaic button:nth-child(n){grid-column:auto;grid-row:auto}
+  .mosaic button:nth-child(1){grid-column:1/3}
+  .mosaic button:nth-child(1) img.art{aspect-ratio:3/2}
+  .mosaic button:nth-child(4){display:none}
+}
 </style>
 
 <header class="top"><div class="wrap">
-  <h1>Toutes les recettes</h1>
-  <a class="back" href="index.html">← Semainier</a>
+  <span class="logo">Le tour du monde en cuisine</span>
+  <a class="back" href="index.html">Semainier</a>
 </div></header>
 
 <main class="wrap">
-  <aside class="side">
-    <h2>Ingrédients</h2>
-    <p>Le chiffre indique combien de recettes restent si vous l'ajoutez. Une fois = avec, deux fois = sans, trois fois = retiré.</p>
-    <button type="button" id="toggleFacets" aria-expanded="false" aria-controls="facetPanel">Choisir des ingrédients</button>
-    <div id="facetPanel"><div id="facets"></div></div>
-  </aside>
-  <section class="content">
-    <label class="search"><input type="search" id="q" placeholder="Rechercher : gratin, curry, saumon…" autocomplete="off" aria-label="Rechercher une recette"></label>
-    <div class="bar" id="quick"></div>
-    <div class="status"><div id="count"></div><div id="active"></div></div>
-    <div id="results"></div>
+  <section class="hero">
+    <div>
+      <span class="eyebrow">Recettes légères et gourmandes</span>
+      <h1>De Lille à Lima, un plat différent chaque soir</h1>
+      <p>Des recettes de tous les continents, pensées pour perdre du poids sans priver les enfants. Choisissez vos ingrédients, le catalogue se resserre au fur et à mesure.</p>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="mosaic" id="mosaic"></div>
   </section>
+
+  <nav class="regions" id="regions" aria-label="Régions du monde"></nav>
+
+  <div class="tools">
+    <label class="search"><input type="search" id="q" placeholder="Rechercher : curry, gratin, Mexique, saumon…" autocomplete="off" aria-label="Rechercher une recette"></label>
+    <div id="quick" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    <select class="sort" id="sort" aria-label="Trier les recettes"><option value="nom">Trier : nom</option><option value="kcal">Trier : les plus légères</option><option value="temps">Trier : les plus rapides</option><option value="region">Trier : par région</option></select>
+    <button type="button" id="toggleFacets" aria-expanded="false" aria-controls="side">Ingrédients</button>
+  </div>
+
+  <div class="layout">
+    <aside class="side" id="side">
+      <h2>Ingrédients</h2>
+      <p>Une fois = avec, deux fois = sans, trois fois = retiré. Le chiffre indique combien de recettes il reste.</p>
+      <div id="facets"></div>
+    </aside>
+    <section>
+      <div class="status"><div id="count"></div><div id="active"></div></div>
+      <div id="results"></div>
+    </section>
+  </div>
 </main>
 <div class="overlay" id="overlay" hidden></div>
+<div class="toast" id="toast" hidden></div>
 <script>
 
 // ---------- Ingrédients ----------
@@ -449,9 +530,422 @@ MORE.forEach(([id,n,f,p,t,tag,ing,st,bc,j,kid])=>{
   BC[id]={t:bc?bc.split("|").map(x=>[PO[x[0]],x.slice(2)]):[],j};
 });
 
-// ---------- Page recettes : filtres par ingrédients ----------
-const BASICS=new Set(["oignon","ail","citron","persil"]);
-const GROUP_ORDER=["Viandes","Poissons & crevettes","Œufs & légumineuses","Légumes","Féculents","Fromages & crème","Autres"];
+// ---------- Tour du monde : ingrédients et recettes ----------
+Object.assign(I,{
+ citronvert:{n:"Citrons verts",r:"fl",u:"pc",k:20},
+ pousses:{n:"Pousses de soja",r:"fl",u:"g",k:0.3,c:"Légumes"},
+ menthe:{n:"Menthe fraîche",r:"fl",u:"bouquet",k:5},
+ mangue:{n:"Mangue",r:"fl",u:"g",k:0.6,c:"Fruits",w:300,wl:"mangue"},
+ pomme:{n:"Pommes",r:"fl",u:"pc",k:80,c:"Fruits"},
+ plantain:{n:"Bananes plantain",r:"fl",u:"g",k:1.2,s:1,c:"Féculents",w:250,wl:"banane"},
+ betterave:{n:"Betteraves cuites",r:"fl",u:"g",k:0.45,c:"Légumes",w:250,wl:"betterave"},
+ agneau:{n:"Épaule ou gigot d'agneau",r:"bo",u:"g",k:1.9,c:"Viandes"},
+ haricotsnoirs:{n:"Haricots noirs (boîte, égouttés)",r:"co",u:"g",k:1.3,c:"Œufs & légumineuses"},
+ cacahuete:{n:"Cacahuètes non salées",r:"co",u:"g",k:5.9,c:"Fruits secs"},
+ cajou:{n:"Noix de cajou",r:"co",u:"g",k:5.8,c:"Fruits secs"},
+ amandes:{n:"Amandes effilées",r:"co",u:"g",k:6.0,c:"Fruits secs"},
+ abricots:{n:"Abricots secs",r:"co",u:"g",k:2.4,c:"Fruits secs"},
+ olives:{n:"Olives",r:"co",u:"g",k:1.5},
+ feuillesriz:{n:"Galettes de riz",r:"co",u:"pc",k:30},
+ pateravioli:{n:"Feuilles à raviolis (gyoza)",r:"cr",u:"pc",k:25,s:1},
+ polenta:{n:"Polenta",r:"co",u:"g",k:3.6,s:1,c:"Féculents"},
+ baguette:{n:"Baguette",r:"pa",u:"g",k:2.7,s:1},
+ farinemais:{n:"Farine de maïs précuite",r:"co",u:"g",k:3.6,s:1,c:"Féculents"},
+ halloumi:{n:"Halloumi",r:"cr",u:"g",k:3.2,c:"Fromages & crème"},
+ beurrecacahuete:{n:"Beurre de cacahuète",r:"pl",u:"cs",k:95},
+ patecurry:{n:"Pâte de curry (rouge ou verte)",r:"pl",u:"cs",k:15},
+ miso:{n:"Pâte miso",r:"pl",u:"cs",k:25},
+ tahin:{n:"Tahini (crème de sésame)",r:"pl",u:"cs",k:90},
+ cannelle:{n:"Cannelle",r:"pl",u:"cc",k:5},
+ piment:{n:"Piment (doux ou fort, au goût)",r:"pl",u:"cc",k:5}
+});
+I.ananas.c="Fruits";
+
+// Origine des recettes existantes [pays, région]
+const ORIG={tikka:["Inde","Asie"],teriyaki:["Japon","Asie"],fajitas:["Mexique","Amériques"],chili:["Mexique","Amériques"],burger:["États-Unis","Amériques"],poke:["Hawaï","Océanie"],poketon:["Hawaï","Océanie"],taboule:["Liban","Moyen-Orient"],tabouleboulgour:["Liban","Moyen-Orient"],cesar:["États-Unis","Amériques"],pizza:["Italie","Europe"],lasagnes:["Italie","Europe"],bolo:["Italie","Europe"],gnocchis:["Italie","Europe"],risotto:["Italie","Europe"],carbonara:["Italie","Europe"],patespesto:["Italie","Europe"],onepot:["Italie","Europe"],lasagnesveg:["Italie","Europe"],minestrone:["Italie","Europe"],spaghettithon:["Italie","Europe"],gnocchispoulet:["Italie","Europe"],tagliatelles:["Italie","Europe"],pizzalegumes:["Italie","Europe"],frittata:["Italie","Europe"],saladepates:["Italie","Europe"],pizzabbq:["États-Unis","Amériques"],couscous:["Maroc","Afrique"],tajine:["Maroc","Afrique"],shakshuka:["Tunisie","Afrique"],briks:["Tunisie","Afrique"],dahl:["Inde","Asie"],currypc:["Inde","Asie"],wok:["Chine","Asie"],rizcantonais:["Chine","Asie"],ramen:["Japon","Asie"],tofusaute:["Chine","Asie"],boeufbrocoli:["Chine","Asie"],porccaramel:["Vietnam","Asie"],bowlsaumon:["Japon","Asie"],tortilla:["Espagne","Europe"],paella:["Espagne","Europe"],crevettesail:["Espagne","Europe"],currycrevettes:["Thaïlande","Asie"],pouletananas:["Antilles","Amériques"],quesadillas:["Mexique","Amériques"],enchiladas:["Mexique","Amériques"],burritobowl:["Mexique","Amériques"],chilisin:["Mexique","Amériques"],tacospoisson:["Mexique","Amériques"],moussaka:["Grèce","Europe"],pitas:["Grèce","Europe"],aubergines:["Turquie","Moyen-Orient"],soupelentilles:["Turquie","Moyen-Orient"],cordonbleu:["Suisse","Europe"],nuggets:["États-Unis","Amériques"],burgerpoulet:["États-Unis","Amériques"],buddha:["Californie","Amériques"],carbonade:["Nord & Belgique","France"],endives:["Nord","France"],flamme:["Alsace","France"],galettes:["Bretagne","France"],nicoise:["Nice","France"],ratatouille:["Provence","France"],basquaise:["Pays basque","France"],cassoulet:["Sud-Ouest","France"],tartiflette:["Savoie","France"],lorraine:["Lorraine","France"],potee:["Auvergne","France"]};
+
+const W_=[
+// ===== ASIE =====
+["padthai","Pad thaï aux crevettes","B","crevettes",25,"","nouilles:60,crevettes:100,oeuf:0.5,pousses:60,carotte:40,cacahuete:8,citronvert:0.25,soja:1,miel:0.25,huile:0.25",["Faire tremper ou cuire les nouilles.","Sauter les crevettes et la carotte râpée, pousser sur le côté, brouiller l'œuf.","Ajouter nouilles, pousses, soja et miel. Servir avec cacahuètes concassées et citron vert."],"c:Râper les carottes, concasser les cacahuètes","Tout sauter au wok 8 min.","Thaïlande","Asie"],
+["curryvert","Curry vert de poulet, riz jasmin","F","poulet",30,"","poulet:120,coco:70,patecurry:0.5,haricotsverts:80,poivron:60,riz:50,citronvert:0.25",["Faire revenir la pâte de curry 1 min, ajouter le lait de coco.","Ajouter le poulet émincé et les légumes, mijoter 12 min.","Finir au citron vert, servir avec le riz."],"c:Émincer poivron et poulet|f:Cuire le curry complet","Réchauffer, réchauffer le riz.","Thaïlande","Asie"],
+["larb","Larb de poulet, riz et crudités","B","poulet",20,"","poulet:110,citronvert:0.5,menthe:0.25,oignon:20,salade:50,riz:50,soja:1,concombre:60",["Cuire le poulet haché à la poêle sans matière grasse.","Hors du feu, ajouter citron vert, soja, oignon émincé et menthe.","Servir dans des feuilles de salade avec le riz et le concombre."],"f:Cuire le poulet haché|c:Couper concombre et oignon","Assaisonner au citron vert et à la menthe, servir.","Laos","Asie"],
+["pho","Pho au bœuf","B","rumsteck",35,"","rumsteck:90,nouilles:55,bouillon:0.5,oignon:30,gingembre:0.5,pousses:50,menthe:0.25,citronvert:0.25,cannelle:0.25",["Faire griller l'oignon coupé en deux, le cuire 20 min dans le bouillon avec gingembre et cannelle.","Cuire les nouilles, les répartir dans les bols avec le bœuf cru en tranches très fines.","Verser le bouillon bouillant dessus, garnir de pousses, menthe et citron vert."],"f:Préparer le bouillon parfumé|c:Trancher finement le bœuf","Réchauffer le bouillon à ébullition, cuire les nouilles, assembler.","Vietnam","Asie"],
+["bobun","Bo bun au bœuf citronnelle","B","rumsteck",30,"P","rumsteck:90,nouilles:55,salade:50,carotte:50,concombre:50,pousses:40,cacahuete:8,menthe:0.25,soja:1,citronvert:0.25",["Mariner le bœuf émincé avec soja et citron vert, le saisir 2 min.","Cuire les nouilles, les rincer à l'eau froide.","Dresser nouilles, crudités, bœuf, menthe et cacahuètes, arroser de sauce."],"c:Couper crudités et menthe, préparer la sauce|f:Cuire les nouilles","Saisir le bœuf, assembler les bols.","Vietnam","Asie"],
+["rouleaux","Rouleaux de printemps aux crevettes","L","crevettes",30,"","crevettes:80,feuillesriz:3,nouilles:25,salade:30,carotte:40,menthe:0.25,cacahuete:8,soja:0.5",["Cuire les nouilles fines, râper la carotte.","Tremper chaque galette de riz quelques secondes dans l'eau tiède.","Garnir de salade, nouilles, carotte, menthe et crevettes, rouler serré."],"c:Préparer toutes les garnitures","Rouler les galettes (10 min).","Vietnam","Asie"],
+["banhmi","Banh mi au poulet caramélisé","L","poulet",25,"P","poulet:100,baguette:80,carotte:50,concombre:40,miel:0.25,soja:0.5,persil:0.25,fromageblanc:15",["Caraméliser le poulet émincé avec miel et soja.","Couper carotte et concombre en bâtonnets.","Garnir la baguette de fromage blanc, poulet, crudités et coriandre."],"f:Caraméliser le poulet|c:Tailler les crudités en bâtonnets","Garnir les sandwichs.","Vietnam","Asie"],
+["bibimbap","Bibimbap au bœuf et légumes","B","rumsteck",35,"","rumsteck:80,riz:55,oeuf:1,epinards:60,carotte:50,pousses:40,champignons:50,soja:1,sesame:0.5,piment:0.25",["Cuire le riz. Sauter séparément épinards, carottes, champignons et pousses.","Saisir le bœuf émincé avec le soja.","Disposer en rayons sur le riz, coiffer d'un œuf au plat et de sésame."],"f:Sauter chaque légume séparément|c:Émincer le bœuf","Saisir le bœuf, cuire les œufs, assembler les bols.","Corée","Asie"],
+["pouletcoreen","Poulet coréen sucré-épicé au four, riz","F","poulet",35,"P","poulet:120,miel:0.5,soja:1,ketchup:0.5,piment:0.25,ail:0.5,cornflakes:15,riz:50,brocoli:100",["Paner le poulet en morceaux dans les corn flakes écrasés, cuire 18 min à 210 °C.","Faire réduire miel, soja, ketchup, ail et piment 2 min.","Enrober le poulet de sauce, servir avec riz et brocoli."],"g:Paner les morceaux de poulet et les congeler|f:Préparer la sauce en pot","Cuire le poulet 22 min sans décongeler, enrober de sauce.","Corée","Asie","Version douce : piment à part pour les adultes."],
+["japchae","Japchae, nouilles sautées coréennes","B","rumsteck",30,"","rumsteck:60,nouilles:55,epinards:50,carotte:40,champignons:50,poivron:40,soja:1,sesame:0.5,miel:0.25",["Cuire les nouilles, les rincer.","Sauter le bœuf émincé puis les légumes en lanières.","Mélanger avec nouilles, soja, miel et sésame."],"c:Tailler tous les légumes en lanières","Tout sauter au wok 10 min.","Corée","Asie"],
+["oyakodon","Oyakodon, bol de riz poulet-œuf","F","poulet",25,"","poulet:110,oeuf:1,oignon:50,soja:1,miel:0.25,bouillon:0.25,riz:55",["Mijoter l'oignon émincé 5 min dans le bouillon avec soja et miel.","Ajouter le poulet en morceaux, cuire 6 min.","Verser les œufs battus, couvrir 1 min, servir sur le riz."],"c:Émincer oignon et poulet","Cuire 12 min, servir sur le riz.","Japon","Asie"],
+["katsu","Curry japonais au poulet pané","F","poulet",45,"P","poulet:110,cornflakes:15,oeuf:0.2,carotte:60,pdt:80,oignon:40,curry:1,maizena:4,riz:50,pomme:0.25",["Cuire oignon, carotte, pomme de terre et pomme râpée 20 min dans de l'eau avec le curry, lier à la maïzena.","Paner le poulet (œuf puis corn flakes), cuire 18 min à 210 °C.","Trancher le poulet, servir sur le riz nappé de sauce."],"f:Cuire la sauce curry aux légumes|g:Paner le poulet et le congeler","Cuire le poulet 22 min, réchauffer la sauce et le riz.","Japon","Asie","Sauce douce et sucrée, poulet croustillant : succès assuré."],
+["misosaumon","Saumon au miso, riz et petits pois","F","saumon",25,"","saumon:120,miso:0.5,miel:0.25,riz:50,petitspois:60,concombre:50",["Mélanger miso et miel, badigeonner le saumon.","Cuire 12 min à 200 °C.","Servir avec le riz, les petits pois et le concombre."],"f:Préparer la marinade miso en pot","Badigeonner et cuire le saumon 12 min.","Japon","Asie"],
+["yakitori","Brochettes yakitori, riz et chou","F","poulet",30,"","poulet:120,soja:1.5,miel:0.5,riz:50,chou:80,sesame:0.5",["Couper le poulet en cubes, les enfiler sur des pics.","Faire réduire soja et miel en sirop.","Griller les brochettes 10 min en les laquant. Servir avec riz et chou émincé."],"c:Préparer les brochettes, émincer le chou|f:Préparer la sauce yakitori","Griller les brochettes 10 min.","Japon","Asie","Des brochettes à manger avec les doigts."],
+["udon","Udon sautés au poulet et légumes","F","poulet",25,"","poulet:90,nouilles:60,chou:80,carotte:40,champignons:50,soja:1.5",["Cuire les nouilles.","Sauter le poulet émincé puis les légumes.","Ajouter nouilles et soja, sauter 2 min."],"c:Émincer chou, carottes et champignons","Tout sauter 10 min.","Japon","Asie"],
+["cajou","Poulet aux noix de cajou, riz","F","poulet",25,"","poulet:120,cajou:12,poivron:80,oignon:30,soja:1,miel:0.25,riz:50,maizena:3",["Rouler le poulet en dés dans la maïzena, le saisir.","Ajouter poivron et oignon, sauter 4 min.","Ajouter soja, miel et noix de cajou. Servir avec le riz."],"c:Couper poulet, poivron et oignon","Sauter au wok 10 min, réchauffer le riz.","Chine","Asie"],
+["aigredouce","Porc aigre-doux à l'ananas, riz","F","porc",30,"P","porc:110,ananas:60,poivron:70,ketchup:0.5,miel:0.25,soja:0.5,maizena:3,riz:50",["Dorer le porc en dés roulé dans la maïzena.","Ajouter poivron et ananas.","Napper de ketchup, miel, soja et un peu d'eau, laisser épaissir."],"f:Cuire le porc aigre-doux","Réchauffer, réchauffer le riz.","Chine","Asie"],
+["mapotofu","Mapo tofu doux, riz","B","tofu",25,"","tofu:130,boeuf:40,soja:1,piment:0.25,ail:0.5,gingembre:0.25,maizena:3,riz:50,petitspois:40",["Faire revenir le bœuf avec ail et gingembre.","Ajouter soja, un verre d'eau et le tofu en cubes, mijoter 6 min.","Lier à la maïzena, ajouter les petits pois. Servir avec le riz."],"f:Cuire la sauce au bœuf","Réchauffer, ajouter le tofu 6 min.","Chine","Asie"],
+["gyozas","Gyozas maison porc-chou, brocoli","F","porc",50,"P","porc:70,chou:60,soja:1,gingembre:0.25,pateravioli:6,brocoli:80",["Hacher porc et chou finement, assaisonner de soja et gingembre.","Garnir les feuilles, les plier en demi-lunes.","Dorer à la poêle, ajouter un fond d'eau, couvrir 6 min. Servir avec le brocoli."],"g:Façonner les gyozas et les congeler à plat","Cuire les gyozas surgelés 10 min à la poêle couverte.","Japon","Asie","Les enfants adorent les plier."],
+["butterchicken","Butter chicken léger, riz basmati","F","poulet",35,"P","poulet:130,tomatecc:100,creme:20,yaourt:40,curry:1,gingembre:0.25,ail:0.5,riz:50,cannelle:0.25",["Mariner le poulet dans le yaourt et les épices.","Le dorer, ajouter tomates, mijoter 15 min.","Ajouter la crème hors du feu. Servir avec le riz."],"c:Mariner le poulet|f:Cuire la sauce au poulet sans la crème","Réchauffer, ajouter la crème, réchauffer le riz.","Inde","Asie","Doux et crémeux, le curry préféré des enfants."],
+["palak","Épinards au curry et halloumi grillé, riz","B","vege",25,"","halloumi:50,epinards:200,oignon:30,tomatecc:60,curry:1,yaourt:30,riz:40",["Faire fondre oignon et épinards avec le curry et les tomates.","Mixer grossièrement avec le yaourt.","Griller le halloumi en dés, l'ajouter. Servir avec le riz."],"f:Cuire et mixer la sauce aux épinards","Griller le halloumi, réchauffer la sauce et le riz.","Inde","Asie"],
+["chana","Chana masala, pois chiches épicés","B","vege",30,"","poischiches:140,tomatecc:120,oignon:40,curry:1,gingembre:0.25,citron:0.25,riz:45,yaourt:30",["Faire revenir l'oignon avec le curry et le gingembre.","Ajouter tomates et pois chiches, mijoter 20 min.","Finir au citron, servir avec riz et yaourt."],"f:Cuire le chana masala","Réchauffer, réchauffer le riz.","Inde","Asie"],
+["biryani","Biryani de poulet","F","poulet",50,"","poulet:110,riz:60,oignon:50,yaourt:40,curry:1,cannelle:0.25,petitspois:40,amandes:5",["Mariner le poulet dans le yaourt et les épices.","Dorer les oignons, ajouter le poulet, puis le riz et 1,5 fois son volume d'eau.","Cuire 18 min à couvert, ajouter les petits pois et parsemer d'amandes."],"c:Mariner le poulet|f:Cuire le biryani complet","Réchauffer avec un peu d'eau.","Inde","Asie"],
+["rendang","Rendang de bœuf doux","F","paleron",150,"","paleron:120,coco:60,oignon:40,gingembre:0.5,cannelle:0.25,curry:1,riz:50,haricotsverts:80",["Dorer le bœuf en cubes avec oignon et épices.","Ajouter le lait de coco et un verre d'eau.","Mijoter 2 h à feu doux jusqu'à ce que la sauce enrobe la viande."],"f:Cuire le rendang (meilleur réchauffé)","Réchauffer, riz et haricots verts.","Indonésie","Asie"],
+["nasigoreng","Nasi goreng au poulet et œuf","B","poulet",20,"","poulet:90,riz:60,oeuf:1,chou:60,carotte:40,soja:1.5,ketchup:0.25,piment:0.25",["Sauter le poulet émincé puis chou et carotte.","Ajouter le riz cuit froid, soja et ketchup.","Servir avec un œuf au plat."],"c:Émincer chou et carotte, couper le poulet","Sauter au wok 10 min avec le riz déjà cuit, cuire les œufs.","Indonésie","Asie"],
+["adobo","Poulet adobo, riz","F","cuisse",50,"","cuisse:170,soja:1.5,ail:1,oignon:30,riz:50,haricotsverts:100,citron:0.25",["Mettre le poulet, le soja, l'ail écrasé, l'oignon et le citron dans une cocotte avec un verre d'eau.","Mijoter 35 min à couvert.","Faire réduire la sauce, servir avec riz et haricots verts."],"f:Cuire l'adobo complet","Réchauffer, réchauffer le riz.","Philippines","Asie"],
+["laksa","Laksa de crevettes, soupe coco","B","crevettes",30,"","crevettes:100,nouilles:50,coco:80,patecurry:0.5,pousses:40,bouillon:0.5,citronvert:0.25,oeuf:0.5",["Faire revenir la pâte de curry, ajouter le bouillon et le lait de coco, mijoter 10 min.","Cuire les nouilles, les mettre dans les bols.","Pocher les crevettes 3 min dans le bouillon, verser, garnir de pousses, œuf et citron vert."],"f:Préparer le bouillon coco-curry","Réchauffer le bouillon, cuire nouilles et crevettes.","Malaisie","Asie"],
+["satay","Brochettes satay, sauce cacahuète","F","poulet",35,"P","poulet:120,beurrecacahuete:0.75,coco:30,soja:0.5,citronvert:0.25,riz:50,concombre:70",["Mariner le poulet en lamelles dans soja et citron vert, l'enfiler sur des pics.","Griller 10 min.","Chauffer beurre de cacahuète et lait de coco pour la sauce. Servir avec riz et concombre."],"c:Mariner et enfiler les brochettes|f:Préparer la sauce cacahuète","Griller les brochettes 10 min.","Indonésie","Asie","Sauce cacahuète : les enfants en redemandent."],
+// ===== MOYEN-ORIENT =====
+["shawarma","Shawarma de poulet, sauce yaourt","F","poulet",30,"P","poulet:120,pita:1,yaourt:50,cumin:0.5,paprika:0.5,cannelle:0.25,tomate:60,salade:30,oignon:15,citron:0.25",["Mariner le poulet émincé avec les épices et le citron.","Le saisir à feu vif 8 min.","Garnir les pitas de poulet, crudités et sauce yaourt."],"c:Mariner le poulet aux épices","Saisir le poulet, garnir les pitas.","Liban","Moyen-Orient"],
+["falafels","Falafels au four, houmous et pita","B","vege",40,"","poischiches:130,persil:0.25,cumin:0.5,oignon:20,chapelure:10,pita:1,tahin:0.5,citron:0.25,tomate:60,concombre:60",["Mixer la moitié des pois chiches avec persil, oignon, cumin et chapelure, former des boulettes.","Cuire 20 min à 200 °C.","Mixer le reste des pois chiches avec tahini et citron pour le houmous. Servir en pita."],"f:Former les falafels|c:Préparer le houmous","Cuire les falafels 20 min, garnir les pitas.","Liban","Moyen-Orient"],
+["fattouch","Salade fattouche au poulet grillé","L","poulet",20,"","poulet:100,pita:0.5,tomate:80,concombre:80,salade:50,menthe:0.25,citron:0.5,huile:0.5",["Griller le poulet et la pita coupée en morceaux.","Couper tomates et concombre.","Mélanger avec salade et menthe, assaisonner au citron."],"f:Griller le poulet et la pita|c:Couper les légumes","Assembler et assaisonner.","Liban","Moyen-Orient"],
+["houmousbowl","Bol houmous, poulet épicé et légumes rôtis","L","poulet",30,"","poulet:90,poischiches:80,tahin:0.5,citron:0.25,courgette:100,poivron:80,cumin:0.5,huile:0.25",["Rôtir courgette et poivron 20 min.","Mixer pois chiches, tahini et citron.","Griller le poulet au cumin, assembler les bols."],"o:Rôtir les légumes|c:Préparer le houmous|f:Griller le poulet","Assembler les bols.","Liban","Moyen-Orient"],
+["keftas","Keftas d'agneau, boulgour et salade","F","agneau",30,"","agneau:100,oignon:20,persil:0.25,cumin:0.5,boulgour:50,tomate:80,concombre:80,yaourt:40",["Mélanger agneau haché, oignon, persil et cumin, former des boudins.","Griller 8 min.","Servir avec boulgour, salade tomate-concombre et yaourt."],"c:Former les keftas|f:Cuire le boulgour","Griller les keftas 8 min.","Liban","Moyen-Orient"],
+["mujaddara","Mujaddara, lentilles et riz aux oignons","B","vege",40,"","lentillesvertes:50,riz:40,oignon:100,cumin:0.5,huile:0.5,yaourt:50,salade:40",["Cuire les lentilles 15 min, ajouter le riz et le cumin, cuire encore 15 min.","Faire dorer longuement les oignons.","Servir surmonté d'oignons, avec yaourt et salade."],"f:Cuire lentilles et riz, caraméliser les oignons","Réchauffer.","Liban","Moyen-Orient"],
+["musakhan","Musakhan, poulet aux oignons sur pita","F","poulet",40,"","poulet:120,oignon:100,pita:1,cumin:0.5,paprika:0.5,huile:0.5,citron:0.25,salade:40",["Faire fondre les oignons avec épices et citron.","Dorer le poulet, l'ajouter aux oignons.","Garnir les pitas, passer 5 min au four."],"f:Cuire les oignons et le poulet","Garnir les pitas, 5 min au four.","Palestine","Moyen-Orient"],
+["khoresh","Ragoût de poulet aux herbes et haricots, riz","F","poulet",50,"","poulet:120,haricotsrouges:80,epinards:100,persil:0.25,oignon:30,citron:0.5,curry:0.5,riz:50",["Faire revenir oignon et poulet.","Ajouter épinards, herbes, citron et un verre d'eau, mijoter 30 min.","Ajouter les haricots 10 min. Servir avec le riz."],"f:Cuire le ragoût complet","Réchauffer, réchauffer le riz.","Iran","Moyen-Orient"],
+["pide","Pide turque au bœuf et poivrons","F","boeuf",35,"P","patepizza:80,boeuf:70,poivron:60,tomate:60,oignon:20,cumin:0.5,persil:0.25,feta:15",["Cuire le bœuf avec oignon, poivron et cumin.","Façonner la pâte en barque, garnir, ajouter tomate et feta.","Cuire 15 min à 230 °C."],"f:Cuire la garniture","Garnir et cuire 15 min.","Turquie","Moyen-Orient"],
+["imambayildi","Aubergines à la turque, boulgour","B","vege",50,"","aubergine:250,tomatecc:120,oignon:60,ail:0.5,persil:0.25,huile:0.5,boulgour:50,yaourt:40",["Fendre les aubergines, les précuire 20 min au four.","Faire fondre oignon, ail et tomates.","Farcir, cuire 20 min. Servir avec boulgour et yaourt."],"o:Précuire les aubergines|f:Préparer la farce, farcir","Cuire 20 min, cuire le boulgour.","Turquie","Moyen-Orient"],
+["menemen","Menemen, œufs brouillés turcs","B","oeuf",20,"","oeuf:2,poivron:100,tomate:120,oignon:20,huile:0.25,piment:0.25,baguette:50,feta:15",["Faire revenir poivron et oignon.","Ajouter tomates, cuire 5 min.","Brouiller les œufs dedans, émietter la feta, servir avec le pain."],"c:Couper poivrons et tomates","Cuire 15 min.","Turquie","Moyen-Orient"],
+// ===== AFRIQUE =====
+["tajinekefta","Tajine de kefta aux œufs","F","boeuf",35,"","boeuf:100,oeuf:1,tomatecc:150,oignon:30,cumin:0.5,persil:0.25,baguette:50",["Former de petites boulettes avec bœuf, persil et cumin.","Les cuire 15 min dans la sauce tomate à l'oignon.","Casser les œufs dessus, couvrir 6 min. Servir avec le pain."],"f:Cuire les boulettes en sauce","Réchauffer, cuire les œufs dedans.","Maroc","Afrique"],
+["tajineagneau","Tajine d'agneau aux abricots et amandes","F","agneau",90,"","agneau:110,abricots:25,amandes:6,oignon:40,cannelle:0.25,ras:1,semoule:45,courgette:100",["Dorer l'agneau en cubes avec oignon et épices.","Ajouter un verre d'eau, mijoter 1 h.","Ajouter abricots et courgettes 20 min, parsemer d'amandes. Servir avec la semoule."],"f:Cuire le tajine complet","Réchauffer, préparer la semoule.","Maroc","Afrique"],
+["harira","Harira, soupe marocaine","B","vege",45,"","lentillesvertes:35,poischiches:50,tomatecc:120,oignon:30,persil:0.25,ras:0.5,citron:0.25,pates:15,bouillon:0.25",["Faire revenir oignon et épices.","Ajouter lentilles, tomates, bouillon et eau, cuire 30 min.","Ajouter pois chiches et petites pâtes 10 min, finir au citron et persil."],"f:Cuire la harira sans les pâtes","Réchauffer, cuire les pâtes dedans.","Maroc","Afrique"],
+["pastilla","Pastilla de poulet légère","F","poulet",50,"P","brick:3,poulet:110,oignon:50,amandes:8,cannelle:0.5,oeuf:0.5,miel:0.25,salade:50",["Cuire le poulet effiloché avec oignons, cannelle et miel, lier avec l'œuf.","Superposer les feuilles de brick, garnir, refermer.","Cuire 20 min à 190 °C, saupoudrer de cannelle. Servir avec la salade."],"f:Cuire la farce et monter la pastilla","Cuire 25 min à 190 °C.","Maroc","Afrique","Sucré-salé croustillant, souvent adoré."],
+["mafe","Mafé de poulet, sauce cacahuète","F","poulet",45,"P","poulet:120,beurrecacahuete:1,tomatecc:100,carotte:80,patatedouce:80,oignon:30,riz:45",["Dorer le poulet avec l'oignon.","Ajouter tomates, beurre de cacahuète délayé dans l'eau, carottes et patate douce.","Mijoter 30 min. Servir avec le riz."],"f:Cuire le mafé complet","Réchauffer, réchauffer le riz.","Sénégal","Afrique"],
+["yassa","Poulet yassa aux oignons et citron","F","cuisse",60,"","cuisse:170,oignon:150,citron:0.75,moutarde:0.5,riz:50,huile:0.25",["Mariner le poulet avec oignons émincés, citron et moutarde.","Dorer le poulet, puis fondre les oignons de la marinade.","Remettre le poulet, mijoter 30 min. Servir avec le riz."],"c:Mariner le poulet (la veille idéalement)|f:Cuire le yassa","Réchauffer, réchauffer le riz.","Sénégal","Afrique"],
+["thieb","Thiéboudienne légère, riz au poisson","F","colin",50,"","colin:130,riz:55,tomatecc:100,carotte:80,chou:80,patatedouce:60,oignon:30",["Faire revenir l'oignon, ajouter tomates et eau.","Cuire les légumes 20 min dans la sauce, les retirer.","Cuire le riz dans la sauce 18 min, pocher le poisson dessus 8 min."],"c:Couper carottes, chou et patate douce|f:Cuire les légumes dans la sauce","Cuire le riz dans la sauce, pocher le poisson.","Sénégal","Afrique"],
+["jollof","Riz jollof au poulet","F","poulet",45,"","poulet:110,riz:55,tomatecc:120,poivron:70,oignon:40,piment:0.25,paprika:0.5,petitspois:40",["Mixer tomates, poivron et oignon.","Dorer le poulet, ajouter la sauce, cuire 10 min.","Ajouter le riz et de l'eau, cuire 20 min à couvert, ajouter les petits pois."],"f:Cuire le jollof complet","Réchauffer avec un peu d'eau.","Nigeria","Afrique"],
+["alloco","Poisson braisé, alloco et sauce tomate","F","colin",35,"P","colin:140,plantain:150,huile:0.5,tomate:60,oignon:20,citronvert:0.25,piment:0.25",["Couper les bananes plantain en rondelles, les rôtir 20 min au four avec l'huile.","Griller le poisson mariné au citron vert.","Servir avec une sauce crue tomate-oignon-piment."],"c:Préparer la sauce crue tomate-oignon","Rôtir les plantains 20 min, griller le poisson.","Côte d'Ivoire","Afrique"],
+["dorowat","Ragoût de poulet éthiopien, riz","F","poulet",50,"","poulet:120,oignon:100,tomatecc:60,paprika:1,gingembre:0.25,oeuf:0.5,riz:45",["Faire fondre longuement les oignons à sec, puis avec paprika et gingembre.","Ajouter poulet et tomates, mijoter 30 min.","Ajouter les œufs durs coupés en deux. Servir avec le riz."],"f:Cuire le ragoût et les œufs durs","Réchauffer, réchauffer le riz.","Éthiopie","Afrique"],
+["bobotie","Bobotie, gratin de bœuf épicé","F","boeuf",50,"","boeuf:110,oignon:40,curry:1,abricots:15,oeuf:0.5,lait:60,painmie:0.5,riz:45,salade:40",["Cuire bœuf et oignon avec curry, pain trempé et abricots hachés.","Verser dans un plat, couvrir d'œuf battu avec le lait.","Cuire 30 min à 180 °C. Servir avec riz et salade."],"f:Cuire la viande et monter le plat","Napper d'œuf et cuire 30 min.","Afrique du Sud","Afrique"],
+["chakalaka","Chakalaka et saucisses grillées","F","saucisse",35,"","saucisse:90,haricotsblancs:100,poivron:60,carotte:60,tomatecc:80,curry:0.5,baguette:40",["Faire revenir carottes râpées et poivrons avec le curry.","Ajouter tomates et haricots, mijoter 15 min.","Griller les saucisses, servir avec le pain."],"f:Cuire le chakalaka","Griller les saucisses, réchauffer.","Afrique du Sud","Afrique"],
+["koshari","Koshari égyptien","B","vege",40,"","lentillesvertes:40,riz:35,pates:30,poischiches:50,tomatecc:120,oignon:60,cumin:0.5,huile:0.25",["Cuire séparément lentilles, riz et petites pâtes.","Préparer une sauce tomate au cumin, dorer les oignons.","Superposer lentilles, riz, pâtes, pois chiches, sauce et oignons."],"f:Cuire lentilles, riz, sauce et oignons","Cuire les pâtes, assembler.","Égypte","Afrique"],
+["sukuma","Sukuma wiki, chou sauté, polenta et œufs","B","oeuf",30,"","chou:150,epinards:80,tomate:80,oignon:30,polenta:50,oeuf:1.5",["Faire revenir oignon et tomates, ajouter chou émincé et épinards.","Cuire la polenta.","Servir avec des œufs au plat."],"c:Émincer le chou","Sauter les légumes, cuire polenta et œufs.","Kenya","Afrique"],
+["rougail","Rougail saucisses léger, riz","F","saucisse",40,"P","saucisse:100,tomatecc:150,oignon:40,gingembre:0.25,piment:0.25,riz:50,haricotsrouges:60",["Couper les saucisses, les dorer.","Ajouter oignon, gingembre et tomates, mijoter 25 min.","Servir avec riz et haricots rouges."],"f:Cuire le rougail","Réchauffer, réchauffer le riz.","La Réunion","Afrique"],
+["cari","Cari de poulet réunionnais","F","poulet",40,"","poulet:120,tomate:100,oignon:40,curry:1,gingembre:0.25,riz:50,haricotsrouges:60",["Dorer le poulet avec oignon, curry et gingembre.","Ajouter les tomates, mijoter 25 min.","Servir avec riz et grains (haricots rouges)."],"f:Cuire le cari","Réchauffer, réchauffer le riz.","La Réunion","Afrique"],
+// ===== AMÉRIQUES =====
+["pastor","Tacos al pastor, porc à l'ananas","F","porc",30,"P","porc:100,ananas:50,paprika:0.5,cumin:0.5,tortillas:2,oignon:20,persil:0.25,citronvert:0.25,chou:40",["Mariner le porc émincé avec épices.","Le saisir avec l'ananas en dés.","Garnir les tortillas, ajouter oignon, coriandre, chou et citron vert."],"c:Mariner le porc|c:Émincer chou et oignon","Saisir le porc et l'ananas, garnir.","Mexique","Amériques"],
+["pozole","Pozole rouge au poulet","B","poulet",40,"","poulet:100,mais:80,tomatecc:80,paprika:0.5,bouillon:0.5,chou:50,citronvert:0.25,tortillas:1",["Pocher le poulet 20 min dans le bouillon, l'effilocher.","Ajouter tomates, paprika et maïs, mijoter 10 min.","Servir garni de chou, citron vert et tortillas grillées."],"f:Cuire le pozole complet|c:Émincer le chou","Réchauffer, garnir.","Mexique","Amériques"],
+["tinga","Tostadas de tinga de poulet","F","poulet",35,"","poulet:100,tomatecc:100,oignon:40,paprika:0.5,tortillas:2,haricotsnoirs:50,salade:30,fromageblanc:30",["Pocher et effilocher le poulet.","Le mijoter avec oignon, tomates et paprika.","Griller les tortillas, garnir de haricots, tinga, salade et fromage blanc."],"f:Cuire la tinga de poulet","Griller les tortillas, garnir.","Mexique","Amériques"],
+["rancheros","Huevos rancheros","B","oeuf",20,"","oeuf:2,haricotsnoirs:80,tomatecc:100,oignon:20,tortillas:1,avocat:0.25,persil:0.25",["Cuire une sauce tomate à l'oignon.","Chauffer tortillas et haricots, cuire les œufs au plat.","Garnir les tortillas de haricots, œufs, sauce, avocat et coriandre."],"f:Préparer la sauce tomate","Cuire les œufs, assembler.","Mexique","Amériques"],
+["bowlmexicain","Bowl patate douce et haricots noirs","L","vege",30,"","patatedouce:150,haricotsnoirs:100,mais:40,avocat:0.25,citronvert:0.25,fromageblanc:30,cumin:0.5,salade:30",["Rôtir la patate douce en cubes avec le cumin.","Réchauffer haricots et maïs.","Assembler avec avocat, salade, fromage blanc et citron vert."],"o:Rôtir la patate douce","Assembler les bols.","Mexique","Amériques"],
+["jambalaya","Jambalaya poulet-crevettes","F","poulet",40,"","poulet:70,crevettes:50,saucisse:20,riz:55,poivron:70,tomatecc:80,oignon:30,paprika:0.5,piment:0.25",["Dorer poulet et saucisse, ajouter oignon et poivron.","Ajouter riz, tomates, épices et 2 fois le volume du riz en eau.","Cuire 18 min, ajouter les crevettes 4 min."],"f:Cuire le jambalaya sans les crevettes","Réchauffer, ajouter les crevettes.","Louisiane","Amériques"],
+["pulled","Pulled chicken barbecue, coleslaw","F","poulet",40,"P","poulet:130,ketchup:1,miel:0.5,paprika:0.5,painburger:1,chou:80,carotte:40,yaourt:30",["Pocher le poulet 20 min, l'effilocher.","Le mijoter 10 min avec ketchup, miel et paprika.","Garnir les pains, servir avec chou et carotte râpés au yaourt."],"f:Cuire le poulet effiloché barbecue|c:Préparer le coleslaw","Réchauffer, garnir les pains.","États-Unis","Amériques","Le burger effiloché des ados."],
+["whitechili","Chili blanc au poulet","F","poulet",35,"","poulet:110,haricotsblancs:100,mais:40,bouillon:0.5,cumin:0.5,fromagefrais:20,oignon:30,riz:30",["Faire revenir oignon et poulet en dés avec le cumin.","Ajouter bouillon, haricots et maïs, mijoter 20 min.","Lier au fromage frais. Servir avec un peu de riz."],"f:Cuire le chili complet","Réchauffer.","États-Unis","Amériques"],
+["cobb","Salade Cobb","L","poulet",20,"","poulet:90,oeuf:1,avocat:0.25,tomate:80,salade:80,lardons:15,feta:15",["Griller le poulet et les lardons, cuire l'œuf dur.","Disposer en bandes sur la salade : poulet, œuf, avocat, tomate, lardons, fromage.","Assaisonner au dernier moment."],"f:Griller poulet et lardons, cuire les œufs","Assembler la salade.","États-Unis","Amériques"],
+["cajun","Saumon cajun, maïs et patate douce","F","saumon",30,"","saumon:120,paprika:0.5,piment:0.25,mais:60,patatedouce:150,haricotsverts:80",["Rôtir la patate douce en cubes 25 min.","Frotter le saumon d'épices, cuire 12 min au four.","Servir avec maïs et haricots verts."],"o:Rôtir les patates douces","Cuire le saumon 12 min, réchauffer les légumes.","États-Unis","Amériques"],
+["meatloaf","Pain de viande à l'américaine, purée","F","boeuf",60,"P","boeuf:110,oeuf:0.25,chapelure:10,ketchup:0.5,oignon:20,pdt:180,lait:40,haricotsverts:80",["Mélanger bœuf, œuf, chapelure et oignon, mouler en pain.","Napper de ketchup, cuire 40 min à 180 °C.","Servir en tranches avec purée et haricots verts."],"f:Préparer et cuire le pain de viande, la purée","Réchauffer en tranches.","États-Unis","Amériques"],
+["patechinois","Pâté chinois québécois","F","boeuf",45,"","boeuf:100,mais:70,pdt:180,lait:40,oignon:30",["Cuire le bœuf avec l'oignon, l'étaler dans un plat.","Couvrir de maïs, puis de purée.","Gratiner 20 min à 200 °C."],"f:Cuire viande et purée, monter le plat","Gratiner 25 min.","Québec","Amériques","Le hachis parmentier version Québec, avec du maïs."],
+["feijoada","Feijoada légère, riz et chou","F","porc",60,"","porc:80,saucisse:30,haricotsnoirs:130,oignon:40,ail:0.5,riz:45,chou:60",["Dorer porc et saucisse en morceaux avec oignon et ail.","Ajouter haricots et un peu d'eau, mijoter 40 min.","Servir avec riz et chou sauté."],"f:Cuire la feijoada","Réchauffer, sauter le chou.","Brésil","Amériques"],
+["moqueca","Moqueca de poisson au lait de coco","F","colin",35,"","colin:140,coco:60,tomate:100,poivron:80,oignon:30,citronvert:0.25,persil:0.25,riz:50",["Disposer en couches oignon, poivron et tomate dans une cocotte.","Ajouter le poisson mariné au citron vert et le lait de coco.","Cuire 15 min à couvert. Servir avec le riz."],"c:Émincer oignon, poivron et tomates|f:Cuire la base de légumes au coco","Réchauffer la base, y cuire le poisson 10 min.","Brésil","Amériques"],
+["lomo","Lomo saltado, bœuf sauté péruvien","F","rumsteck",30,"","rumsteck:110,tomate:100,oignon:60,soja:1,pdt:150,huile:0.5,riz:30",["Rôtir des frites au four.","Saisir le bœuf émincé à feu vif, ajouter oignon et tomates en quartiers, puis le soja.","Mélanger avec les frites, servir avec un peu de riz."],"c:Tailler les frites, émincer le bœuf","Frites au four, sauter le bœuf 5 min.","Pérou","Amériques"],
+["cevichecuit","Ceviche de crevettes cuites, patate douce","L","crevettes",20,"","crevettes:110,citronvert:0.75,oignon:20,mais:40,patatedouce:120,persil:0.25,avocat:0.2",["Cuire la patate douce en rondelles.","Mariner les crevettes cuites dans le citron vert avec oignon émincé.","Servir avec maïs, patate douce, avocat et coriandre."],"f:Cuire la patate douce|c:Émincer l'oignon","Mariner les crevettes 10 min, assembler.","Pérou","Amériques"],
+["ajigallina","Ají de gallina léger","F","poulet",40,"","poulet:120,lait:80,painmie:1,paprika:0.5,piment:0.25,parmesan:10,oeuf:0.5,riz:45,pdt:80",["Pocher le poulet et l'effilocher.","Mixer pain trempé dans le lait, paprika et parmesan, chauffer cette sauce.","Ajouter le poulet. Servir avec riz, pommes de terre et œuf dur."],"f:Cuire le poulet en sauce","Réchauffer, servir.","Pérou","Amériques"],
+["arepas","Arepas au poulet et avocat","F","poulet",35,"P","farinemais:60,poulet:90,avocat:0.25,tomate:50,haricotsnoirs:50",["Mélanger farine de maïs, eau tiède et sel, former des galettes épaisses.","Les cuire 6 min par face à la poêle.","Les ouvrir et les garnir de poulet effiloché, avocat, tomate et haricots."],"f:Cuire et effilocher le poulet|g:Former les galettes et les congeler","Cuire les arepas, garnir.","Venezuela","Amériques"],
+["empanadas","Empanadas au bœuf, salade","F","boeuf",45,"P","patepizza:70,boeuf:80,oignon:30,poivron:40,oeuf:0.3,cumin:0.5,paprika:0.5,salade:60",["Cuire bœuf, oignon et poivron avec les épices.","Découper la pâte en disques, garnir, souder en chaussons.","Dorer à l'œuf, cuire 20 min à 200 °C."],"g:Garnir et congeler les empanadas crues","Cuire 25 min à 200 °C.","Argentine","Amériques"],
+["chimichurri","Steak sauce chimichurri, patates douces","F","rumsteck",30,"","rumsteck:130,persil:0.5,ail:0.5,huile:0.5,citron:0.25,patatedouce:180,salade:50",["Rôtir la patate douce en quartiers.","Hacher persil et ail, mélanger avec huile et citron.","Griller le steak, le trancher, napper de chimichurri."],"o:Rôtir les patates douces|c:Préparer le chimichurri","Griller le steak.","Argentine","Amériques"],
+["choclo","Pastel de choclo, gratin de maïs","F","boeuf",50,"","boeuf:90,poulet:40,mais:120,oignon:40,oeuf:0.5,lait:30,cumin:0.5",["Cuire le bœuf et le poulet avec l'oignon et le cumin.","Mixer le maïs avec le lait.","Étaler la viande, ajouter l'œuf dur, couvrir de maïs, gratiner 25 min."],"f:Cuire la viande, mixer le maïs, monter le plat","Gratiner 30 min.","Chili","Amériques"],
+["jerk","Poulet jerk, riz aux haricots","F","cuisse",50,"","cuisse:170,piment:0.25,cannelle:0.25,miel:0.25,citronvert:0.25,riz:45,haricotsrouges:60,coco:20",["Mariner le poulet avec épices, miel et citron vert.","Rôtir 35 min à 200 °C.","Cuire le riz avec haricots et lait de coco."],"c:Mariner le poulet|f:Cuire le riz aux haricots","Rôtir le poulet 35 min.","Jamaïque","Amériques"],
+["colombo","Colombo de poulet antillais","F","poulet",45,"","poulet:120,pdt:100,courgette:100,curry:1,oignon:30,citronvert:0.25,riz:40",["Dorer le poulet avec oignon et colombo.","Ajouter pommes de terre, courgettes et eau à mi-hauteur.","Mijoter 30 min, finir au citron vert. Servir avec le riz."],"f:Cuire le colombo","Réchauffer, réchauffer le riz.","Antilles","Amériques"],
+["ropavieja","Ropa vieja, bœuf effiloché cubain","F","paleron",150,"","paleron:120,poivron:100,tomatecc:100,oignon:40,cumin:0.5,riz:45,haricotsnoirs:60",["Cuire le bœuf 2 h dans l'eau, l'effilocher.","Faire revenir poivrons et oignon, ajouter tomates, cumin et bœuf.","Mijoter 15 min. Servir avec riz et haricots noirs."],"f:Cuire et effilocher le bœuf","Réchauffer, servir.","Cuba","Amériques"],
+// ===== EUROPE =====
+["saltimbocca","Saltimbocca de dinde, polenta crémeuse","F","dinde",30,"","dinde:130,jambon:20,herbes:0.5,polenta:50,lait:50,epinards:80,parmesan:8",["Couvrir chaque escalope de jambon et d'herbes, la poêler 3 min par face.","Cuire la polenta dans le lait et l'eau, ajouter le parmesan.","Servir avec les épinards poêlés."],"c:Préparer les escalopes au jambon","Poêler la dinde, cuire la polenta.","Italie","Europe"],
+["norma","Pâtes alla norma","F","vege",30,"","pates:65,aubergine:150,tomatecc:120,ricotta:30,ail:0.5,huile:0.5",["Rôtir les aubergines en dés 20 min.","Cuire une sauce tomate à l'ail, ajouter les aubergines.","Mélanger aux pâtes, servir avec la ricotta."],"o:Rôtir les aubergines|f:Cuire la sauce","Cuire les pâtes, réchauffer la sauce.","Italie","Europe"],
+["polpette","Polpette et polenta crémeuse","F","boeuf",40,"","boeuf:100,parmesan:8,chapelure:10,oeuf:0.2,tomatecc:150,polenta:45,lait:50",["Former des boulettes avec bœuf, parmesan, chapelure et œuf.","Les mijoter 20 min dans la sauce tomate.","Servir sur la polenta crémeuse."],"f:Cuire les boulettes en sauce","Réchauffer, cuire la polenta.","Italie","Europe"],
+["gemista","Gemista, légumes farcis à la grecque","F","boeuf",60,"","tomate:200,poivron:150,riz:40,boeuf:60,oignon:20,persil:0.25,huile:0.25,feta:15",["Évider tomates et poivrons.","Mélanger riz cru, bœuf, oignon, persil et chair de tomate.","Farcir, cuire 45 min à 180 °C, émietter la feta."],"c:Évider les légumes|f:Préparer la farce, farcir","Cuire 45 min.","Grèce","Europe"],
+["grecque","Salade grecque au poulet grillé","L","poulet",20,"","poulet:100,tomate:100,concombre:100,feta:30,olives:15,oignon:15,huile:0.5,pita:0.5",["Griller le poulet.","Couper tomates, concombre et oignon.","Assembler avec feta et olives, servir avec la pita."],"f:Griller le poulet|c:Couper les légumes","Assembler.","Grèce","Europe"],
+["bravas","Patatas bravas légères et poulet","F","poulet",40,"P","pdt:200,huile:0.5,paprika:1,tomatecc:60,piment:0.25,poulet:100,salade:50",["Rôtir les pommes de terre en cubes 30 min avec huile et paprika.","Préparer une sauce tomate relevée.","Griller le poulet, servir avec sauce et salade."],"c:Couper les pommes de terre|f:Préparer la sauce brava","Rôtir les patatas, griller le poulet.","Espagne","Europe"],
+["bras","Bacalhau à Brás façon colin","F","colin",30,"","colin:130,pdt:150,oeuf:1,oignon:40,olives:10,persil:0.25,huile:0.5",["Pocher le colin et l'émietter.","Faire dorer allumettes de pommes de terre et oignon.","Ajouter poisson et œufs battus, cuire en remuant. Garnir d'olives et persil."],"c:Tailler les pommes de terre en allumettes","Cuire 20 min.","Portugal","Europe"],
+["schnitzel","Schnitzel de dinde, salade de pommes de terre","F","dinde",35,"P","dinde:120,chapelure:15,oeuf:0.25,pdt:180,yaourt:30,moutarde:0.25,concombre:60",["Paner les escalopes, les cuire 15 min au four.","Cuire les pommes de terre, les couper.","Les mélanger avec yaourt, moutarde et concombre."],"g:Paner les escalopes et les congeler|f:Préparer la salade de pommes de terre","Cuire les schnitzels 20 min.","Allemagne","Europe"],
+["goulash","Goulash hongrois","F","paleron",120,"","paleron:120,poivron:100,oignon:60,paprika:1.5,tomatecc:60,pdt:150,bouillon:0.5",["Dorer le bœuf avec les oignons.","Ajouter paprika, tomates, poivrons et bouillon, mijoter 1 h 30.","Ajouter les pommes de terre 30 min avant la fin."],"f:Cuire le goulash complet","Réchauffer.","Hongrie","Europe"],
+["bigos","Bigos, chou mijoté aux saucisses","F","saucisse",50,"","saucisse:90,chou:220,champignons:60,tomatecc:60,oignon:30,pdt:120,paprika:0.5",["Faire revenir oignon et saucisses en rondelles.","Ajouter chou émincé, champignons et tomates.","Mijoter 35 min. Servir avec des pommes de terre."],"c:Émincer le chou|f:Cuire le bigos","Réchauffer.","Pologne","Europe"],
+["bortsch","Bortsch, soupe de betterave","B","vege",45,"","betterave:150,chou:80,carotte:60,pdt:100,oignon:30,tomatecc:40,creme:15,baguette:40,haricotsblancs:50",["Faire revenir oignon et carotte.","Ajouter chou, pommes de terre, tomates et eau, cuire 25 min.","Ajouter betterave râpée et haricots 10 min. Servir avec la crème."],"c:Râper betterave et carotte|f:Cuire le bortsch","Réchauffer.","Ukraine","Europe"],
+["stroganoff","Bœuf Stroganoff léger, riz","F","rumsteck",25,"","rumsteck:110,champignons:120,oignon:40,creme:25,moutarde:0.25,paprika:0.5,riz:50",["Saisir le bœuf en lanières, réserver.","Faire revenir oignon et champignons, ajouter crème, moutarde et paprika.","Remettre le bœuf 1 min. Servir avec le riz."],"c:Émincer bœuf et champignons|f:Préparer la sauce","Saisir le bœuf, réchauffer la sauce.","Russie","Europe"],
+["kottbullar","Köttbullar, boulettes suédoises","F","boeuf",35,"P","boeuf:100,chapelure:10,oeuf:0.2,creme:15,bouillon:0.25,pdt:180,lait:30,haricotsverts:80",["Former de petites boulettes, les dorer.","Déglacer avec bouillon et crème.","Servir avec purée et haricots verts."],"f:Cuire boulettes et purée","Réchauffer.","Suède","Europe","Façon magasin de meubles suédois, en mieux."],
+["fishchips","Fish and chips au four","F","colin",40,"P","colin:140,cornflakes:20,oeuf:0.25,pdt:200,huile:0.5,petitspois:80,citron:0.25",["Rôtir les frites 35 min à 210 °C.","Paner le poisson, le cuire 15 min.","Servir avec petits pois écrasés et citron."],"c:Tailler les frites|c:Écraser les corn flakes","Frites au four, paner et cuire le poisson.","Royaume-Uni","Europe"],
+["irishstew","Irish stew, ragoût d'agneau","F","agneau",90,"","agneau:100,pdt:180,carotte:100,oignon:40,poireau:60,bouillon:0.5",["Dorer l'agneau en cubes.","Ajouter légumes et bouillon.","Mijoter 1 h 15."],"f:Cuire le ragoût complet","Réchauffer.","Irlande","Europe"],
+["waterzooi","Waterzooi de poulet","F","poulet",45,"","poulet:120,poireau:100,carotte:80,pdt:120,creme:20,bouillon:0.5,persil:0.25",["Pocher le poulet 20 min dans le bouillon avec les légumes en julienne.","Ajouter les pommes de terre 15 min.","Lier à la crème, parsemer de persil."],"f:Cuire le waterzooi sans la crème","Réchauffer, ajouter la crème.","Belgique","Europe"],
+["stoemp","Stoemp aux poireaux et saucisse","F","saucisse",35,"","saucisse:90,pdt:180,poireau:120,lait:40,moutarde:0.25",["Cuire pommes de terre et poireaux, écraser avec le lait.","Dorer les saucisses.","Servir avec la moutarde."],"f:Cuire le stoemp","Dorer les saucisses, réchauffer.","Belgique","Europe"],
+["rosti","Rösti, œuf et salade","B","oeuf",30,"","pdt:220,oignon:20,huile:0.5,oeuf:1,salade:60,emmental:15",["Râper les pommes de terre et l'oignon, bien presser.","Cuire en galettes 8 min par face.","Servir avec un œuf au plat, l'emmental et la salade."],"c:Râper et presser les pommes de terre (garder au frais)","Cuire les rösti.","Suisse","Europe"],
+["khachapuri","Khachapuri, pain au fromage et œuf","F","vege",35,"P","patepizza:80,mozza:40,feta:20,oeuf:1,salade:60",["Façonner la pâte en barque, garnir de fromages.","Cuire 12 min à 230 °C.","Casser un œuf au centre, cuire encore 3 min."],"","Façonner, garnir et cuire 15 min.","Géorgie","Europe","Une pizza-bateau avec un œuf au milieu."],
+["smorrebrod","Smørrebrød saumon-œuf","L","saumon",20,"","saumon:70,painmie:2,oeuf:1,fromagefrais:20,concombre:60,persil:0.25",["Cuire le saumon et l'émietter, cuire l'œuf dur.","Tartiner le pain de fromage frais.","Garnir de concombre, saumon, œuf et aneth."],"f:Cuire saumon et œufs (à manger sous 2 jours)","Garnir les tartines.","Danemark","Europe"],
+// ===== OCÉANIE =====
+["aussieburger","Burger australien betterave-ananas-œuf","F","boeuf",35,"P","boeuf:110,painburger:1,betterave:40,ananas:30,oeuf:1,salade:15,tomate:40,patatedouce:120,huile:0.25",["Rôtir des frites de patate douce 25 min.","Cuire steaks et œufs au plat.","Monter les burgers avec betterave, ananas, œuf, salade et tomate."],"c:Tailler les frites de patate douce|g:Façonner les steaks et les congeler","Frites au four, cuire steaks et œufs, monter.","Australie","Océanie","Le burger le plus fou du monde."],
+["barramundi","Poisson grillé, salade de mangue","F","colin",25,"","colin:140,mangue:60,salade:60,concombre:60,citronvert:0.25,riz:45",["Couper mangue et concombre, mélanger à la salade et au citron vert.","Griller le poisson 4 min par face.","Servir avec le riz."],"c:Préparer la salade de mangue","Griller le poisson, réchauffer le riz.","Australie","Océanie"],
+["agneaunz","Agneau rôti, kumara et petits pois à la menthe","F","agneau",45,"","agneau:110,patatedouce:180,petitspois:80,menthe:0.25,ail:0.5,huile:0.25",["Rôtir l'agneau et la patate douce 35 min.","Cuire les petits pois, les écraser à la menthe.","Trancher l'agneau, servir."],"c:Couper les patates douces","Rôtir 35 min, cuire les petits pois.","Nouvelle-Zélande","Océanie"],
+["tahitienne","Salade de crevettes coco-citron vert","L","crevettes",20,"","crevettes:110,coco:40,citronvert:0.5,concombre:80,tomate:60,oignon:15,riz:45",["Mariner les crevettes cuites dans le citron vert.","Ajouter concombre, tomate, oignon et lait de coco.","Servir bien frais avec le riz."],"c:Couper les légumes","Mariner et assembler.","Polynésie","Océanie"],
+["huli","Poulet huli-huli, riz et ananas","F","poulet",35,"P","poulet:120,ananas:70,soja:1,miel:0.5,ketchup:0.25,gingembre:0.25,riz:50,poivron:60",["Mariner le poulet dans soja, miel, ketchup et gingembre.","Le griller 15 min avec ananas et poivron.","Servir avec le riz."],"c:Mariner le poulet","Griller 15 min, réchauffer le riz.","Hawaï","Océanie"],
+["kokoda","Kokoda, poisson au coco","F","colin",30,"","colin:130,coco:60,citronvert:0.5,tomate:60,poivron:50,oignon:20,patatedouce:150",["Cuire la patate douce.","Pocher le poisson 6 min dans le lait de coco.","Ajouter tomate, poivron, oignon et citron vert."],"c:Couper les légumes|f:Cuire la patate douce","Pocher le poisson, assembler.","Fidji","Océanie"],
+["pumpkinsoup","Soupe de potiron à l'australienne, pain grillé","B","vege",35,"","potiron:250,oignon:30,coco:20,bouillon:0.25,baguette:50,pdt:60",["Rôtir le potiron en morceaux 25 min.","Le mixer avec oignon fondu, pomme de terre cuite, bouillon et lait de coco.","Servir avec le pain grillé."],"o:Rôtir le potiron|f:Mixer la soupe","Réchauffer.","Australie","Océanie"]
+];
+W_.forEach(([id,n,f,p,t,tag,ing,st,bc,j,pays,reg,kid])=>{
+  const r={id,n,for:f==="B"?["fam","l2"]:f==="L"?["l2"]:["fam"],p,t,ing:ing.split(",").map(x=>{const[a,b]=x.split(":");return[a,+b]}),st,pays,reg};
+  if(tag==="P")r.tag="plaisir"; if(kid)r.kid=kid;
+  R.push(r);RB[id]=r;
+  BC[id]={t:bc?bc.split("|").map(x=>[PO[x[0]],x.slice(2)]):[],j};
+});
+R.forEach(r=>{if(!r.reg){const o=ORIG[r.id]||["France","France"];r.pays=o[0];r.reg=o[1]}});
+const REGIONS=["France","Europe","Moyen-Orient","Afrique","Asie","Amériques","Océanie"];
+
+// ---------- Illustrations : chaque plat est dessiné à partir de ses ingrédients et de sa région ----------
+const ART=(()=>{
+  // forme, couleur(s) de chaque ingrédient
+  const A={
+    poulet:["chunk","#E9C79C"],cuisse:["chunk","#C8874A"],dinde:["chunk","#EBD3AE"],boeuf:["mince","#7A4A33"],porc:["chunk","#D9A47E"],
+    jambon:["strip","#EE9F98"],lardons:["chunk","#D98478",0.55],saucisse:["sausage","#B4643E"],paleron:["chunk","#6B3A27"],rumsteck:["strip","#8A4634"],
+    agneau:["chunk","#8B4F37"],saumon:["chunk","#F2896A"],cabillaud:["chunk","#F6F1E7"],colin:["chunk","#F4EEE2"],crevettes:["shrimp","#F39A76"],
+    thon:["mince","#C9A381"],tofu:["chunk","#F2E9D2"],oeuf:["egg","#FFFFFF"],lentilles:["grain","#DE7B3E"],lentillesvertes:["grain","#6E6B3B"],
+    poischiches:["round","#E2BF79",6],haricotsrouges:["round","#8A2D2A",5],haricotsblancs:["round","#EFE6D3",5],haricotsnoirs:["round","#2C2427",5],
+    courgette:["slice","#5E9137","#E3ECB4"],brocoli:["floret","#4A7D2B"],champignons:["mushroom","#CDB596"],poivron:["strip",["#D9392A","#F2B331","#4E8A35"]],
+    epinards:["leaf","#3E6D29"],carotte:["slice","#EF8722","#F6B565"],haricotsverts:["bean","#5B8E2D"],choufleur:["floret","#F2ECDA"],tomate:["slice","#E0412F","#F07C5C"],
+    poireau:["ring","#CFE0A6"],potiron:["chunk","#F09B3E"],salade:["leaf","#8CBF4C"],concombre:["slice","#8DBA5C","#E4F0C4"],avocat:["avo","#9BBE58"],
+    mais:["round","#F4C542",3.5],oignon:["ring","#EBDDE6"],citron:["wedge","#F4D447"],citronvert:["wedge","#93C23A"],persil:["herb","#4E8A39"],menthe:["herb","#62A65A"],
+    pdt:["chunk","#F2D196",0.8],patatedouce:["chunk","#E8853A",0.8],riz:["grain","#FBF8F1"],pates:["pasta","#DDB06C"],nouilles:["noodle","#F1DBA1"],
+    quinoa:["grain","#E9D9AE"],semoule:["grain","#EFD38A"],boulgour:["grain","#CFAD6D"],polenta:["mash","#F2C94F"],gnocchis:["round","#F0D79F",7],
+    tortillas:["bread","#EBC98A"],pita:["bread","#E8C083"],painburger:["bun","#C4843B"],painmie:["toast","#D9A35A"],baguette:["toast","#D59A50"],
+    galette:["bread","#8A5831"],brick:["bread","#E6B866"],feuillesriz:["roll","#F2EEE3"],pateravioli:["dumpling","#F1E8D5"],farinemais:["bread","#EAC877"],
+    emmental:["cheese","#F6DF86"],parmesan:["cheese","#F2E5B4"],mozza:["patch","#FBF6E8"],feta:["cube","#FAF7EE"],cheddar:["patch","#F2A93B"],
+    reblochon:["patch","#F1DCA3"],chevre:["patch","#FBF7EC"],ricotta:["dollop","#FFFBF4"],halloumi:["chunk","#EFDDAE"],fromageblanc:["dollop","#FFFFFF"],
+    yaourt:["dollop","#FFFFFF"],fromagefrais:["dollop","#FFFDF6"],ananas:["chunk","#F7D04A",0.6],mangue:["chunk","#F7A733",0.6],pomme:["slice","#F2E2AE","#FBF2D6"],
+    plantain:["slice","#E6A23A","#F2C76E"],betterave:["chunk","#8C1E3E",0.7],chou:["shred","#D7E5B5"],endive:["leaf","#EFECC4"],aubergine:["slice","#4A2A4E","#E5D3AF"],
+    petitspois:["round","#7DB93B",3.5],pousses:["shred","#F3EFDA"],cacahuete:["nut","#C68F57"],cajou:["nut","#E8D1A6"],amandes:["nut","#E8D7B4"],abricots:["chunk","#EA9638",0.5],
+    olives:["round","#3B3524",4],sesame:["seed","#F2E6C6"]
+  };
+  const REGION={
+    "France":{bg:"#E9E1D2",tex:"check",tc:"#B8A88D",bowl:"#F4EFE6"},
+    "Europe":{bg:"#CDB08A",tex:"wood",tc:"#A88A63",bowl:"#F1ECE3"},
+    "Moyen-Orient":{bg:"#C97D55",tex:"tile",tc:"#E9B28F",bowl:"#2F6E8C"},
+    "Afrique":{bg:"#D49A3C",tex:"wax",tc:"#8E4B1C",bowl:"#7A3E1D"},
+    "Asie":{bg:"#2E3B3A",tex:"mat",tc:"#465756",bowl:"#1E2627"},
+    "Amériques":{bg:"#3D8987",tex:"dots",tc:"#F1D27A",bowl:"#F3EDE2"},
+    "Océanie":{bg:"#E6D3AE",tex:"sand",tc:"#C9B184",bowl:"#2F7F9A"}
+  };
+  const hash=s=>{let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0};
+  const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+  const shade=(hex,a)=>{let n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;const f=x=>Math.max(0,Math.min(255,Math.round(a<0?x*(1+a):x+(255-x)*a)));return "rgb("+f(r)+","+f(g)+","+f(b)+")"};
+  const has=(r,id)=>r.ing.some(([x])=>x===id);
+
+  function formOf(r){
+    const n=r.n.toLowerCase();
+    if(/velouté|soupe|ramen|pho|laksa|harira|bortsch|minestrone|pozole/.test(n))return "soup";
+    if(/pizza|tarte|flammekueche|pide|khachapuri|quiche|tortilla espagnole|frittata|omelette|rösti|galettes/.test(n))return "flat";
+    if(/wrap|tacos|fajitas|pita|shawarma|banh mi|burger|quesadillas|arepas|empanadas|rouleaux|croque|smørrebrød|tostadas|briks|gyozas|falafel|pulled|cordon bleu/.test(n))return "board";
+    if(/gratin|lasagne|hachis|parmentier|moussaka|endives|cassoulet|dauphinois|bobotie|pastel|pâté chinois|tartiflette|pastilla|pain de viande|enchiladas|lorraine/.test(n))return "gratin";
+    if(/curry|dahl|chili|goulash|ragoût|stew|tajine|mafé|waterzooi|bowl|bol |poke|bibimbap|oyakodon|feijoada|moqueca|khoresh|colombo|cari|rendang|chana|blanquette|biryani|koshari|mujaddara|jollof|rougail|bigos|potée|mijoté|carbonade|stroganoff|kokoda|yassa|adobo|thiéboudienne|risotto|paella|jambalaya|ropa|dorowat|ragout|épinards au curry|butter/.test(n))return "bowl";
+    return "plate";
+  }
+  function liquidOf(r){
+    const n=r.n.toLowerCase();
+    if(has(r,"betterave"))return "#9B2346";
+    if(/velouté|soupe/.test(n)&&(has(r,"potiron")))return "#EE973D";
+    if(/velouté/.test(n)&&(has(r,"brocoli")||has(r,"epinards")))return "#86AD4A";
+    if(/velouté/.test(n)&&has(r,"poireau"))return "#E3E3BE";
+    if(has(r,"epinards")&&/curry|palak|épinards/.test(n))return "#4F7A2E";
+    if(has(r,"beurrecacahuete"))return "#B9743B";
+    if((has(r,"curry")||has(r,"patecurry"))&&has(r,"coco"))return has(r,"tomatecc")?"#E3934A":"#EBC56E";
+    if(has(r,"tomatecc")&&(has(r,"creme")||has(r,"yaourt")))return "#D9774A";
+    if(has(r,"tomatecc"))return "#C3402C";
+    if(has(r,"curry"))return "#E0A43C";
+    if(has(r,"lentilles"))return "#DD8840";
+    if(has(r,"coco")||has(r,"creme")||has(r,"lait"))return "#F1E6CF";
+    if(has(r,"soja"))return "#8A5A2E";
+    return "#D7A85E";
+  }
+
+  // ---------- primitives ----------
+  function texture(c,w,h,reg,R){
+    c.fillStyle=reg.bg;c.fillRect(0,0,w,h);
+    c.save();c.globalAlpha=0.35;c.strokeStyle=reg.tc;c.fillStyle=reg.tc;
+    if(reg.tex==="check"){c.lineWidth=w/22;for(let x=0;x<w+40;x+=w/8){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}for(let y=0;y<h+40;y+=w/8){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke()}}
+    else if(reg.tex==="wood"){c.lineWidth=1.5;for(let y=0;y<h;y+=7+R()*9){c.beginPath();c.moveTo(0,y);for(let x=0;x<=w;x+=40)c.quadraticCurveTo(x+20,y+(R()-.5)*8,x+40,y);c.stroke()}c.globalAlpha=.2;c.lineWidth=2;for(let x=w/5;x<w;x+=w/5){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}}
+    else if(reg.tex==="mat"){c.lineWidth=2;for(let x=0;x<w;x+=6){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}c.globalAlpha=.25;for(let y=0;y<h;y+=46){c.fillRect(0,y,w,3)}}
+    else if(reg.tex==="tile"){const s=w/7;c.lineWidth=2;for(let x=-s;x<w+s;x+=s)for(let y=-s;y<h+s;y+=s){c.beginPath();c.moveTo(x,y+s/2);c.lineTo(x+s/2,y);c.lineTo(x+s,y+s/2);c.lineTo(x+s/2,y+s);c.closePath();c.stroke();c.beginPath();c.arc(x+s/2,y+s/2,s*.12,0,7);c.fill()}}
+    else if(reg.tex==="wax"){const s=w/6;c.lineWidth=3;for(let x=0;x<w+s;x+=s)for(let y=0;y<h+s;y+=s){for(let k=1;k<4;k++){c.beginPath();c.arc(x,y,s*.13*k,0,7);c.stroke()}}}
+    else if(reg.tex==="dots"){const s=w/9;for(let x=s/2;x<w;x+=s)for(let y=s/2;y<h;y+=s){c.beginPath();for(let k=0;k<4;k++){const a=k*Math.PI/2;c.ellipse(x+Math.cos(a)*5,y+Math.sin(a)*5,4,2,a,0,7)}c.fill()}}
+    else{for(let i=0;i<900;i++){c.fillRect(R()*w,R()*h,1.6,1.6)}}
+    c.restore();
+  }
+  function shadowed(c,R0,fn){c.save();c.shadowColor="rgba(0,0,0,.32)";c.shadowBlur=R0*.22;c.shadowOffsetY=R0*.08;fn();c.restore()}
+  function circle(c,x,y,r,fill){c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fillStyle=fill;c.fill()}
+  const pickCol=(col,R)=>Array.isArray(col)?col[Math.floor(R()*col.length)]:col;
+
+  function piece(c,shape,col,x,y,s,R,col2){
+    const a=R()*Math.PI*2;
+    c.save();c.translate(x,y);c.rotate(a);
+    const fill=pickCol(col,R);
+    switch(shape){
+      case "grain":c.fillStyle=fill;c.beginPath();c.ellipse(0,0,s*.38,s*.17,0,0,7);c.fill();c.strokeStyle=shade(fill,-.22);c.lineWidth=.7;c.stroke();break;
+      case "chunk":{const w=s*(1.5+R()*.5)*(col2||1),h=s*(1.05+R()*.4)*(col2||1);const g=c.createLinearGradient(0,-h/2,0,h/2);g.addColorStop(0,shade(fill,.25));g.addColorStop(1,shade(fill,-.18));c.fillStyle=g;c.beginPath();c.roundRect(-w/2,-h/2,w,h,s*.35);c.fill();c.strokeStyle=shade(fill,-.3);c.globalAlpha=.35;c.lineWidth=1.4;c.beginPath();c.moveTo(-w*.3,-h*.15);c.lineTo(w*.3,-h*.15);c.moveTo(-w*.3,h*.15);c.lineTo(w*.3,h*.15);c.stroke();break}
+      case "mince":for(let i=0;i<5;i++){c.fillStyle=shade(fill,(R()-.5)*.35);c.beginPath();c.arc((R()-.5)*s*1.2,(R()-.5)*s*1.2,s*(.16+R()*.14),0,7);c.fill()}break;
+      case "strip":{const w=s*2.3,h=s*.55;c.fillStyle=fill;c.beginPath();c.roundRect(-w/2,-h/2,w,h,h/2);c.fill();c.fillStyle=shade(fill,.3);c.globalAlpha=.5;c.fillRect(-w/2+3,-h/2+1,w-6,h*.3);break}
+      case "bean":{const w=s*2.6,h=s*.32;c.fillStyle=fill;c.beginPath();c.roundRect(-w/2,-h/2,w,h,h/2);c.fill();break}
+      case "sausage":{const w=s*3,h=s*.9;const g=c.createLinearGradient(0,-h/2,0,h/2);g.addColorStop(0,shade(fill,.2));g.addColorStop(1,shade(fill,-.25));c.fillStyle=g;c.beginPath();c.roundRect(-w/2,-h/2,w,h,h/2);c.fill();c.strokeStyle=shade(fill,-.4);c.lineWidth=1.5;for(let k=-1;k<=1;k++){c.beginPath();c.moveTo(k*w*.22-3,-h*.3);c.lineTo(k*w*.22+3,h*.3);c.stroke()}break}
+      case "shrimp":{c.strokeStyle=fill;c.lineWidth=s*.55;c.lineCap="round";c.beginPath();c.arc(0,0,s*.7,0.2,Math.PI*1.35);c.stroke();c.strokeStyle=shade(fill,.4);c.lineWidth=s*.18;c.beginPath();c.arc(0,0,s*.7,0.5,Math.PI*1.2);c.stroke();break}
+      case "round":{const r=(col2||s*.4);circle(c,0,0,r,fill);circle(c,-r*.3,-r*.3,r*.35,shade(fill,.35));break}
+      case "slice":{circle(c,0,0,s*.75,fill);circle(c,0,0,s*.58,col2||shade(fill,.4));if(col2){c.fillStyle=shade(fill,-.1);for(let k=0;k<5;k++){const b=k*1.25;c.beginPath();c.arc(Math.cos(b)*s*.25,Math.sin(b)*s*.25,1.3,0,7);c.fill()}}break}
+      case "ring":{c.strokeStyle=fill;c.lineWidth=s*.22;c.beginPath();c.arc(0,0,s*.6,0,7);c.stroke();c.strokeStyle=shade(fill,-.15);c.lineWidth=1;c.beginPath();c.arc(0,0,s*.4,0,7);c.stroke();break}
+      case "leaf":{const L=s*(1.4+R()*.6);c.fillStyle=fill;c.beginPath();c.moveTo(-L,0);c.quadraticCurveTo(0,-L*.7,L,0);c.quadraticCurveTo(0,L*.7,-L,0);c.fill();c.strokeStyle=shade(fill,-.25);c.lineWidth=1.2;c.beginPath();c.moveTo(-L*.8,0);c.lineTo(L*.8,0);c.stroke();break}
+      case "floret":{for(let k=0;k<7;k++){circle(c,(R()-.5)*s*1.1,(R()-.5)*s*1.1-s*.2,s*(.32+R()*.15),shade(fill,(R()-.5)*.3))}c.fillStyle=shade(fill,.25);c.fillRect(-s*.15,s*.1,s*.3,s*.6);break}
+      case "mushroom":{c.fillStyle=fill;c.beginPath();c.arc(0,0,s*.7,Math.PI,0);c.lineTo(s*.25,0);c.lineTo(s*.25,s*.55);c.lineTo(-s*.25,s*.55);c.lineTo(-s*.25,0);c.closePath();c.fill();c.strokeStyle=shade(fill,-.3);c.lineWidth=1;c.stroke();break}
+      case "avo":{c.fillStyle="#2F4A1F";c.beginPath();c.ellipse(0,0,s*1.5,s*.55,0,0,Math.PI);c.fill();c.fillStyle=fill;c.beginPath();c.ellipse(0,0,s*1.35,s*.42,0,0,Math.PI);c.fill();c.fillStyle="#DCE69A";c.beginPath();c.ellipse(0,s*.05,s*1,s*.22,0,0,Math.PI);c.fill();break}
+      case "wedge":{c.fillStyle=shade(fill,-.2);c.beginPath();c.arc(0,0,s*1.1,0,Math.PI);c.fill();c.fillStyle=shade(fill,.45);c.beginPath();c.arc(0,0,s*.95,0,Math.PI);c.fill();c.strokeStyle=shade(fill,.1);c.lineWidth=1.2;for(let k=1;k<4;k++){const b=k*Math.PI/4;c.beginPath();c.moveTo(0,0);c.lineTo(Math.cos(b)*s*.9,Math.sin(b)*s*.9);c.stroke()}break}
+      case "herb":c.fillStyle=fill;for(let k=0;k<3;k++){c.beginPath();c.ellipse((R()-.5)*s,(R()-.5)*s,s*.22,s*.12,R()*3,0,7);c.fill()}break;
+      case "seed":c.fillStyle=fill;c.beginPath();c.ellipse(0,0,s*.14,s*.08,0,0,7);c.fill();break;
+      case "cheese":c.strokeStyle=fill;c.lineWidth=s*.16;c.lineCap="round";c.beginPath();c.moveTo(-s*.4,0);c.quadraticCurveTo(0,-s*.25,s*.4,0);c.stroke();break;
+      case "patch":{c.fillStyle=fill;c.beginPath();for(let k=0;k<8;k++){const b=k/8*Math.PI*2,rr=s*(.75+R()*.35);k?c.lineTo(Math.cos(b)*rr,Math.sin(b)*rr):c.moveTo(Math.cos(b)*rr,Math.sin(b)*rr)}c.closePath();c.fill();c.fillStyle=shade(fill,-.12);c.globalAlpha=.5;circle(c,s*.2,s*.15,s*.18,shade(fill,-.15));break}
+      case "cube":{c.fillStyle=fill;c.fillRect(-s*.4,-s*.4,s*.8,s*.8);c.strokeStyle=shade(fill,-.12);c.lineWidth=1;c.strokeRect(-s*.4,-s*.4,s*.8,s*.8);break}
+      case "dollop":{c.fillStyle=fill;c.beginPath();for(let k=0;k<10;k++){const b=k/10*Math.PI*2,rr=s*(1+R()*.25);k?c.lineTo(Math.cos(b)*rr,Math.sin(b)*rr):c.moveTo(Math.cos(b)*rr,Math.sin(b)*rr)}c.closePath();c.fill();c.strokeStyle="rgba(0,0,0,.08)";c.lineWidth=2;c.beginPath();c.arc(0,0,s*.5,0.5,3);c.stroke();break}
+      case "nut":c.fillStyle=fill;c.beginPath();c.ellipse(0,0,s*.42,s*.24,0,0,7);c.fill();c.strokeStyle=shade(fill,-.25);c.lineWidth=.8;c.stroke();break;
+      case "shred":c.strokeStyle=fill;c.lineWidth=s*.16;c.lineCap="round";c.beginPath();c.moveTo(-s,0);c.quadraticCurveTo(0,s*.4*(R()-.5),s,0);c.stroke();break;
+      case "pasta":{c.strokeStyle=fill;c.lineWidth=s*.42;c.lineCap="round";c.beginPath();c.arc(0,0,s*.6,0,Math.PI*1.1);c.stroke();c.strokeStyle=shade(fill,.3);c.lineWidth=s*.12;c.beginPath();c.arc(0,0,s*.6,.3,Math.PI*.9);c.stroke();break}
+      case "noodle":{c.strokeStyle=fill;c.lineWidth=s*.22;c.lineCap="round";c.beginPath();c.moveTo(-s*2,0);c.bezierCurveTo(-s,-s*1.2,s,s*1.2,s*2,0);c.stroke();break}
+      case "egg":{c.fillStyle="#FFFFFF";c.beginPath();for(let k=0;k<12;k++){const b=k/12*Math.PI*2,rr=s*(1.6+R()*.4);k?c.lineTo(Math.cos(b)*rr,Math.sin(b)*rr):c.moveTo(Math.cos(b)*rr,Math.sin(b)*rr)}c.closePath();c.fill();circle(c,s*.1,0,s*.7,"#F2A21F");circle(c,-s*.12,-s*.18,s*.22,"#FAD27A");break}
+      case "mash":circle(c,0,0,s,fill);break;
+    }
+    c.restore();
+  }
+  // répartir des morceaux dans une zone circulaire
+  function scatter(c,R,shape,col,n,cx,cy,rad,s,col2){for(let i=0;i<n;i++){const a=R()*Math.PI*2,d=rad*Math.sqrt(R());piece(c,shape,col,cx+Math.cos(a)*d,cy+Math.sin(a)*d,s,R,col2)}}
+  const BASE=new Set(["riz","quinoa","semoule","boulgour","pates","nouilles","polenta","gnocchis"]);
+  const SKIP=new Set(["ail","huile","soja","miel","moutarde","ketchup","bouillon","curry","paprika","cumin","ras","herbes","maizena","chapelure","cornflakes","lait","creme","coco","tomatecc","lasagne","patepizza","cannelle","piment","gingembre","patecurry","miso","tahin","beurrecacahuete","pesto"]);
+
+  function food(c,r,R,cx,cy,rad,form){
+    const items=r.ing.filter(([id])=>!SKIP.has(id)&&A[id]);
+    const crisp=has(r,"cornflakes")||has(r,"chapelure");
+    const base=items.filter(([id])=>BASE.has(id));
+    const rest=items.filter(([id])=>!BASE.has(id)&&!["persil","menthe","sesame","citron","citronvert","emmental","parmesan","oeuf"].includes(id));
+    const s=rad*.15;
+    // base de féculent
+    if(base.length&&form!=="soup"){
+      const [id]=base[0],[sh,col]=A[id];
+      const bx=form==="bowl"?cx:cx-rad*.32,by=form==="bowl"?cy:cy+rad*.05,br=form==="bowl"?rad*.95:rad*.62;
+      if(sh==="grain"){for(let i=0;i<(form==="bowl"?240:170);i++){const a=R()*Math.PI*2,d=br*Math.sqrt(R());piece(c,"grain",col,bx+Math.cos(a)*d,by+Math.sin(a)*d,s*.9,R)}}
+      else if(sh==="mash"){circle(c,bx,by,br*.85,col);circle(c,bx-br*.2,by-br*.2,br*.3,shade(col,.25))}
+      else if(sh==="noodle"){for(let i=0;i<34;i++){const a=R()*Math.PI*2,d=br*.7*Math.sqrt(R());piece(c,"noodle",col,bx+Math.cos(a)*d,by+Math.sin(a)*d,s*1.2,R)}}
+      else scatter(c,R,sh,col,form==="bowl"?40:30,bx,by,br*.85,s*1.1,A[id][2]);
+    }
+    // sauce sous la garniture pour les plats en sauce
+    const sauce=liquidOf(r);
+    if(form==="plate"&&(has(r,"tomatecc")||has(r,"creme")||has(r,"coco"))){c.save();c.globalAlpha=.85;circle(c,cx+rad*.3,cy-rad*.05,rad*.5,sauce);c.restore()}
+    // garnitures
+    const zx=form==="bowl"||form==="soup"?cx:cx+rad*.3,zy=form==="bowl"||form==="soup"?cy:cy-rad*.05,zr=form==="bowl"||form==="soup"?rad*.82:rad*.55;
+    rest.forEach(([id,q])=>{
+      const [sh,col,col2]=A[id];let fill=col;
+      if(sh==="chunk"&&crisp&&(I[id].c==="Viandes"||I[id].c==="Poissons & crevettes"))fill="#D49A44";
+      const unit=I[id].u==="g"?q:q*60;
+      let n=Math.max(3,Math.min(sh==="round"||sh==="seed"?26:13,Math.round(unit/(sh==="round"?6:11))));
+      if(["leaf","shred"].includes(sh))n=Math.min(14,n+3);
+      if(sh==="dollop"||sh==="avo")n=1;if(sh==="egg")n=Math.max(1,Math.round(q));if(sh==="wedge")n=1;
+      if(sh==="patch")n=Math.min(6,n);
+      const sc=sh==="dollop"?s*1.6:sh==="egg"?s*1.05:s*(sh==="round"?1:1.05);
+      if(sh==="dollop"){piece(c,"dollop",fill,zx+rad*.25,zy+rad*.3,sc,R);return}
+      if(sh==="egg"){for(let i=0;i<n;i++)piece(c,"egg",fill,zx+(i-.5*(n-1))*s*3,zy-rad*.15,sc,R);return}
+      scatter(c,R,sh,fill,n,zx,zy,zr,sc,col2);
+    });
+    // fromage, œufs, herbes et agrumes par-dessus
+    if(has(r,"oeuf")&&!["flat","gratin"].includes(form)){const q=r.ing.find(([x])=>x==="oeuf")[1];if(q>=.75){piece(c,"egg","#fff",zx-rad*.2,zy-rad*.25,s*1.05,R)}}
+    ["emmental","parmesan"].forEach(id=>{if(has(r,id))scatter(c,R,"cheese",A[id][1],24,zx,zy,zr,s*.9)});
+    ["persil","menthe"].forEach(id=>{if(has(r,id))scatter(c,R,"herb",A[id][1],18,cx,cy,rad*.85,s*.9)});
+    if(has(r,"sesame"))scatter(c,R,"seed",A.sesame[1],30,zx,zy,zr,s);
+    ["citron","citronvert"].forEach(id=>{if(has(r,id))piece(c,"wedge",A[id][1],cx+rad*.62,cy+rad*.48,s*1.4,R)});
+  }
+
+  function draw(c,r,w,h){
+    const R=rng(hash(r.id));const reg=REGION[r.reg]||REGION.France;
+    texture(c,w,h,reg,R);
+    const form=formOf(r);
+    const cx=w*.5+(R()-.5)*w*.05,cy=h*.53,Rad=h*.41;
+    // couverts
+    c.save();c.globalAlpha=.9;
+    if(r.reg==="Asie"){c.fillStyle="#3B2A1E";[-1,1].forEach(k=>{c.save();c.translate(cx+Rad*1.45+k*7,cy);c.rotate(.08*k);c.fillRect(-2.5,-Rad*.95,5,Rad*1.9);c.restore()})}
+    else{c.fillStyle="#C9CCCF";c.fillRect(cx+Rad*1.38,cy-Rad*.8,6,Rad*1.7);c.fillRect(cx-Rad*1.45,cy-Rad*.2,6,Rad*1.1);for(let k=0;k<4;k++)c.fillRect(cx-Rad*1.47+k*3,cy-Rad*.75,2,Rad*.55)}
+    c.restore();
+    if(form==="soup"||form==="bowl"){
+      shadowed(c,Rad,()=>circle(c,cx,cy,Rad*1.05,reg.bowl));
+      const g=c.createRadialGradient(cx-Rad*.3,cy-Rad*.3,Rad*.1,cx,cy,Rad*1.05);g.addColorStop(0,shade(reg.bowl,.25));g.addColorStop(1,shade(reg.bowl,-.15));circle(c,cx,cy,Rad*1.05,g);
+      const liq=form==="soup"?liquidOf(r):shade(liquidOf(r),.05);
+      circle(c,cx,cy,Rad*.88,shade(liq,-.12));circle(c,cx,cy,Rad*.84,liq);
+      c.save();c.globalAlpha=.18;circle(c,cx-Rad*.3,cy-Rad*.35,Rad*.25,"#ffffff");c.restore();
+      if(form==="soup"&&/velouté|potiron/.test(r.n.toLowerCase())){c.save();c.strokeStyle="rgba(255,252,245,.85)";c.lineWidth=Rad*.05;c.beginPath();for(let t=0;t<12;t+=.1){const rr=Rad*.05*t;c.lineTo(cx+Math.cos(t)*rr,cy+Math.sin(t)*rr)}c.stroke();c.restore();
+        ["persil","menthe"].forEach(id=>{if(has(r,id))scatter(c,R,"herb",A[id][1],12,cx,cy,Rad*.6,Rad*.08)});
+        if(has(r,"painmie")||has(r,"baguette"))piece(c,"toast",A.painmie[1],cx+Rad*1.2,cy+Rad*.55,Rad*.2,R);
+      }else food(c,r,R,cx,cy,Rad*.8,form);
+    }else if(form==="gratin"){
+      const rx=Rad*1.45,ry=Rad*.98;
+      shadowed(c,Rad,()=>{c.beginPath();c.ellipse(cx,cy,rx,ry,0,0,7);c.fillStyle="#F3EEE6";c.fill()});
+      c.beginPath();c.ellipse(cx,cy,rx*.86,ry*.8,0,0,7);c.fillStyle=has(r,"tomatecc")&&has(r,"lasagne")?"#C9542F":"#D9A447";c.fill();
+      const g=c.createRadialGradient(cx,cy,Rad*.1,cx,cy,rx*.86);g.addColorStop(0,"rgba(255,230,160,.6)");g.addColorStop(1,"rgba(120,60,20,.55)");c.fillStyle=g;c.beginPath();c.ellipse(cx,cy,rx*.86,ry*.8,0,0,7);c.fill();
+      for(let i=0;i<60;i++){const a=R()*Math.PI*2,d=Math.sqrt(R());circle(c,cx+Math.cos(a)*rx*.8*d,cy+Math.sin(a)*ry*.74*d,2+R()*6,`rgba(${120+R()*40|0},${60+R()*30|0},20,${.25+R()*.35})`)}
+      const peek=r.ing.filter(([id])=>A[id]&&!SKIP.has(id)&&!BASE.has(id)&&!["emmental","parmesan","mozza","reblochon","oeuf","lait"].includes(id)).slice(0,3);
+      peek.forEach(([id])=>scatter(c,R,A[id][0],A[id][1],4,cx,cy,Rad*.6,Rad*.09,A[id][2]));
+      ["persil"].forEach(id=>{if(has(r,id))scatter(c,R,"herb",A[id][1],14,cx,cy,Rad*.7,Rad*.08)});
+    }else if(form==="flat"){
+      shadowed(c,Rad,()=>circle(c,cx,cy,Rad*1.08,"#B98856"));
+      c.save();c.strokeStyle="rgba(90,55,25,.25)";c.lineWidth=1.5;for(let k=1;k<6;k++){c.beginPath();c.arc(cx,cy,Rad*1.08*k/6,0,7);c.stroke()}c.restore();
+      const isEgg=/omelette|tortilla espagnole|frittata|quiche|lorraine|rösti/.test(r.n.toLowerCase());
+      const isCrepe=/galettes/.test(r.n.toLowerCase());
+      circle(c,cx,cy,Rad*.92,isEgg?"#F0C85A":isCrepe?"#8A5831":"#E2B064");
+      circle(c,cx,cy,Rad*.8,isEgg?"#F4D677":isCrepe?"#9C6A3E":(has(r,"tomatecc")?"#C8432E":"#F2E6CC"));
+      food(c,r,R,cx,cy,Rad*.72,"bowl");
+      if(has(r,"mozza")||has(r,"reblochon"))scatter(c,R,"patch","#FBF5E4",5,cx,cy,Rad*.6,Rad*.12);
+      if(/khachapuri/.test(r.n.toLowerCase()))piece(c,"egg","#fff",cx,cy,Rad*.16,R);
+      c.save();c.strokeStyle="rgba(255,255,255,.18)";c.lineWidth=2;c.beginPath();c.moveTo(cx-Rad*.92,cy);c.lineTo(cx+Rad*.92,cy);c.moveTo(cx,cy-Rad*.92);c.lineTo(cx,cy+Rad*.92);c.stroke();c.restore();
+    }else if(form==="board"){
+      const bw=Rad*2.7,bh=Rad*1.75;
+      shadowed(c,Rad,()=>{c.beginPath();c.roundRect(cx-bw/2,cy-bh/2,bw,bh,18);c.fillStyle="#C4925C";c.fill()});
+      c.save();c.strokeStyle="rgba(110,70,30,.28)";c.lineWidth=1.4;for(let y=cy-bh/2+8;y<cy+bh/2;y+=9){c.beginPath();c.moveTo(cx-bw/2+10,y);c.quadraticCurveTo(cx,y+(R()-.5)*6,cx+bw/2-10,y);c.stroke()}c.restore();
+      const bread=r.ing.find(([id])=>A[id]&&["bread","bun","toast","roll","dumpling"].includes(A[id][0]));
+      const bx=cx-Rad*.35,by=cy;
+      if(bread){
+        const [sh,col]=A[bread[0]];
+        if(sh==="bun"){circle(c,bx,by,Rad*.62,shade(col,-.1));const g=c.createRadialGradient(bx-Rad*.2,by-Rad*.25,Rad*.05,bx,by,Rad*.62);g.addColorStop(0,shade(col,.35));g.addColorStop(1,col);circle(c,bx,by-Rad*.05,Rad*.56,g);scatter(c,R,"seed","#F6EBD0",22,bx,by-Rad*.1,Rad*.38,Rad*.11)}
+        else if(sh==="toast"){for(let k=0;k<2;k++){c.save();c.translate(bx+k*Rad*.25-Rad*.1,by+k*Rad*.12-Rad*.1);c.rotate(-.15+k*.25);c.fillStyle=shade(col,-.2);c.beginPath();c.roundRect(-Rad*.48,-Rad*.38,Rad*.96,Rad*.76,10);c.fill();c.fillStyle=col;c.beginPath();c.roundRect(-Rad*.42,-Rad*.32,Rad*.84,Rad*.64,8);c.fill();c.restore()}
+          food(c,{...r,ing:r.ing.filter(([id])=>id!==bread[0])},R,bx,by,Rad*.45,"bowl")}
+        else if(sh==="roll"||sh==="dumpling"){for(let k=0;k<5;k++){c.save();c.translate(bx-Rad*.5+k*Rad*.28,by+(k%2?Rad*.18:-Rad*.12));c.rotate(.3);c.fillStyle=col;c.beginPath();if(sh==="roll")c.roundRect(-Rad*.12,-Rad*.32,Rad*.24,Rad*.64,Rad*.12);else{c.ellipse(0,0,Rad*.24,Rad*.15,0,0,7)}c.fill();c.fillStyle="rgba(120,160,80,.45)";c.fillRect(-Rad*.05,-Rad*.2,Rad*.1,Rad*.3);c.restore()}}
+        else{for(let k=0;k<2;k++){c.save();c.translate(bx+k*Rad*.38-Rad*.12,by+k*Rad*.1);c.rotate(-.4+k*.5);c.fillStyle=shade(col,-.12);c.beginPath();c.arc(0,0,Rad*.5,Math.PI*.05,Math.PI*1.05);c.closePath();c.fill();c.fillStyle=col;c.beginPath();c.arc(0,-2,Rad*.46,Math.PI*.08,Math.PI*1.02);c.closePath();c.fill();
+          const fill=r.ing.filter(([id])=>A[id]&&!SKIP.has(id)&&id!==bread[0]).slice(0,4);fill.forEach(([id])=>scatter(c,R,A[id][0],A[id][1],3,0,-Rad*.22,Rad*.18,Rad*.08,A[id][2]));c.restore()}}
+      }else food(c,r,R,bx,by,Rad*.55,"plate");
+      // ramequin de sauce et crudités
+      const sx=cx+Rad*.85,sy=cy-Rad*.38;
+      circle(c,sx,sy,Rad*.3,"#F4EFE6");circle(c,sx,sy,Rad*.24,has(r,"ketchup")?"#B8312A":has(r,"tahin")?"#E3C99B":"#FBF8F2");
+      const side=r.ing.filter(([id])=>A[id]&&["salade","tomate","concombre","carotte","chou","avocat","pousses"].includes(id)).slice(0,2);
+      side.forEach(([id],k)=>scatter(c,R,A[id][0],A[id][1],7,cx+Rad*.8,cy+Rad*.35,Rad*.32,Rad*.09,A[id][2]));
+    }else{
+      shadowed(c,Rad,()=>circle(c,cx,cy,Rad*1.05,"#F7F4EE"));
+      const g=c.createRadialGradient(cx,cy,Rad*.6,cx,cy,Rad*1.05);g.addColorStop(0,"#FFFFFF");g.addColorStop(1,"#E9E4DA");circle(c,cx,cy,Rad*1.05,g);
+      circle(c,cx,cy,Rad*.78,"#FDFCF9");
+      food(c,r,R,cx,cy,Rad*.78,"plate");
+    }
+    // lumière douce
+    const v=c.createRadialGradient(w*.35,h*.25,h*.1,w*.5,h*.5,w*.75);v.addColorStop(0,"rgba(255,255,255,.10)");v.addColorStop(1,"rgba(0,0,0,.22)");c.fillStyle=v;c.fillRect(0,0,w,h);
+  }
+  // morceau de pain posé à côté d'une soupe
+  const _piece=piece;piece=function(c,shape,col,x,y,s,R,col2){if(shape==="toast"){c.save();c.translate(x,y);c.rotate(-.3);c.fillStyle=shade(col,-.2);c.beginPath();c.roundRect(-s*1.6,-s,s*3.2,s*2,s*.5);c.fill();c.fillStyle=col;c.beginPath();c.roundRect(-s*1.4,-s*.8,s*2.8,s*1.6,s*.4);c.fill();c.restore();return}return _piece(c,shape,col,x,y,s,R,col2)};
+
+  const cache={};
+  function url(id,w=480,h=320){
+    const k=id+":"+w;if(cache[k])return cache[k];
+    const r=RB[id];if(!r)return "";
+    try{const cv=document.createElement("canvas");const d=Math.min(2,(window.devicePixelRatio||1));cv.width=w*d;cv.height=h*d;const c=cv.getContext("2d");c.scale(d,d);draw(c,r,w,h);cache[k]=cv.toDataURL("image/jpeg",.84)}catch(e){cache[k]=""}
+    return cache[k];
+  }
+  // chargement paresseux des images visibles
+  let io=null;
+  function hydrate(root){
+    const imgs=(root||document).querySelectorAll("img[data-art]:not([src])");
+    if(!("IntersectionObserver" in window)){imgs.forEach(fill);return}
+    if(!io)io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){io.unobserve(e.target);fill(e.target)}}),{rootMargin:"300px"});
+    imgs.forEach(i=>io.observe(i));
+  }
+  function fill(img){const w=+img.dataset.w||480;img.src=url(img.dataset.art,w,Math.round(w*2/3));img.classList.add("ready")}
+  const BG=Object.fromEntries(Object.entries(REGION).map(([k,v])=>[k,v.bg]));
+  return {url,hydrate,BG,formOf};
+})();
+const artImg=(id,w,cls)=>`<img data-art="${id}" data-w="${w||480}" alt="" class="art ${cls||""}" style="background:${ART.BG[(RB[id]||{}).reg]||"#ddd"}">`;
+
+// ---------- Page recettes ----------
+const BASICS=new Set(["oignon","ail","citron","persil","citronvert","menthe"]);
+const GROUP_ORDER=["Viandes","Poissons & crevettes","Œufs & légumineuses","Légumes","Fruits","Féculents","Fromages & crème","Fruits secs","Autres"];
 const isVege=r=>!r.ing.some(([id])=>I[id].c==="Viandes"||I[id].c==="Poissons & crevettes");
 const kcal=r=>Math.round(r.ing.reduce((a,[id,q])=>a+q*I[id].k,0));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -466,88 +960,124 @@ function fmt(q,u){
 }
 const groupOf=id=>I[id].c||"Autres";
 const facetIds=[...new Set(R.flatMap(r=>r.ing.map(([id])=>id)))].filter(id=>I[id].r!=="pl"&&!BASICS.has(id));
+const DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 
-// état
-let sel={};      // id -> 1 (avec) | -1 (sans)
-let quick=new Set(), q="", servings=4;
-try{const s=JSON.parse(localStorage.getItem("recettes.filtres")||"null");if(s){sel=s.sel||{};quick=new Set(s.quick||[]);servings=s.servings||4}}catch(e){}
-function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,quick:[...quick],servings}))}catch(e){}}
+let sel={},quick=new Set(),q="",servings=4,region="",sort="nom";
+try{const s=JSON.parse(localStorage.getItem("recettes.filtres")||"null");if(s){sel=s.sel||{};quick=new Set(s.quick||[]);servings=s.servings||4;region=s.region||"";sort=s.sort||"nom"}}catch(e){}
+Object.keys(sel).forEach(k=>{if(!I[k])delete sel[k]});
+function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,quick:[...quick],servings,region,sort}))}catch(e){}}
 
-const QUICK=[["vege","Végétarien",r=>isVege(r)],["plaisir","Plaisir",r=>r.tag==="plaisir"],["rapide","25 min ou moins",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","Moins de 400 kcal",r=>kcal(r)<400]];
+const QUICK=[["vege","Végétarien",r=>isVege(r)],["plaisir","Plaisir",r=>r.tag==="plaisir"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
 const has=(r,id)=>r.ing.some(([x])=>x===id);
-function matches(r,extra){
+function matches(r,ignoreRegion){
+  if(!ignoreRegion&&region&&r.reg!==region)return false;
   for(const [id,v] of Object.entries(sel)){if(v===1&&!has(r,id))return false;if(v===-1&&has(r,id))return false}
-  if(extra&&!has(r,extra))return false;
   for(const k of quick){const f=QUICK.find(x=>x[0]===k);if(f&&!f[2](r))return false}
-  if(q){const t=norm(r.n+" "+r.ing.map(([id])=>I[id].n).join(" "));if(!norm(q).split(/\s+/).every(w=>t.includes(w)))return false}
+  if(q){const t=norm(r.n+" "+r.pays+" "+r.reg+" "+r.ing.map(([id])=>I[id].n).join(" "));if(!norm(q).split(/\s+/).every(w=>t.includes(w)))return false}
   return true;
 }
+const SORTS={nom:(a,b)=>a.n.localeCompare(b.n,"fr"),kcal:(a,b)=>kcal(a)-kcal(b),temps:(a,b)=>a.t-b.t||a.n.localeCompare(b.n,"fr"),region:(a,b)=>REGIONS.indexOf(a.reg)-REGIONS.indexOf(b.reg)||a.pays.localeCompare(b.pays,"fr")||a.n.localeCompare(b.n,"fr")};
 
+// ---------- ouverture ----------
+function renderHero(){
+  const countries=new Set(R.map(r=>r.pays)).size;
+  document.getElementById("stats").innerHTML=`<div><b>${R.length}</b><span>recettes</span></div><div><b>${countries}</b><span>pays et régions</span></div><div><b>${REGIONS.length}</b><span>coins du monde</span></div>`;
+  const picks=["bibimbap","tajineagneau","moqueca","khachapuri"].filter(id=>RB[id]);
+  document.getElementById("mosaic").innerHTML=picks.map((id,i)=>`<button type="button" data-r="${id}" aria-label="${esc(RB[id].n)}">${artImg(id,i===0?560:360)}<span class="cap">${esc(RB[id].n)} · ${esc(RB[id].pays)}</span></button>`).join("");
+}
+function renderRegions(){
+  const base=R.filter(r=>matches(r,true));
+  const opts=[["","Tout le monde",base.length,"linear-gradient(135deg,"+REGIONS.map(g=>ART.BG[g]).join(",")+")"]].concat(REGIONS.map(g=>[g,g,base.filter(r=>r.reg===g).length,ART.BG[g]]));
+  document.getElementById("regions").innerHTML=opts.map(([v,l,n,bg])=>`<button type="button" class="reg" data-reg="${v}" aria-pressed="${region===v}"><i style="background:${bg}"></i>${l} <small>${n}</small></button>`).join("");
+}
 function render(){
-  const res=R.filter(r=>matches(r)).sort((a,b)=>a.n.localeCompare(b.n,"fr"));
-  // compte
-  document.getElementById("count").innerHTML=`<b class="num">${res.length}</b> recette${res.length>1?"s":""} sur ${R.length}`;
-  // filtres actifs
-  const act=Object.entries(sel).map(([id,v])=>`<button type="button" class="pill ${v===1?"in":"out"}" data-rm="${id}" aria-label="Retirer ${esc(I[id].n)}">${v===1?"Avec":"Sans"} ${esc(I[id].n.toLowerCase())} <span aria-hidden="true">×</span></button>`).join("");
-  document.getElementById("active").innerHTML=act?act+`<button type="button" class="clear" id="clearAll">Tout effacer</button>`:'<span class="muted">Touchez un ingrédient : 1 fois pour « avec », 2 fois pour « sans ».</span>';
-  // filtres rapides
+  const res=R.filter(r=>matches(r)).sort(SORTS[sort]||SORTS.nom);
+  renderRegions();
+  document.getElementById("count").innerHTML=`<b>${res.length}</b> recette${res.length>1?"s":""}${region?" · "+region:""}`;
+  const act=Object.entries(sel).map(([id,v])=>`<button type="button" class="pill ${v===1?"in":"out"}" data-rm="${id}" aria-label="Retirer ${esc(I[id].n)}">${v===1?"Avec":"Sans"} ${esc(I[id].n.toLowerCase())} ×</button>`).join("");
+  document.getElementById("active").innerHTML=act||region||quick.size||q?act+`<button type="button" class="clear" data-clearall>Tout effacer</button>`:"";
   document.getElementById("quick").innerHTML=QUICK.map(([k,l])=>`<button type="button" class="qf" data-q="${k}" aria-pressed="${quick.has(k)}">${l}</button>`).join("");
-  // facettes
+  document.getElementById("sort").value=sort;
+  const n=Object.keys(sel).length;document.getElementById("toggleFacets").textContent="Ingrédients"+(n?" ("+n+")":"");
   const groups={};
   facetIds.forEach(id=>(groups[groupOf(id)]=groups[groupOf(id)]||[]).push(id));
   document.getElementById("facets").innerHTML=GROUP_ORDER.filter(g=>groups[g]).map(g=>{
     const chips=groups[g].sort((a,b)=>I[a].n.localeCompare(I[b].n,"fr")).map(id=>{
-      const v=sel[id];
-      const n=v?res.filter(r=>has(r,id)).length:res.filter(r=>has(r,id)).length;
-      const dis=!v&&n===0;
-      return `<button type="button" class="fchip ${v===1?"in":v===-1?"out":""}" data-f="${id}" ${dis?"disabled":""} aria-label="${esc(I[id].n)}${v===1?" (avec)":v===-1?" (sans)":""}, ${n} recettes"><span>${esc(I[id].n)}</span><span class="fc num">${v===-1?"sans":n}</span></button>`;
+      const v=sel[id],cnt=res.filter(r=>has(r,id)).length,dis=!v&&cnt===0;
+      return `<button type="button" class="fchip ${v===1?"in":v===-1?"out":""}" data-f="${id}" ${dis?"disabled":""}><span>${esc(I[id].n)}</span><span class="fc num">${v===-1?"sans":cnt}</span></button>`;
     }).join("");
     return `<div class="fgroup"><h3>${g}</h3><div class="fchips">${chips}</div></div>`;
   }).join("");
-  // résultats
   document.getElementById("results").innerHTML=res.length?res.map(r=>{
     const main=r.ing.filter(([id])=>I[id].r!=="pl"&&!BASICS.has(id)).map(([id])=>sel[id]===1?`<mark>${esc(I[id].n.toLowerCase())}</mark>`:esc(I[id].n.toLowerCase())).join(", ");
-    return `<button type="button" class="card" data-r="${r.id}">
-      <span class="cname">${esc(r.n)}</span>
-      <span class="cmeta"><span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${r.tag==="plaisir"?'<span class="tag plaisir">Plaisir</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span>
-      <span class="cing">${main}</span></button>`;
-  }).join(""):`<div class="none"><b>Aucune recette avec cette combinaison.</b><br>Retirez un ingrédient ou un filtre pour élargir.</div>`;
+    return `<button type="button" class="card" data-r="${r.id}"><div class="ph">${artImg(r.id,420)}<span class="where">${esc(r.pays)}</span><span class="kc num">≈ ${kcal(r)} kcal</span></div>
+      <div class="bd"><span class="cname">${esc(r.n)}</span><span class="cmeta"><span>${r.t} min</span>${r.tag==="plaisir"?'<span class="tag plaisir">Plaisir</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span></div></button>`;
+  }).join(""):`<div class="none"><b>Aucune recette avec cette combinaison.</b><br>Retirez un ingrédient, un filtre ou changez de région.</div>`;
+  ART.hydrate(document.getElementById("results"));
 }
 
-const ov=document.getElementById("overlay");
+// ---------- semainier partagé (même site) ----------
+function planner(){try{return JSON.parse(localStorage.getItem("semainier.v3")||"null")}catch(e){return null}}
+function addToMenu(id,day,when){
+  let S=planner()||{prefs:{},kid:true,cur:0,weeks:{}};
+  const w=S.cur||0;S.weeks=S.weeks||{};
+  const W=S.weeks[w]=S.weeks[w]||{plan:{},mode:{},pin:{},checked:{},shopSess:1};
+  const key=day+(when==="Midi"?"m":"s");
+  W.plan=W.plan||{};W.pin=W.pin||{};W.mode=W.mode||{};
+  W.plan[key]=id;W.pin[key]=1;delete W.mode[key];
+  try{localStorage.setItem("semainier.v3",JSON.stringify(S));return w}catch(e){return null}
+}
+
+// ---------- fiche ----------
+const ov=document.getElementById("overlay");let current=null;
 function openRecipe(id){
-  const r=R.find(x=>x.id===id);if(!r)return;
-  const bc=BC[r.id];
-  ov.innerHTML=`<article class="rcard"><button class="close" type="button" data-close>Fermer</button>
-    <div class="rhead"><h3>${esc(r.n)}</h3>
-      <div class="rfacts"><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion adulte</span>${r.tag==="plaisir"?'<span class="tag plaisir">Plaisir</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</div></div>
-    <div class="serv"><span>Portions</span><button type="button" class="sb" data-s="-1" aria-label="Une portion de moins">−</button><b class="num" id="servN">${servings}</b><button type="button" class="sb" data-s="1" aria-label="Une portion de plus">+</button></div>
-    <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings" id="ings"></ul></div>
-      <div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
-      <div class="bcnote"><b>En batch cooking :</b> ${bc&&bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc?bc.j:"")}</div></div></div>
-    ${r.kid?`<div class="kid"><b>Pour les enfants.</b> ${esc(r.kid)}</div>`:""}</article>`;
-  ov.dataset.r=id;ov.hidden=false;fillIngs();ov.querySelector("[data-close]").focus();
+  const r=RB[id];if(!r)return;current=id;
+  const bc=BC[r.id]||{t:[],j:""};
+  const S=planner(),wk=(S&&S.cur)||0;
+  ov.innerHTML=`<article class="sheet" role="dialog" aria-modal="true" aria-label="${esc(r.n)}">
+    <button class="close" type="button" data-close>Fermer ×</button>
+    <div class="hd">${artImg(r.id,860)}<div class="grad"></div><div class="tt"><small>${esc(r.pays)} · ${esc(r.reg)}</small><h3>${esc(r.n)}</h3></div></div>
+    <div class="in">
+      <div class="facts"><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion adulte</span>${r.tag==="plaisir"?'<span class="tag plaisir">Plaisir</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}
+        <span class="serv">Portions <button type="button" class="sb" data-s="-1" aria-label="Une portion de moins">−</button><b class="num" id="servN">${servings}</b><button type="button" class="sb" data-s="1" aria-label="Une portion de plus">+</button></span></div>
+      <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings" id="ings"></ul></div>
+        <div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li><span>${esc(s)}</span></li>`).join("")}</ol></div></div>
+      <div class="bcnote"><b>En batch cooking :</b> ${bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc.j)}</div>
+      ${r.kid?`<div class="kid"><b>Pour les enfants.</b> ${esc(r.kid)}</div>`:""}
+      <div class="addmenu"><strong>Mettre au menu de la semaine ${wk+1}</strong>
+        <select id="addDay" aria-label="Jour">${DAYS.map((d,i)=>`<option value="${i}">${d}</option>`).join("")}</select>
+        <select id="addWhen" aria-label="Repas"><option>Soir</option><option>Midi</option></select>
+        <button type="button" class="btn" data-add>Ajouter</button><a href="index.html">Ouvrir le semainier</a></div>
+    </div></article>`;
+  ov.hidden=false;fillIngs();ART.hydrate(ov);
+  try{ov.querySelector("[data-close]").focus({preventScroll:true})}catch(e){}
 }
 function fillIngs(){
-  const r=R.find(x=>x.id===ov.dataset.r);if(!r)return;
+  const r=RB[current];if(!r)return;
   document.getElementById("servN").textContent=servings;
   document.getElementById("ings").innerHTML=r.ing.map(([id,qq])=>`<li><span class="num">${fmt(qq*servings,I[id].u)}</span><span>${esc(I[id].n)}</span></li>`).join("");
 }
-function closeModal(){ov.hidden=true;ov.innerHTML=""}
+function closeModal(){ov.hidden=true;ov.innerHTML="";current=null}
+let tT;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(tT);tT=setTimeout(()=>t.hidden=true,2600)}
 
 document.addEventListener("click",e=>{
+  // la fermeture passe en premier
+  if(e.target.closest("[data-close]")||e.target===ov){closeModal();return}
+  if(e.target.closest("[data-add]")){const d=+document.getElementById("addDay").value,w=document.getElementById("addWhen").value;const wk=addToMenu(current,d,w);toast(wk===null?"Impossible d'enregistrer dans ce navigateur":RB[current].n+" ajouté : "+DAYS[d].toLowerCase()+" "+w.toLowerCase());return}
+  const sb=e.target.closest("[data-s]");if(sb){servings=Math.max(1,Math.min(12,servings+ +sb.dataset.s));save();fillIngs();return}
+  if(!ov.hidden)return;
   const f=e.target.closest("[data-f]");if(f){const id=f.dataset.f,v=sel[id];if(!v)sel[id]=1;else if(v===1)sel[id]=-1;else delete sel[id];save();render();return}
   const rm=e.target.closest("[data-rm]");if(rm){delete sel[rm.dataset.rm];save();render();return}
-  if(e.target.closest("#clearAll")){sel={};quick.clear();q="";document.getElementById("q").value="";save();render();return}
+  if(e.target.closest("[data-clearall]")){sel={};quick.clear();q="";region="";document.getElementById("q").value="";save();render();return}
   const qf=e.target.closest("[data-q]");if(qf){const k=qf.dataset.q;quick.has(k)?quick.delete(k):quick.add(k);save();render();return}
+  const rg=e.target.closest("[data-reg]");if(rg){region=rg.dataset.reg;save();render();return}
+  const tf=e.target.closest("#toggleFacets");if(tf){const p=document.getElementById("side");p.classList.toggle("open");tf.setAttribute("aria-expanded",p.classList.contains("open"));return}
   const c=e.target.closest("[data-r]");if(c){openRecipe(c.dataset.r);return}
-  const sb=e.target.closest("[data-s]");if(sb){servings=Math.max(1,Math.min(12,servings+ +sb.dataset.s));save();fillIngs();return}
-  if(e.target===ov||e.target.closest("[data-close]"))closeModal();
-  const tf=e.target.closest("#toggleFacets");if(tf){const p=document.getElementById("facetPanel");p.classList.toggle("open");tf.setAttribute("aria-expanded",p.classList.contains("open"))}
 });
 document.getElementById("q").addEventListener("input",e=>{q=e.target.value;render()});
+document.getElementById("sort").addEventListener("change",e=>{sort=e.target.value;save();render()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeModal()});
-render();
+renderHero();render();ART.hydrate(document.getElementById("mosaic"));
 </script>
 
 </html>
