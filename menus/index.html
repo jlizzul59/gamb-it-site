@@ -258,6 +258,10 @@ img.art.ready{opacity:1}
 .defaults .dset{display:inline-flex;align-items:center;gap:8px}
 .defaults .reset{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:13px;padding:0}
 
+.rpers{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:10px;font-size:14px;font-weight:600}
+.rpers .muted{font-weight:400;font-size:13px}
+.pcust{font-size:12px;font-weight:700;color:var(--warm);background:var(--warm-soft);border-radius:999px;padding:1px 8px}
+
 /* Modale */
 .overlay{position:fixed;inset:0;background:rgba(10,20,14,.55);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
 .overlay .rcard{max-width:760px;width:100%;position:relative}
@@ -287,7 +291,7 @@ img.art.ready{opacity:1}
       <div>
         <h2>Les menus de la semaine, pour toute la famille</h2>
         <p>Des plats du monde entier, faciles à préparer à l'avance. Chaque recette propose des options facultatives (féculent en plus, pain, fromage) à ajouter selon l'appétit de chacun.</p>
-        <p>Réglez le nombre de personnes pour toute la semaine ou repas par repas, les quantités suivent. Supprimez un repas avec la croix ou un jour entier avec « Supprimer le jour ». Un repas peut aussi reprendre les restes du repas d'avant. La session de <a href="#batch">batch cooking</a> et la liste de courses suivent. Indiquez vos goûts dans <a href="#gouts">Mes goûts</a>.</p>
+        <p>Réglez le nombre de personnes du midi et du soir, puis ajustez une recette si besoin : les quantités suivent. Supprimez un repas avec la croix. Un repas peut aussi reprendre les restes du repas d'avant. La session de <a href="#batch">batch cooking</a> et la liste de courses suivent. Indiquez vos goûts dans <a href="#gouts">Mes goûts</a>.</p>
       </div>
     </div>
     <div class="toolbar">
@@ -863,7 +867,7 @@ try{
   if(raw)S={...S,...JSON.parse(raw)};
   else{const old=localStorage.getItem("semainier.v2");if(old){const o=JSON.parse(old);S.prefs=o.prefs||{};S.kid=o.kid!==false;S.weeks[0]={plan:o.plan||{},mode:o.mode||{},pin:{},checked:o.checked||{},shopSess:o.shopSess||1}}}
 }catch(e){}
-S.def=Object.assign({l2:2,fam:4},S.def||{});if(S.optN==null)S.optN=2;
+if(!S.def||S.def.midi==null){const o=S.def||{};S.def={midi:o.l2||2,soir:o.fam||4}}if(S.optN==null)S.optN=2;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let W;
 function useWeek(w){
@@ -929,7 +933,8 @@ function cooks(){
   SLOTS.forEach(sl=>{const k=srcKey(sl.key);if(!k||!W.plan[k]||!RB[W.plan[k]])return;(m[k]=m[k]||{sl:SK[k],r:RB[W.plan[k]],eat:[]}).eat.push(sl)});
   return SLOTS.filter(s=>m[s.key]).map(s=>m[s.key]);
 }
-const PN=sl=>(W&&W.pers&&W.pers[sl.key])||(S.def&&S.def[sl.kind])||(sl.kind==="fam"?4:2);
+const WH=sl=>sl.when==="Midi"?"midi":"soir";
+const PN=sl=>(W&&W.pers&&W.pers[sl.key])||S.def[WH(sl)];
 const persOf=c=>c.eat.reduce((a,e)=>a+PN(e),0);
 function qtyBase(c,id,q){return c.eat.reduce((a,e)=>a+q*PN(e),0)}
 function optQty(c,id){if(!S.kid)return 0;const o=optionsFor(c.r).find(x=>x[0]===id);if(!o)return 0;return c.eat.reduce((a,e)=>a+Math.min(S.optN||2,PN(e))*o[1],0)}
@@ -970,7 +975,8 @@ function renderWeekNav(){
 function renderWeek(){
   const el=document.getElementById("week");
   el.innerHTML=DAYS.map((d,i)=>{
-    const dayOff=W.mode[i+"m"]==="skip"&&W.mode[i+"s"]==="skip";
+    const dayOff=false;
+    const tot=["m","s"].reduce((a,w)=>{const r=W.mode[i+w]==="skip"?null:recipeAt(i+w);return a+(r?kcal(r):0)},0);
     const meals=["m","s"].map(w=>{
       const sl=SK[i+w],mode=W.mode[sl.key]||"cook",src=srcKey(sl.key),r=recipeAt(sl.key);
       const restOK=!!prevActive(sl.key);
@@ -982,8 +988,8 @@ function renderWeek(){
       return `<div class="meal ${mode==="skip"?"is-off":""} ${isRest?"is-rest":""}">
         <div class="when"><span>${sl.when}</span><span class="wr">${mode!=="skip"?`<button class="del" type="button" data-skip="${sl.key}" aria-label="Supprimer le repas du ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" title="Supprimer ce repas">×</button>`:""}</span></div>
         ${body}
-        ${mode!=="skip"?`<div class="prow"><span>Personnes</span><span class="pstep"><button type="button" class="pm" data-pers="${sl.key}" data-d="-1" aria-label="Une personne de moins" ${PN(sl)<=1?"disabled":""}>−</button><b class="num ${W.pers&&W.pers[sl.key]?"custom":""}">${PN(sl)}</b><button type="button" class="pm" data-pers="${sl.key}" data-d="1" aria-label="Une personne de plus" ${PN(sl)>=12?"disabled":""}>+</button></span></div>`:""}
-        <div class="meta"><span class="num">${r&&mode!=="skip"?r.t+" min":""}</span>${r&&!isRest&&mode!=="skip"?tagHTML(r):""}</div>
+        ${mode!=="skip"&&W.pers&&W.pers[src]?`<div class="prow"><span class="pcust">${PN(SK[src])} pers.</span></div>`:""}
+        <div class="meta"><span class="num">${r&&mode!=="skip"?"≈ "+kcal(r)+" kcal":""}</span>${r&&!isRest&&mode!=="skip"?tagHTML(r):""}</div>
         <div class="ctrl"><select id="mode-${sl.key}" data-mode="${sl.key}" aria-label="${DAYS[i]} ${sl.when.toLowerCase()}">
           <option value="cook" ${mode==="cook"?"selected":""}>Cuisiné</option>
           <option value="rest" ${mode==="rest"?"selected":""} ${restOK?"":"disabled"}>Restes du repas d'avant</option>
@@ -991,7 +997,7 @@ function renderWeek(){
         </select></div>
         ${mode!=="skip"&&!isRest?`<div class="acts"><button class="swap" type="button" data-pick="${sl.key}">Catalogue</button><button class="swap" type="button" data-swap="${sl.key}">Au hasard</button></div>`:""}</div>`;
     }).join("");
-    return `<div class="day ${dayOff?"day-off":""}"><div class="dayhead"><b>${d}</b><small>${dateOf(i)}</small><button class="dayskip" type="button" data-day="${i}">${dayOff?"Rétablir le jour":"Supprimer le jour"}</button></div>${meals}${dayOff?'<div class="daytotal">Jour supprimé</div>':""}</div>`;
+    return `<div class="day ${dayOff?"day-off":""}"><div class="dayhead"><b>${d}</b><small>${dateOf(i)}</small></div>${meals}${tot?`<div class="daytotal">Midi + soir : <span class="num">≈ ${tot} kcal</span></div>`:""}</div>`;
   }).join("");
   ART.hydrate(el);
 }
@@ -1005,7 +1011,8 @@ function recipeHTML(c,modal){
   const bt=BC[r.id].t;
   return `<article class="rcard">${modal?'<button class="close" type="button" data-close>Fermer ×</button>':""}
     <div class="rhead"><small>${DAYS[c.sl.day]} ${dateOf(c.sl.day)} · ${c.sl.when}${extra.length?" + restes "+extra.map(slotLabel).join(", "):""}</small><h3>${esc(r.n)}</h3>
-    <div class="rfacts"><span>${esc(r.pays)}</span><span>${pers} portions</span><span>${r.t} min</span>${tagHTML(r)}</div></div>
+    <div class="rfacts"><span>${esc(r.pays)}</span><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion</span>${tagHTML(r)}</div>
+    <div class="rpers"><span>Personnes</span><span class="pstep"><button type="button" class="pm" data-pers="${c.sl.key}" data-d="-1" aria-label="Une personne de moins" ${PN(c.sl)<=1?"disabled":""}>−</button><b class="num ${W.pers&&W.pers[c.sl.key]?"custom":""}">${PN(c.sl)}</b><button type="button" class="pm" data-pers="${c.sl.key}" data-d="1" aria-label="Une personne de plus" ${PN(c.sl)>=12?"disabled":""}>+</button></span>${extra.length?`<span class="muted">+ ${extra.reduce((a,e)=>a+PN(e),0)} pour les restes · ${pers} portions au total</span>`:""}</div></div>
     <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings">${ing}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
     <div class="bcnote"><b>Session du ${sessionOf(c.sl.day).short} :</b> ${bt.length?bt.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(BC[r.id].j)}</div></div></div>
     ${opts.length?`<div class="kid"><b>Options facultatives${S.kid?" (prévues pour "+on+" pers.)":""} :</b> ${opts.map(([id,q])=>esc(S.kid?fmt(q*on,I[id].u,false)+" de "+I[id].n.toLowerCase():I[id].n)).join(" · ")}</div>`:""}
@@ -1036,7 +1043,7 @@ function renderCatList(sfx,key){
     const bad=r.ing.filter(([id])=>S.prefs[id]===-1).map(([id])=>I[id].n);
     const cur=key&&W.plan[key]===r.id;
     return `<div class="citem ${bad.length?"is-bad":""}">
-      <div class="cmain"><b>${esc(r.n)}</b><div class="cmeta"><span>${esc(r.pays)}</span><span>${r.t} min</span>${tagHTML(r)}${cur?'<span class="tag">Plat actuel</span>':inWeek.has(r.id)?'<span class="tag">Déjà au menu</span>':""}${bad.length?'<span class="tag no">Contient : '+esc(bad.join(", "))+'</span>':""}</div></div>
+      <div class="cmain"><b>${esc(r.n)}</b><div class="cmeta"><span>${esc(r.pays)}</span><span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${tagHTML(r)}${cur?'<span class="tag">Plat actuel</span>':inWeek.has(r.id)?'<span class="tag">Déjà au menu</span>':""}${bad.length?'<span class="tag no">Contient : '+esc(bad.join(", "))+'</span>':""}</div></div>
       <div class="cbtns"><button class="btn sm" type="button" data-view>Voir</button>${key&&!cur?`<button class="btn primary sm" type="button" data-choose="${r.id}">Choisir</button>`:""}</div>
       <div class="cdet" hidden><div class="rbody"><div><h4>Pour 1 personne</h4><ul class="ings">${r.ing.map(([id,q])=>`<li><span class="num">${fmt(q,I[id].u,false)}</span><span>${esc(I[id].n)}</span></li>`).join("")}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div></div></div>
     </div>`;
@@ -1126,12 +1133,10 @@ function renderPrefs(){
 }
 function renderDefaults(){
   const st=(k,v)=>`<span class="pstep"><button type="button" class="pm" data-def="${k}" data-d="-1" aria-label="Une personne de moins" ${v<=1?"disabled":""}>−</button><b class="num">${v}</b><button type="button" class="pm" data-def="${k}" data-d="1" aria-label="Une personne de plus" ${v>=12?"disabled":""}>+</button></span>`;
-  const n=Object.keys(W.pers||{}).length;
   document.getElementById("defaults").innerHTML=`<strong>Nombre de personnes</strong>
-    <span class="dset">Midis lundi, mardi, jeudi, vendredi ${st("l2",S.def.l2)}</span>
-    <span class="dset">Midis mercredi et week-end, et tous les soirs ${st("fam",S.def.fam)}</span>
-    <span class="dset">Options facultatives pour ${st("opt",S.optN||2)} pers. par repas</span>
-    ${n?`<button type="button" class="reset" data-resetpers>${n>1?"Annuler les "+n+" réglages":"Annuler le réglage"} repas par repas de cette semaine</button>`:'<span class="muted" style="font-size:13px">Ajustez aussi repas par repas avec − et +.</span>'}`;
+    <span class="dset">Midi ${st("midi",S.def.midi)}</span>
+    <span class="dset">Soir ${st("soir",S.def.soir)}</span>
+    <span class="muted" style="font-size:13px">Pour un repas différent, changez le nombre dans sa recette.</span>`;
 }
 function renderAll(){renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();document.getElementById("kidBoost").checked=S.kid}
 
@@ -1155,14 +1160,10 @@ document.addEventListener("click",e=>{
   const vw=e.target.closest("[data-view]");
   if(vw){const d=vw.closest(".citem").querySelector(".cdet");d.hidden=!d.hidden;vw.textContent=d.hidden?"Voir":"Masquer";return}
   const cf=e.target.closest("[data-catf]");if(cf){catF=cf.dataset.catf;renderCatList(cf.dataset.sfx,cf.dataset.sfx==="m"?catKey:null);return}
-  const pp=e.target.closest("[data-pers]");if(pp){const k=pp.dataset.pers,sl=SK[k];W.pers=W.pers||{};const n=Math.max(1,Math.min(12,PN(sl)+ +pp.dataset.d));if(n===S.def[sl.kind])delete W.pers[k];else W.pers[k]=n;save();renderAll();return}
-  const dd=e.target.closest("[data-def]");if(dd&&dd.dataset.def==="opt"){S.optN=Math.max(0,Math.min(12,(S.optN||2)+ +dd.dataset.d));save();renderAll();return}
-  if(dd){const k=dd.dataset.def;S.def[k]=Math.max(1,Math.min(12,S.def[k]+ +dd.dataset.d));Object.values(S.weeks).forEach(w=>{if(w.pers)for(const x in w.pers)if(SK[x]&&SK[x].kind===k&&w.pers[x]===S.def[k])delete w.pers[x]});save();renderAll();return}
-  if(e.target.closest("[data-resetpers]")){W.pers={};save();renderAll();toast("Nombre de personnes remis par défaut");return}
+  const pp=e.target.closest("[data-pers]");if(pp){const k=pp.dataset.pers,sl=SK[k];W.pers=W.pers||{};const n=Math.max(1,Math.min(12,PN(sl)+ +pp.dataset.d));if(n===S.def[WH(sl)])delete W.pers[k];else W.pers[k]=n;save();renderAll();if(!ov.hidden){const c=cooks().find(c=>c.sl.key===k);if(c){ov.innerHTML=recipeHTML(c,true)}}return}
+  const dd=e.target.closest("[data-def]");if(dd){const k=dd.dataset.def;S.def[k]=Math.max(1,Math.min(12,S.def[k]+ +dd.dataset.d));Object.values(S.weeks).forEach(w=>{if(w.pers)for(const x in w.pers)if(SK[x]&&WH(SK[x])===k&&w.pers[x]===S.def[k])delete w.pers[x]});save();renderAll();return}
   const sk=e.target.closest("[data-skip]");if(sk){const k=sk.dataset.skip;setMode(k,"skip");build("keep");renderAll();toast("Repas du "+slotLabel(SK[k])+" supprimé");return}
   const us=e.target.closest("[data-unskip]");if(us){setMode(us.dataset.unskip,"cook");build("keep");renderAll();return}
-  const d=e.target.closest("[data-day]");
-  if(d){const i=d.dataset.day,off=W.mode[i+"m"]==="skip"&&W.mode[i+"s"]==="skip";setMode(i+"m",off?"cook":"skip");setMode(i+"s",off?"cook":"skip");build("keep");renderAll();toast(off?DAYS[i]+" rétabli":DAYS[i]+" supprimé : ni courses ni préparation pour ce jour");return}
   const ss=e.target.closest("[data-sess]");if(ss){W.shopSess=+ss.dataset.sess;save();renderShop();return}
   const p=e.target.closest("[data-pref]");
   if(p){const id=p.dataset.pref,v=S.prefs[id];S.prefs[id]=v===1?-1:v===-1?0:1;if(!S.prefs[id])delete S.prefs[id];build("keep");renderAll()}
