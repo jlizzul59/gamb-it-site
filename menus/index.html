@@ -167,8 +167,14 @@ main{padding-block:28px 64px}
 .off{font-size:14px;font-style:italic}
 .meal.is-rest{background:var(--bg)}
 .restlab{font-size:12px;color:var(--warm);font-weight:600}
-.dayskip{border:0;background:none;color:var(--muted);font-size:12px;text-decoration:underline;text-underline-offset:2px;padding:0}
-.dayskip:hover{color:var(--ink)}
+.dayskip{border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:12px;font-weight:600;border-radius:999px;padding:2px 10px}
+.dayskip:hover{color:var(--bad);border-color:var(--bad)}
+.day-off .dayskip{color:var(--accent);border-color:var(--accent)}
+.del{border:0;background:var(--bg);color:var(--muted);width:22px;height:22px;border-radius:50%;font-size:15px;line-height:1;display:grid;place-items:center;padding:0;margin-left:2px}
+.del:hover{background:var(--bad-soft);color:var(--bad)}
+.restore{border:1px solid var(--accent);background:none;color:var(--accent);font-weight:700;font-size:13px;border-radius:999px;padding:4px 12px;align-self:flex-start}
+.restore:hover{background:var(--accent-soft)}
+.when .wr{display:flex;align-items:center;gap:4px}
 .dayhead{flex-wrap:wrap;gap:2px 8px}
 .day-off .dayhead b{color:var(--muted)}
 .muted{color:var(--muted)}
@@ -268,7 +274,7 @@ img.art.ready{opacity:1}
       <div>
         <h2>Des menus légers que toute la famille mange</h2>
         <p>Midi pour 2 le lundi, mardi, jeudi et vendredi. Midi pour 4 le mercredi, samedi et dimanche. Soir pour 4 tous les jours. Les calories affichées sont par portion adulte.</p>
-        <p>Pour chaque repas, choisissez : cuisiné, restes du repas d'avant, ou pas de repas. Les quantités, la session de <a href="#batch">batch cooking</a> et la liste de courses suivent. Indiquez vos goûts dans <a href="#gouts">Mes goûts</a>.</p>
+        <p>Supprimez un repas avec la croix ou un jour entier avec « Supprimer le jour ». Un repas peut aussi reprendre les restes du repas d'avant. Les quantités, la session de <a href="#batch">batch cooking</a> et la liste de courses suivent. Indiquez vos goûts dans <a href="#gouts">Mes goûts</a>.</p>
       </div>
       <div class="note">
         <p><strong>Sur l'objectif de 5 kg par mois.</strong> C'est un rythme ambitieux : on recommande en général 0,5 à 1 kg par semaine (2 à 4 kg par mois). Les premières semaines la balance descend souvent plus vite, puis ça se stabilise. Ce plan vise un déficit modéré et tenable.</p>
@@ -1217,23 +1223,23 @@ function renderWeek(){
       const restOK=!!prevActive(sl.key);
       const isRest=mode==="rest"&&src!==sl.key;
       let body;
-      if(mode==="skip")body=`<span class="off">Pas de repas</span>`;
+      if(mode==="skip")body=`<span class="off">Repas supprimé</span><button class="restore" type="button" data-unskip="${sl.key}">Rétablir</button>`;
       else if(!r)body=`<span class="empty">Aucune recette compatible</span>`;
       else body=`${isRest?'<span class="restlab">Restes de '+slotLabel(SK[src])+'</span>':""}<button class="name" type="button" data-open="${src}">${esc(r.n)}</button>`;
       return `<div class="meal ${mode==="skip"?"is-off":""} ${isRest?"is-rest":""}">
         ${r&&mode!=="skip"?`<button class="thumb" type="button" data-open="${src}" tabindex="-1" aria-hidden="true">${artImg(r.id,300)}</button>`:""}
-        <div class="when"><span>${sl.when}</span><span class="pers ${sl.pers===4?"fam":""}">${sl.pers} pers.</span></div>
+        <div class="when"><span>${sl.when}</span><span class="wr"><span class="pers ${sl.pers===4?"fam":""}">${sl.pers} pers.</span>${mode!=="skip"?`<button class="del" type="button" data-skip="${sl.key}" aria-label="Supprimer le repas du ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" title="Supprimer ce repas">×</button>`:""}</span></div>
         ${body}
         <div class="meta"><span class="num">${r&&mode!=="skip"?"≈ "+kcal(r)+" kcal":""}</span>${r&&!isRest&&mode!=="skip"?tagHTML(r):""}</div>
         <div class="ctrl"><select id="mode-${sl.key}" data-mode="${sl.key}" aria-label="${DAYS[i]} ${sl.when.toLowerCase()}">
           <option value="cook" ${mode==="cook"?"selected":""}>Cuisiné</option>
           <option value="rest" ${mode==="rest"?"selected":""} ${restOK?"":"disabled"}>Restes du repas d'avant</option>
-          <option value="skip" ${mode==="skip"?"selected":""}>Pas de repas</option>
+          <option value="skip" ${mode==="skip"?"selected":""}>Supprimé</option>
         </select></div>
         ${mode!=="skip"&&!isRest?`<div class="acts"><button class="swap" type="button" data-pick="${sl.key}">Catalogue</button><button class="swap" type="button" data-swap="${sl.key}">Au hasard</button></div>`:""}</div>`;
     }).join("");
     const tot=["m","s"].reduce((a,w)=>{const r=W.mode[i+w]==="skip"?null:recipeAt(i+w);return a+(r?kcal(r):0)},0);
-    return `<div class="day ${dayOff?"day-off":""}"><div class="dayhead"><b>${d}</b><small>${dateOf(i)}</small><button class="dayskip" type="button" data-day="${i}">${dayOff?"Réactiver":"Sauter le jour"}</button></div>${meals}<div class="daytotal">${tot?'Midi + soir : <span class="num">≈ '+tot+' kcal</span>':"Jour sauté"}</div></div>`;
+    return `<div class="day ${dayOff?"day-off":""}"><div class="dayhead"><b>${d}</b><small>${dateOf(i)}</small><button class="dayskip" type="button" data-day="${i}">${dayOff?"Rétablir le jour":"Supprimer le jour"}</button></div>${meals}<div class="daytotal">${tot?'Midi + soir : <span class="num">≈ '+tot+' kcal</span>':"Jour supprimé"}</div></div>`;
   }).join("");
   ART.hydrate(el);
 }
@@ -1390,8 +1396,10 @@ document.addEventListener("click",e=>{
   const vw=e.target.closest("[data-view]");
   if(vw){const d=vw.closest(".citem").querySelector(".cdet");d.hidden=!d.hidden;vw.textContent=d.hidden?"Voir":"Masquer";return}
   const cf=e.target.closest("[data-catf]");if(cf){catF=cf.dataset.catf;renderCatList(cf.dataset.sfx,cf.dataset.sfx==="m"?catKey:null);return}
+  const sk=e.target.closest("[data-skip]");if(sk){const k=sk.dataset.skip;setMode(k,"skip");build("keep");renderAll();toast("Repas du "+slotLabel(SK[k])+" supprimé");return}
+  const us=e.target.closest("[data-unskip]");if(us){setMode(us.dataset.unskip,"cook");build("keep");renderAll();return}
   const d=e.target.closest("[data-day]");
-  if(d){const i=d.dataset.day,off=W.mode[i+"m"]==="skip"&&W.mode[i+"s"]==="skip";setMode(i+"m",off?"cook":"skip");setMode(i+"s",off?"cook":"skip");build("keep");renderAll();return}
+  if(d){const i=d.dataset.day,off=W.mode[i+"m"]==="skip"&&W.mode[i+"s"]==="skip";setMode(i+"m",off?"cook":"skip");setMode(i+"s",off?"cook":"skip");build("keep");renderAll();toast(off?DAYS[i]+" rétabli":DAYS[i]+" supprimé : ni courses ni préparation pour ce jour");return}
   const ss=e.target.closest("[data-sess]");if(ss){W.shopSess=+ss.dataset.sess;save();renderShop();return}
   const p=e.target.closest("[data-pref]");
   if(p){const id=p.dataset.pref,v=S.prefs[id];S.prefs[id]=v===1?-1:v===-1?0:1;if(!S.prefs[id])delete S.prefs[id];build("keep");renderAll()}
