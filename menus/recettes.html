@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>Recettes du semainier</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : en-tête collant ; à gauche les ingrédients à cocher, à droite les recettes qui restent (pile sur mobile) */
+:root{
+  --bg:#F2F5EF; --surface:#FFFFFF; --ink:#1C2A20; --muted:#5B6A5F; --line:#D6DFD3;
+  --accent:#2D6A42; --accent-ink:#FFFFFF; --accent-soft:#E2EEE4;
+  --warm:#B85A14; --warm-soft:#F7E8DA; --bad:#A2372A; --bad-soft:#F6E2DE;
+  --f-display:"Young Serif", Georgia, "Times New Roman", serif;
+  --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#121915; --surface:#1A231E; --ink:#E4EBE3; --muted:#9AA89D; --line:#2C3830;
+  --accent:#7DC497; --accent-ink:#0F1A13; --accent-soft:#1F3327;
+  --warm:#EB9A5E; --warm-soft:#3A2919; --bad:#E58072; --bad-soft:#3B2220; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#121915; --surface:#1A231E; --ink:#E4EBE3; --muted:#9AA89D; --line:#2C3830;
+  --accent:#7DC497; --accent-ink:#0F1A13; --accent-soft:#1F3327;
+  --warm:#EB9A5E; --warm-soft:#3A2919; --bad:#E58072; --bad-soft:#3B2220; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;line-height:1.15;text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-block:12px}
+.top h1{font-size:24px}
+.back{margin-left:auto;text-decoration:none;font-weight:600;font-size:14px;color:var(--accent);padding:7px 14px;border-radius:999px;border:1px solid var(--accent)}
+.back:hover{background:var(--accent-soft)}
+main{padding-block:24px 64px;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:28px;align-items:start}
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 72px);max-height:calc(100vh - 96px);overflow:auto;padding-right:6px}
+.side h2{font-size:20px;margin-bottom:4px}
+.side>p{margin:0 0 14px;font-size:13px;color:var(--muted)}
+#toggleFacets{display:none}
+.fgroup{margin-bottom:16px}
+.fgroup h3{font-family:var(--f-body);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.fchips{display:flex;flex-wrap:wrap;gap:5px}
+.fchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 6px 4px 11px;font-size:13px}
+.fchip .fc{font-size:11px;background:var(--bg);border-radius:999px;padding:0 6px;color:var(--muted)}
+.fchip:hover:not(:disabled){border-color:var(--accent)}
+.fchip.in{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.fchip.in .fc{background:color-mix(in srgb,var(--accent-ink) 25%,transparent);color:var(--accent-ink)}
+.fchip.out{background:var(--bad-soft);border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.fchip.out .fc{background:transparent;color:var(--bad);text-decoration:none}
+.fchip:disabled{opacity:.38;cursor:default}
+.content{display:flex;flex-direction:column;gap:14px;min-width:0}
+.search input{font:inherit;width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:16px}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.qf{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--muted)}
+.qf[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.status{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:2px solid var(--ink)}
+#count{font-size:15px}
+#count b{font-size:20px}
+#active{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.pill{border:0;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600}
+.pill.in{background:var(--accent-soft);color:var(--accent)}
+.pill.out{background:var(--bad-soft);color:var(--bad)}
+.clear{border:0;background:none;text-decoration:underline;color:var(--muted);font-size:13px}
+#results{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:10px}
+.card{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card:hover{border-color:var(--accent)}
+.cname{font-weight:700;font-size:15px;line-height:1.3}
+.cmeta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--muted);align-items:center}
+.cing{font-size:13px;color:var(--muted)}
+.cing mark{background:var(--accent-soft);color:var(--accent);font-weight:600;border-radius:3px;padding:0 2px}
+.tag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px}
+.tag.plaisir{background:var(--warm-soft);color:var(--warm)}
+.tag.vege{background:var(--accent-soft);color:var(--accent)}
+.none{grid-column:1/-1;padding:28px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:10px;color:var(--muted)}
+.none b{color:var(--ink)}
+.overlay{position:fixed;inset:0;background:rgba(10,20,14,.55);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.rcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px;max-width:760px;width:100%;position:relative}
+.close{position:absolute;top:12px;right:12px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;font-weight:600}
+.rhead h3{font-size:24px;padding-right:80px}
+.rfacts{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);margin-top:8px;align-items:center}
+.serv{display:inline-flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
+.sb{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:18px;line-height:1}
+.serv b{min-width:2ch;text-align:center;font-size:18px}
+.rbody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px}
+.rbody h4{margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ings{list-style:none;margin:0;padding:0;font-size:14px}
+.ings li{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.ings .num{color:var(--accent);text-align:right}
+.steps{margin:0;padding-left:20px;font-size:14px}
+.steps li{margin-bottom:6px}
+.bcnote{margin-top:12px;font-size:13px;background:var(--accent-soft);border-radius:8px;padding:8px 12px}
+.bcnote b{color:var(--accent)}
+.kid{font-size:13px;background:var(--warm-soft);border-radius:8px;padding:8px 12px}
+.kid b{color:var(--warm)}
+@media (max-width:860px){
+  main{grid-template-columns:1fr}
+  .side{position:static;max-height:none;overflow:visible;padding:0}
+  #toggleFacets{display:inline-flex;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:600;margin-bottom:8px}
+  #facetPanel{display:none}
+  #facetPanel.open{display:block}
+}
+@media (max-width:560px){.rbody{grid-template-columns:1fr}}
+</style>
+
+<header class="top"><div class="wrap">
+  <h1>Toutes les recettes</h1>
+  <a class="back" href="index.html">← Semainier</a>
+</div></header>
+
+<main class="wrap">
+  <aside class="side">
+    <h2>Ingrédients</h2>
+    <p>Le chiffre indique combien de recettes restent si vous l'ajoutez. Une fois = avec, deux fois = sans, trois fois = retiré.</p>
+    <button type="button" id="toggleFacets" aria-expanded="false" aria-controls="facetPanel">Choisir des ingrédients</button>
+    <div id="facetPanel"><div id="facets"></div></div>
+  </aside>
+  <section class="content">
+    <label class="search"><input type="search" id="q" placeholder="Rechercher : gratin, curry, saumon…" autocomplete="off" aria-label="Rechercher une recette"></label>
+    <div class="bar" id="quick"></div>
+    <div class="status"><div id="count"></div><div id="active"></div></div>
+    <div id="results"></div>
+  </section>
+</main>
+<div class="overlay" id="overlay" hidden></div>
+<script>
+
+// ---------- Ingrédients ----------
+// u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
+const AISLES={bo:"Boucherie & poissonnerie",fl:"Fruits & légumes",cr:"Crèmerie, œufs & frais",co:"Épicerie & conserves",pa:"Pain",pl:"Placard (à vérifier)"};
+const I={
+ poulet:{n:"Blanc de poulet",r:"bo",u:"g",k:1.1,c:"Viandes"},
+ dinde:{n:"Escalope de dinde",r:"bo",u:"g",k:1.05,c:"Viandes"},
+ boeuf:{n:"Bœuf haché 5 %",r:"bo",u:"g",k:1.25,c:"Viandes"},
+ porc:{n:"Filet mignon de porc",r:"bo",u:"g",k:1.2,c:"Viandes"},
+ jambon:{n:"Jambon blanc découenné",r:"bo",u:"g",k:1.1,c:"Viandes"},
+ saumon:{n:"Pavé de saumon",r:"bo",u:"g",k:2.0,c:"Poissons & crevettes"},
+ cabillaud:{n:"Dos de cabillaud",r:"bo",u:"g",k:0.8,c:"Poissons & crevettes"},
+ crevettes:{n:"Crevettes cuites décortiquées",r:"bo",u:"g",k:0.9,c:"Poissons & crevettes"},
+ thon:{n:"Thon au naturel (boîte)",r:"co",u:"g",k:1.15,c:"Poissons & crevettes"},
+ oeuf:{n:"Œufs",r:"cr",u:"pc",k:75,c:"Œufs & légumineuses"},
+ lentilles:{n:"Lentilles corail",r:"co",u:"g",k:3.4,c:"Œufs & légumineuses"},
+ poischiches:{n:"Pois chiches (boîte, égouttés)",r:"co",u:"g",k:1.4,c:"Œufs & légumineuses"},
+ haricotsrouges:{n:"Haricots rouges (boîte, égouttés)",r:"co",u:"g",k:1.2,c:"Œufs & légumineuses"},
+ courgette:{n:"Courgettes",r:"fl",u:"g",k:0.17,c:"Légumes",w:200,wl:"courgette"},
+ brocoli:{n:"Brocoli",r:"fl",u:"g",k:0.34,c:"Légumes",w:400,wl:"tête"},
+ champignons:{n:"Champignons de Paris",r:"fl",u:"g",k:0.22,c:"Légumes",w:250,wl:"barquette"},
+ poivron:{n:"Poivrons",r:"fl",u:"g",k:0.25,c:"Légumes",w:150,wl:"poivron"},
+ epinards:{n:"Jeunes pousses d'épinards",r:"fl",u:"g",k:0.23,c:"Légumes",w:120,wl:"sachet"},
+ carotte:{n:"Carottes",r:"fl",u:"g",k:0.4,c:"Légumes",w:100,wl:"carotte"},
+ haricotsverts:{n:"Haricots verts (frais ou surgelés)",r:"fl",u:"g",k:0.3,c:"Légumes"},
+ choufleur:{n:"Chou-fleur",r:"fl",u:"g",k:0.25,c:"Légumes",w:600,wl:"chou-fleur"},
+ tomate:{n:"Tomates fraîches",r:"fl",u:"g",k:0.18,c:"Légumes",w:120,wl:"tomate"},
+ poireau:{n:"Poireaux",r:"fl",u:"g",k:0.3,c:"Légumes",w:150,wl:"poireau"},
+ potiron:{n:"Potiron ou butternut",r:"fl",u:"g",k:0.45,c:"Légumes",w:1000,wl:"courge"},
+ salade:{n:"Salade verte",r:"fl",u:"g",k:0.15,c:"Légumes",w:300,wl:"salade"},
+ concombre:{n:"Concombre",r:"fl",u:"g",k:0.12,c:"Légumes",w:300,wl:"concombre"},
+ avocat:{n:"Avocat",r:"fl",u:"pc",k:240,c:"Légumes"},
+ mais:{n:"Maïs (boîte)",r:"co",u:"g",k:0.8,c:"Légumes"},
+ oignon:{n:"Oignons",r:"fl",u:"g",k:0.4,w:100,wl:"oignon"},
+ ail:{n:"Ail",r:"fl",u:"gousse",k:4},
+ citron:{n:"Citron",r:"fl",u:"pc",k:20},
+ persil:{n:"Persil ou coriandre frais",r:"fl",u:"bouquet",k:5},
+ tomatecc:{n:"Tomates concassées",r:"co",u:"g",k:0.25,w:400,wl:"boîte de 400 g"},
+ pdt:{n:"Pommes de terre",r:"fl",u:"g",k:0.8,s:1,c:"Féculents"},
+ patatedouce:{n:"Patates douces",r:"fl",u:"g",k:0.86,s:1,c:"Féculents",w:300,wl:"patate douce"},
+ riz:{n:"Riz basmati",r:"co",u:"g",k:3.5,s:1,c:"Féculents"},
+ pates:{n:"Pâtes complètes",r:"co",u:"g",k:3.5,s:1,c:"Féculents"},
+ lasagne:{n:"Feuilles de lasagne",r:"co",u:"g",k:3.5,s:1},
+ nouilles:{n:"Nouilles chinoises",r:"co",u:"g",k:3.6,s:1,c:"Féculents"},
+ quinoa:{n:"Quinoa",r:"co",u:"g",k:3.7,s:1,c:"Féculents"},
+ semoule:{n:"Semoule complète",r:"co",u:"g",k:3.5,s:1,c:"Féculents"},
+ gnocchis:{n:"Gnocchis",r:"cr",u:"g",k:1.6,s:1,c:"Féculents"},
+ tortillas:{n:"Tortillas de blé",r:"pa",u:"pc",k:140,s:1,c:"Féculents"},
+ painburger:{n:"Pains à burger complets",r:"pa",u:"pc",k:190,s:1},
+ painmie:{n:"Pain de mie complet (tranches)",r:"pa",u:"pc",k:70,s:1},
+ patepizza:{n:"Pâte à pizza fine",r:"cr",u:"g",k:2.7,s:1,w:260,wl:"rouleau"},
+ cornflakes:{n:"Corn flakes nature",r:"co",u:"g",k:3.8},
+ chapelure:{n:"Chapelure",r:"co",u:"g",k:3.7},
+ emmental:{n:"Emmental râpé",r:"cr",u:"g",k:3.6,c:"Fromages & crème"},
+ parmesan:{n:"Parmesan",r:"cr",u:"g",k:4.0,c:"Fromages & crème"},
+ mozza:{n:"Mozzarella allégée",r:"cr",u:"g",k:1.6,c:"Fromages & crème",w:125,wl:"boule"},
+ feta:{n:"Feta",r:"cr",u:"g",k:2.6,c:"Fromages & crème"},
+ cheddar:{n:"Cheddar en tranches",r:"cr",u:"pc",k:60,c:"Fromages & crème"},
+ reblochon:{n:"Reblochon",r:"cr",u:"g",k:3.3,c:"Fromages & crème"},
+ creme:{n:"Crème légère 15 %",r:"cr",u:"ml",k:1.6,c:"Fromages & crème"},
+ fromageblanc:{n:"Fromage blanc 0 %",r:"cr",u:"g",k:0.48},
+ yaourt:{n:"Yaourt nature",r:"cr",u:"g",k:0.5},
+ lait:{n:"Lait demi-écrémé",r:"cr",u:"ml",k:0.46},
+ coco:{n:"Lait de coco allégé",r:"co",u:"ml",k:0.75},
+ huile:{n:"Huile d'olive",r:"pl",u:"cs",k:90},
+ soja:{n:"Sauce soja",r:"pl",u:"cs",k:10},
+ miel:{n:"Miel",r:"pl",u:"cs",k:60},
+ moutarde:{n:"Moutarde",r:"pl",u:"cs",k:20},
+ ketchup:{n:"Ketchup",r:"pl",u:"cs",k:20},
+ bouillon:{n:"Bouillon cube de légumes",r:"pl",u:"pc",k:10},
+ curry:{n:"Curry doux",r:"pl",u:"cc",k:5},
+ paprika:{n:"Paprika",r:"pl",u:"cc",k:5},
+ cumin:{n:"Cumin",r:"pl",u:"cc",k:5},
+ ras:{n:"Ras el hanout",r:"pl",u:"cc",k:5},
+ herbes:{n:"Herbes de Provence",r:"pl",u:"cc",k:2},
+ sesame:{n:"Graines de sésame",r:"pl",u:"cc",k:18}
+};
+
+// ---------- Recettes (quantités pour 1 portion adulte) ----------
+// for: l2 = midi à 2 en semaine, fam = repas familial à 4
+const R=[
+ {id:"tikka",n:"Poulet tikka masala léger, riz basmati",for:["fam"],p:"poulet",t:35,ing:[["poulet",130],["yaourt",50],["tomatecc",100],["oignon",40],["ail",0.5],["curry",1],["creme",15],["riz",50],["huile",0.25]],
+  st:["Couper le poulet en cubes, le mélanger au yaourt, au curry et à l'ail écrasé. Laisser mariner 15 min (ou la veille).","Lancer la cuisson du riz.","Faire revenir l'oignon émincé dans l'huile, ajouter le poulet et le dorer 5 min.","Verser les tomates concassées et mijoter 15 min à couvert. Hors du feu, ajouter la crème."],kid:"Curry doux et sauce crémeuse : c'est souvent le plat préféré des ados."},
+ {id:"hachis",n:"Hachis parmentier allégé au chou-fleur",for:["fam"],p:"boeuf",t:50,ing:[["boeuf",110],["pdt",150],["choufleur",150],["carotte",50],["oignon",40],["lait",50],["emmental",15]],
+  st:["Cuire pommes de terre et chou-fleur à l'eau 20 min, écraser avec le lait chaud, saler, poivrer, muscade.","Faire revenir l'oignon et la carotte râpée, ajouter le bœuf, cuire 5 min.","Étaler la viande dans un plat, couvrir de purée, parsemer d'emmental.","Gratiner 20 min à 200 °C."],kid:"Le chou-fleur disparaît dans la purée : personne ne le remarque."},
+ {id:"nuggets",n:"Nuggets de poulet au four, frites maison",for:["fam"],p:"poulet",t:40,tag:"plaisir",ing:[["poulet",130],["cornflakes",25],["oeuf",0.3],["paprika",0.5],["pdt",200],["huile",0.5],["carotte",80],["citron",0.1]],
+  st:["Préchauffer le four à 210 °C. Couper les pommes de terre en frites, les mélanger avec l'huile et le paprika, enfourner 35 min en les retournant à mi-cuisson.","Écraser les corn flakes. Couper le poulet en morceaux, les passer dans l'œuf battu puis dans les corn flakes.","Cuire les nuggets 15 min sur papier cuisson.","Servir avec des carottes râpées au citron."],kid:"Croustillant sans friture. Ajoutez un peu de ketchup pour les enfants."},
+ {id:"veloute",n:"Velouté de potiron et croque-monsieur",for:["fam","l2"],p:"jambon",t:35,ing:[["potiron",250],["pdt",50],["oignon",30],["bouillon",0.25],["creme",10],["painmie",2],["jambon",30],["emmental",15]],
+  st:["Éplucher et couper potiron, pomme de terre et oignon. Couvrir d'eau avec le bouillon, cuire 20 min.","Mixer avec la crème, rectifier l'assaisonnement.","Garnir le pain de mie de jambon et d'emmental, dorer 10 min au four à 200 °C ou à la poêle."],kid:"Un croque supplémentaire pour les enfants."},
+ {id:"teriyaki",n:"Saumon teriyaki, riz et brocoli",for:["fam"],p:"saumon",t:25,ing:[["saumon",120],["soja",1],["miel",0.5],["ail",0.5],["riz",50],["brocoli",150],["sesame",0.5]],
+  st:["Cuire le riz. Cuire le brocoli 6 min à la vapeur.","Mélanger sauce soja, miel et ail râpé.","Saisir le saumon côté peau 4 min, retourner, verser la sauce et laisser caraméliser 2 min.","Parsemer de sésame."],kid:"La sauce sucrée-salée fait aimer le poisson."},
+ {id:"pizza",n:"Pizza maison jambon-champignons, salade verte",for:["fam"],p:"jambon",t:30,tag:"plaisir",ing:[["patepizza",80],["tomatecc",60],["mozza",50],["jambon",40],["champignons",60],["herbes",0.5],["salade",40]],
+  st:["Préchauffer le four à 230 °C. Dérouler la pâte sur sa feuille.","Étaler les tomates concassées assaisonnées d'herbes.","Répartir jambon, champignons émincés et mozzarella.","Cuire 12 à 15 min. Servir avec la salade."],kid:"Laissez-les garnir leur part eux-mêmes."},
+ {id:"cabillaud",n:"Cabillaud en croûte de parmesan, purée de patate douce",for:["fam"],p:"cabillaud",t:35,ing:[["cabillaud",150],["parmesan",15],["chapelure",10],["huile",0.25],["patatedouce",200],["lait",30],["haricotsverts",120]],
+  st:["Cuire les patates douces 20 min à l'eau, écraser avec le lait.","Mélanger parmesan, chapelure et huile, en couvrir le cabillaud.","Cuire 15 min au four à 200 °C.","Servir avec les haricots verts cuits à la vapeur."]},
+ {id:"burger",n:"Burger maison et potatoes au four",for:["fam"],p:"boeuf",t:35,tag:"plaisir",ing:[["boeuf",120],["painburger",1],["cheddar",1],["tomate",40],["salade",15],["oignon",15],["ketchup",0.5],["pdt",150],["huile",0.5],["paprika",0.5]],
+  st:["Couper les pommes de terre en quartiers, mélanger avec l'huile et le paprika, cuire 30 min à 210 °C.","Façonner des steaks, les cuire 3 min par face. Poser le cheddar en fin de cuisson.","Toaster les pains, monter les burgers avec salade, tomate, oignon et ketchup."],kid:"Le burger du samedi soir, version maison et moins grasse."},
+ {id:"mignon",n:"Filet mignon à la moutarde, pommes vapeur et haricots verts",for:["fam"],p:"porc",t:40,ing:[["porc",140],["moutarde",0.5],["creme",20],["ail",0.5],["pdt",180],["haricotsverts",150]],
+  st:["Cuire pommes de terre et haricots verts à la vapeur.","Dorer le filet mignon sur toutes les faces, puis 20 min au four à 180 °C.","Déglacer la poêle avec un peu d'eau, ajouter crème et moutarde, réduire 2 min.","Trancher et napper de sauce."]},
+ {id:"shakshuka",n:"Shakshuka aux poivrons et feta",for:["fam","l2"],p:"oeuf",t:25,tag:"vege",ing:[["oeuf",2],["tomatecc",200],["poivron",100],["oignon",40],["cumin",0.5],["feta",15],["huile",0.25],["painmie",2]],
+  st:["Faire revenir oignon et poivron émincés dans l'huile 8 min.","Ajouter tomates et cumin, mijoter 10 min.","Creuser des puits, casser les œufs, couvrir et cuire 6 min.","Émietter la feta, servir avec le pain grillé."]},
+ {id:"buddha",n:"Buddha bowl patate douce, pois chiches et feta",for:["l2"],p:"poischiches",t:30,tag:"vege",ing:[["patatedouce",150],["poischiches",100],["epinards",50],["feta",20],["yaourt",30],["citron",0.25],["cumin",0.5],["huile",0.25]],
+  st:["Couper la patate douce en cubes, mélanger avec la moitié de l'huile et le cumin, rôtir 25 min à 200 °C.","Rôtir les pois chiches égouttés les 10 dernières minutes.","Sauce : yaourt, jus de citron, sel, poivre.","Dresser sur les épinards, ajouter la feta."]},
+ {id:"cesar",n:"Salade César légère au poulet",for:["l2"],p:"poulet",t:20,ing:[["poulet",120],["salade",80],["tomate",60],["oeuf",1],["parmesan",10],["painmie",1],["yaourt",40],["moutarde",0.25],["citron",0.25]],
+  st:["Cuire l'œuf 9 min, griller le poulet à la poêle sans matière grasse.","Toaster le pain et le couper en croûtons.","Sauce : yaourt, moutarde, citron, parmesan râpé.","Assembler salade, tomates, poulet tranché, œuf, croûtons, sauce."]},
+ {id:"poke",n:"Poke bowl aux crevettes",for:["l2"],p:"crevettes",t:20,ing:[["crevettes",100],["riz",50],["avocat",0.25],["concombre",80],["carotte",50],["mais",40],["soja",1],["sesame",0.5]],
+  st:["Cuire le riz, le laisser tiédir.","Couper concombre et avocat en dés, râper la carotte.","Disposer riz, légumes, maïs et crevettes.","Arroser de sauce soja, parsemer de sésame."]},
+ {id:"wraps",n:"Wraps thon, maïs et crudités",for:["l2"],p:"thon",t:10,ing:[["thon",80],["tortillas",2],["fromageblanc",40],["salade",20],["tomate",60],["mais",30],["concombre",50]],
+  st:["Mélanger thon émietté, fromage blanc, sel, poivre.","Tartiner les tortillas, ajouter salade, tomate, concombre et maïs.","Rouler serré, couper en deux."]},
+ {id:"taboule",n:"Taboulé de quinoa au poulet et feta",for:["l2"],p:"poulet",t:25,ing:[["quinoa",50],["poulet",100],["feta",25],["concombre",80],["tomate",80],["citron",0.5],["persil",0.25],["huile",0.5]],
+  st:["Cuire le quinoa 12 min, égoutter, laisser refroidir.","Griller le poulet et le couper en dés.","Mélanger quinoa, légumes en dés, persil, feta, poulet.","Assaisonner d'huile et de citron."]},
+ {id:"lasagnes",n:"Lasagnes bœuf et courgettes",for:["fam"],p:"boeuf",t:60,ing:[["boeuf",110],["courgette",200],["tomatecc",120],["oignon",30],["lasagne",30],["mozza",40],["parmesan",10],["herbes",0.5]],
+  st:["Faire revenir l'oignon et le bœuf, ajouter tomates et herbes, mijoter 10 min.","Couper les courgettes en fines tranches dans la longueur.","Alterner sauce, feuilles de lasagne, courgettes, mozzarella.","Finir par le parmesan, cuire 35 min à 180 °C."]},
+ {id:"chili",n:"Chili con carne, riz",for:["fam"],p:"boeuf",t:40,ing:[["boeuf",100],["haricotsrouges",100],["poivron",80],["tomatecc",120],["oignon",40],["cumin",0.5],["paprika",0.5],["riz",50],["fromageblanc",30]],
+  st:["Faire revenir l'oignon et le poivron, ajouter le bœuf.","Ajouter épices, tomates et haricots, mijoter 25 min.","Cuire le riz. Servir avec une cuillère de fromage blanc."]},
+ {id:"fajitas",n:"Fajitas de poulet aux poivrons",for:["fam"],p:"poulet",t:25,tag:"plaisir",ing:[["poulet",120],["poivron",120],["oignon",40],["paprika",0.5],["cumin",0.5],["huile",0.25],["tortillas",2],["fromageblanc",40],["tomate",50],["salade",20],["emmental",10]],
+  st:["Émincer poulet, poivrons et oignon.","Saisir le poulet avec les épices, ajouter les légumes, cuire 8 min.","Chauffer les tortillas. Chacun garnit avec fromage blanc, crudités et emmental."]},
+ {id:"gratinpates",n:"Gratin de pâtes au brocoli et jambon",for:["fam"],p:"jambon",t:35,ing:[["pates",60],["brocoli",150],["jambon",50],["lait",100],["creme",10],["emmental",20]],
+  st:["Cuire les pâtes, ajouter les fleurettes de brocoli 4 min avant la fin.","Égoutter, mélanger avec le jambon en dés, le lait et la crème.","Verser dans un plat, parsemer d'emmental, gratiner 15 min à 200 °C."]},
+ {id:"dahl",n:"Dahl de lentilles corail au lait de coco",for:["fam","l2"],p:"lentilles",t:30,tag:"vege",ing:[["lentilles",60],["coco",60],["tomatecc",100],["oignon",40],["carotte",80],["epinards",50],["curry",1],["riz",30]],
+  st:["Faire revenir oignon et carotte en dés.","Ajouter lentilles rincées, curry, tomates, lait de coco et 2 fois leur volume d'eau.","Mijoter 20 min. Ajouter les épinards à la fin.","Servir avec un peu de riz."]},
+ {id:"bolo",n:"Spaghetti bolognaise bœuf-lentilles",for:["fam"],p:"boeuf",t:40,ing:[["boeuf",70],["lentilles",20],["tomatecc",150],["carotte",40],["oignon",30],["herbes",0.5],["pates",60],["parmesan",10]],
+  st:["Faire revenir oignon et carotte râpée, ajouter le bœuf.","Ajouter lentilles, tomates, herbes et un verre d'eau, mijoter 25 min.","Cuire les pâtes. Servir avec le parmesan."],kid:"Les lentilles corail fondent dans la sauce : plus de volume, moins de calories."},
+ {id:"couscous",n:"Couscous de poulet aux légumes",for:["fam"],p:"poulet",t:45,ing:[["poulet",120],["semoule",50],["poischiches",60],["carotte",80],["courgette",120],["tomatecc",60],["oignon",30],["ras",1]],
+  st:["Dorer le poulet en morceaux avec l'oignon et le ras el hanout.","Ajouter carottes, tomates et 50 cl d'eau, cuire 15 min.","Ajouter courgettes et pois chiches, cuire 10 min.","Préparer la semoule avec un peu de bouillon de cuisson."]},
+ {id:"dinde",n:"Dinde à la crème de champignons, riz",for:["fam"],p:"dinde",t:30,ing:[["dinde",130],["champignons",150],["creme",25],["oignon",20],["riz",50],["haricotsverts",100]],
+  st:["Cuire le riz et les haricots verts.","Dorer les escalopes coupées en lanières, réserver.","Faire revenir oignon et champignons, ajouter la crème, remettre la dinde 3 min."]},
+ {id:"wok",n:"Wok de crevettes aux nouilles et légumes",for:["fam","l2"],p:"crevettes",t:20,ing:[["crevettes",120],["nouilles",60],["poivron",70],["carotte",60],["champignons",60],["ail",0.5],["soja",1.5],["huile",0.25]],
+  st:["Cuire les nouilles selon le paquet.","Saisir à feu vif les légumes en lanières 5 min avec l'ail.","Ajouter crevettes, nouilles et sauce soja, sauter 2 min."]},
+ {id:"tortilla",n:"Tortilla espagnole et salade",for:["fam","l2"],p:"oeuf",t:35,tag:"vege",ing:[["oeuf",2.5],["pdt",150],["oignon",40],["poivron",50],["huile",0.5],["salade",40]],
+  st:["Cuire pommes de terre en fines tranches et oignon dans l'huile, couvert, 15 min.","Battre les œufs, y verser les légumes, assaisonner.","Cuire 8 min à feu doux, retourner à l'aide d'une assiette, 4 min encore."]},
+ {id:"quiche",n:"Quiche sans pâte poireaux-saumon",for:["fam","l2"],p:"saumon",t:45,ing:[["oeuf",1.5],["lait",80],["poireau",150],["saumon",70],["emmental",15],["salade",40]],
+  st:["Faire fondre les poireaux émincés 10 min à la poêle.","Battre œufs et lait, ajouter poireaux, saumon en dés et emmental.","Cuire 30 min à 180 °C dans un moule. Servir avec la salade."]},
+ {id:"tartiflette",n:"Tartiflette légère",for:["fam"],p:"jambon",t:50,tag:"plaisir",ing:[["pdt",200],["jambon",40],["oignon",40],["reblochon",35],["creme",15],["salade",60]],
+  st:["Cuire les pommes de terre 15 min à l'eau, les couper en rondelles.","Faire revenir l'oignon, ajouter le jambon en dés.","Mélanger avec la crème dans un plat, couvrir de reblochon en tranches.","Cuire 20 min à 200 °C. Grosse salade à côté."]},
+ {id:"gnocchis",n:"Gnocchis tomate, épinards et mozzarella",for:["fam","l2"],p:"vege",t:20,tag:"vege",ing:[["gnocchis",150],["tomatecc",120],["epinards",80],["mozza",40],["ail",0.5],["herbes",0.5]],
+  st:["Faire revenir l'ail, ajouter tomates et herbes, mijoter 8 min.","Ajouter les épinards puis les gnocchis, cuire 3 min.","Ajouter la mozzarella, couvrir 2 min le temps qu'elle file."]},
+ {id:"poissonpane",n:"Poisson pané maison, purée de carottes",for:["fam"],p:"cabillaud",t:35,ing:[["cabillaud",150],["cornflakes",20],["oeuf",0.3],["carotte",200],["pdt",100],["lait",30]],
+  st:["Cuire carottes et pommes de terre 20 min, écraser avec le lait.","Passer le poisson dans l'œuf puis les corn flakes écrasés.","Cuire 15 min à 200 °C sur papier cuisson."],kid:"Un poisson pané croustillant que les enfants reconnaissent."}
+];
+const RB=Object.fromEntries(R.map(r=>[r.id,r]));
+
+// ---------- Recettes ajoutées ----------
+Object.assign(I,{
+ cuisse:{n:"Cuisses de poulet sans peau",r:"bo",u:"g",k:1.2,c:"Viandes"},
+ petitspois:{n:"Petits pois (surgelés)",r:"co",u:"g",k:0.8,c:"Légumes"},
+ maizena:{n:"Maïzena",r:"pl",u:"g",k:3.5}
+});
+R.push(
+ {id:"steakpuree",n:"Steak haché, purée maison et haricots verts",for:["fam"],p:"boeuf",t:30,ing:[["boeuf",120],["pdt",200],["lait",50],["haricotsverts",150]],
+  st:["Cuire les pommes de terre 20 min à l'eau, écraser avec le lait chaud, saler, poivrer.","Cuire les haricots verts à la vapeur.","Cuire les steaks 3 min par face dans une poêle antiadhésive, sans matière grasse."],kid:"Le grand classique qui plaît à tout le monde."},
+ {id:"rizcantonais",n:"Riz cantonais léger",for:["fam","l2"],p:"jambon",t:20,ing:[["riz",60],["oeuf",1],["jambon",40],["petitspois",60],["oignon",20],["soja",1],["huile",0.25]],
+  st:["Cuire le riz la veille (ou utiliser un riz déjà cuit et froid).","Cuire les œufs battus en omelette fine, la couper en lanières.","Faire sauter l'oignon, les petits pois et le jambon en dés, ajouter le riz, la sauce soja et l'omelette."],kid:"Parfait pour utiliser du riz cuit en avance."},
+ {id:"currypc",n:"Curry de pois chiches aux épinards",for:["fam","l2"],p:"poischiches",t:25,ing:[["poischiches",120],["epinards",80],["tomatecc",100],["coco",50],["oignon",30],["curry",1],["riz",40]],
+  st:["Faire revenir l'oignon avec le curry.","Ajouter tomates, lait de coco et pois chiches, mijoter 15 min.","Ajouter les épinards 2 min avant la fin. Servir avec le riz."]},
+ {id:"quesadillas",n:"Quesadillas au poulet, salade verte",for:["fam"],p:"poulet",t:25,tag:"plaisir",ing:[["tortillas",2],["poulet",90],["poivron",60],["mais",30],["emmental",25],["fromageblanc",30],["salade",40]],
+  st:["Cuire le poulet émincé avec les poivrons 8 min.","Garnir une moitié de chaque tortilla avec poulet, poivrons, maïs et emmental, replier.","Dorer 3 min par face à la poêle sans matière grasse. Servir avec le fromage blanc et la salade."],kid:"Coupées en triangles, elles partent en quelques minutes."},
+ {id:"patessaumon",n:"Pâtes au saumon et aux épinards",for:["fam"],p:"saumon",t:20,ing:[["pates",60],["saumon",80],["epinards",80],["creme",25],["ail",0.5],["citron",0.1]],
+  st:["Cuire les pâtes.","Faire revenir l'ail, ajouter le saumon en dés 4 min.","Ajouter crème, épinards et un filet de citron, mélanger avec les pâtes."]},
+ {id:"pouletroti",n:"Poulet rôti, pommes de terre et carottes au four",for:["fam"],p:"poulet",t:60,ing:[["cuisse",180],["pdt",180],["carotte",120],["oignon",30],["huile",0.5],["herbes",0.5]],
+  st:["Préchauffer le four à 200 °C. Couper pommes de terre et carottes en morceaux, l'oignon en quartiers.","Tout mettre dans un plat avec les cuisses, l'huile et les herbes.","Rôtir 50 min en arrosant à mi-cuisson."],kid:"Le repas du dimanche, sans effort."},
+ {id:"velouteporeaux",n:"Velouté poireaux-pommes de terre, tartines gratinées",for:["fam","l2"],p:"vege",t:30,ing:[["poireau",200],["pdt",100],["bouillon",0.25],["creme",10],["painmie",2],["emmental",15]],
+  st:["Cuire poireaux et pommes de terre 20 min dans de l'eau avec le bouillon.","Mixer avec la crème.","Parsemer les tranches de pain d'emmental, gratiner 5 min au four."]},
+ {id:"gratinchoufleur",n:"Gratin de chou-fleur au jambon",for:["fam"],p:"jambon",t:45,ing:[["choufleur",250],["pdt",120],["jambon",60],["lait",120],["maizena",8],["emmental",20]],
+  st:["Cuire chou-fleur et pommes de terre 15 min à l'eau.","Béchamel légère : délayer la maïzena dans le lait froid, chauffer en remuant jusqu'à épaississement.","Mettre légumes et jambon dans un plat, napper, parsemer d'emmental, gratiner 25 min à 200 °C."]}
+);
+R.forEach(r=>RB[r.id]=r);
+
+// ---------- Batch cooking : tâches de session (cru = découpes, four, feu, gel = congélation) et geste du jour J ----------
+const BC={
+ tikka:{t:[["cru","Couper le poulet en cubes et le faire mariner avec le yaourt, le curry et l'ail"],["feu","Cuire la sauce tikka complète avec le poulet, sans la crème"]],j:"Réchauffer la sauce, ajouter la crème hors du feu, réchauffer le riz."},
+ hachis:{t:[["cru","Éplucher pommes de terre, chou-fleur et carottes"],["feu","Cuire la purée et la farce, monter le hachis dans son plat sans le gratiner"]],j:"Gratiner 25 min à 200 °C."},
+ nuggets:{t:[["cru","Tailler les frites et les garder dans l'eau froide au frigo"],["cru","Râper les carottes"],["gel","Paner les nuggets et les congeler crus à plat"]],j:"Cuire nuggets (20 min, sans décongeler) et frites au four à 210 °C."},
+ veloute:{t:[["cru","Éplucher potiron, pomme de terre et oignon"],["feu","Cuire et mixer le velouté"]],j:"Réchauffer le velouté, préparer et dorer les croques (10 min)."},
+ teriyaki:{t:[["cru","Détailler le brocoli en fleurettes"],["feu","Préparer la sauce teriyaki (soja, miel, ail) en pot"]],j:"Cuire le saumon 6 min avec la sauce, le brocoli 6 min à la vapeur, réchauffer le riz."},
+ pizza:{t:[["cru","Émincer les champignons"],["feu","Préparer la sauce tomate aux herbes"]],j:"Garnir la pâte et cuire 12 à 15 min à 230 °C."},
+ cabillaud:{t:[["feu","Cuire et écraser la purée de patate douce"],["cru","Mélanger parmesan, chapelure et huile en boîte"],["cru","Équeuter les haricots verts"]],j:"Couvrir le cabillaud de croûte, 15 min au four ; haricots verts à la vapeur ; réchauffer la purée."},
+ burger:{t:[["cru","Tailler les potatoes et les garder dans l'eau froide"],["gel","Façonner les steaks et les congeler entre deux feuilles de papier cuisson"]],j:"Potatoes 30 min au four. Steaks 3 min par face, puis monter les burgers."},
+ mignon:{t:[["cru","Éplucher les pommes de terre, équeuter les haricots verts"],["feu","Préparer la sauce moutarde-crème en pot"]],j:"Dorer et rôtir le filet 20 min, légumes à la vapeur, réchauffer la sauce."},
+ shakshuka:{t:[["feu","Cuire la base tomates-poivrons-oignon au cumin"]],j:"Réchauffer la base, y cuire les œufs 6 min, émietter la feta."},
+ buddha:{t:[["four","Rôtir la patate douce et les pois chiches"],["cru","Préparer la sauce yaourt-citron en pot"]],j:"Assembler dans les boîtes, sauce au dernier moment."},
+ cesar:{t:[["feu","Cuire les œufs durs, griller le poulet"],["four","Faire les croûtons"],["cru","Préparer la sauce César en pot"]],j:"Assembler avec la salade et la sauce."},
+ poke:{t:[["cru","Couper le concombre, râper les carottes"]],j:"Assembler riz, légumes, crevettes. Couper l'avocat au dernier moment."},
+ wraps:{t:[["cru","Préparer la farce thon-fromage blanc en boîte"]],j:"Garnir et rouler les wraps (5 min)."},
+ taboule:{t:[["feu","Griller le poulet"],["cru","Couper concombre et tomates, ciseler le persil, assembler le taboulé"]],j:"Assaisonner et servir."},
+ lasagnes:{t:[["cru","Trancher les courgettes"],["feu","Cuire la sauce bœuf-tomate"],["four","Monter les lasagnes (cuisson le jour J)"]],j:"Cuire 40 min à 180 °C."},
+ chili:{t:[["feu","Cuire le chili complet (il est meilleur réchauffé)"]],j:"Réchauffer le chili et le riz, fromage blanc à part."},
+ fajitas:{t:[["cru","Émincer poivrons et oignon"],["gel","Mariner le poulet émincé aux épices et le congeler"]],j:"Saisir poulet et légumes 10 min, chauffer les tortillas."},
+ gratinpates:{t:[["feu","Cuire pâtes et brocoli, mélanger avec jambon, lait et crème, monter le gratin"]],j:"Gratiner 20 min à 200 °C."},
+ dahl:{t:[["feu","Cuire le dahl complet"]],j:"Réchauffer, ajouter les épinards, réchauffer le riz."},
+ bolo:{t:[["feu","Cuire la sauce bolognaise bœuf-lentilles"]],j:"Cuire les pâtes, réchauffer la sauce."},
+ couscous:{t:[["feu","Cuire le couscous (poulet et légumes)"]],j:"Réchauffer, préparer la semoule (5 min)."},
+ dinde:{t:[["cru","Émincer les champignons"],["feu","Cuire la sauce champignons-crème"]],j:"Saisir la dinde 5 min, ajouter la sauce, réchauffer riz et haricots."},
+ wok:{t:[["cru","Tailler tous les légumes en lanières"]],j:"Cuire les nouilles, tout sauter au wok 8 min."},
+ tortilla:{t:[["feu","Cuire la tortilla entière"]],j:"Servir froide ou tiède avec la salade."},
+ quiche:{t:[["feu","Faire fondre les poireaux"],["four","Cuire la quiche"]],j:"Réchauffer 10 min ou servir froide, avec la salade."},
+ tartiflette:{t:[["feu","Cuire les pommes de terre, faire revenir oignon et jambon, monter le plat"]],j:"Ajouter le reblochon et cuire 20 min à 200 °C."},
+ gnocchis:{t:[["feu","Préparer la sauce tomate à l'ail"]],j:"Réchauffer la sauce, ajouter épinards, gnocchis et mozzarella (8 min)."},
+ poissonpane:{t:[["feu","Cuire et écraser la purée carottes-pommes de terre"],["cru","Écraser les corn flakes en boîte"]],j:"Paner le poisson et le cuire 15 min à 200 °C."}
+};
+Object.assign(BC,{
+ steakpuree:{t:[["cru","Éplucher les pommes de terre, équeuter les haricots verts"],["feu","Cuire la purée"]],j:"Cuire les steaks 3 min par face, réchauffer purée et haricots."},
+ rizcantonais:{t:[["cru","Émincer l'oignon, couper le jambon en dés"],["feu","Cuire l'omelette fine et la couper en lanières"]],j:"Tout faire sauter au wok 8 min avec le riz déjà cuit."},
+ currypc:{t:[["feu","Cuire le curry complet, sans les épinards"]],j:"Réchauffer, ajouter les épinards, réchauffer le riz."},
+ quesadillas:{t:[["feu","Cuire le poulet émincé avec les poivrons"],["cru","Laver la salade"]],j:"Garnir les tortillas et les dorer 3 min par face."},
+ patessaumon:{t:[],j:"Plat express : cuire les pâtes, le saumon 4 min, ajouter crème et épinards."},
+ pouletroti:{t:[["cru","Éplucher et couper pommes de terre et carottes"],["four","Rôtir le poulet et les légumes ensemble"]],j:"Réchauffer 15 min au four à 180 °C."},
+ velouteporeaux:{t:[["cru","Laver et émincer les poireaux"],["feu","Cuire et mixer le velouté"]],j:"Réchauffer, gratiner les tartines 5 min."},
+ gratinchoufleur:{t:[["feu","Cuire chou-fleur et pommes de terre, faire la béchamel, monter le gratin"]],j:"Gratiner 25 min à 200 °C."}
+});
+const GROUPED={riz:"riz",quinoa:"quinoa"};
+
+// ---------- Catalogue étendu ----------
+Object.assign(I,{
+ paleron:{n:"Bœuf à braiser (paleron)",r:"bo",u:"g",k:1.4,c:"Viandes"},
+ rumsteck:{n:"Rumsteck",r:"bo",u:"g",k:1.3,c:"Viandes"},
+ saucisse:{n:"Saucisses de volaille",r:"bo",u:"g",k:2.0,c:"Viandes"},
+ lardons:{n:"Lardons allégés",r:"bo",u:"g",k:1.4,c:"Viandes"},
+ colin:{n:"Filet de colin",r:"bo",u:"g",k:0.85,c:"Poissons & crevettes"},
+ lentillesvertes:{n:"Lentilles vertes",r:"co",u:"g",k:3.3,c:"Œufs & légumineuses"},
+ haricotsblancs:{n:"Haricots blancs (boîte, égouttés)",r:"co",u:"g",k:1.1,c:"Œufs & légumineuses"},
+ tofu:{n:"Tofu nature",r:"cr",u:"g",k:1.2,c:"Œufs & légumineuses"},
+ aubergine:{n:"Aubergines",r:"fl",u:"g",k:0.25,c:"Légumes",w:300,wl:"aubergine"},
+ chou:{n:"Chou vert ou blanc",r:"fl",u:"g",k:0.3,c:"Légumes",w:1000,wl:"chou"},
+ endive:{n:"Endives",r:"fl",u:"g",k:0.17,c:"Légumes",w:120,wl:"endive"},
+ ananas:{n:"Ananas (boîte, au naturel)",r:"co",u:"g",k:0.6,c:"Légumes"},
+ boulgour:{n:"Boulgour",r:"co",u:"g",k:3.5,s:1,c:"Féculents"},
+ pita:{n:"Pains pita",r:"pa",u:"pc",k:160,s:1,c:"Féculents"},
+ galette:{n:"Galettes de sarrasin",r:"cr",u:"pc",k:100,s:1,c:"Féculents"},
+ brick:{n:"Feuilles de brick",r:"pa",u:"pc",k:30},
+ chevre:{n:"Fromage de chèvre (bûche)",r:"cr",u:"g",k:2.8,c:"Fromages & crème"},
+ ricotta:{n:"Ricotta",r:"cr",u:"g",k:1.5,c:"Fromages & crème"},
+ fromagefrais:{n:"Fromage frais allégé",r:"cr",u:"g",k:1.4,c:"Fromages & crème"},
+ pesto:{n:"Pesto",r:"pl",u:"cs",k:70},
+ gingembre:{n:"Gingembre en poudre",r:"pl",u:"cc",k:2}
+});
+// [id, nom, F=famille | L=midi à 2 | B=les deux, protéine, minutes, P=plaisir, ingrédients, étapes, tâches batch (c=découpe, o=four, f=feu, g=congélation), jour J, astuce enfants]
+const MORE=[
+["blanquette","Blanquette de dinde légère, riz","F","dinde",45,"","dinde:140,carotte:100,champignons:80,oignon:30,bouillon:0.25,creme:20,maizena:5,riz:50",["Couper la dinde en cubes, la faire revenir sans coloration avec l'oignon.","Couvrir d'eau avec le bouillon, ajouter carottes et champignons, mijoter 30 min.","Lier le jus avec la maïzena délayée et la crème. Servir avec le riz."],"c:Éplucher les carottes, émincer les champignons|f:Cuire la blanquette complète","Réchauffer doucement, réchauffer le riz.","Une sauce douce et crémeuse que les enfants adorent."],
+["basquaise","Poulet basquaise, riz","F","poulet",40,"","poulet:130,poivron:150,tomatecc:120,oignon:40,ail:0.5,paprika:0.5,huile:0.25,riz:50",["Dorer le poulet en morceaux dans l'huile.","Ajouter oignon, ail et poivrons en lanières, cuire 5 min.","Ajouter tomates et paprika, mijoter 25 min. Servir avec le riz."],"c:Émincer poivrons et oignon|f:Cuire le poulet basquaise complet","Réchauffer, servir avec le riz.",""],
+["mijote","Bœuf mijoté aux carottes, pommes vapeur","F","paleron",150,"","paleron:130,carotte:150,champignons:80,oignon:40,bouillon:0.5,tomatecc:30,pdt:150",["Couper le bœuf en gros cubes, le dorer dans une cocotte.","Ajouter oignon, carottes, tomates et bouillon à hauteur, mijoter 2 h à feu doux.","Ajouter les champignons 20 min avant la fin. Servir avec les pommes de terre vapeur."],"c:Éplucher carottes et pommes de terre|f:Cuire le bœuf mijoté (encore meilleur réchauffé)","Réchauffer, cuire les pommes de terre à la vapeur.",""],
+["boulettes","Boulettes de bœuf sauce tomate, semoule","F","boeuf",35,"","boeuf:110,oeuf:0.2,chapelure:10,tomatecc:150,oignon:30,cumin:0.5,semoule:50,courgette:100",["Mélanger bœuf, œuf, chapelure et cumin, former des boulettes.","Les dorer à la poêle, ajouter oignon, courgette en dés et tomates, mijoter 15 min.","Préparer la semoule."],"f:Former et cuire les boulettes en sauce","Réchauffer, préparer la semoule (5 min).","Des boulettes de la taille d'une bouchée, ça plaît toujours."],
+["moussaka","Moussaka légère","F","boeuf",60,"","boeuf:100,aubergine:200,tomatecc:120,oignon:30,lait:80,maizena:6,emmental:15,cumin:0.5",["Couper les aubergines en tranches, les rôtir 20 min au four avec un filet d'eau.","Cuire le bœuf avec l'oignon, les tomates et le cumin.","Alterner aubergines et viande, couvrir d'une béchamel légère (lait et maïzena), parsemer d'emmental et cuire 25 min à 180 °C."],"o:Rôtir les tranches d'aubergine|f:Cuire la viande et la béchamel, monter la moussaka","Cuire 30 min à 180 °C.",""],
+["ratatouille","Ratatouille, œufs au plat et semoule","B","oeuf",45,"","oeuf:2,aubergine:120,courgette:120,poivron:80,tomatecc:100,oignon:30,huile:0.5,semoule:40",["Couper tous les légumes en dés.","Les faire revenir dans l'huile, ajouter les tomates et mijoter 30 min.","Cuire les œufs au plat, servir avec la semoule."],"c:Couper aubergines, courgettes et poivrons|f:Cuire la ratatouille","Réchauffer la ratatouille, cuire les œufs au plat, préparer la semoule.",""],
+["dauphinois","Gratin dauphinois léger et jambon, salade","F","jambon",60,"P","pdt:220,lait:120,creme:15,ail:0.5,emmental:10,jambon:50,salade:50",["Trancher finement les pommes de terre, les cuire 10 min dans le lait avec l'ail.","Verser dans un plat avec la crème, parsemer d'emmental.","Cuire 40 min à 180 °C. Servir avec le jambon et la salade."],"c:Éplucher et trancher les pommes de terre|f:Précuire les pommes de terre dans le lait, monter le gratin","Cuire 40 min à 180 °C.",""],
+["carbonara","Pâtes carbonara légères","F","lardons",20,"P","pates:70,lardons:40,oeuf:0.75,creme:15,parmesan:10,champignons:60",["Cuire les pâtes.","Faire revenir lardons et champignons.","Hors du feu, mélanger les pâtes avec les œufs battus, la crème et le parmesan, puis les lardons."],"c:Émincer les champignons|f:Faire revenir lardons et champignons","Cuire les pâtes, mélanger hors du feu avec œufs, crème et parmesan.","Un plat de pâtes qui fait l'unanimité."],
+["patespesto","Pâtes au pesto, poulet et tomates","F","poulet",20,"","pates:65,poulet:90,pesto:1,tomate:80",["Cuire les pâtes.","Griller le poulet en lanières.","Mélanger pâtes, pesto, poulet et tomates en dés."],"f:Griller le poulet en lanières|c:Couper les tomates","Cuire les pâtes, mélanger avec le pesto, le poulet et les tomates.",""],
+["onepot","One pot pasta tomate-mozzarella","B","vege",20,"","pates:70,tomatecc:150,oignon:30,ail:0.5,mozza:40,epinards:50,herbes:0.5",["Mettre pâtes, tomates, oignon émincé, ail, herbes et 40 cl d'eau par 200 g de pâtes dans une sauteuse.","Cuire 12 min en remuant jusqu'à ce que l'eau soit absorbée.","Ajouter épinards et mozzarella en dés, couvrir 2 min."],"c:Émincer l'oignon","Tout cuire dans une sauteuse (15 min).",""],
+["coquillettes","Coquillettes jambon-fromage gratinées","F","jambon",30,"P","pates:70,jambon:50,lait:80,emmental:20,maizena:5,brocoli:80",["Cuire les pâtes avec le brocoli 4 min avant la fin.","Préparer une béchamel légère avec le lait et la maïzena.","Mélanger avec le jambon, verser dans un plat, parsemer d'emmental et gratiner 15 min."],"f:Cuire pâtes et brocoli, faire la béchamel, monter le gratin","Gratiner 20 min à 200 °C.","Le plat réconfort préféré des enfants, version plus légère."],
+["lasagnesveg","Lasagnes épinards-ricotta","F","vege",55,"","lasagne:40,epinards:150,ricotta:60,tomatecc:120,mozza:25,ail:0.5",["Faire tomber les épinards avec l'ail, mélanger avec la ricotta.","Alterner sauce tomate, feuilles de lasagne et mélange épinards-ricotta.","Finir par la mozzarella, cuire 35 min à 180 °C."],"f:Faire tomber les épinards, monter les lasagnes","Cuire 40 min à 180 °C.",""],
+["parmentierpd","Parmentier de patate douce au poulet","F","poulet",50,"","poulet:120,patatedouce:200,oignon:30,lait:30,emmental:15,paprika:0.5",["Cuire les patates douces, les écraser avec le lait.","Cuire le poulet haché ou émincé avec l'oignon et le paprika.","Monter le parmentier, parsemer d'emmental, gratiner 20 min."],"c:Éplucher les patates douces|f:Cuire la purée et le poulet, monter le plat","Gratiner 25 min à 200 °C.",""],
+["parmentiercolin","Parmentier de colin aux épinards","F","colin",45,"","colin:140,pdt:180,lait:50,epinards:60,emmental:15",["Cuire les pommes de terre, les écraser avec le lait.","Pocher le colin 5 min, l'émietter avec les épinards.","Monter le parmentier, parsemer d'emmental, gratiner 20 min."],"c:Éplucher les pommes de terre|f:Cuire la purée","Pocher et émietter le colin, monter et gratiner 20 min.",""],
+["papillote","Papillotes de colin au citron, riz et courgettes","F","colin",30,"","colin:150,courgette:150,citron:0.25,herbes:0.5,huile:0.25,riz:50",["Disposer courgettes en rondelles et colin sur du papier cuisson.","Ajouter citron, herbes et un filet d'huile, fermer.","Cuire 18 min à 200 °C. Servir avec le riz."],"c:Couper les courgettes en rondelles","Préparer les papillotes et cuire 18 min à 200 °C, réchauffer le riz.",""],
+["saumonfour","Saumon au four et légumes rôtis","F","saumon",40,"","saumon:120,courgette:100,poivron:80,pdt:150,huile:0.5,herbes:0.5",["Couper pommes de terre et légumes en morceaux, les rôtir 25 min à 200 °C avec l'huile et les herbes.","Ajouter le saumon sur la plaque.","Cuire encore 12 min."],"c:Couper pommes de terre, courgettes et poivrons","Rôtir les légumes 25 min, ajouter le saumon 12 min.",""],
+["tacospoisson","Tacos de poisson croustillant","F","colin",30,"P","colin:120,cornflakes:15,oeuf:0.2,tortillas:2,salade:30,fromageblanc:30,citron:0.25,chou:50",["Paner le colin en morceaux (œuf puis corn flakes), cuire 12 min à 200 °C.","Émincer finement le chou, l'assaisonner de citron.","Garnir les tortillas de chou, salade, poisson et fromage blanc."],"c:Émincer le chou|c:Écraser les corn flakes","Paner et cuire le poisson 12 min, garnir les tortillas.","Façon street food : chacun compose son taco."],
+["currycrevettes","Curry de crevettes au lait de coco, riz","F","crevettes",25,"","crevettes:120,coco:60,poivron:80,oignon:30,curry:1,tomatecc:60,riz:50",["Faire revenir oignon et poivron avec le curry.","Ajouter tomates et lait de coco, mijoter 10 min.","Ajouter les crevettes 3 min. Servir avec le riz."],"c:Émincer oignon et poivron|f:Cuire la sauce curry coco (sans les crevettes)","Réchauffer la sauce, ajouter les crevettes 3 min, réchauffer le riz.",""],
+["risotto","Risotto crémeux poulet-champignons","F","poulet",35,"","poulet:100,riz:60,champignons:120,oignon:30,bouillon:0.5,parmesan:10,creme:10",["Dorer le poulet en dés, réserver.","Faire revenir oignon et champignons, ajouter le riz, puis le bouillon louche par louche pendant 18 min.","Ajouter poulet, crème et parmesan."],"c:Émincer champignons et oignon|f:Cuire le poulet en dés","Cuire le risotto 20 min, ajouter le poulet, la crème et le parmesan.",""],
+["paella","Paella express poulet-crevettes","F","poulet",40,"","poulet:70,crevettes:60,riz:60,poivron:80,petitspois:40,tomatecc:60,oignon:30,paprika:0.5,bouillon:0.25",["Dorer le poulet en morceaux, ajouter oignon et poivron.","Ajouter le riz, les tomates, le paprika et 2,5 fois le volume du riz en bouillon, cuire 18 min.","Ajouter petits pois et crevettes 5 min avant la fin."],"c:Émincer oignon et poivron|f:Cuire la paella sans les crevettes","Réchauffer avec un peu d'eau, ajouter les crevettes 4 min.",""],
+["chilisin","Chili sin carne","B","vege",35,"","haricotsrouges:150,mais:40,poivron:100,tomatecc:150,oignon:40,cumin:0.5,paprika:0.5,riz:40,fromageblanc:30",["Faire revenir oignon et poivron.","Ajouter haricots, maïs, tomates et épices, mijoter 20 min.","Servir avec le riz et le fromage blanc."],"f:Cuire le chili complet","Réchauffer, réchauffer le riz.",""],
+["soupelentilles","Soupe de lentilles corail carotte-cumin","L","vege",30,"","lentilles:50,carotte:150,oignon:30,cumin:0.5,bouillon:0.25,coco:30,painmie:1",["Faire revenir oignon et carottes avec le cumin.","Ajouter lentilles, bouillon et eau à hauteur, cuire 20 min.","Mixer avec le lait de coco. Servir avec une tranche de pain grillé."],"f:Cuire et mixer la soupe","Réchauffer, griller le pain.",""],
+["minestrone","Minestrone aux haricots blancs","B","vege",40,"","haricotsblancs:80,carotte:80,courgette:100,poireau:60,tomatecc:100,pates:25,parmesan:10,bouillon:0.25",["Couper tous les légumes en petits dés.","Les cuire 20 min dans le bouillon avec les tomates.","Ajouter haricots et petites pâtes 10 min. Servir avec le parmesan."],"c:Couper carottes, courgettes et poireau|f:Cuire le minestrone (sans les pâtes)","Réchauffer, cuire les pâtes dedans 10 min.",""],
+["veloutebrocoli","Velouté de brocoli et tartines au chèvre","L","vege",30,"","brocoli:250,pdt:80,bouillon:0.25,creme:10,painmie:2,chevre:20",["Cuire brocoli et pomme de terre 15 min dans le bouillon.","Mixer avec la crème.","Garnir le pain de chèvre, gratiner 5 min."],"f:Cuire et mixer le velouté","Réchauffer, gratiner les tartines 5 min.",""],
+["croques","Croques jambon-tomate et salade","B","jambon",20,"P","painmie:3,jambon:40,emmental:20,tomate:60,salade:60",["Garnir le pain de jambon, tomate et emmental.","Dorer 10 min au four à 200 °C.","Servir avec une grande salade."],"c:Laver la salade","Monter les croques et les dorer 10 min.","Un croque de plus pour les enfants."],
+["lorraine","Quiche lorraine sans pâte, salade","B","lardons",40,"","lardons:50,oeuf:1.5,lait:100,emmental:15,salade:60,painmie:1",["Faire revenir les lardons.","Battre œufs et lait, ajouter lardons et emmental.","Cuire 30 min à 180 °C. Servir avec la salade et le pain."],"o:Cuire la quiche","Réchauffer 10 min ou servir froide.",""],
+["tartechevre","Tarte fine tomate-chèvre","B","vege",30,"","patepizza:60,tomate:150,chevre:40,herbes:0.5,salade:50,miel:0.25",["Dérouler la pâte, la couvrir de tomates en rondelles.","Ajouter le chèvre, les herbes et un filet de miel.","Cuire 20 min à 210 °C. Servir avec la salade."],"c:Trancher les tomates","Monter la tarte et cuire 20 min.",""],
+["pizzalegumes","Pizza aux légumes grillés","F","vege",35,"P","patepizza:80,tomatecc:60,courgette:80,poivron:60,aubergine:60,mozza:50,herbes:0.5",["Couper les légumes en fines tranches, les griller 10 min au four.","Étaler la sauce tomate sur la pâte, ajouter les légumes et la mozzarella.","Cuire 15 min à 230 °C."],"o:Griller les légumes","Garnir la pâte et cuire 15 min.",""],
+["flamme","Flammekueche légère","F","lardons",30,"P","patepizza:80,fromageblanc:60,lardons:40,oignon:60,salade:50",["Étaler le fromage blanc assaisonné sur la pâte.","Ajouter oignons émincés finement et lardons.","Cuire 15 min à 240 °C. Servir avec la salade."],"c:Émincer les oignons","Garnir et cuire 15 min.",""],
+["burritobowl","Burrito bowl au bœuf","F","boeuf",30,"","boeuf:100,riz:50,haricotsrouges:60,mais:40,tomate:60,salade:30,fromageblanc:30,cumin:0.5,paprika:0.5",["Cuire le bœuf avec les épices.","Réchauffer haricots et maïs.","Disposer riz, bœuf, légumes et fromage blanc dans des bols."],"f:Cuire le bœuf aux épices","Réchauffer, assembler les bols.","Chacun compose son bol."],
+["wrapspoulet","Wraps de poulet, carottes et fromage frais","L","poulet",15,"","poulet:100,tortillas:2,fromagefrais:25,carotte:60,salade:20",["Griller le poulet en lanières.","Tartiner les tortillas de fromage frais.","Garnir de poulet, carottes râpées et salade, rouler."],"f:Griller le poulet|c:Râper les carottes","Garnir et rouler les wraps.",""],
+["nicoise","Salade niçoise","L","thon",25,"","thon:80,oeuf:1,haricotsverts:100,tomate:100,pdt:100,salade:50,huile:0.5",["Cuire les œufs 9 min, les pommes de terre et les haricots verts.","Couper tomates et pommes de terre.","Assembler avec le thon, assaisonner."],"f:Cuire œufs, pommes de terre et haricots verts","Assembler et assaisonner.",""],
+["saladelentilles","Salade de lentilles, feta et carottes","L","vege",30,"","lentillesvertes:60,feta:25,carotte:80,oignon:15,huile:0.5,moutarde:0.25,persil:0.25",["Cuire les lentilles 20 min.","Râper les carottes, émincer l'oignon.","Mélanger avec la feta, le persil et une vinaigrette moutardée."],"f:Cuire les lentilles|c:Râper les carottes, préparer la vinaigrette","Assembler et assaisonner.",""],
+["saladepates","Salade de pâtes poulet-pesto","L","poulet",20,"","pates:60,poulet:90,pesto:0.75,tomate:80,mozza:25",["Cuire les pâtes, les refroidir.","Griller le poulet.","Mélanger avec pesto, tomates et mozzarella."],"f:Cuire les pâtes et griller le poulet, assembler la salade","Servir frais.",""],
+["bowlsaumon","Bowl saumon, riz et concombre","L","saumon",20,"","saumon:100,riz:50,concombre:80,carotte:50,soja:1,sesame:0.5",["Cuire le saumon et l'effeuiller.","Couper concombre, râper carotte.","Assembler avec le riz, arroser de soja et parsemer de sésame."],"f:Cuire le saumon et l'effeuiller (à manger sous 2 jours)|c:Couper concombre et carotte","Assembler les bols.",""],
+["tabouleboulgour","Taboulé de boulgour aux pois chiches","L","vege",20,"","boulgour:50,poischiches:80,tomate:80,concombre:80,citron:0.5,persil:0.25,huile:0.5",["Cuire le boulgour 10 min, refroidir.","Couper tomates et concombre en dés.","Mélanger avec pois chiches, persil, citron et huile."],"f:Cuire le boulgour|c:Couper les légumes, assembler le taboulé","Servir frais.",""],
+["pitas","Pitas de poulet, sauce tzatziki","B","poulet",25,"P","poulet:110,pita:1,yaourt:50,concombre:80,tomate:60,salade:20,cumin:0.5",["Griller le poulet émincé avec le cumin.","Râper le concombre, le mélanger au yaourt (tzatziki).","Garnir les pitas de poulet, crudités et sauce."],"f:Griller le poulet au cumin|c:Préparer le tzatziki","Réchauffer le poulet, garnir les pitas.","Façon kebab maison."],
+["omelette","Omelette aux champignons et pommes de terre sautées","B","oeuf",25,"","oeuf:2.5,champignons:100,pdt:150,huile:0.5,salade:40,emmental:10",["Faire sauter les pommes de terre en dés.","Faire revenir les champignons.","Cuire l'omelette, la garnir de champignons et d'emmental."],"c:Couper pommes de terre et champignons","Sauter les pommes de terre, cuire l'omelette.",""],
+["frittata","Frittata courgettes-feta","B","oeuf",30,"","oeuf:2.5,courgette:150,feta:20,oignon:20,huile:0.25,painmie:1",["Faire revenir courgettes râpées et oignon.","Verser les œufs battus, ajouter la feta.","Cuire 10 min à feu doux puis 5 min au four."],"f:Cuire la frittata (se mange froide)","Servir tiède ou froide avec le pain.",""],
+["tofusaute","Tofu sauté aux légumes et nouilles","B","tofu",25,"","tofu:120,nouilles:50,brocoli:100,carotte:60,soja:1.5,gingembre:0.5,huile:0.25",["Couper le tofu en cubes, le dorer.","Sauter brocoli et carottes 5 min.","Ajouter nouilles cuites, tofu, soja et gingembre."],"c:Couper brocoli, carottes et tofu","Cuire les nouilles, tout sauter 8 min.",""],
+["pouletmiel","Poulet au miel et citron, patates douces rôties","F","poulet",40,"","poulet:130,miel:0.5,citron:0.25,soja:0.5,patatedouce:180,haricotsverts:100,huile:0.25",["Rôtir les patates douces en cubes 30 min à 200 °C.","Dorer le poulet, ajouter miel, citron et soja, laisser caraméliser.","Servir avec les haricots verts."],"c:Couper les patates douces|o:Rôtir les patates douces","Cuire le poulet au miel 10 min, réchauffer légumes.","Le sucré-salé qui plaît aux enfants."],
+["pouletananas","Poulet coco-curry à l'ananas, riz","F","poulet",30,"P","poulet:120,coco:50,ananas:60,poivron:60,curry:1,riz:50",["Dorer le poulet avec le curry.","Ajouter poivron, ananas et lait de coco, mijoter 15 min.","Servir avec le riz."],"f:Cuire le poulet coco-ananas","Réchauffer, réchauffer le riz.",""],
+["cordonbleu","Cordon bleu maison, haricots verts et pommes de terre","F","dinde",40,"P","dinde:120,jambon:20,emmental:15,cornflakes:20,oeuf:0.2,haricotsverts:150,pdt:120",["Aplatir les escalopes, les garnir de jambon et d'emmental, les refermer.","Paner (œuf puis corn flakes), cuire 20 min à 200 °C.","Servir avec haricots verts et pommes de terre vapeur."],"g:Garnir, paner et congeler les cordons bleus","Cuire 25 min à 200 °C sans décongeler, légumes à la vapeur.","Bien plus léger que l'industriel."],
+["saucisselentilles","Saucisses de volaille aux lentilles","F","saucisse",45,"","saucisse:100,lentillesvertes:60,carotte:80,oignon:30,bouillon:0.25,moutarde:0.25",["Faire revenir oignon et carottes.","Ajouter lentilles et bouillon, cuire 25 min.","Dorer les saucisses, les ajouter aux lentilles avec la moutarde."],"f:Cuire les lentilles aux carottes","Dorer les saucisses, réchauffer les lentilles.",""],
+["saucissepuree","Saucisses de volaille, purée de carottes","F","saucisse",30,"P","saucisse:100,carotte:150,pdt:150,lait:40",["Cuire carottes et pommes de terre 20 min.","Écraser avec le lait.","Dorer les saucisses à la poêle."],"c:Éplucher carottes et pommes de terre|f:Cuire la purée","Dorer les saucisses, réchauffer la purée.","Un classique des enfants."],
+["potee","Potée légère au chou et aux saucisses","F","saucisse",60,"","saucisse:90,chou:200,pdt:150,carotte:80,oignon:30,bouillon:0.5",["Blanchir le chou 5 min.","Mettre tous les légumes dans une cocotte avec le bouillon, cuire 30 min.","Ajouter les saucisses 15 min."],"c:Couper le chou et les légumes|f:Cuire la potée complète","Réchauffer.",""],
+["endives","Endives au jambon gratinées","F","jambon",50,"","endive:250,jambon:50,lait:100,maizena:6,emmental:15,pdt:120",["Cuire les endives 15 min à la vapeur, bien les égoutter.","Les rouler dans le jambon, napper de béchamel légère.","Parsemer d'emmental, gratiner 20 min. Servir avec des pommes de terre."],"f:Cuire les endives, faire la béchamel, monter le plat","Gratiner 25 min à 200 °C, pommes de terre vapeur.","La béchamel adoucit l'amertume des endives."],
+["carbonade","Carbonade flamande légère, frites au four","F","paleron",150,"P","paleron:130,oignon:80,painmie:0.5,moutarde:0.5,bouillon:0.5,pdt:180,huile:0.25",["Dorer le bœuf en cubes, ajouter les oignons émincés.","Tartiner le pain de moutarde, le poser dessus, couvrir de bouillon (à la place de la bière).","Mijoter 2 h. Servir avec des frites au four."],"f:Cuire la carbonade (meilleure réchauffée)|c:Tailler les frites, les garder dans l'eau froide","Réchauffer, cuire les frites 35 min au four.",""],
+["tajine","Tajine de poulet aux carottes et pois chiches","F","poulet",45,"","poulet:120,carotte:150,poischiches:60,oignon:40,ras:1,citron:0.25,semoule:40",["Dorer le poulet avec l'oignon et le ras el hanout.","Ajouter carottes, citron et un verre d'eau, mijoter 25 min.","Ajouter les pois chiches 10 min. Servir avec la semoule."],"f:Cuire le tajine complet","Réchauffer, préparer la semoule.",""],
+["boeufbrocoli","Bœuf sauté aux brocolis, riz","F","rumsteck",25,"","rumsteck:110,brocoli:150,soja:1.5,ail:0.5,gingembre:0.5,maizena:3,riz:50,huile:0.25",["Émincer le bœuf, le mélanger à la maïzena.","Sauter le brocoli 5 min, puis le bœuf 2 min à feu vif.","Ajouter soja, ail et gingembre. Servir avec le riz."],"c:Émincer le bœuf, détailler le brocoli","Tout sauter au wok 8 min, réchauffer le riz.",""],
+["porccaramel","Porc au caramel léger, riz","F","porc",30,"P","porc:120,soja:1,miel:0.5,oignon:40,haricotsverts:100,riz:50",["Couper le porc en dés, le dorer avec l'oignon.","Ajouter miel et soja, laisser caraméliser 10 min.","Servir avec riz et haricots verts."],"f:Cuire le porc au caramel","Réchauffer, réchauffer riz et haricots.",""],
+["ramen","Soupe de nouilles au poulet façon ramen","B","poulet",30,"","poulet:100,nouilles:50,champignons:60,carotte:50,epinards:40,oeuf:0.5,soja:1,bouillon:0.5,gingembre:0.5",["Chauffer le bouillon avec soja et gingembre, y pocher le poulet 10 min.","Ajouter champignons et carottes émincés, puis les nouilles.","Servir avec épinards et œuf mollet."],"f:Préparer le bouillon et pocher le poulet|c:Émincer champignons et carottes","Réchauffer le bouillon, cuire nouilles et légumes 5 min.",""],
+["veloutebutternut","Velouté de butternut aux lentilles corail","L","vege",30,"","potiron:200,lentilles:30,coco:30,curry:0.5,bouillon:0.25,painmie:1",["Couper le butternut en cubes.","Cuire 20 min avec lentilles, curry et bouillon.","Mixer avec le lait de coco."],"f:Cuire et mixer le velouté","Réchauffer.",""],
+["briks","Briks au thon, salade","L","thon",30,"","brick:2,thon:70,oeuf:0.5,pdt:120,persil:0.25,huile:0.25,salade:60",["Écraser les pommes de terre cuites avec thon, œuf et persil.","Garnir les feuilles de brick, les plier en triangles.","Dorer 12 min au four avec un pinceau d'huile."],"f:Cuire les pommes de terre, préparer la farce","Plier et dorer les briks 12 min.",""],
+["galettes","Galettes complètes jambon-œuf-fromage","F","jambon",25,"P","galette:1.5,jambon:40,oeuf:1,emmental:15,salade:60,champignons:50",["Chauffer une galette à la poêle, casser un œuf au centre.","Ajouter jambon, champignons et emmental, plier les bords.","Servir avec la salade."],"c:Émincer et faire revenir les champignons","Garnir et cuire les galettes 4 min chacune.","Soirée crêpes à la bretonne."],
+["spaghettithon","Spaghetti au thon et à la tomate","F","thon",20,"","pates:65,thon:70,tomatecc:120,oignon:30,ail:0.5,herbes:0.5,parmesan:8",["Faire revenir oignon et ail.","Ajouter tomates et herbes, mijoter 10 min, puis le thon.","Mélanger avec les pâtes, parsemer de parmesan."],"f:Cuire la sauce tomate au thon","Cuire les pâtes, réchauffer la sauce.",""],
+["gnocchispoulet","Gnocchis poêlés, poulet et brocoli","F","poulet",25,"","gnocchis:140,poulet:90,brocoli:120,parmesan:10,huile:0.25",["Cuire le brocoli 5 min à la vapeur.","Dorer les gnocchis et le poulet en dés à la poêle.","Ajouter le brocoli et le parmesan."],"c:Couper le poulet, détailler le brocoli","Tout poêler 12 min.",""],
+["burgerpoulet","Burger de poulet croustillant, carottes râpées","F","poulet",30,"P","poulet:110,cornflakes:15,oeuf:0.2,painburger:1,salade:15,tomate:40,fromageblanc:20,carotte:60",["Paner les filets de poulet (œuf puis corn flakes), cuire 15 min à 200 °C.","Toaster les pains.","Monter avec salade, tomate et fromage blanc. Carottes râpées à côté."],"g:Paner les filets de poulet et les congeler|c:Râper les carottes","Cuire le poulet 20 min sans décongeler, monter les burgers.",""],
+["aubergines","Aubergines farcies au bœuf","F","boeuf",50,"","aubergine:250,boeuf:90,tomatecc:80,oignon:30,mozza:25,semoule:40,cumin:0.5",["Couper les aubergines en deux, les précuire 20 min au four, creuser la chair.","Cuire le bœuf avec l'oignon, la chair, les tomates et le cumin.","Farcir, ajouter la mozzarella, cuire 15 min. Servir avec la semoule."],"o:Précuire les aubergines|f:Cuire la farce, farcir","Gratiner 20 min, préparer la semoule.",""],
+["courgettes","Courgettes farcies au poulet","F","poulet",50,"","courgette:300,poulet:100,fromagefrais:20,oignon:20,riz:40,herbes:0.5",["Évider les courgettes.","Mélanger poulet haché, chair des courgettes, oignon, herbes et fromage frais.","Farcir et cuire 35 min à 180 °C. Servir avec le riz."],"c:Évider les courgettes|f:Préparer la farce, farcir","Cuire 35 min à 180 °C, réchauffer le riz.",""],
+["gratinsaumon","Gratin de pâtes au saumon et brocoli","F","saumon",35,"","pates:60,saumon:70,brocoli:120,lait:100,maizena:5,emmental:15",["Cuire pâtes et brocoli.","Préparer une béchamel légère.","Mélanger avec le saumon en dés, parsemer d'emmental, gratiner 20 min."],"f:Cuire pâtes et brocoli, faire la béchamel","Ajouter le saumon cru en dés, gratiner 25 min.",""],
+["crevettesail","Crevettes à l'ail, riz et courgettes","F","crevettes",20,"","crevettes:130,ail:1,persil:0.25,huile:0.5,riz:50,courgette:150",["Sauter les courgettes en dés 8 min.","Faire revenir les crevettes avec ail et persil 3 min.","Servir avec le riz."],"c:Couper les courgettes, hacher ail et persil","Sauter courgettes et crevettes 10 min, réchauffer le riz.",""],
+["cassoulet","Cassoulet léger","F","saucisse",50,"P","saucisse:70,haricotsblancs:150,tomatecc:100,carotte:60,oignon:30,lardons:20,bouillon:0.25",["Dorer saucisses et lardons.","Ajouter oignon, carottes, tomates, haricots et bouillon.","Mijoter 30 min, puis gratiner 15 min au four."],"f:Cuire le cassoulet complet","Réchauffer au four 20 min.",""],
+["rumsteck","Rumsteck, pommes de terre sautées et salade","F","rumsteck",30,"","rumsteck:130,pdt:200,huile:0.5,salade:60,ail:0.5",["Couper les pommes de terre en dés, les sauter 20 min avec l'ail.","Cuire le rumsteck 3 à 4 min par face, laisser reposer.","Servir avec la salade."],"c:Couper les pommes de terre, laver la salade","Sauter les pommes de terre, cuire la viande.",""],
+["chevrechaud","Salade de chèvre chaud","L","vege",15,"","chevre:40,painmie:2,salade:100,tomate:80,miel:0.25,lardons:20",["Poser une rondelle de chèvre sur chaque tranche de pain, gratiner 5 min.","Faire griller les lardons.","Servir sur la salade et les tomates, avec un filet de miel."],"c:Laver la salade, couper les tomates","Gratiner les toasts 5 min, assembler.",""],
+["poketon","Poke bowl au thon","L","thon",15,"","thon:90,riz:50,avocat:0.25,concombre:80,mais:40,soja:1,sesame:0.5",["Cuire le riz.","Couper concombre et avocat.","Assembler, arroser de soja, parsemer de sésame."],"c:Couper le concombre","Assembler, couper l'avocat au dernier moment.",""],
+["enchiladas","Enchiladas de poulet gratinées","F","poulet",40,"P","tortillas:2,poulet:100,haricotsrouges:50,tomatecc:120,emmental:20,oignon:20,cumin:0.5",["Cuire poulet émincé, oignon et haricots avec le cumin.","Garnir et rouler les tortillas, les ranger dans un plat.","Napper de tomates, parsemer d'emmental, gratiner 20 min."],"f:Cuire la garniture, rouler les enchiladas","Napper et gratiner 25 min.","Fromage qui file garanti."],
+["choufleurroti","Chou-fleur rôti au curry, semoule et yaourt","B","vege",35,"","choufleur:300,poischiches:80,curry:1,huile:0.5,semoule:40,yaourt:50",["Couper le chou-fleur en fleurettes, le mélanger avec huile, curry et pois chiches.","Rôtir 25 min à 210 °C.","Servir avec la semoule et le yaourt."],"o:Rôtir le chou-fleur et les pois chiches","Réchauffer, préparer la semoule.",""],
+["tagliatelles","Tagliatelles aux champignons et jambon","F","jambon",20,"","pates:65,champignons:150,jambon:40,creme:25,ail:0.5,persil:0.25",["Cuire les pâtes.","Faire revenir les champignons avec l'ail, ajouter le jambon et la crème.","Mélanger aux pâtes, parsemer de persil."],"c:Émincer les champignons|f:Cuire la sauce champignons-jambon","Cuire les pâtes, réchauffer la sauce.",""],
+["pizzabbq","Pizza poulet barbecue","F","poulet",30,"P","patepizza:80,poulet:60,tomatecc:40,ketchup:0.5,miel:0.25,oignon:30,mozza:40,poivron:50",["Mélanger tomates, ketchup et miel pour la sauce.","Étaler sur la pâte, ajouter poulet cuit, oignon, poivron et mozzarella.","Cuire 15 min à 230 °C."],"f:Cuire le poulet émincé, préparer la sauce","Garnir et cuire 15 min.","La pizza préférée des ados."]
+];
+const PO={c:"cru",o:"four",f:"feu",g:"gel"};
+MORE.forEach(([id,n,f,p,t,tag,ing,st,bc,j,kid])=>{
+  const r={id,n,for:f==="B"?["fam","l2"]:f==="L"?["l2"]:["fam"],p,t,ing:ing.split(",").map(x=>{const[a,b]=x.split(":");return[a,+b]}),st};
+  if(tag==="P")r.tag="plaisir"; if(kid)r.kid=kid;
+  R.push(r);RB[id]=r;
+  BC[id]={t:bc?bc.split("|").map(x=>[PO[x[0]],x.slice(2)]):[],j};
+});
+
+// ---------- Page recettes : filtres par ingrédients ----------
+const BASICS=new Set(["oignon","ail","citron","persil"]);
+const GROUP_ORDER=["Viandes","Poissons & crevettes","Œufs & légumineuses","Légumes","Féculents","Fromages & crème","Autres"];
+const isVege=r=>!r.ing.some(([id])=>I[id].c==="Viandes"||I[id].c==="Poissons & crevettes");
+const kcal=r=>Math.round(r.ing.reduce((a,[id,q])=>a+q*I[id].k,0));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const frac=x=>{const w=Math.floor(x),h=x-w;return ((w?w:"")+(h>=0.5?(w?" ½":"½"):""))||"0"};
+function fmt(q,u){
+  if(u==="g"||u==="ml"){const v=Math.max(5,Math.round(q/5)*5);if(v>=1000)return (Math.round(v/100)/10).toString().replace(".",",")+(u==="g"?" kg":" L");return v+" "+u}
+  const v=Math.max(0.5,Math.round(q*2)/2);
+  if(u==="cs")return frac(v)+" c. à s.";if(u==="cc")return frac(v)+" c. à c.";
+  if(u==="gousse")return frac(v)+(v>1?" gousses":" gousse");if(u==="bouquet")return frac(v)+(v>1?" bouquets":" bouquet");
+  return frac(v);
+}
+const groupOf=id=>I[id].c||"Autres";
+const facetIds=[...new Set(R.flatMap(r=>r.ing.map(([id])=>id)))].filter(id=>I[id].r!=="pl"&&!BASICS.has(id));
+
+// état
+let sel={};      // id -> 1 (avec) | -1 (sans)
+let quick=new Set(), q="", servings=4;
+try{const s=JSON.parse(localStorage.getItem("recettes.filtres")||"null");if(s){sel=s.sel||{};quick=new Set(s.quick||[]);servings=s.servings||4}}catch(e){}
+function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,quick:[...quick],servings}))}catch(e){}}
+
+const QUICK=[["vege","Végétarien",r=>isVege(r)],["plaisir","Plaisir",r=>r.tag==="plaisir"],["rapide","25 min ou moins",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","Moins de 400 kcal",r=>kcal(r)<400]];
+const has=(r,id)=>r.ing.some(([x])=>x===id);
+function matches(r,extra){
+  for(const [id,v] of Object.entries(sel)){if(v===1&&!has(r,id))return false;if(v===-1&&has(r,id))return false}
+  if(extra&&!has(r,extra))return false;
+  for(const k of quick){const f=QUICK.find(x=>x[0]===k);if(f&&!f[2](r))return false}
+  if(q){const t=norm(r.n+" "+r.ing.map(([id])=>I[id].n).join(" "));if(!norm(q).split(/\s+/).every(w=>t.includes(w)))return false}
+  return true;
+}
+
+function render(){
+  const res=R.filter(r=>matches(r)).sort((a,b)=>a.n.localeCompare(b.n,"fr"));
+  // compte
+  document.getElementById("count").innerHTML=`<b class="num">${res.length}</b> recette${res.length>1?"s":""} sur ${R.length}`;
+  // filtres actifs
+  const act=Object.entries(sel).map(([id,v])=>`<button type="button" class="pill ${v===1?"in":"out"}" data-rm="${id}" aria-label="Retirer ${esc(I[id].n)}">${v===1?"Avec":"Sans"} ${esc(I[id].n.toLowerCase())} <span aria-hidden="true">×</span></button>`).join("");
+  document.getElementById("active").innerHTML=act?act+`<button type="button" class="clear" id="clearAll">Tout effacer</button>`:'<span class="muted">Touchez un ingrédient : 1 fois pour « avec », 2 fois pour « sans ».</span>';
+  // filtres rapides
+  document.getElementById("quick").innerHTML=QUICK.map(([k,l])=>`<button type="button" class="qf" data-q="${k}" aria-pressed="${quick.has(k)}">${l}</button>`).join("");
+  // facettes
+  const groups={};
+  facetIds.forEach(id=>(groups[groupOf(id)]=groups[groupOf(id)]||[]).push(id));
+  document.getElementById("facets").innerHTML=GROUP_ORDER.filter(g=>groups[g]).map(g=>{
+    const chips=groups[g].sort((a,b)=>I[a].n.localeCompare(I[b].n,"fr")).map(id=>{
+      const v=sel[id];
+      const n=v?res.filter(r=>has(r,id)).length:res.filter(r=>has(r,id)).length;
+      const dis=!v&&n===0;
+      return `<button type="button" class="fchip ${v===1?"in":v===-1?"out":""}" data-f="${id}" ${dis?"disabled":""} aria-label="${esc(I[id].n)}${v===1?" (avec)":v===-1?" (sans)":""}, ${n} recettes"><span>${esc(I[id].n)}</span><span class="fc num">${v===-1?"sans":n}</span></button>`;
+    }).join("");
+    return `<div class="fgroup"><h3>${g}</h3><div class="fchips">${chips}</div></div>`;
+  }).join("");
+  // résultats
+  document.getElementById("results").innerHTML=res.length?res.map(r=>{
+    const main=r.ing.filter(([id])=>I[id].r!=="pl"&&!BASICS.has(id)).map(([id])=>sel[id]===1?`<mark>${esc(I[id].n.toLowerCase())}</mark>`:esc(I[id].n.toLowerCase())).join(", ");
+    return `<button type="button" class="card" data-r="${r.id}">
+      <span class="cname">${esc(r.n)}</span>
+      <span class="cmeta"><span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${r.tag==="plaisir"?'<span class="tag plaisir">Plaisir</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span>
+      <span class="cing">${main}</span></button>`;
+  }).join(""):`<div class="none"><b>Aucune recette avec cette combinaison.</b><br>Retirez un ingrédient ou un filtre pour élargir.</div>`;
+}
+
+const ov=document.getElementById("overlay");
+function openRecipe(id){
+  const r=R.find(x=>x.id===id);if(!r)return;
+  const bc=BC[r.id];
+  ov.innerHTML=`<article class="rcard"><button class="close" type="button" data-close>Fermer</button>
+    <div class="rhead"><h3>${esc(r.n)}</h3>
+      <div class="rfacts"><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion adulte</span>${r.tag==="plaisir"?'<span class="tag plaisir">Plaisir</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</div></div>
+    <div class="serv"><span>Portions</span><button type="button" class="sb" data-s="-1" aria-label="Une portion de moins">−</button><b class="num" id="servN">${servings}</b><button type="button" class="sb" data-s="1" aria-label="Une portion de plus">+</button></div>
+    <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings" id="ings"></ul></div>
+      <div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
+      <div class="bcnote"><b>En batch cooking :</b> ${bc&&bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc?bc.j:"")}</div></div></div>
+    ${r.kid?`<div class="kid"><b>Pour les enfants.</b> ${esc(r.kid)}</div>`:""}</article>`;
+  ov.dataset.r=id;ov.hidden=false;fillIngs();ov.querySelector("[data-close]").focus();
+}
+function fillIngs(){
+  const r=R.find(x=>x.id===ov.dataset.r);if(!r)return;
+  document.getElementById("servN").textContent=servings;
+  document.getElementById("ings").innerHTML=r.ing.map(([id,qq])=>`<li><span class="num">${fmt(qq*servings,I[id].u)}</span><span>${esc(I[id].n)}</span></li>`).join("");
+}
+function closeModal(){ov.hidden=true;ov.innerHTML=""}
+
+document.addEventListener("click",e=>{
+  const f=e.target.closest("[data-f]");if(f){const id=f.dataset.f,v=sel[id];if(!v)sel[id]=1;else if(v===1)sel[id]=-1;else delete sel[id];save();render();return}
+  const rm=e.target.closest("[data-rm]");if(rm){delete sel[rm.dataset.rm];save();render();return}
+  if(e.target.closest("#clearAll")){sel={};quick.clear();q="";document.getElementById("q").value="";save();render();return}
+  const qf=e.target.closest("[data-q]");if(qf){const k=qf.dataset.q;quick.has(k)?quick.delete(k):quick.add(k);save();render();return}
+  const c=e.target.closest("[data-r]");if(c){openRecipe(c.dataset.r);return}
+  const sb=e.target.closest("[data-s]");if(sb){servings=Math.max(1,Math.min(12,servings+ +sb.dataset.s));save();fillIngs();return}
+  if(e.target===ov||e.target.closest("[data-close]"))closeModal();
+  const tf=e.target.closest("#toggleFacets");if(tf){const p=document.getElementById("facetPanel");p.classList.toggle("open");tf.setAttribute("aria-expanded",p.classList.contains("open"))}
+});
+document.getElementById("q").addEventListener("input",e=>{q=e.target.value;render()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeModal()});
+render();
+</script>
+
+</html>

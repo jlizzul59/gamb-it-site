@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>Semainier minceur en famille</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : en-tête collant + onglets, semaine en 7 colonnes (desktop) → lignes jour par jour (tablette) → pile (mobile) */
+:root{
+  --bg:#F2F5EF; --surface:#FFFFFF; --ink:#1C2A20; --muted:#5B6A5F; --line:#D6DFD3;
+  --accent:#2D6A42; --accent-ink:#FFFFFF; --accent-soft:#E2EEE4;
+  --warm:#B85A14; --warm-soft:#F7E8DA;
+  --bad:#A2372A; --bad-soft:#F6E2DE;
+  --f-display:"Young Serif", Georgia, "Times New Roman", serif;
+  --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#121915; --surface:#1A231E; --ink:#E4EBE3; --muted:#9AA89D; --line:#2C3830;
+  --accent:#7DC497; --accent-ink:#0F1A13; --accent-soft:#1F3327;
+  --warm:#EB9A5E; --warm-soft:#3A2919; --bad:#E58072; --bad-soft:#3B2220; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#121915; --surface:#1A231E; --ink:#E4EBE3; --muted:#9AA89D; --line:#2C3830;
+  --accent:#7DC497; --accent-ink:#0F1A13; --accent-soft:#1F3327;
+  --warm:#EB9A5E; --warm-soft:#3A2919; --bad:#E58072; --bad-soft:#3B2220; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;line-height:1.15}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding-block:12px}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-size:24px}
+.brand span{color:var(--muted);font-size:13px}
+nav.tabs{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+nav.tabs a{padding:7px 14px;border-radius:999px;color:var(--muted);text-decoration:none;font-weight:600;font-size:14px}
+nav.tabs a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+nav.tabs a:hover:not([aria-current="page"]){background:var(--accent-soft);color:var(--ink)}
+
+main{padding-block:28px 64px}
+.view{display:flex;flex-direction:column;gap:28px}
+.lede{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px;align-items:start}
+.lede h2{font-size:32px;margin-bottom:10px}
+.lede p{margin:0 0 10px;max-width:62ch;color:var(--muted)}
+.note{background:var(--warm-soft);border-radius:12px;padding:16px 18px;font-size:14px}
+.note strong{color:var(--warm)}
+.note p{margin:0 0 8px;color:var(--ink)}
+.note p:last-child{margin:0}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:8px;font-weight:600;font-size:14px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.toggle input{accent-color:var(--accent);width:16px;height:16px}
+
+/* Semaine */
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.day{display:flex;flex-direction:column;gap:8px;min-width:0}
+.dayhead{display:flex;justify-content:space-between;align-items:baseline;padding:0 2px 6px;border-bottom:2px solid var(--ink)}
+.dayhead b{font-family:var(--f-display);font-weight:400;font-size:19px}
+.dayhead small{color:var(--muted);font-size:12px}
+.meal{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 11px;display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.meal .when{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.pers{font-family:var(--f-mono);letter-spacing:0;text-transform:none;padding:1px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:500}
+.pers.fam{background:var(--warm-soft);color:var(--warm)}
+.meal .name{background:none;border:0;padding:0;text-align:left;font-weight:600;font-size:15px;line-height:1.3}
+.meal .name:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.meal .meta{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:auto;font-size:12px;color:var(--muted)}
+.swap{border:0;background:none;color:var(--accent);font-weight:600;font-size:12px;padding:2px 0}
+.swap:hover{text-decoration:underline}
+.daytotal{font-size:12px;color:var(--muted);padding:0 2px}
+.tag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.plaisir{border-color:transparent;background:var(--warm-soft);color:var(--warm)}
+.tag.vege{border-color:transparent;background:var(--accent-soft);color:var(--accent)}
+.empty{color:var(--bad);font-size:13px}
+
+@media (max-width:1100px){
+  .week{grid-template-columns:1fr;gap:0}
+  .day{display:grid;grid-template-columns:120px minmax(0,1fr) minmax(0,1fr);gap:10px;padding:12px 0;border-bottom:1px solid var(--line);align-items:stretch}
+  .dayhead{flex-direction:column;border:0;padding:0;justify-content:flex-start}
+  .day>.meal{grid-row:1 / span 2}
+  .daytotal{grid-column:1;grid-row:2;align-self:end}
+}
+@media (max-width:640px){
+  .lede{grid-template-columns:1fr}
+  .day{grid-template-columns:1fr 1fr}
+  .dayhead{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:baseline}
+  .day>.meal{grid-row:auto}
+  .daytotal{grid-column:1/-1;grid-row:auto;padding:0}
+}
+@media (max-width:420px){ .day{grid-template-columns:1fr} }
+
+.extras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;border-top:1px solid var(--line);padding-top:22px}
+.extras h3{font-size:18px;margin-bottom:8px}
+.extras ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
+.extras li{margin-bottom:4px}
+@media (max-width:820px){.extras{grid-template-columns:1fr}}
+
+/* Goûts */
+.prefintro{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:end}
+.prefintro h2{font-size:30px;margin-bottom:6px}
+.prefintro p{margin:0;color:var(--muted);max-width:60ch}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.dot.like{background:var(--accent)} .dot.no{background:var(--bad)}
+.counter{font-size:14px;padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.counter b{font-family:var(--f-mono)}
+.prefgroups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:22px 28px}
+.pg h3{font-size:18px;margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);padding:6px 12px;border-radius:999px;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--line)}
+.chip.like{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.chip.like::before{background:var(--accent)}
+.chip.no{background:var(--bad-soft);border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.chip.no::before{background:var(--bad)}
+
+/* Recettes */
+.reclist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:18px}
+.rcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.rhead small{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:4px}
+.rhead h3{font-size:22px}
+.rfacts{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);margin-top:8px;align-items:center}
+.rbody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px}
+.rbody h4{margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ings{list-style:none;margin:0;padding:0;font-size:14px}
+.ings li{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.ings .num{color:var(--accent);text-align:right}
+.steps{margin:0;padding-left:20px;font-size:14px}
+.steps li{margin-bottom:6px}
+.kid{font-size:13px;background:var(--warm-soft);border-radius:8px;padding:8px 12px}
+.kid b{color:var(--warm)}
+@media (max-width:560px){.rbody{grid-template-columns:1fr}}
+
+/* Courses */
+.shophead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:end}
+.shophead h2{font-size:30px}
+.shophead p{margin:4px 0 0;color:var(--muted)}
+.shop{columns:3 300px;column-gap:28px}
+.aisle{break-inside:avoid;margin-bottom:22px}
+.aisle h3{font-size:17px;padding-bottom:6px;border-bottom:2px solid var(--ink);margin-bottom:4px}
+.aisle ul{list-style:none;margin:0;padding:0}
+.aisle li label{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer}
+.aisle input{accent-color:var(--accent);margin:0;transform:translateY(2px)}
+.aisle .q{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.aisle .hint{display:block;font-size:12px;color:var(--muted)}
+.aisle li.done label{color:var(--muted);text-decoration:line-through}
+
+/* Modes de repas */
+.ctrl{display:flex;align-items:center;justify-content:space-between;gap:6px;border-top:1px dashed var(--line);padding-top:6px}
+.ctrl select{font:inherit;font-size:12px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 4px;min-width:0;max-width:100%;flex:1}
+.meal.is-off{background:transparent;border-style:dashed}
+.meal.is-off .when,.off{color:var(--muted)}
+.off{font-size:14px;font-style:italic}
+.meal.is-rest{background:var(--bg)}
+.restlab{font-size:12px;color:var(--warm);font-weight:600}
+.dayskip{border:0;background:none;color:var(--muted);font-size:12px;text-decoration:underline;text-underline-offset:2px;padding:0}
+.dayskip:hover{color:var(--ink)}
+.dayhead{flex-wrap:wrap;gap:2px 8px}
+.day-off .dayhead b{color:var(--muted)}
+.muted{color:var(--muted)}
+.tag.gel{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.bcnote{margin-top:12px;font-size:13px;background:var(--accent-soft);border-radius:8px;padding:8px 12px}
+.bcnote b{color:var(--accent)}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px;margin-top:12px;padding:3px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.sessions{display:flex;flex-direction:column;gap:36px}
+.seshead{display:grid;gap:4px;padding-bottom:12px;border-bottom:2px solid var(--ink);margin-bottom:18px}
+.sesn{font-family:var(--f-mono);font-size:12px;color:var(--warm);letter-spacing:.04em;text-transform:uppercase}
+.seshead h3{font-size:26px}
+.seshead p{margin:0;color:var(--muted);max-width:75ch}
+.sesbody{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px}
+.bsteps{margin:0;padding:0;list-style:none;counter-reset:b;display:flex;flex-direction:column;gap:18px}
+.bsteps>li{counter-increment:b;display:grid;grid-template-columns:34px minmax(0,1fr);column-gap:12px}
+.bsteps>li>*{grid-column:2}
+.bsteps>li::before{content:counter(b);grid-column:1;grid-row:1 / span 3;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:var(--f-display);font-size:16px}
+.bsteps h4{margin:3px 0 0;font-size:16px}
+.bsteps p{margin:0 0 6px;font-size:13px}
+.tasks{margin:0;padding:0;list-style:none;font-size:14px}
+.tasks li{padding:6px 0;border-bottom:1px solid var(--line)}
+.rtag{display:inline-block;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 8px;margin-left:4px}
+.jj{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;align-self:start}
+.jjt{margin:0 0 10px;font-family:var(--f-display);font-weight:400;font-size:20px}
+.jday h4{margin:10px 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.jday ul{list-style:none;margin:0;padding:0;font-size:14px}
+.jday li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;padding:5px 0;border-bottom:1px dotted var(--line)}
+.jw{font-size:12px;color:var(--muted);padding-top:2px}
+@media (max-width:860px){.sesbody{grid-template-columns:1fr}}
+
+/* Navigation semaines */
+.weeknav{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px}
+.weeknav span{font-weight:600;font-size:14px;padding:0 6px;font-variant-numeric:tabular-nums}
+.wbtn{width:32px;height:32px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);font-size:20px;line-height:1;display:grid;place-items:center}
+.wbtn:disabled{background:var(--line);color:var(--muted);cursor:default}
+.acts{display:flex;justify-content:space-between;gap:6px}
+
+/* Catalogue */
+.catbar{display:flex;flex-direction:column;gap:10px}
+.catbar input{font:inherit;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.catbar .seg{margin-top:0}
+.catlist{display:flex;flex-direction:column}
+.citem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}
+.citem.is-bad .cmain b{color:var(--muted)}
+.cmeta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--muted);margin-top:3px;align-items:center}
+.cbtns{display:flex;gap:6px}
+.btn.sm{padding:5px 10px;font-size:13px}
+.cdet{grid-column:1/-1;background:var(--bg);border-radius:8px;padding:12px 14px;margin-top:4px}
+.cdet h4{margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tag.no{background:var(--bad-soft);color:var(--bad);border-color:transparent;white-space:normal}
+#catalogue .catbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);background:var(--bg);padding-block:8px;z-index:2}
+@media (max-width:520px){.citem{grid-template-columns:1fr}}
+
+/* Modale */
+.overlay{position:fixed;inset:0;background:rgba(10,20,14,.55);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.overlay .rcard{max-width:760px;width:100%;position:relative}
+.close{position:absolute;top:12px;right:12px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;z-index:30}
+@media (prefers-reduced-motion:no-preference){ .meal{transition:border-color .15s} .meal:hover{border-color:var(--accent)} }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><h1>Semainier minceur</h1></div>
+    <div class="weeknav"><button class="wbtn" id="prevW" type="button" aria-label="Semaine précédente">‹</button><span id="weekLabel" aria-live="polite">Semaine 1</span><button class="wbtn" id="nextW" type="button" aria-label="Semaine suivante">›</button></div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#semaine">Semaine</a>
+      <a href="#batch">Batch cooking</a>
+      <a href="recettes.html">Toutes les recettes</a>
+      <a href="#gouts">Mes goûts</a>
+      <a href="#recettes">Recettes</a>
+      <a href="#courses">Courses</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="view" id="v-semaine">
+    <div class="lede">
+      <div>
+        <h2>Des menus légers que toute la famille mange</h2>
+        <p>Midi pour 2 le lundi, mardi, jeudi et vendredi. Midi pour 4 le mercredi, samedi et dimanche. Soir pour 4 tous les jours. Les calories affichées sont par portion adulte.</p>
+        <p>Pour chaque repas, choisissez : cuisiné, restes du repas d'avant, ou pas de repas. Les quantités, la session de <a href="#batch">batch cooking</a> et la liste de courses suivent. Indiquez vos goûts dans <a href="#gouts">Mes goûts</a>.</p>
+      </div>
+      <div class="note">
+        <p><strong>Sur l'objectif de 5 kg par mois.</strong> C'est un rythme ambitieux : on recommande en général 0,5 à 1 kg par semaine (2 à 4 kg par mois). Les premières semaines la balance descend souvent plus vite, puis ça se stabilise. Ce plan vise un déficit modéré et tenable.</p>
+        <p>Les enfants mangent les mêmes plats sans restriction : ils grandissent. On leur ajoute féculents, pain, laitage et fruit.</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="btn primary" id="regen" type="button">Nouvelle semaine au hasard</button>
+      <button class="btn" id="restLunch" type="button">Midis à 2 = restes de la veille</button>
+      <button class="btn" id="reset" type="button">Revenir au menu proposé</button>
+      <label class="toggle"><input type="checkbox" id="kidBoost" checked> Féculents en plus pour les enfants (repas à 4)</label>
+    </div>
+    <div class="week" id="week"></div>
+    <div class="extras">
+      <div>
+        <h3>Petit-déjeuner (≈ 300–350 kcal)</h3>
+        <ul>
+          <li>Fromage blanc 0 % + fruit + 30 g de flocons d'avoine</li>
+          <li>2 tranches de pain complet + 1 œuf + 1 fruit</li>
+          <li>Café ou thé sans sucre</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Collation si faim (≈ 100–150 kcal)</h3>
+        <ul>
+          <li>1 fruit ou 1 yaourt nature</li>
+          <li>15 g d'amandes</li>
+          <li>Bâtonnets de carotte ou concombre</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Les règles qui font la différence</h3>
+        <ul>
+          <li>Moitié de l'assiette en légumes, resservez-vous en légumes</li>
+          <li>Eau à table, sodas et alcool en occasionnel</li>
+          <li>Dessert adulte : fruit ou yaourt ; enfants : comme d'habitude</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="v-batch" hidden>
+    <div class="shophead"><div><h2>Batch cooking</h2><p>Deux sessions pour garder tout frais : dimanche pour le début de semaine, mercredi pour la fin. Comptez 2 h à 2 h 30 par session.</p></div></div>
+    <div id="batch" class="sessions"></div>
+  </section>
+
+  <section class="view" id="v-gouts" hidden>
+    <div class="prefintro">
+      <div>
+        <h2>Ce que vous aimez, ce que vous évitez</h2>
+        <p>Un clic : <b>j'aime</b> (ces plats passent en priorité). Deux clics : <b>je n'aime pas</b> (les recettes qui en contiennent sont retirées). Trois clics : neutre.</p>
+      </div>
+      <div class="legend"><span><i class="dot"></i>Neutre</span><span><i class="dot like"></i>J'aime</span><span><i class="dot no"></i>Je n'aime pas</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="counter" id="counter"></div>
+      <button class="btn" id="clearPrefs" type="button">Tout remettre à neutre</button>
+    </div>
+    <div class="prefgroups" id="prefs"></div>
+  </section>
+
+  <section class="view" id="v-recettes" hidden>
+    <div class="shophead"><div><h2 style="font-size:30px">Les recettes de la semaine</h2><p>Quantités calculées pour le nombre de personnes de chaque repas.</p></div></div>
+    <div class="reclist" id="reclist"></div>
+  </section>
+
+  <section class="view" id="v-courses" hidden>
+    <div class="shophead">
+      <div><h2>Liste de courses</h2><p>Deux courses, une par session, pour avoir viande et poisson frais. Le rayon « Placard » est à vérifier avant de partir.</p><div class="seg" role="group" aria-label="Choix de la liste"><button type="button" data-sess="1">Session 1 · dimanche</button><button type="button" data-sess="2">Session 2 · mercredi</button><button type="button" data-sess="0">Toute la semaine</button></div></div>
+      <div class="toolbar">
+        <button class="btn primary" id="copyList" type="button">Copier la liste</button>
+        <button class="btn" id="uncheck" type="button">Tout décocher</button>
+      </div>
+    </div>
+    <div class="shop" id="shop"></div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay" hidden></div>
+<div class="toast" id="toast" hidden></div>
+<textarea id="copyArea" style="position:fixed;left:-9999px;top:0" aria-hidden="true" tabindex="-1"></textarea>
+
+<script>
+// ---------- Ingrédients ----------
+// u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
+const AISLES={bo:"Boucherie & poissonnerie",fl:"Fruits & légumes",cr:"Crèmerie, œufs & frais",co:"Épicerie & conserves",pa:"Pain",pl:"Placard (à vérifier)"};
+const I={
+ poulet:{n:"Blanc de poulet",r:"bo",u:"g",k:1.1,c:"Viandes"},
+ dinde:{n:"Escalope de dinde",r:"bo",u:"g",k:1.05,c:"Viandes"},
+ boeuf:{n:"Bœuf haché 5 %",r:"bo",u:"g",k:1.25,c:"Viandes"},
+ porc:{n:"Filet mignon de porc",r:"bo",u:"g",k:1.2,c:"Viandes"},
+ jambon:{n:"Jambon blanc découenné",r:"bo",u:"g",k:1.1,c:"Viandes"},
+ saumon:{n:"Pavé de saumon",r:"bo",u:"g",k:2.0,c:"Poissons & crevettes"},
+ cabillaud:{n:"Dos de cabillaud",r:"bo",u:"g",k:0.8,c:"Poissons & crevettes"},
+ crevettes:{n:"Crevettes cuites décortiquées",r:"bo",u:"g",k:0.9,c:"Poissons & crevettes"},
+ thon:{n:"Thon au naturel (boîte)",r:"co",u:"g",k:1.15,c:"Poissons & crevettes"},
+ oeuf:{n:"Œufs",r:"cr",u:"pc",k:75,c:"Œufs & légumineuses"},
+ lentilles:{n:"Lentilles corail",r:"co",u:"g",k:3.4,c:"Œufs & légumineuses"},
+ poischiches:{n:"Pois chiches (boîte, égouttés)",r:"co",u:"g",k:1.4,c:"Œufs & légumineuses"},
+ haricotsrouges:{n:"Haricots rouges (boîte, égouttés)",r:"co",u:"g",k:1.2,c:"Œufs & légumineuses"},
+ courgette:{n:"Courgettes",r:"fl",u:"g",k:0.17,c:"Légumes",w:200,wl:"courgette"},
+ brocoli:{n:"Brocoli",r:"fl",u:"g",k:0.34,c:"Légumes",w:400,wl:"tête"},
+ champignons:{n:"Champignons de Paris",r:"fl",u:"g",k:0.22,c:"Légumes",w:250,wl:"barquette"},
+ poivron:{n:"Poivrons",r:"fl",u:"g",k:0.25,c:"Légumes",w:150,wl:"poivron"},
+ epinards:{n:"Jeunes pousses d'épinards",r:"fl",u:"g",k:0.23,c:"Légumes",w:120,wl:"sachet"},
+ carotte:{n:"Carottes",r:"fl",u:"g",k:0.4,c:"Légumes",w:100,wl:"carotte"},
+ haricotsverts:{n:"Haricots verts (frais ou surgelés)",r:"fl",u:"g",k:0.3,c:"Légumes"},
+ choufleur:{n:"Chou-fleur",r:"fl",u:"g",k:0.25,c:"Légumes",w:600,wl:"chou-fleur"},
+ tomate:{n:"Tomates fraîches",r:"fl",u:"g",k:0.18,c:"Légumes",w:120,wl:"tomate"},
+ poireau:{n:"Poireaux",r:"fl",u:"g",k:0.3,c:"Légumes",w:150,wl:"poireau"},
+ potiron:{n:"Potiron ou butternut",r:"fl",u:"g",k:0.45,c:"Légumes",w:1000,wl:"courge"},
+ salade:{n:"Salade verte",r:"fl",u:"g",k:0.15,c:"Légumes",w:300,wl:"salade"},
+ concombre:{n:"Concombre",r:"fl",u:"g",k:0.12,c:"Légumes",w:300,wl:"concombre"},
+ avocat:{n:"Avocat",r:"fl",u:"pc",k:240,c:"Légumes"},
+ mais:{n:"Maïs (boîte)",r:"co",u:"g",k:0.8,c:"Légumes"},
+ oignon:{n:"Oignons",r:"fl",u:"g",k:0.4,w:100,wl:"oignon"},
+ ail:{n:"Ail",r:"fl",u:"gousse",k:4},
+ citron:{n:"Citron",r:"fl",u:"pc",k:20},
+ persil:{n:"Persil ou coriandre frais",r:"fl",u:"bouquet",k:5},
+ tomatecc:{n:"Tomates concassées",r:"co",u:"g",k:0.25,w:400,wl:"boîte de 400 g"},
+ pdt:{n:"Pommes de terre",r:"fl",u:"g",k:0.8,s:1,c:"Féculents"},
+ patatedouce:{n:"Patates douces",r:"fl",u:"g",k:0.86,s:1,c:"Féculents",w:300,wl:"patate douce"},
+ riz:{n:"Riz basmati",r:"co",u:"g",k:3.5,s:1,c:"Féculents"},
+ pates:{n:"Pâtes complètes",r:"co",u:"g",k:3.5,s:1,c:"Féculents"},
+ lasagne:{n:"Feuilles de lasagne",r:"co",u:"g",k:3.5,s:1},
+ nouilles:{n:"Nouilles chinoises",r:"co",u:"g",k:3.6,s:1,c:"Féculents"},
+ quinoa:{n:"Quinoa",r:"co",u:"g",k:3.7,s:1,c:"Féculents"},
+ semoule:{n:"Semoule complète",r:"co",u:"g",k:3.5,s:1,c:"Féculents"},
+ gnocchis:{n:"Gnocchis",r:"cr",u:"g",k:1.6,s:1,c:"Féculents"},
+ tortillas:{n:"Tortillas de blé",r:"pa",u:"pc",k:140,s:1,c:"Féculents"},
+ painburger:{n:"Pains à burger complets",r:"pa",u:"pc",k:190,s:1},
+ painmie:{n:"Pain de mie complet (tranches)",r:"pa",u:"pc",k:70,s:1},
+ patepizza:{n:"Pâte à pizza fine",r:"cr",u:"g",k:2.7,s:1,w:260,wl:"rouleau"},
+ cornflakes:{n:"Corn flakes nature",r:"co",u:"g",k:3.8},
+ chapelure:{n:"Chapelure",r:"co",u:"g",k:3.7},
+ emmental:{n:"Emmental râpé",r:"cr",u:"g",k:3.6,c:"Fromages & crème"},
+ parmesan:{n:"Parmesan",r:"cr",u:"g",k:4.0,c:"Fromages & crème"},
+ mozza:{n:"Mozzarella allégée",r:"cr",u:"g",k:1.6,c:"Fromages & crème",w:125,wl:"boule"},
+ feta:{n:"Feta",r:"cr",u:"g",k:2.6,c:"Fromages & crème"},
+ cheddar:{n:"Cheddar en tranches",r:"cr",u:"pc",k:60,c:"Fromages & crème"},
+ reblochon:{n:"Reblochon",r:"cr",u:"g",k:3.3,c:"Fromages & crème"},
+ creme:{n:"Crème légère 15 %",r:"cr",u:"ml",k:1.6,c:"Fromages & crème"},
+ fromageblanc:{n:"Fromage blanc 0 %",r:"cr",u:"g",k:0.48},
+ yaourt:{n:"Yaourt nature",r:"cr",u:"g",k:0.5},
+ lait:{n:"Lait demi-écrémé",r:"cr",u:"ml",k:0.46},
+ coco:{n:"Lait de coco allégé",r:"co",u:"ml",k:0.75},
+ huile:{n:"Huile d'olive",r:"pl",u:"cs",k:90},
+ soja:{n:"Sauce soja",r:"pl",u:"cs",k:10},
+ miel:{n:"Miel",r:"pl",u:"cs",k:60},
+ moutarde:{n:"Moutarde",r:"pl",u:"cs",k:20},
+ ketchup:{n:"Ketchup",r:"pl",u:"cs",k:20},
+ bouillon:{n:"Bouillon cube de légumes",r:"pl",u:"pc",k:10},
+ curry:{n:"Curry doux",r:"pl",u:"cc",k:5},
+ paprika:{n:"Paprika",r:"pl",u:"cc",k:5},
+ cumin:{n:"Cumin",r:"pl",u:"cc",k:5},
+ ras:{n:"Ras el hanout",r:"pl",u:"cc",k:5},
+ herbes:{n:"Herbes de Provence",r:"pl",u:"cc",k:2},
+ sesame:{n:"Graines de sésame",r:"pl",u:"cc",k:18}
+};
+
+// ---------- Recettes (quantités pour 1 portion adulte) ----------
+// for: l2 = midi à 2 en semaine, fam = repas familial à 4
+const R=[
+ {id:"tikka",n:"Poulet tikka masala léger, riz basmati",for:["fam"],p:"poulet",t:35,ing:[["poulet",130],["yaourt",50],["tomatecc",100],["oignon",40],["ail",0.5],["curry",1],["creme",15],["riz",50],["huile",0.25]],
+  st:["Couper le poulet en cubes, le mélanger au yaourt, au curry et à l'ail écrasé. Laisser mariner 15 min (ou la veille).","Lancer la cuisson du riz.","Faire revenir l'oignon émincé dans l'huile, ajouter le poulet et le dorer 5 min.","Verser les tomates concassées et mijoter 15 min à couvert. Hors du feu, ajouter la crème."],kid:"Curry doux et sauce crémeuse : c'est souvent le plat préféré des ados."},
+ {id:"hachis",n:"Hachis parmentier allégé au chou-fleur",for:["fam"],p:"boeuf",t:50,ing:[["boeuf",110],["pdt",150],["choufleur",150],["carotte",50],["oignon",40],["lait",50],["emmental",15]],
+  st:["Cuire pommes de terre et chou-fleur à l'eau 20 min, écraser avec le lait chaud, saler, poivrer, muscade.","Faire revenir l'oignon et la carotte râpée, ajouter le bœuf, cuire 5 min.","Étaler la viande dans un plat, couvrir de purée, parsemer d'emmental.","Gratiner 20 min à 200 °C."],kid:"Le chou-fleur disparaît dans la purée : personne ne le remarque."},
+ {id:"nuggets",n:"Nuggets de poulet au four, frites maison",for:["fam"],p:"poulet",t:40,tag:"plaisir",ing:[["poulet",130],["cornflakes",25],["oeuf",0.3],["paprika",0.5],["pdt",200],["huile",0.5],["carotte",80],["citron",0.1]],
+  st:["Préchauffer le four à 210 °C. Couper les pommes de terre en frites, les mélanger avec l'huile et le paprika, enfourner 35 min en les retournant à mi-cuisson.","Écraser les corn flakes. Couper le poulet en morceaux, les passer dans l'œuf battu puis dans les corn flakes.","Cuire les nuggets 15 min sur papier cuisson.","Servir avec des carottes râpées au citron."],kid:"Croustillant sans friture. Ajoutez un peu de ketchup pour les enfants."},
+ {id:"veloute",n:"Velouté de potiron et croque-monsieur",for:["fam","l2"],p:"jambon",t:35,ing:[["potiron",250],["pdt",50],["oignon",30],["bouillon",0.25],["creme",10],["painmie",2],["jambon",30],["emmental",15]],
+  st:["Éplucher et couper potiron, pomme de terre et oignon. Couvrir d'eau avec le bouillon, cuire 20 min.","Mixer avec la crème, rectifier l'assaisonnement.","Garnir le pain de mie de jambon et d'emmental, dorer 10 min au four à 200 °C ou à la poêle."],kid:"Un croque supplémentaire pour les enfants."},
+ {id:"teriyaki",n:"Saumon teriyaki, riz et brocoli",for:["fam"],p:"saumon",t:25,ing:[["saumon",120],["soja",1],["miel",0.5],["ail",0.5],["riz",50],["brocoli",150],["sesame",0.5]],
+  st:["Cuire le riz. Cuire le brocoli 6 min à la vapeur.","Mélanger sauce soja, miel et ail râpé.","Saisir le saumon côté peau 4 min, retourner, verser la sauce et laisser caraméliser 2 min.","Parsemer de sésame."],kid:"La sauce sucrée-salée fait aimer le poisson."},
+ {id:"pizza",n:"Pizza maison jambon-champignons, salade verte",for:["fam"],p:"jambon",t:30,tag:"plaisir",ing:[["patepizza",80],["tomatecc",60],["mozza",50],["jambon",40],["champignons",60],["herbes",0.5],["salade",40]],
+  st:["Préchauffer le four à 230 °C. Dérouler la pâte sur sa feuille.","Étaler les tomates concassées assaisonnées d'herbes.","Répartir jambon, champignons émincés et mozzarella.","Cuire 12 à 15 min. Servir avec la salade."],kid:"Laissez-les garnir leur part eux-mêmes."},
+ {id:"cabillaud",n:"Cabillaud en croûte de parmesan, purée de patate douce",for:["fam"],p:"cabillaud",t:35,ing:[["cabillaud",150],["parmesan",15],["chapelure",10],["huile",0.25],["patatedouce",200],["lait",30],["haricotsverts",120]],
+  st:["Cuire les patates douces 20 min à l'eau, écraser avec le lait.","Mélanger parmesan, chapelure et huile, en couvrir le cabillaud.","Cuire 15 min au four à 200 °C.","Servir avec les haricots verts cuits à la vapeur."]},
+ {id:"burger",n:"Burger maison et potatoes au four",for:["fam"],p:"boeuf",t:35,tag:"plaisir",ing:[["boeuf",120],["painburger",1],["cheddar",1],["tomate",40],["salade",15],["oignon",15],["ketchup",0.5],["pdt",150],["huile",0.5],["paprika",0.5]],
+  st:["Couper les pommes de terre en quartiers, mélanger avec l'huile et le paprika, cuire 30 min à 210 °C.","Façonner des steaks, les cuire 3 min par face. Poser le cheddar en fin de cuisson.","Toaster les pains, monter les burgers avec salade, tomate, oignon et ketchup."],kid:"Le burger du samedi soir, version maison et moins grasse."},
+ {id:"mignon",n:"Filet mignon à la moutarde, pommes vapeur et haricots verts",for:["fam"],p:"porc",t:40,ing:[["porc",140],["moutarde",0.5],["creme",20],["ail",0.5],["pdt",180],["haricotsverts",150]],
+  st:["Cuire pommes de terre et haricots verts à la vapeur.","Dorer le filet mignon sur toutes les faces, puis 20 min au four à 180 °C.","Déglacer la poêle avec un peu d'eau, ajouter crème et moutarde, réduire 2 min.","Trancher et napper de sauce."]},
+ {id:"shakshuka",n:"Shakshuka aux poivrons et feta",for:["fam","l2"],p:"oeuf",t:25,tag:"vege",ing:[["oeuf",2],["tomatecc",200],["poivron",100],["oignon",40],["cumin",0.5],["feta",15],["huile",0.25],["painmie",2]],
+  st:["Faire revenir oignon et poivron émincés dans l'huile 8 min.","Ajouter tomates et cumin, mijoter 10 min.","Creuser des puits, casser les œufs, couvrir et cuire 6 min.","Émietter la feta, servir avec le pain grillé."]},
+ {id:"buddha",n:"Buddha bowl patate douce, pois chiches et feta",for:["l2"],p:"poischiches",t:30,tag:"vege",ing:[["patatedouce",150],["poischiches",100],["epinards",50],["feta",20],["yaourt",30],["citron",0.25],["cumin",0.5],["huile",0.25]],
+  st:["Couper la patate douce en cubes, mélanger avec la moitié de l'huile et le cumin, rôtir 25 min à 200 °C.","Rôtir les pois chiches égouttés les 10 dernières minutes.","Sauce : yaourt, jus de citron, sel, poivre.","Dresser sur les épinards, ajouter la feta."]},
+ {id:"cesar",n:"Salade César légère au poulet",for:["l2"],p:"poulet",t:20,ing:[["poulet",120],["salade",80],["tomate",60],["oeuf",1],["parmesan",10],["painmie",1],["yaourt",40],["moutarde",0.25],["citron",0.25]],
+  st:["Cuire l'œuf 9 min, griller le poulet à la poêle sans matière grasse.","Toaster le pain et le couper en croûtons.","Sauce : yaourt, moutarde, citron, parmesan râpé.","Assembler salade, tomates, poulet tranché, œuf, croûtons, sauce."]},
+ {id:"poke",n:"Poke bowl aux crevettes",for:["l2"],p:"crevettes",t:20,ing:[["crevettes",100],["riz",50],["avocat",0.25],["concombre",80],["carotte",50],["mais",40],["soja",1],["sesame",0.5]],
+  st:["Cuire le riz, le laisser tiédir.","Couper concombre et avocat en dés, râper la carotte.","Disposer riz, légumes, maïs et crevettes.","Arroser de sauce soja, parsemer de sésame."]},
+ {id:"wraps",n:"Wraps thon, maïs et crudités",for:["l2"],p:"thon",t:10,ing:[["thon",80],["tortillas",2],["fromageblanc",40],["salade",20],["tomate",60],["mais",30],["concombre",50]],
+  st:["Mélanger thon émietté, fromage blanc, sel, poivre.","Tartiner les tortillas, ajouter salade, tomate, concombre et maïs.","Rouler serré, couper en deux."]},
+ {id:"taboule",n:"Taboulé de quinoa au poulet et feta",for:["l2"],p:"poulet",t:25,ing:[["quinoa",50],["poulet",100],["feta",25],["concombre",80],["tomate",80],["citron",0.5],["persil",0.25],["huile",0.5]],
+  st:["Cuire le quinoa 12 min, égoutter, laisser refroidir.","Griller le poulet et le couper en dés.","Mélanger quinoa, légumes en dés, persil, feta, poulet.","Assaisonner d'huile et de citron."]},
+ {id:"lasagnes",n:"Lasagnes bœuf et courgettes",for:["fam"],p:"boeuf",t:60,ing:[["boeuf",110],["courgette",200],["tomatecc",120],["oignon",30],["lasagne",30],["mozza",40],["parmesan",10],["herbes",0.5]],
+  st:["Faire revenir l'oignon et le bœuf, ajouter tomates et herbes, mijoter 10 min.","Couper les courgettes en fines tranches dans la longueur.","Alterner sauce, feuilles de lasagne, courgettes, mozzarella.","Finir par le parmesan, cuire 35 min à 180 °C."]},
+ {id:"chili",n:"Chili con carne, riz",for:["fam"],p:"boeuf",t:40,ing:[["boeuf",100],["haricotsrouges",100],["poivron",80],["tomatecc",120],["oignon",40],["cumin",0.5],["paprika",0.5],["riz",50],["fromageblanc",30]],
+  st:["Faire revenir l'oignon et le poivron, ajouter le bœuf.","Ajouter épices, tomates et haricots, mijoter 25 min.","Cuire le riz. Servir avec une cuillère de fromage blanc."]},
+ {id:"fajitas",n:"Fajitas de poulet aux poivrons",for:["fam"],p:"poulet",t:25,tag:"plaisir",ing:[["poulet",120],["poivron",120],["oignon",40],["paprika",0.5],["cumin",0.5],["huile",0.25],["tortillas",2],["fromageblanc",40],["tomate",50],["salade",20],["emmental",10]],
+  st:["Émincer poulet, poivrons et oignon.","Saisir le poulet avec les épices, ajouter les légumes, cuire 8 min.","Chauffer les tortillas. Chacun garnit avec fromage blanc, crudités et emmental."]},
+ {id:"gratinpates",n:"Gratin de pâtes au brocoli et jambon",for:["fam"],p:"jambon",t:35,ing:[["pates",60],["brocoli",150],["jambon",50],["lait",100],["creme",10],["emmental",20]],
+  st:["Cuire les pâtes, ajouter les fleurettes de brocoli 4 min avant la fin.","Égoutter, mélanger avec le jambon en dés, le lait et la crème.","Verser dans un plat, parsemer d'emmental, gratiner 15 min à 200 °C."]},
+ {id:"dahl",n:"Dahl de lentilles corail au lait de coco",for:["fam","l2"],p:"lentilles",t:30,tag:"vege",ing:[["lentilles",60],["coco",60],["tomatecc",100],["oignon",40],["carotte",80],["epinards",50],["curry",1],["riz",30]],
+  st:["Faire revenir oignon et carotte en dés.","Ajouter lentilles rincées, curry, tomates, lait de coco et 2 fois leur volume d'eau.","Mijoter 20 min. Ajouter les épinards à la fin.","Servir avec un peu de riz."]},
+ {id:"bolo",n:"Spaghetti bolognaise bœuf-lentilles",for:["fam"],p:"boeuf",t:40,ing:[["boeuf",70],["lentilles",20],["tomatecc",150],["carotte",40],["oignon",30],["herbes",0.5],["pates",60],["parmesan",10]],
+  st:["Faire revenir oignon et carotte râpée, ajouter le bœuf.","Ajouter lentilles, tomates, herbes et un verre d'eau, mijoter 25 min.","Cuire les pâtes. Servir avec le parmesan."],kid:"Les lentilles corail fondent dans la sauce : plus de volume, moins de calories."},
+ {id:"couscous",n:"Couscous de poulet aux légumes",for:["fam"],p:"poulet",t:45,ing:[["poulet",120],["semoule",50],["poischiches",60],["carotte",80],["courgette",120],["tomatecc",60],["oignon",30],["ras",1]],
+  st:["Dorer le poulet en morceaux avec l'oignon et le ras el hanout.","Ajouter carottes, tomates et 50 cl d'eau, cuire 15 min.","Ajouter courgettes et pois chiches, cuire 10 min.","Préparer la semoule avec un peu de bouillon de cuisson."]},
+ {id:"dinde",n:"Dinde à la crème de champignons, riz",for:["fam"],p:"dinde",t:30,ing:[["dinde",130],["champignons",150],["creme",25],["oignon",20],["riz",50],["haricotsverts",100]],
+  st:["Cuire le riz et les haricots verts.","Dorer les escalopes coupées en lanières, réserver.","Faire revenir oignon et champignons, ajouter la crème, remettre la dinde 3 min."]},
+ {id:"wok",n:"Wok de crevettes aux nouilles et légumes",for:["fam","l2"],p:"crevettes",t:20,ing:[["crevettes",120],["nouilles",60],["poivron",70],["carotte",60],["champignons",60],["ail",0.5],["soja",1.5],["huile",0.25]],
+  st:["Cuire les nouilles selon le paquet.","Saisir à feu vif les légumes en lanières 5 min avec l'ail.","Ajouter crevettes, nouilles et sauce soja, sauter 2 min."]},
+ {id:"tortilla",n:"Tortilla espagnole et salade",for:["fam","l2"],p:"oeuf",t:35,tag:"vege",ing:[["oeuf",2.5],["pdt",150],["oignon",40],["poivron",50],["huile",0.5],["salade",40]],
+  st:["Cuire pommes de terre en fines tranches et oignon dans l'huile, couvert, 15 min.","Battre les œufs, y verser les légumes, assaisonner.","Cuire 8 min à feu doux, retourner à l'aide d'une assiette, 4 min encore."]},
+ {id:"quiche",n:"Quiche sans pâte poireaux-saumon",for:["fam","l2"],p:"saumon",t:45,ing:[["oeuf",1.5],["lait",80],["poireau",150],["saumon",70],["emmental",15],["salade",40]],
+  st:["Faire fondre les poireaux émincés 10 min à la poêle.","Battre œufs et lait, ajouter poireaux, saumon en dés et emmental.","Cuire 30 min à 180 °C dans un moule. Servir avec la salade."]},
+ {id:"tartiflette",n:"Tartiflette légère",for:["fam"],p:"jambon",t:50,tag:"plaisir",ing:[["pdt",200],["jambon",40],["oignon",40],["reblochon",35],["creme",15],["salade",60]],
+  st:["Cuire les pommes de terre 15 min à l'eau, les couper en rondelles.","Faire revenir l'oignon, ajouter le jambon en dés.","Mélanger avec la crème dans un plat, couvrir de reblochon en tranches.","Cuire 20 min à 200 °C. Grosse salade à côté."]},
+ {id:"gnocchis",n:"Gnocchis tomate, épinards et mozzarella",for:["fam","l2"],p:"vege",t:20,tag:"vege",ing:[["gnocchis",150],["tomatecc",120],["epinards",80],["mozza",40],["ail",0.5],["herbes",0.5]],
+  st:["Faire revenir l'ail, ajouter tomates et herbes, mijoter 8 min.","Ajouter les épinards puis les gnocchis, cuire 3 min.","Ajouter la mozzarella, couvrir 2 min le temps qu'elle file."]},
+ {id:"poissonpane",n:"Poisson pané maison, purée de carottes",for:["fam"],p:"cabillaud",t:35,ing:[["cabillaud",150],["cornflakes",20],["oeuf",0.3],["carotte",200],["pdt",100],["lait",30]],
+  st:["Cuire carottes et pommes de terre 20 min, écraser avec le lait.","Passer le poisson dans l'œuf puis les corn flakes écrasés.","Cuire 15 min à 200 °C sur papier cuisson."],kid:"Un poisson pané croustillant que les enfants reconnaissent."}
+];
+const RB=Object.fromEntries(R.map(r=>[r.id,r]));
+
+// ---------- Recettes ajoutées ----------
+Object.assign(I,{
+ cuisse:{n:"Cuisses de poulet sans peau",r:"bo",u:"g",k:1.2,c:"Viandes"},
+ petitspois:{n:"Petits pois (surgelés)",r:"co",u:"g",k:0.8,c:"Légumes"},
+ maizena:{n:"Maïzena",r:"pl",u:"g",k:3.5}
+});
+R.push(
+ {id:"steakpuree",n:"Steak haché, purée maison et haricots verts",for:["fam"],p:"boeuf",t:30,ing:[["boeuf",120],["pdt",200],["lait",50],["haricotsverts",150]],
+  st:["Cuire les pommes de terre 20 min à l'eau, écraser avec le lait chaud, saler, poivrer.","Cuire les haricots verts à la vapeur.","Cuire les steaks 3 min par face dans une poêle antiadhésive, sans matière grasse."],kid:"Le grand classique qui plaît à tout le monde."},
+ {id:"rizcantonais",n:"Riz cantonais léger",for:["fam","l2"],p:"jambon",t:20,ing:[["riz",60],["oeuf",1],["jambon",40],["petitspois",60],["oignon",20],["soja",1],["huile",0.25]],
+  st:["Cuire le riz la veille (ou utiliser un riz déjà cuit et froid).","Cuire les œufs battus en omelette fine, la couper en lanières.","Faire sauter l'oignon, les petits pois et le jambon en dés, ajouter le riz, la sauce soja et l'omelette."],kid:"Parfait pour utiliser du riz cuit en avance."},
+ {id:"currypc",n:"Curry de pois chiches aux épinards",for:["fam","l2"],p:"poischiches",t:25,ing:[["poischiches",120],["epinards",80],["tomatecc",100],["coco",50],["oignon",30],["curry",1],["riz",40]],
+  st:["Faire revenir l'oignon avec le curry.","Ajouter tomates, lait de coco et pois chiches, mijoter 15 min.","Ajouter les épinards 2 min avant la fin. Servir avec le riz."]},
+ {id:"quesadillas",n:"Quesadillas au poulet, salade verte",for:["fam"],p:"poulet",t:25,tag:"plaisir",ing:[["tortillas",2],["poulet",90],["poivron",60],["mais",30],["emmental",25],["fromageblanc",30],["salade",40]],
+  st:["Cuire le poulet émincé avec les poivrons 8 min.","Garnir une moitié de chaque tortilla avec poulet, poivrons, maïs et emmental, replier.","Dorer 3 min par face à la poêle sans matière grasse. Servir avec le fromage blanc et la salade."],kid:"Coupées en triangles, elles partent en quelques minutes."},
+ {id:"patessaumon",n:"Pâtes au saumon et aux épinards",for:["fam"],p:"saumon",t:20,ing:[["pates",60],["saumon",80],["epinards",80],["creme",25],["ail",0.5],["citron",0.1]],
+  st:["Cuire les pâtes.","Faire revenir l'ail, ajouter le saumon en dés 4 min.","Ajouter crème, épinards et un filet de citron, mélanger avec les pâtes."]},
+ {id:"pouletroti",n:"Poulet rôti, pommes de terre et carottes au four",for:["fam"],p:"poulet",t:60,ing:[["cuisse",180],["pdt",180],["carotte",120],["oignon",30],["huile",0.5],["herbes",0.5]],
+  st:["Préchauffer le four à 200 °C. Couper pommes de terre et carottes en morceaux, l'oignon en quartiers.","Tout mettre dans un plat avec les cuisses, l'huile et les herbes.","Rôtir 50 min en arrosant à mi-cuisson."],kid:"Le repas du dimanche, sans effort."},
+ {id:"velouteporeaux",n:"Velouté poireaux-pommes de terre, tartines gratinées",for:["fam","l2"],p:"vege",t:30,ing:[["poireau",200],["pdt",100],["bouillon",0.25],["creme",10],["painmie",2],["emmental",15]],
+  st:["Cuire poireaux et pommes de terre 20 min dans de l'eau avec le bouillon.","Mixer avec la crème.","Parsemer les tranches de pain d'emmental, gratiner 5 min au four."]},
+ {id:"gratinchoufleur",n:"Gratin de chou-fleur au jambon",for:["fam"],p:"jambon",t:45,ing:[["choufleur",250],["pdt",120],["jambon",60],["lait",120],["maizena",8],["emmental",20]],
+  st:["Cuire chou-fleur et pommes de terre 15 min à l'eau.","Béchamel légère : délayer la maïzena dans le lait froid, chauffer en remuant jusqu'à épaississement.","Mettre légumes et jambon dans un plat, napper, parsemer d'emmental, gratiner 25 min à 200 °C."]}
+);
+R.forEach(r=>RB[r.id]=r);
+
+// ---------- Batch cooking : tâches de session (cru = découpes, four, feu, gel = congélation) et geste du jour J ----------
+const BC={
+ tikka:{t:[["cru","Couper le poulet en cubes et le faire mariner avec le yaourt, le curry et l'ail"],["feu","Cuire la sauce tikka complète avec le poulet, sans la crème"]],j:"Réchauffer la sauce, ajouter la crème hors du feu, réchauffer le riz."},
+ hachis:{t:[["cru","Éplucher pommes de terre, chou-fleur et carottes"],["feu","Cuire la purée et la farce, monter le hachis dans son plat sans le gratiner"]],j:"Gratiner 25 min à 200 °C."},
+ nuggets:{t:[["cru","Tailler les frites et les garder dans l'eau froide au frigo"],["cru","Râper les carottes"],["gel","Paner les nuggets et les congeler crus à plat"]],j:"Cuire nuggets (20 min, sans décongeler) et frites au four à 210 °C."},
+ veloute:{t:[["cru","Éplucher potiron, pomme de terre et oignon"],["feu","Cuire et mixer le velouté"]],j:"Réchauffer le velouté, préparer et dorer les croques (10 min)."},
+ teriyaki:{t:[["cru","Détailler le brocoli en fleurettes"],["feu","Préparer la sauce teriyaki (soja, miel, ail) en pot"]],j:"Cuire le saumon 6 min avec la sauce, le brocoli 6 min à la vapeur, réchauffer le riz."},
+ pizza:{t:[["cru","Émincer les champignons"],["feu","Préparer la sauce tomate aux herbes"]],j:"Garnir la pâte et cuire 12 à 15 min à 230 °C."},
+ cabillaud:{t:[["feu","Cuire et écraser la purée de patate douce"],["cru","Mélanger parmesan, chapelure et huile en boîte"],["cru","Équeuter les haricots verts"]],j:"Couvrir le cabillaud de croûte, 15 min au four ; haricots verts à la vapeur ; réchauffer la purée."},
+ burger:{t:[["cru","Tailler les potatoes et les garder dans l'eau froide"],["gel","Façonner les steaks et les congeler entre deux feuilles de papier cuisson"]],j:"Potatoes 30 min au four. Steaks 3 min par face, puis monter les burgers."},
+ mignon:{t:[["cru","Éplucher les pommes de terre, équeuter les haricots verts"],["feu","Préparer la sauce moutarde-crème en pot"]],j:"Dorer et rôtir le filet 20 min, légumes à la vapeur, réchauffer la sauce."},
+ shakshuka:{t:[["feu","Cuire la base tomates-poivrons-oignon au cumin"]],j:"Réchauffer la base, y cuire les œufs 6 min, émietter la feta."},
+ buddha:{t:[["four","Rôtir la patate douce et les pois chiches"],["cru","Préparer la sauce yaourt-citron en pot"]],j:"Assembler dans les boîtes, sauce au dernier moment."},
+ cesar:{t:[["feu","Cuire les œufs durs, griller le poulet"],["four","Faire les croûtons"],["cru","Préparer la sauce César en pot"]],j:"Assembler avec la salade et la sauce."},
+ poke:{t:[["cru","Couper le concombre, râper les carottes"]],j:"Assembler riz, légumes, crevettes. Couper l'avocat au dernier moment."},
+ wraps:{t:[["cru","Préparer la farce thon-fromage blanc en boîte"]],j:"Garnir et rouler les wraps (5 min)."},
+ taboule:{t:[["feu","Griller le poulet"],["cru","Couper concombre et tomates, ciseler le persil, assembler le taboulé"]],j:"Assaisonner et servir."},
+ lasagnes:{t:[["cru","Trancher les courgettes"],["feu","Cuire la sauce bœuf-tomate"],["four","Monter les lasagnes (cuisson le jour J)"]],j:"Cuire 40 min à 180 °C."},
+ chili:{t:[["feu","Cuire le chili complet (il est meilleur réchauffé)"]],j:"Réchauffer le chili et le riz, fromage blanc à part."},
+ fajitas:{t:[["cru","Émincer poivrons et oignon"],["gel","Mariner le poulet émincé aux épices et le congeler"]],j:"Saisir poulet et légumes 10 min, chauffer les tortillas."},
+ gratinpates:{t:[["feu","Cuire pâtes et brocoli, mélanger avec jambon, lait et crème, monter le gratin"]],j:"Gratiner 20 min à 200 °C."},
+ dahl:{t:[["feu","Cuire le dahl complet"]],j:"Réchauffer, ajouter les épinards, réchauffer le riz."},
+ bolo:{t:[["feu","Cuire la sauce bolognaise bœuf-lentilles"]],j:"Cuire les pâtes, réchauffer la sauce."},
+ couscous:{t:[["feu","Cuire le couscous (poulet et légumes)"]],j:"Réchauffer, préparer la semoule (5 min)."},
+ dinde:{t:[["cru","Émincer les champignons"],["feu","Cuire la sauce champignons-crème"]],j:"Saisir la dinde 5 min, ajouter la sauce, réchauffer riz et haricots."},
+ wok:{t:[["cru","Tailler tous les légumes en lanières"]],j:"Cuire les nouilles, tout sauter au wok 8 min."},
+ tortilla:{t:[["feu","Cuire la tortilla entière"]],j:"Servir froide ou tiède avec la salade."},
+ quiche:{t:[["feu","Faire fondre les poireaux"],["four","Cuire la quiche"]],j:"Réchauffer 10 min ou servir froide, avec la salade."},
+ tartiflette:{t:[["feu","Cuire les pommes de terre, faire revenir oignon et jambon, monter le plat"]],j:"Ajouter le reblochon et cuire 20 min à 200 °C."},
+ gnocchis:{t:[["feu","Préparer la sauce tomate à l'ail"]],j:"Réchauffer la sauce, ajouter épinards, gnocchis et mozzarella (8 min)."},
+ poissonpane:{t:[["feu","Cuire et écraser la purée carottes-pommes de terre"],["cru","Écraser les corn flakes en boîte"]],j:"Paner le poisson et le cuire 15 min à 200 °C."}
+};
+Object.assign(BC,{
+ steakpuree:{t:[["cru","Éplucher les pommes de terre, équeuter les haricots verts"],["feu","Cuire la purée"]],j:"Cuire les steaks 3 min par face, réchauffer purée et haricots."},
+ rizcantonais:{t:[["cru","Émincer l'oignon, couper le jambon en dés"],["feu","Cuire l'omelette fine et la couper en lanières"]],j:"Tout faire sauter au wok 8 min avec le riz déjà cuit."},
+ currypc:{t:[["feu","Cuire le curry complet, sans les épinards"]],j:"Réchauffer, ajouter les épinards, réchauffer le riz."},
+ quesadillas:{t:[["feu","Cuire le poulet émincé avec les poivrons"],["cru","Laver la salade"]],j:"Garnir les tortillas et les dorer 3 min par face."},
+ patessaumon:{t:[],j:"Plat express : cuire les pâtes, le saumon 4 min, ajouter crème et épinards."},
+ pouletroti:{t:[["cru","Éplucher et couper pommes de terre et carottes"],["four","Rôtir le poulet et les légumes ensemble"]],j:"Réchauffer 15 min au four à 180 °C."},
+ velouteporeaux:{t:[["cru","Laver et émincer les poireaux"],["feu","Cuire et mixer le velouté"]],j:"Réchauffer, gratiner les tartines 5 min."},
+ gratinchoufleur:{t:[["feu","Cuire chou-fleur et pommes de terre, faire la béchamel, monter le gratin"]],j:"Gratiner 25 min à 200 °C."}
+});
+const GROUPED={riz:"riz",quinoa:"quinoa"};
+
+// ---------- Catalogue étendu ----------
+Object.assign(I,{
+ paleron:{n:"Bœuf à braiser (paleron)",r:"bo",u:"g",k:1.4,c:"Viandes"},
+ rumsteck:{n:"Rumsteck",r:"bo",u:"g",k:1.3,c:"Viandes"},
+ saucisse:{n:"Saucisses de volaille",r:"bo",u:"g",k:2.0,c:"Viandes"},
+ lardons:{n:"Lardons allégés",r:"bo",u:"g",k:1.4,c:"Viandes"},
+ colin:{n:"Filet de colin",r:"bo",u:"g",k:0.85,c:"Poissons & crevettes"},
+ lentillesvertes:{n:"Lentilles vertes",r:"co",u:"g",k:3.3,c:"Œufs & légumineuses"},
+ haricotsblancs:{n:"Haricots blancs (boîte, égouttés)",r:"co",u:"g",k:1.1,c:"Œufs & légumineuses"},
+ tofu:{n:"Tofu nature",r:"cr",u:"g",k:1.2,c:"Œufs & légumineuses"},
+ aubergine:{n:"Aubergines",r:"fl",u:"g",k:0.25,c:"Légumes",w:300,wl:"aubergine"},
+ chou:{n:"Chou vert ou blanc",r:"fl",u:"g",k:0.3,c:"Légumes",w:1000,wl:"chou"},
+ endive:{n:"Endives",r:"fl",u:"g",k:0.17,c:"Légumes",w:120,wl:"endive"},
+ ananas:{n:"Ananas (boîte, au naturel)",r:"co",u:"g",k:0.6,c:"Légumes"},
+ boulgour:{n:"Boulgour",r:"co",u:"g",k:3.5,s:1,c:"Féculents"},
+ pita:{n:"Pains pita",r:"pa",u:"pc",k:160,s:1,c:"Féculents"},
+ galette:{n:"Galettes de sarrasin",r:"cr",u:"pc",k:100,s:1,c:"Féculents"},
+ brick:{n:"Feuilles de brick",r:"pa",u:"pc",k:30},
+ chevre:{n:"Fromage de chèvre (bûche)",r:"cr",u:"g",k:2.8,c:"Fromages & crème"},
+ ricotta:{n:"Ricotta",r:"cr",u:"g",k:1.5,c:"Fromages & crème"},
+ fromagefrais:{n:"Fromage frais allégé",r:"cr",u:"g",k:1.4,c:"Fromages & crème"},
+ pesto:{n:"Pesto",r:"pl",u:"cs",k:70},
+ gingembre:{n:"Gingembre en poudre",r:"pl",u:"cc",k:2}
+});
+// [id, nom, F=famille | L=midi à 2 | B=les deux, protéine, minutes, P=plaisir, ingrédients, étapes, tâches batch (c=découpe, o=four, f=feu, g=congélation), jour J, astuce enfants]
+const MORE=[
+["blanquette","Blanquette de dinde légère, riz","F","dinde",45,"","dinde:140,carotte:100,champignons:80,oignon:30,bouillon:0.25,creme:20,maizena:5,riz:50",["Couper la dinde en cubes, la faire revenir sans coloration avec l'oignon.","Couvrir d'eau avec le bouillon, ajouter carottes et champignons, mijoter 30 min.","Lier le jus avec la maïzena délayée et la crème. Servir avec le riz."],"c:Éplucher les carottes, émincer les champignons|f:Cuire la blanquette complète","Réchauffer doucement, réchauffer le riz.","Une sauce douce et crémeuse que les enfants adorent."],
+["basquaise","Poulet basquaise, riz","F","poulet",40,"","poulet:130,poivron:150,tomatecc:120,oignon:40,ail:0.5,paprika:0.5,huile:0.25,riz:50",["Dorer le poulet en morceaux dans l'huile.","Ajouter oignon, ail et poivrons en lanières, cuire 5 min.","Ajouter tomates et paprika, mijoter 25 min. Servir avec le riz."],"c:Émincer poivrons et oignon|f:Cuire le poulet basquaise complet","Réchauffer, servir avec le riz.",""],
+["mijote","Bœuf mijoté aux carottes, pommes vapeur","F","paleron",150,"","paleron:130,carotte:150,champignons:80,oignon:40,bouillon:0.5,tomatecc:30,pdt:150",["Couper le bœuf en gros cubes, le dorer dans une cocotte.","Ajouter oignon, carottes, tomates et bouillon à hauteur, mijoter 2 h à feu doux.","Ajouter les champignons 20 min avant la fin. Servir avec les pommes de terre vapeur."],"c:Éplucher carottes et pommes de terre|f:Cuire le bœuf mijoté (encore meilleur réchauffé)","Réchauffer, cuire les pommes de terre à la vapeur.",""],
+["boulettes","Boulettes de bœuf sauce tomate, semoule","F","boeuf",35,"","boeuf:110,oeuf:0.2,chapelure:10,tomatecc:150,oignon:30,cumin:0.5,semoule:50,courgette:100",["Mélanger bœuf, œuf, chapelure et cumin, former des boulettes.","Les dorer à la poêle, ajouter oignon, courgette en dés et tomates, mijoter 15 min.","Préparer la semoule."],"f:Former et cuire les boulettes en sauce","Réchauffer, préparer la semoule (5 min).","Des boulettes de la taille d'une bouchée, ça plaît toujours."],
+["moussaka","Moussaka légère","F","boeuf",60,"","boeuf:100,aubergine:200,tomatecc:120,oignon:30,lait:80,maizena:6,emmental:15,cumin:0.5",["Couper les aubergines en tranches, les rôtir 20 min au four avec un filet d'eau.","Cuire le bœuf avec l'oignon, les tomates et le cumin.","Alterner aubergines et viande, couvrir d'une béchamel légère (lait et maïzena), parsemer d'emmental et cuire 25 min à 180 °C."],"o:Rôtir les tranches d'aubergine|f:Cuire la viande et la béchamel, monter la moussaka","Cuire 30 min à 180 °C.",""],
+["ratatouille","Ratatouille, œufs au plat et semoule","B","oeuf",45,"","oeuf:2,aubergine:120,courgette:120,poivron:80,tomatecc:100,oignon:30,huile:0.5,semoule:40",["Couper tous les légumes en dés.","Les faire revenir dans l'huile, ajouter les tomates et mijoter 30 min.","Cuire les œufs au plat, servir avec la semoule."],"c:Couper aubergines, courgettes et poivrons|f:Cuire la ratatouille","Réchauffer la ratatouille, cuire les œufs au plat, préparer la semoule.",""],
+["dauphinois","Gratin dauphinois léger et jambon, salade","F","jambon",60,"P","pdt:220,lait:120,creme:15,ail:0.5,emmental:10,jambon:50,salade:50",["Trancher finement les pommes de terre, les cuire 10 min dans le lait avec l'ail.","Verser dans un plat avec la crème, parsemer d'emmental.","Cuire 40 min à 180 °C. Servir avec le jambon et la salade."],"c:Éplucher et trancher les pommes de terre|f:Précuire les pommes de terre dans le lait, monter le gratin","Cuire 40 min à 180 °C.",""],
+["carbonara","Pâtes carbonara légères","F","lardons",20,"P","pates:70,lardons:40,oeuf:0.75,creme:15,parmesan:10,champignons:60",["Cuire les pâtes.","Faire revenir lardons et champignons.","Hors du feu, mélanger les pâtes avec les œufs battus, la crème et le parmesan, puis les lardons."],"c:Émincer les champignons|f:Faire revenir lardons et champignons","Cuire les pâtes, mélanger hors du feu avec œufs, crème et parmesan.","Un plat de pâtes qui fait l'unanimité."],
+["patespesto","Pâtes au pesto, poulet et tomates","F","poulet",20,"","pates:65,poulet:90,pesto:1,tomate:80",["Cuire les pâtes.","Griller le poulet en lanières.","Mélanger pâtes, pesto, poulet et tomates en dés."],"f:Griller le poulet en lanières|c:Couper les tomates","Cuire les pâtes, mélanger avec le pesto, le poulet et les tomates.",""],
+["onepot","One pot pasta tomate-mozzarella","B","vege",20,"","pates:70,tomatecc:150,oignon:30,ail:0.5,mozza:40,epinards:50,herbes:0.5",["Mettre pâtes, tomates, oignon émincé, ail, herbes et 40 cl d'eau par 200 g de pâtes dans une sauteuse.","Cuire 12 min en remuant jusqu'à ce que l'eau soit absorbée.","Ajouter épinards et mozzarella en dés, couvrir 2 min."],"c:Émincer l'oignon","Tout cuire dans une sauteuse (15 min).",""],
+["coquillettes","Coquillettes jambon-fromage gratinées","F","jambon",30,"P","pates:70,jambon:50,lait:80,emmental:20,maizena:5,brocoli:80",["Cuire les pâtes avec le brocoli 4 min avant la fin.","Préparer une béchamel légère avec le lait et la maïzena.","Mélanger avec le jambon, verser dans un plat, parsemer d'emmental et gratiner 15 min."],"f:Cuire pâtes et brocoli, faire la béchamel, monter le gratin","Gratiner 20 min à 200 °C.","Le plat réconfort préféré des enfants, version plus légère."],
+["lasagnesveg","Lasagnes épinards-ricotta","F","vege",55,"","lasagne:40,epinards:150,ricotta:60,tomatecc:120,mozza:25,ail:0.5",["Faire tomber les épinards avec l'ail, mélanger avec la ricotta.","Alterner sauce tomate, feuilles de lasagne et mélange épinards-ricotta.","Finir par la mozzarella, cuire 35 min à 180 °C."],"f:Faire tomber les épinards, monter les lasagnes","Cuire 40 min à 180 °C.",""],
+["parmentierpd","Parmentier de patate douce au poulet","F","poulet",50,"","poulet:120,patatedouce:200,oignon:30,lait:30,emmental:15,paprika:0.5",["Cuire les patates douces, les écraser avec le lait.","Cuire le poulet haché ou émincé avec l'oignon et le paprika.","Monter le parmentier, parsemer d'emmental, gratiner 20 min."],"c:Éplucher les patates douces|f:Cuire la purée et le poulet, monter le plat","Gratiner 25 min à 200 °C.",""],
+["parmentiercolin","Parmentier de colin aux épinards","F","colin",45,"","colin:140,pdt:180,lait:50,epinards:60,emmental:15",["Cuire les pommes de terre, les écraser avec le lait.","Pocher le colin 5 min, l'émietter avec les épinards.","Monter le parmentier, parsemer d'emmental, gratiner 20 min."],"c:Éplucher les pommes de terre|f:Cuire la purée","Pocher et émietter le colin, monter et gratiner 20 min.",""],
+["papillote","Papillotes de colin au citron, riz et courgettes","F","colin",30,"","colin:150,courgette:150,citron:0.25,herbes:0.5,huile:0.25,riz:50",["Disposer courgettes en rondelles et colin sur du papier cuisson.","Ajouter citron, herbes et un filet d'huile, fermer.","Cuire 18 min à 200 °C. Servir avec le riz."],"c:Couper les courgettes en rondelles","Préparer les papillotes et cuire 18 min à 200 °C, réchauffer le riz.",""],
+["saumonfour","Saumon au four et légumes rôtis","F","saumon",40,"","saumon:120,courgette:100,poivron:80,pdt:150,huile:0.5,herbes:0.5",["Couper pommes de terre et légumes en morceaux, les rôtir 25 min à 200 °C avec l'huile et les herbes.","Ajouter le saumon sur la plaque.","Cuire encore 12 min."],"c:Couper pommes de terre, courgettes et poivrons","Rôtir les légumes 25 min, ajouter le saumon 12 min.",""],
+["tacospoisson","Tacos de poisson croustillant","F","colin",30,"P","colin:120,cornflakes:15,oeuf:0.2,tortillas:2,salade:30,fromageblanc:30,citron:0.25,chou:50",["Paner le colin en morceaux (œuf puis corn flakes), cuire 12 min à 200 °C.","Émincer finement le chou, l'assaisonner de citron.","Garnir les tortillas de chou, salade, poisson et fromage blanc."],"c:Émincer le chou|c:Écraser les corn flakes","Paner et cuire le poisson 12 min, garnir les tortillas.","Façon street food : chacun compose son taco."],
+["currycrevettes","Curry de crevettes au lait de coco, riz","F","crevettes",25,"","crevettes:120,coco:60,poivron:80,oignon:30,curry:1,tomatecc:60,riz:50",["Faire revenir oignon et poivron avec le curry.","Ajouter tomates et lait de coco, mijoter 10 min.","Ajouter les crevettes 3 min. Servir avec le riz."],"c:Émincer oignon et poivron|f:Cuire la sauce curry coco (sans les crevettes)","Réchauffer la sauce, ajouter les crevettes 3 min, réchauffer le riz.",""],
+["risotto","Risotto crémeux poulet-champignons","F","poulet",35,"","poulet:100,riz:60,champignons:120,oignon:30,bouillon:0.5,parmesan:10,creme:10",["Dorer le poulet en dés, réserver.","Faire revenir oignon et champignons, ajouter le riz, puis le bouillon louche par louche pendant 18 min.","Ajouter poulet, crème et parmesan."],"c:Émincer champignons et oignon|f:Cuire le poulet en dés","Cuire le risotto 20 min, ajouter le poulet, la crème et le parmesan.",""],
+["paella","Paella express poulet-crevettes","F","poulet",40,"","poulet:70,crevettes:60,riz:60,poivron:80,petitspois:40,tomatecc:60,oignon:30,paprika:0.5,bouillon:0.25",["Dorer le poulet en morceaux, ajouter oignon et poivron.","Ajouter le riz, les tomates, le paprika et 2,5 fois le volume du riz en bouillon, cuire 18 min.","Ajouter petits pois et crevettes 5 min avant la fin."],"c:Émincer oignon et poivron|f:Cuire la paella sans les crevettes","Réchauffer avec un peu d'eau, ajouter les crevettes 4 min.",""],
+["chilisin","Chili sin carne","B","vege",35,"","haricotsrouges:150,mais:40,poivron:100,tomatecc:150,oignon:40,cumin:0.5,paprika:0.5,riz:40,fromageblanc:30",["Faire revenir oignon et poivron.","Ajouter haricots, maïs, tomates et épices, mijoter 20 min.","Servir avec le riz et le fromage blanc."],"f:Cuire le chili complet","Réchauffer, réchauffer le riz.",""],
+["soupelentilles","Soupe de lentilles corail carotte-cumin","L","vege",30,"","lentilles:50,carotte:150,oignon:30,cumin:0.5,bouillon:0.25,coco:30,painmie:1",["Faire revenir oignon et carottes avec le cumin.","Ajouter lentilles, bouillon et eau à hauteur, cuire 20 min.","Mixer avec le lait de coco. Servir avec une tranche de pain grillé."],"f:Cuire et mixer la soupe","Réchauffer, griller le pain.",""],
+["minestrone","Minestrone aux haricots blancs","B","vege",40,"","haricotsblancs:80,carotte:80,courgette:100,poireau:60,tomatecc:100,pates:25,parmesan:10,bouillon:0.25",["Couper tous les légumes en petits dés.","Les cuire 20 min dans le bouillon avec les tomates.","Ajouter haricots et petites pâtes 10 min. Servir avec le parmesan."],"c:Couper carottes, courgettes et poireau|f:Cuire le minestrone (sans les pâtes)","Réchauffer, cuire les pâtes dedans 10 min.",""],
+["veloutebrocoli","Velouté de brocoli et tartines au chèvre","L","vege",30,"","brocoli:250,pdt:80,bouillon:0.25,creme:10,painmie:2,chevre:20",["Cuire brocoli et pomme de terre 15 min dans le bouillon.","Mixer avec la crème.","Garnir le pain de chèvre, gratiner 5 min."],"f:Cuire et mixer le velouté","Réchauffer, gratiner les tartines 5 min.",""],
+["croques","Croques jambon-tomate et salade","B","jambon",20,"P","painmie:3,jambon:40,emmental:20,tomate:60,salade:60",["Garnir le pain de jambon, tomate et emmental.","Dorer 10 min au four à 200 °C.","Servir avec une grande salade."],"c:Laver la salade","Monter les croques et les dorer 10 min.","Un croque de plus pour les enfants."],
+["lorraine","Quiche lorraine sans pâte, salade","B","lardons",40,"","lardons:50,oeuf:1.5,lait:100,emmental:15,salade:60,painmie:1",["Faire revenir les lardons.","Battre œufs et lait, ajouter lardons et emmental.","Cuire 30 min à 180 °C. Servir avec la salade et le pain."],"o:Cuire la quiche","Réchauffer 10 min ou servir froide.",""],
+["tartechevre","Tarte fine tomate-chèvre","B","vege",30,"","patepizza:60,tomate:150,chevre:40,herbes:0.5,salade:50,miel:0.25",["Dérouler la pâte, la couvrir de tomates en rondelles.","Ajouter le chèvre, les herbes et un filet de miel.","Cuire 20 min à 210 °C. Servir avec la salade."],"c:Trancher les tomates","Monter la tarte et cuire 20 min.",""],
+["pizzalegumes","Pizza aux légumes grillés","F","vege",35,"P","patepizza:80,tomatecc:60,courgette:80,poivron:60,aubergine:60,mozza:50,herbes:0.5",["Couper les légumes en fines tranches, les griller 10 min au four.","Étaler la sauce tomate sur la pâte, ajouter les légumes et la mozzarella.","Cuire 15 min à 230 °C."],"o:Griller les légumes","Garnir la pâte et cuire 15 min.",""],
+["flamme","Flammekueche légère","F","lardons",30,"P","patepizza:80,fromageblanc:60,lardons:40,oignon:60,salade:50",["Étaler le fromage blanc assaisonné sur la pâte.","Ajouter oignons émincés finement et lardons.","Cuire 15 min à 240 °C. Servir avec la salade."],"c:Émincer les oignons","Garnir et cuire 15 min.",""],
+["burritobowl","Burrito bowl au bœuf","F","boeuf",30,"","boeuf:100,riz:50,haricotsrouges:60,mais:40,tomate:60,salade:30,fromageblanc:30,cumin:0.5,paprika:0.5",["Cuire le bœuf avec les épices.","Réchauffer haricots et maïs.","Disposer riz, bœuf, légumes et fromage blanc dans des bols."],"f:Cuire le bœuf aux épices","Réchauffer, assembler les bols.","Chacun compose son bol."],
+["wrapspoulet","Wraps de poulet, carottes et fromage frais","L","poulet",15,"","poulet:100,tortillas:2,fromagefrais:25,carotte:60,salade:20",["Griller le poulet en lanières.","Tartiner les tortillas de fromage frais.","Garnir de poulet, carottes râpées et salade, rouler."],"f:Griller le poulet|c:Râper les carottes","Garnir et rouler les wraps.",""],
+["nicoise","Salade niçoise","L","thon",25,"","thon:80,oeuf:1,haricotsverts:100,tomate:100,pdt:100,salade:50,huile:0.5",["Cuire les œufs 9 min, les pommes de terre et les haricots verts.","Couper tomates et pommes de terre.","Assembler avec le thon, assaisonner."],"f:Cuire œufs, pommes de terre et haricots verts","Assembler et assaisonner.",""],
+["saladelentilles","Salade de lentilles, feta et carottes","L","vege",30,"","lentillesvertes:60,feta:25,carotte:80,oignon:15,huile:0.5,moutarde:0.25,persil:0.25",["Cuire les lentilles 20 min.","Râper les carottes, émincer l'oignon.","Mélanger avec la feta, le persil et une vinaigrette moutardée."],"f:Cuire les lentilles|c:Râper les carottes, préparer la vinaigrette","Assembler et assaisonner.",""],
+["saladepates","Salade de pâtes poulet-pesto","L","poulet",20,"","pates:60,poulet:90,pesto:0.75,tomate:80,mozza:25",["Cuire les pâtes, les refroidir.","Griller le poulet.","Mélanger avec pesto, tomates et mozzarella."],"f:Cuire les pâtes et griller le poulet, assembler la salade","Servir frais.",""],
+["bowlsaumon","Bowl saumon, riz et concombre","L","saumon",20,"","saumon:100,riz:50,concombre:80,carotte:50,soja:1,sesame:0.5",["Cuire le saumon et l'effeuiller.","Couper concombre, râper carotte.","Assembler avec le riz, arroser de soja et parsemer de sésame."],"f:Cuire le saumon et l'effeuiller (à manger sous 2 jours)|c:Couper concombre et carotte","Assembler les bols.",""],
+["tabouleboulgour","Taboulé de boulgour aux pois chiches","L","vege",20,"","boulgour:50,poischiches:80,tomate:80,concombre:80,citron:0.5,persil:0.25,huile:0.5",["Cuire le boulgour 10 min, refroidir.","Couper tomates et concombre en dés.","Mélanger avec pois chiches, persil, citron et huile."],"f:Cuire le boulgour|c:Couper les légumes, assembler le taboulé","Servir frais.",""],
+["pitas","Pitas de poulet, sauce tzatziki","B","poulet",25,"P","poulet:110,pita:1,yaourt:50,concombre:80,tomate:60,salade:20,cumin:0.5",["Griller le poulet émincé avec le cumin.","Râper le concombre, le mélanger au yaourt (tzatziki).","Garnir les pitas de poulet, crudités et sauce."],"f:Griller le poulet au cumin|c:Préparer le tzatziki","Réchauffer le poulet, garnir les pitas.","Façon kebab maison."],
+["omelette","Omelette aux champignons et pommes de terre sautées","B","oeuf",25,"","oeuf:2.5,champignons:100,pdt:150,huile:0.5,salade:40,emmental:10",["Faire sauter les pommes de terre en dés.","Faire revenir les champignons.","Cuire l'omelette, la garnir de champignons et d'emmental."],"c:Couper pommes de terre et champignons","Sauter les pommes de terre, cuire l'omelette.",""],
+["frittata","Frittata courgettes-feta","B","oeuf",30,"","oeuf:2.5,courgette:150,feta:20,oignon:20,huile:0.25,painmie:1",["Faire revenir courgettes râpées et oignon.","Verser les œufs battus, ajouter la feta.","Cuire 10 min à feu doux puis 5 min au four."],"f:Cuire la frittata (se mange froide)","Servir tiède ou froide avec le pain.",""],
+["tofusaute","Tofu sauté aux légumes et nouilles","B","tofu",25,"","tofu:120,nouilles:50,brocoli:100,carotte:60,soja:1.5,gingembre:0.5,huile:0.25",["Couper le tofu en cubes, le dorer.","Sauter brocoli et carottes 5 min.","Ajouter nouilles cuites, tofu, soja et gingembre."],"c:Couper brocoli, carottes et tofu","Cuire les nouilles, tout sauter 8 min.",""],
+["pouletmiel","Poulet au miel et citron, patates douces rôties","F","poulet",40,"","poulet:130,miel:0.5,citron:0.25,soja:0.5,patatedouce:180,haricotsverts:100,huile:0.25",["Rôtir les patates douces en cubes 30 min à 200 °C.","Dorer le poulet, ajouter miel, citron et soja, laisser caraméliser.","Servir avec les haricots verts."],"c:Couper les patates douces|o:Rôtir les patates douces","Cuire le poulet au miel 10 min, réchauffer légumes.","Le sucré-salé qui plaît aux enfants."],
+["pouletananas","Poulet coco-curry à l'ananas, riz","F","poulet",30,"P","poulet:120,coco:50,ananas:60,poivron:60,curry:1,riz:50",["Dorer le poulet avec le curry.","Ajouter poivron, ananas et lait de coco, mijoter 15 min.","Servir avec le riz."],"f:Cuire le poulet coco-ananas","Réchauffer, réchauffer le riz.",""],
+["cordonbleu","Cordon bleu maison, haricots verts et pommes de terre","F","dinde",40,"P","dinde:120,jambon:20,emmental:15,cornflakes:20,oeuf:0.2,haricotsverts:150,pdt:120",["Aplatir les escalopes, les garnir de jambon et d'emmental, les refermer.","Paner (œuf puis corn flakes), cuire 20 min à 200 °C.","Servir avec haricots verts et pommes de terre vapeur."],"g:Garnir, paner et congeler les cordons bleus","Cuire 25 min à 200 °C sans décongeler, légumes à la vapeur.","Bien plus léger que l'industriel."],
+["saucisselentilles","Saucisses de volaille aux lentilles","F","saucisse",45,"","saucisse:100,lentillesvertes:60,carotte:80,oignon:30,bouillon:0.25,moutarde:0.25",["Faire revenir oignon et carottes.","Ajouter lentilles et bouillon, cuire 25 min.","Dorer les saucisses, les ajouter aux lentilles avec la moutarde."],"f:Cuire les lentilles aux carottes","Dorer les saucisses, réchauffer les lentilles.",""],
+["saucissepuree","Saucisses de volaille, purée de carottes","F","saucisse",30,"P","saucisse:100,carotte:150,pdt:150,lait:40",["Cuire carottes et pommes de terre 20 min.","Écraser avec le lait.","Dorer les saucisses à la poêle."],"c:Éplucher carottes et pommes de terre|f:Cuire la purée","Dorer les saucisses, réchauffer la purée.","Un classique des enfants."],
+["potee","Potée légère au chou et aux saucisses","F","saucisse",60,"","saucisse:90,chou:200,pdt:150,carotte:80,oignon:30,bouillon:0.5",["Blanchir le chou 5 min.","Mettre tous les légumes dans une cocotte avec le bouillon, cuire 30 min.","Ajouter les saucisses 15 min."],"c:Couper le chou et les légumes|f:Cuire la potée complète","Réchauffer.",""],
+["endives","Endives au jambon gratinées","F","jambon",50,"","endive:250,jambon:50,lait:100,maizena:6,emmental:15,pdt:120",["Cuire les endives 15 min à la vapeur, bien les égoutter.","Les rouler dans le jambon, napper de béchamel légère.","Parsemer d'emmental, gratiner 20 min. Servir avec des pommes de terre."],"f:Cuire les endives, faire la béchamel, monter le plat","Gratiner 25 min à 200 °C, pommes de terre vapeur.","La béchamel adoucit l'amertume des endives."],
+["carbonade","Carbonade flamande légère, frites au four","F","paleron",150,"P","paleron:130,oignon:80,painmie:0.5,moutarde:0.5,bouillon:0.5,pdt:180,huile:0.25",["Dorer le bœuf en cubes, ajouter les oignons émincés.","Tartiner le pain de moutarde, le poser dessus, couvrir de bouillon (à la place de la bière).","Mijoter 2 h. Servir avec des frites au four."],"f:Cuire la carbonade (meilleure réchauffée)|c:Tailler les frites, les garder dans l'eau froide","Réchauffer, cuire les frites 35 min au four.",""],
+["tajine","Tajine de poulet aux carottes et pois chiches","F","poulet",45,"","poulet:120,carotte:150,poischiches:60,oignon:40,ras:1,citron:0.25,semoule:40",["Dorer le poulet avec l'oignon et le ras el hanout.","Ajouter carottes, citron et un verre d'eau, mijoter 25 min.","Ajouter les pois chiches 10 min. Servir avec la semoule."],"f:Cuire le tajine complet","Réchauffer, préparer la semoule.",""],
+["boeufbrocoli","Bœuf sauté aux brocolis, riz","F","rumsteck",25,"","rumsteck:110,brocoli:150,soja:1.5,ail:0.5,gingembre:0.5,maizena:3,riz:50,huile:0.25",["Émincer le bœuf, le mélanger à la maïzena.","Sauter le brocoli 5 min, puis le bœuf 2 min à feu vif.","Ajouter soja, ail et gingembre. Servir avec le riz."],"c:Émincer le bœuf, détailler le brocoli","Tout sauter au wok 8 min, réchauffer le riz.",""],
+["porccaramel","Porc au caramel léger, riz","F","porc",30,"P","porc:120,soja:1,miel:0.5,oignon:40,haricotsverts:100,riz:50",["Couper le porc en dés, le dorer avec l'oignon.","Ajouter miel et soja, laisser caraméliser 10 min.","Servir avec riz et haricots verts."],"f:Cuire le porc au caramel","Réchauffer, réchauffer riz et haricots.",""],
+["ramen","Soupe de nouilles au poulet façon ramen","B","poulet",30,"","poulet:100,nouilles:50,champignons:60,carotte:50,epinards:40,oeuf:0.5,soja:1,bouillon:0.5,gingembre:0.5",["Chauffer le bouillon avec soja et gingembre, y pocher le poulet 10 min.","Ajouter champignons et carottes émincés, puis les nouilles.","Servir avec épinards et œuf mollet."],"f:Préparer le bouillon et pocher le poulet|c:Émincer champignons et carottes","Réchauffer le bouillon, cuire nouilles et légumes 5 min.",""],
+["veloutebutternut","Velouté de butternut aux lentilles corail","L","vege",30,"","potiron:200,lentilles:30,coco:30,curry:0.5,bouillon:0.25,painmie:1",["Couper le butternut en cubes.","Cuire 20 min avec lentilles, curry et bouillon.","Mixer avec le lait de coco."],"f:Cuire et mixer le velouté","Réchauffer.",""],
+["briks","Briks au thon, salade","L","thon",30,"","brick:2,thon:70,oeuf:0.5,pdt:120,persil:0.25,huile:0.25,salade:60",["Écraser les pommes de terre cuites avec thon, œuf et persil.","Garnir les feuilles de brick, les plier en triangles.","Dorer 12 min au four avec un pinceau d'huile."],"f:Cuire les pommes de terre, préparer la farce","Plier et dorer les briks 12 min.",""],
+["galettes","Galettes complètes jambon-œuf-fromage","F","jambon",25,"P","galette:1.5,jambon:40,oeuf:1,emmental:15,salade:60,champignons:50",["Chauffer une galette à la poêle, casser un œuf au centre.","Ajouter jambon, champignons et emmental, plier les bords.","Servir avec la salade."],"c:Émincer et faire revenir les champignons","Garnir et cuire les galettes 4 min chacune.","Soirée crêpes à la bretonne."],
+["spaghettithon","Spaghetti au thon et à la tomate","F","thon",20,"","pates:65,thon:70,tomatecc:120,oignon:30,ail:0.5,herbes:0.5,parmesan:8",["Faire revenir oignon et ail.","Ajouter tomates et herbes, mijoter 10 min, puis le thon.","Mélanger avec les pâtes, parsemer de parmesan."],"f:Cuire la sauce tomate au thon","Cuire les pâtes, réchauffer la sauce.",""],
+["gnocchispoulet","Gnocchis poêlés, poulet et brocoli","F","poulet",25,"","gnocchis:140,poulet:90,brocoli:120,parmesan:10,huile:0.25",["Cuire le brocoli 5 min à la vapeur.","Dorer les gnocchis et le poulet en dés à la poêle.","Ajouter le brocoli et le parmesan."],"c:Couper le poulet, détailler le brocoli","Tout poêler 12 min.",""],
+["burgerpoulet","Burger de poulet croustillant, carottes râpées","F","poulet",30,"P","poulet:110,cornflakes:15,oeuf:0.2,painburger:1,salade:15,tomate:40,fromageblanc:20,carotte:60",["Paner les filets de poulet (œuf puis corn flakes), cuire 15 min à 200 °C.","Toaster les pains.","Monter avec salade, tomate et fromage blanc. Carottes râpées à côté."],"g:Paner les filets de poulet et les congeler|c:Râper les carottes","Cuire le poulet 20 min sans décongeler, monter les burgers.",""],
+["aubergines","Aubergines farcies au bœuf","F","boeuf",50,"","aubergine:250,boeuf:90,tomatecc:80,oignon:30,mozza:25,semoule:40,cumin:0.5",["Couper les aubergines en deux, les précuire 20 min au four, creuser la chair.","Cuire le bœuf avec l'oignon, la chair, les tomates et le cumin.","Farcir, ajouter la mozzarella, cuire 15 min. Servir avec la semoule."],"o:Précuire les aubergines|f:Cuire la farce, farcir","Gratiner 20 min, préparer la semoule.",""],
+["courgettes","Courgettes farcies au poulet","F","poulet",50,"","courgette:300,poulet:100,fromagefrais:20,oignon:20,riz:40,herbes:0.5",["Évider les courgettes.","Mélanger poulet haché, chair des courgettes, oignon, herbes et fromage frais.","Farcir et cuire 35 min à 180 °C. Servir avec le riz."],"c:Évider les courgettes|f:Préparer la farce, farcir","Cuire 35 min à 180 °C, réchauffer le riz.",""],
+["gratinsaumon","Gratin de pâtes au saumon et brocoli","F","saumon",35,"","pates:60,saumon:70,brocoli:120,lait:100,maizena:5,emmental:15",["Cuire pâtes et brocoli.","Préparer une béchamel légère.","Mélanger avec le saumon en dés, parsemer d'emmental, gratiner 20 min."],"f:Cuire pâtes et brocoli, faire la béchamel","Ajouter le saumon cru en dés, gratiner 25 min.",""],
+["crevettesail","Crevettes à l'ail, riz et courgettes","F","crevettes",20,"","crevettes:130,ail:1,persil:0.25,huile:0.5,riz:50,courgette:150",["Sauter les courgettes en dés 8 min.","Faire revenir les crevettes avec ail et persil 3 min.","Servir avec le riz."],"c:Couper les courgettes, hacher ail et persil","Sauter courgettes et crevettes 10 min, réchauffer le riz.",""],
+["cassoulet","Cassoulet léger","F","saucisse",50,"P","saucisse:70,haricotsblancs:150,tomatecc:100,carotte:60,oignon:30,lardons:20,bouillon:0.25",["Dorer saucisses et lardons.","Ajouter oignon, carottes, tomates, haricots et bouillon.","Mijoter 30 min, puis gratiner 15 min au four."],"f:Cuire le cassoulet complet","Réchauffer au four 20 min.",""],
+["rumsteck","Rumsteck, pommes de terre sautées et salade","F","rumsteck",30,"","rumsteck:130,pdt:200,huile:0.5,salade:60,ail:0.5",["Couper les pommes de terre en dés, les sauter 20 min avec l'ail.","Cuire le rumsteck 3 à 4 min par face, laisser reposer.","Servir avec la salade."],"c:Couper les pommes de terre, laver la salade","Sauter les pommes de terre, cuire la viande.",""],
+["chevrechaud","Salade de chèvre chaud","L","vege",15,"","chevre:40,painmie:2,salade:100,tomate:80,miel:0.25,lardons:20",["Poser une rondelle de chèvre sur chaque tranche de pain, gratiner 5 min.","Faire griller les lardons.","Servir sur la salade et les tomates, avec un filet de miel."],"c:Laver la salade, couper les tomates","Gratiner les toasts 5 min, assembler.",""],
+["poketon","Poke bowl au thon","L","thon",15,"","thon:90,riz:50,avocat:0.25,concombre:80,mais:40,soja:1,sesame:0.5",["Cuire le riz.","Couper concombre et avocat.","Assembler, arroser de soja, parsemer de sésame."],"c:Couper le concombre","Assembler, couper l'avocat au dernier moment.",""],
+["enchiladas","Enchiladas de poulet gratinées","F","poulet",40,"P","tortillas:2,poulet:100,haricotsrouges:50,tomatecc:120,emmental:20,oignon:20,cumin:0.5",["Cuire poulet émincé, oignon et haricots avec le cumin.","Garnir et rouler les tortillas, les ranger dans un plat.","Napper de tomates, parsemer d'emmental, gratiner 20 min."],"f:Cuire la garniture, rouler les enchiladas","Napper et gratiner 25 min.","Fromage qui file garanti."],
+["choufleurroti","Chou-fleur rôti au curry, semoule et yaourt","B","vege",35,"","choufleur:300,poischiches:80,curry:1,huile:0.5,semoule:40,yaourt:50",["Couper le chou-fleur en fleurettes, le mélanger avec huile, curry et pois chiches.","Rôtir 25 min à 210 °C.","Servir avec la semoule et le yaourt."],"o:Rôtir le chou-fleur et les pois chiches","Réchauffer, préparer la semoule.",""],
+["tagliatelles","Tagliatelles aux champignons et jambon","F","jambon",20,"","pates:65,champignons:150,jambon:40,creme:25,ail:0.5,persil:0.25",["Cuire les pâtes.","Faire revenir les champignons avec l'ail, ajouter le jambon et la crème.","Mélanger aux pâtes, parsemer de persil."],"c:Émincer les champignons|f:Cuire la sauce champignons-jambon","Cuire les pâtes, réchauffer la sauce.",""],
+["pizzabbq","Pizza poulet barbecue","F","poulet",30,"P","patepizza:80,poulet:60,tomatecc:40,ketchup:0.5,miel:0.25,oignon:30,mozza:40,poivron:50",["Mélanger tomates, ketchup et miel pour la sauce.","Étaler sur la pâte, ajouter poulet cuit, oignon, poivron et mozzarella.","Cuire 15 min à 230 °C."],"f:Cuire le poulet émincé, préparer la sauce","Garnir et cuire 15 min.","La pizza préférée des ados."]
+];
+const PO={c:"cru",o:"four",f:"feu",g:"gel"};
+MORE.forEach(([id,n,f,p,t,tag,ing,st,bc,j,kid])=>{
+  const r={id,n,for:f==="B"?["fam","l2"]:f==="L"?["l2"]:["fam"],p,t,ing:ing.split(",").map(x=>{const[a,b]=x.split(":");return[a,+b]}),st};
+  if(tag==="P")r.tag="plaisir"; if(kid)r.kid=kid;
+  R.push(r);RB[id]=r;
+  BC[id]={t:bc?bc.split("|").map(x=>[PO[x[0]],x.slice(2)]):[],j};
+});
+
+// ---------- Semaines ----------
+const DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const START=new Date(2026,10,2), MAXW=12;
+const SLOTS=[];
+DAYS.forEach((d,i)=>{
+  const fam=(i===2||i===5||i===6);
+  SLOTS.push({key:i+"m",day:i,when:"Midi",kind:fam?"fam":"l2",pers:fam?4:2});
+  SLOTS.push({key:i+"s",day:i,when:"Soir",kind:"fam",pers:4});
+});
+const SK=Object.fromEntries(SLOTS.map(s=>[s.key,s]));
+const DEFAULT={"0m":"buddha","0s":"tikka","1m":"cesar","1s":"hachis","2m":"nuggets","2s":"veloute","3m":"poke","3s":"teriyaki","4m":"wraps","4s":"pizza","5m":"cabillaud","5s":"burger","6m":"mignon","6s":"shakshuka"};
+const SESSIONS=[
+ {n:1,short:"dimanche",days:[0,1,2],ref:-1,cover:"lundi à mercredi"},
+ {n:2,short:"mercredi",days:[3,4,5,6],ref:2,cover:"jeudi à dimanche",late:true}
+];
+const sessionOf=day=>SESSIONS.find(s=>s.days.includes(day));
+const dayDate=(w,i)=>{const d=new Date(START);d.setDate(d.getDate()+7*w+i);return d};
+const longDate=d=>{let s=d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});s=s.replace(/ 1 /," 1er ");return s[0].toUpperCase()+s.slice(1)};
+
+// ---------- État ----------
+const KEY="semainier.v3";
+let S={prefs:{},kid:true,cur:0,weeks:{}};
+try{
+  const raw=localStorage.getItem(KEY);
+  if(raw)S={...S,...JSON.parse(raw)};
+  else{const old=localStorage.getItem("semainier.v2");if(old){const o=JSON.parse(old);S.prefs=o.prefs||{};S.kid=o.kid!==false;S.weeks[0]={plan:o.plan||{},mode:o.mode||{},pin:{},checked:o.checked||{},shopSess:o.shopSess||1}}}
+}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let W;
+function useWeek(w){
+  S.cur=Math.max(0,Math.min(MAXW-1,w));
+  if(!S.weeks[S.cur]){S.weeks[S.cur]={plan:{},mode:{},pin:{},checked:{},shopSess:1};W=S.weeks[S.cur];build(S.cur===0?"default":"seed")}
+  W=S.weeks[S.cur];W.pin=W.pin||{};
+}
+
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const kcal=r=>Math.round(r.ing.reduce((a,[id,q])=>a+q*I[id].k,0));
+const allowed=r=>r.ing.every(([id])=>S.prefs[id]!==-1);
+const likes=r=>r.ing.filter(([id])=>S.prefs[id]===1).length;
+const isVege=r=>!r.ing.some(([id])=>I[id].c==="Viandes"||I[id].c==="Poissons & crevettes");
+const isFish=r=>r.ing.some(([id])=>I[id].c==="Poissons & crevettes");
+
+function prevActive(key){let i=SLOTS.findIndex(s=>s.key===key)-1;while(i>=0&&W.mode[SLOTS[i].key]==="skip")i--;return i<0?null:SLOTS[i].key}
+function srcKey(key){
+  const m=W.mode[key];
+  if(m==="skip")return null;
+  if(m==="rest"){const p=prevActive(key);return p?srcKey(p):key}
+  return key;
+}
+const recipeAt=key=>{const k=srcKey(key);return k?RB[W.plan[k]]:null};
+
+function fits(r,slot,used,plan){
+  if(!r||!allowed(r)||!r.for.includes(slot.kind)||used.has(r.id))return false;
+  const other=plan[slot.day+(slot.when==="Midi"?"s":"m")];
+  if(other&&RB[other]&&RB[other].p===r.p&&r.p!=="vege")return false;
+  return true;
+}
+function pick(slot,used,plan,exclude,rand,avoid){
+  let c=R.filter(r=>r.id!==exclude&&fits(r,slot,used,plan));
+  if(!c.length)c=R.filter(r=>r.id!==exclude&&allowed(r)&&r.for.includes(slot.kind));
+  if(!c.length)return null;
+  c=c.map(r=>[r,likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?2.5:0)]).sort((a,b)=>b[1]-a[1]);
+  return c[0][0].id;
+}
+function build(mode){ // keep | default | seed | random
+  const plan={},used=new Set();
+  const rand=mode==="seed"?rng(1000+S.cur):mode==="random"?Math.random:null;
+  const prev=S.weeks[S.cur-1];
+  const avoid=new Set(prev?Object.values(prev.plan).filter(Boolean):[]);
+  for(const sl of SLOTS){
+    if(srcKey(sl.key)!==sl.key){plan[sl.key]=W.plan[sl.key]||null;continue}
+    let cur=mode==="keep"?W.plan[sl.key]:mode==="default"?DEFAULT[sl.key]:null;
+    const pinned=mode==="keep"&&W.pin[sl.key]&&RB[cur];
+    if(!pinned&&!(cur&&fits(RB[cur],sl,used,plan)))cur=pick(sl,used,plan,null,rand,avoid);
+    plan[sl.key]=cur;if(cur)used.add(cur);
+  }
+  W.plan=plan;save();
+}
+function swap(key){
+  const sl=SK[key];
+  const used=new Set(SLOTS.filter(s=>s.key!==key&&srcKey(s.key)===s.key&&W.plan[s.key]).map(s=>W.plan[s.key]));
+  const plan={...W.plan};delete plan[key];
+  const id=pick(sl,used,plan,W.plan[key],Math.random);
+  if(id){W.plan[key]=id;delete W.pin[key];save();renderAll();toast("Nouveau plat : "+RB[id].n)}
+  else toast("Pas d'autre recette compatible avec vos goûts");
+}
+
+function cooks(){
+  const m={};
+  SLOTS.forEach(sl=>{const k=srcKey(sl.key);if(!k||!W.plan[k]||!RB[W.plan[k]])return;(m[k]=m[k]||{sl:SK[k],r:RB[W.plan[k]],eat:[]}).eat.push(sl)});
+  return SLOTS.filter(s=>m[s.key]).map(s=>m[s.key]);
+}
+const persOf=c=>c.eat.reduce((a,e)=>a+e.pers,0);
+function qtyCook(c,id,q){return c.eat.reduce((a,e)=>a+q*e.pers+((S.kid&&e.kind==="fam"&&I[id].s)?q:0),0)}
+const slotLabel=s=>DAYS[s.day].toLowerCase()+" "+s.when.toLowerCase();
+const frozen=e=>{const k=srcKey(e.key);const ses=sessionOf(SK[k||e.key].day);return e.day-ses.ref>3};
+
+// ---------- Formatage ----------
+const frac=x=>{const w=Math.floor(x),h=x-w;return ((w?w:"")+(h>=0.5?(w?" ½":"½"):""))||"0"};
+function fmt(q,u,shop){
+  if(u==="g"||u==="ml"){
+    let v=shop?Math.ceil(q/10)*10:Math.max(5,Math.round(q/5)*5);
+    if(v>=1000){const big=(Math.round(v/100)/10).toString().replace(".",",");return big+(u==="g"?" kg":" L")}
+    return v+" "+u;
+  }
+  if(u==="cs"||u==="cc"){const v=Math.max(0.5,Math.round(q*2)/2);return frac(v)+(u==="cs"?" c. à s.":" c. à c.")}
+  const v=shop?Math.ceil(q-0.01):Math.max(0.5,Math.round(q*2)/2);
+  if(u==="gousse")return frac(v)+(v>1?" gousses":" gousse");
+  if(u==="bouquet")return frac(v)+(v>1?" bouquets":" bouquet");
+  return frac(v);
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const shortName=r=>r.n.split(",")[0];
+const tagHTML=r=>(r.tag==="plaisir"?'<span class="tag plaisir">Plaisir</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"");
+const dateOf=i=>dayDate(S.cur,i).toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
+
+// ---------- En-tête semaine ----------
+function renderWeekNav(){
+  const a=dayDate(S.cur,0),b=dayDate(S.cur,6);
+  const f=d=>d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"}).replace(/^1 /,"1er ");
+  document.getElementById("weekLabel").textContent="Semaine "+(S.cur+1)+" · du "+f(a)+" au "+f(b);
+  document.getElementById("prevW").disabled=S.cur===0;
+  document.getElementById("nextW").disabled=S.cur===MAXW-1;
+}
+
+// ---------- Semaine ----------
+function renderWeek(){
+  const el=document.getElementById("week");
+  el.innerHTML=DAYS.map((d,i)=>{
+    const dayOff=W.mode[i+"m"]==="skip"&&W.mode[i+"s"]==="skip";
+    const meals=["m","s"].map(w=>{
+      const sl=SK[i+w],mode=W.mode[sl.key]||"cook",src=srcKey(sl.key),r=recipeAt(sl.key);
+      const restOK=!!prevActive(sl.key);
+      const isRest=mode==="rest"&&src!==sl.key;
+      let body;
+      if(mode==="skip")body=`<span class="off">Pas de repas</span>`;
+      else if(!r)body=`<span class="empty">Aucune recette compatible</span>`;
+      else body=`${isRest?'<span class="restlab">Restes de '+slotLabel(SK[src])+'</span>':""}<button class="name" type="button" data-open="${src}">${esc(r.n)}</button>`;
+      return `<div class="meal ${mode==="skip"?"is-off":""} ${isRest?"is-rest":""}">
+        <div class="when"><span>${sl.when}</span><span class="pers ${sl.pers===4?"fam":""}">${sl.pers} pers.</span></div>
+        ${body}
+        <div class="meta"><span class="num">${r&&mode!=="skip"?"≈ "+kcal(r)+" kcal":""}</span>${r&&!isRest&&mode!=="skip"?tagHTML(r):""}</div>
+        <div class="ctrl"><select id="mode-${sl.key}" data-mode="${sl.key}" aria-label="${DAYS[i]} ${sl.when.toLowerCase()}">
+          <option value="cook" ${mode==="cook"?"selected":""}>Cuisiné</option>
+          <option value="rest" ${mode==="rest"?"selected":""} ${restOK?"":"disabled"}>Restes du repas d'avant</option>
+          <option value="skip" ${mode==="skip"?"selected":""}>Pas de repas</option>
+        </select></div>
+        ${mode!=="skip"&&!isRest?`<div class="acts"><button class="swap" type="button" data-pick="${sl.key}">Catalogue</button><button class="swap" type="button" data-swap="${sl.key}">Au hasard</button></div>`:""}</div>`;
+    }).join("");
+    const tot=["m","s"].reduce((a,w)=>{const r=W.mode[i+w]==="skip"?null:recipeAt(i+w);return a+(r?kcal(r):0)},0);
+    return `<div class="day ${dayOff?"day-off":""}"><div class="dayhead"><b>${d}</b><small>${dateOf(i)}</small><button class="dayskip" type="button" data-day="${i}">${dayOff?"Réactiver":"Sauter le jour"}</button></div>${meals}<div class="daytotal">${tot?'Midi + soir : <span class="num">≈ '+tot+' kcal</span>':"Jour sauté"}</div></div>`;
+  }).join("");
+}
+
+// ---------- Recettes ----------
+function recipeHTML(c,modal){
+  const r=c.r,pers=persOf(c);
+  const ing=r.ing.map(([id,q])=>`<li><span class="num">${fmt(qtyCook(c,id,q),I[id].u,false)}</span><span>${esc(I[id].n)}</span></li>`).join("");
+  const boost=S.kid&&c.eat.some(e=>e.kind==="fam")&&r.ing.some(([id])=>I[id].s);
+  const extra=c.eat.filter(e=>e.key!==c.sl.key);
+  const bt=BC[r.id].t;
+  return `<article class="rcard">${modal?'<button class="close" type="button" data-close>Fermer</button>':""}
+    <div class="rhead"><small>${DAYS[c.sl.day]} ${dateOf(c.sl.day)} · ${c.sl.when}${extra.length?" + restes "+extra.map(slotLabel).join(", "):""}</small><h3>${esc(r.n)}</h3>
+    <div class="rfacts"><span>${pers} portions</span><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion adulte</span>${tagHTML(r)}</div></div>
+    <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings">${ing}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
+    <div class="bcnote"><b>Session du ${sessionOf(c.sl.day).short} :</b> ${bt.length?bt.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(BC[r.id].j)}</div></div></div>
+    ${r.kid||boost?`<div class="kid"><b>Pour les enfants.</b> ${r.kid?esc(r.kid)+" ":""}${boost?"Les féculents incluent une part en plus pour eux.":""}</div>`:""}
+  </article>`;
+}
+function renderRecipes(){const cs=cooks();document.getElementById("reclist").innerHTML=cs.length?cs.map(c=>recipeHTML(c,false)).join(""):'<p class="muted">Aucun repas prévu cette semaine.</p>'}
+
+// ---------- Catalogue ----------
+let catQ="",catF="all",catKey=null;
+const FILTERS=[["all","Tout"],["ok","Compatibles avec mes goûts"],["plaisir","Plaisir"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"]];
+function catMatches(r){
+  if(catQ){const q=norm(catQ);if(!norm(r.n+" "+r.ing.map(([id])=>I[id].n).join(" ")).includes(q))return false}
+  return catF==="all"||(catF==="ok"&&allowed(r))||(catF==="plaisir"&&r.tag==="plaisir")||(catF==="vege"&&isVege(r))||(catF==="poisson"&&isFish(r))||(catF==="viande"&&!isVege(r)&&!isFish(r))||(catF==="rapide"&&r.t<=25);
+}
+function catalogShell(sfx,key){
+  return `<div class="catbar"><input type="search" id="catq-${sfx}" data-catq="${sfx}" placeholder="Rechercher un plat ou un ingrédient" value="${esc(catQ)}" autocomplete="off">
+    <div class="seg" role="group" aria-label="Filtrer les recettes" id="catf-${sfx}"></div></div>
+    <div class="catlist" id="catlist-${sfx}"></div>`;
+}
+function renderCatList(sfx,key){
+  const fEl=document.getElementById("catf-"+sfx),lEl=document.getElementById("catlist-"+sfx);
+  if(!fEl||!lEl)return;
+  fEl.innerHTML=FILTERS.map(([v,l])=>`<button type="button" data-catf="${v}" data-sfx="${sfx}" aria-pressed="${catF===v}">${l}</button>`).join("");
+  const inWeek=new Set(cooks().map(c=>c.r.id));
+  const list=R.filter(catMatches).sort((a,b)=>(allowed(b)-allowed(a))||(likes(b)-likes(a))||a.n.localeCompare(b.n,"fr"));
+  lEl.innerHTML=list.length?list.map(r=>{
+    const bad=r.ing.filter(([id])=>S.prefs[id]===-1).map(([id])=>I[id].n);
+    const cur=key&&W.plan[key]===r.id;
+    return `<div class="citem ${bad.length?"is-bad":""}">
+      <div class="cmain"><b>${esc(r.n)}</b><div class="cmeta"><span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${tagHTML(r)}${cur?'<span class="tag">Plat actuel</span>':inWeek.has(r.id)?'<span class="tag">Déjà au menu</span>':""}${bad.length?'<span class="tag no">Contient : '+esc(bad.join(", "))+'</span>':""}</div></div>
+      <div class="cbtns"><button class="btn sm" type="button" data-view>Voir</button>${key&&!cur?`<button class="btn primary sm" type="button" data-choose="${r.id}">Choisir</button>`:""}</div>
+      <div class="cdet" hidden><div class="rbody"><div><h4>Pour 1 portion adulte</h4><ul class="ings">${r.ing.map(([id,q])=>`<li><span class="num">${fmt(q,I[id].u,false)}</span><span>${esc(I[id].n)}</span></li>`).join("")}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div></div></div>
+    </div>`;
+  }).join(""):'<p class="muted">Aucune recette ne correspond. Essayez un autre mot ou un autre filtre.</p>';
+}
+function openCatalog(key){
+  catKey=key;const sl=SK[key];
+  ov.innerHTML=`<article class="rcard catcard"><button class="close" type="button" data-close>Fermer</button>
+    <div class="rhead"><small>${DAYS[sl.day]} ${dateOf(sl.day)} · ${sl.when} · ${sl.pers} pers.</small><h3>Choisir un plat</h3></div>${catalogShell("m",key)}</article>`;
+  ov.hidden=false;renderCatList("m",key);
+  const q=document.getElementById("catq-m");try{q.focus({preventScroll:true})}catch(e){}
+}
+function renderCatalogView(){
+  const el=document.getElementById("catalogue");
+  if(!el.firstChild)el.innerHTML=catalogShell("v",null);
+  renderCatList("v",null);
+}
+
+// ---------- Batch cooking ----------
+function renderBatch(){
+  const all=cooks();
+  document.getElementById("batch").innerHTML=SESSIONS.map(ses=>{
+    const when=longDate(dayDate(S.cur,ses.ref))+(ses.late?", en fin de journée":"");
+    const cs=all.filter(c=>ses.days.includes(c.sl.day));
+    if(!cs.length)return `<section class="session"><header class="seshead"><span class="sesn">Session ${ses.n}</span><h3>${when}</h3><p>Rien à préparer pour ${ses.cover}.</p></header></section>`;
+    const lab=c=>`<span class="rtag">${esc(shortName(c.r))} · ${persOf(c)} p.</span>`;
+    const tasks=p=>cs.flatMap(c=>BC[c.r.id].t.filter(t=>t[0]===p).map(t=>`<li>${esc(t[1])} ${lab(c)}</li>`));
+    const grp=Object.keys(GROUPED).map(id=>{
+      const users=cs.filter(c=>c.r.ing.some(([x])=>x===id));if(!users.length)return"";
+      const q=users.reduce((a,c)=>a+qtyCook(c,id,c.r.ing.find(([x])=>x===id)[1]),0);
+      return `<li>Cuire <b class="num">${fmt(q,"g",true)}</b> de ${GROUPED[id]} cru en une seule fois, puis répartir en boîtes <span class="rtag">${users.map(c=>esc(shortName(c.r))).join(" · ")}</span></li>`;
+    }).join("");
+    const frozenEat=cs.flatMap(c=>c.eat.filter(frozen).map(e=>`<li>Portion de ${slotLabel(e)} : congeler <span class="rtag">${esc(shortName(c.r))}</span></li>`));
+    const steps=[
+      ["Laver, éplucher, découper","Tout le monde à la planche : c'est l'étape la plus longue.",tasks("cru").join("")],
+      ["Le four","Préchauffer une fois, enchaîner les plaques.",tasks("four").join("")],
+      ["Feux et casseroles","Pendant que le four tourne.",grp+tasks("feu").join("")],
+      ["Refroidir, étiqueter, ranger","Boîtes au frigo dans les 2 heures, étiquetées avec le jour du repas. Frigo : 3 jours maximum.",tasks("gel").join("")+frozenEat.join("")]
+    ].filter(s=>s[2]||s[0].startsWith("Refroidir"));
+    const days=ses.days.map(d=>{
+      const items=SLOTS.filter(s=>s.day===d).map(e=>{
+        if(W.mode[e.key]==="skip")return"";
+        const k=srcKey(e.key),r=recipeAt(e.key);if(!r)return"";
+        const rest=k!==e.key,fz=frozen(e);
+        return `<li><span class="jw">${e.when}</span><span><b>${esc(shortName(r))}</b>${rest?" (restes)":""}${fz?' <span class="tag gel">congelé</span>':""}<br><span class="muted">${fz?"La veille : passer au frigo. ":""}${rest?"Réchauffer et servir.":esc(BC[r.id].j)}</span></span></li>`;
+      }).join("");
+      return items?`<div class="jday"><h4>${DAYS[d]} ${dateOf(d)}</h4><ul>${items}</ul></div>`:"";
+    }).join("");
+    return `<section class="session">
+      <header class="seshead"><span class="sesn">Session ${ses.n}</span><h3>${when}</h3><p>Prépare les repas du ${ses.cover} : ${cs.map(c=>esc(shortName(c.r))).join(", ")}.</p></header>
+      <div class="sesbody">
+        <ol class="bsteps">${steps.map(s=>`<li><h4>${s[0]}</h4><p class="muted">${s[1]}</p>${s[2]?`<ul class="tasks">${s[2]}</ul>`:""}</li>`).join("")}</ol>
+        <div class="jj"><h4 class="jjt">Le jour J</h4>${days}</div>
+      </div></section>`;
+  }).join("");
+}
+
+// ---------- Courses ----------
+function shopping(sess){
+  const tot={};
+  cooks().filter(c=>!sess||sessionOf(c.sl.day).n===sess).forEach(c=>c.r.ing.forEach(([id,q])=>{tot[id]=(tot[id]||0)+qtyCook(c,id,q)}));
+  const by={};
+  Object.entries(tot).forEach(([id,q])=>{const r=I[id].r;(by[r]=by[r]||[]).push([id,q])});
+  return Object.keys(AISLES).filter(a=>by[a]).map(a=>[a,by[a].sort((x,y)=>I[x[0]].n.localeCompare(I[y[0]].n,"fr"))]);
+}
+const hint=(id,q)=>{const x=I[id];if(!x.w)return"";const n=Math.max(1,Math.ceil(q/x.w-0.05));return "≈ "+n+" "+x.wl+(n>1&&!x.wl.includes(" ")?"s":"")};
+function renderShop(){
+  const ss=W.shopSess??1;
+  document.querySelectorAll("[data-sess]").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.sess===ss)));
+  const list=shopping(ss);
+  document.getElementById("shop").innerHTML=list.length?list.map(([a,items])=>`<div class="aisle"><h3>${AISLES[a]}</h3><ul>${items.map(([id,q])=>{
+    const ck=ss+":"+id,done=!!W.checked[ck];const h=hint(id,q);
+    return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${ck}" id="ck-${ss}-${id}" ${done?"checked":""}><span>${esc(I[id].n)}${h?`<span class="hint">${h}</span>`:""}</span><span class="q">${fmt(q,I[id].u,true)}</span></label></li>`}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
+}
+
+// ---------- Goûts ----------
+function renderPrefs(){
+  const groups={};
+  Object.entries(I).forEach(([id,x])=>{if(x.c)(groups[x.c]=groups[x.c]||[]).push(id)});
+  document.getElementById("prefs").innerHTML=Object.entries(groups).map(([g,ids])=>`<div class="pg"><h3>${g}</h3><div class="chips">${ids.map(id=>{
+    const v=S.prefs[id],cls=v===1?"like":v===-1?"no":"";
+    const lab=v===1?"j'aime":v===-1?"je n'aime pas":"neutre";
+    return `<button type="button" class="chip ${cls}" data-pref="${id}" aria-label="${esc(I[id].n)} : ${lab}">${esc(I[id].n)}</button>`}).join("")}</div></div>`).join("");
+  const ok=R.filter(allowed).length;
+  document.getElementById("counter").innerHTML=`<b>${ok}</b> recettes compatibles sur <b>${R.length}</b>`+(ok<16?" · moins de choix, certains plats peuvent revenir":"");
+}
+function renderAll(){renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();document.getElementById("kidBoost").checked=S.kid}
+
+// ---------- Interactions ----------
+let toastT;
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2400)}
+const ov=document.getElementById("overlay");
+function openRecipe(key){const c=cooks().find(c=>c.sl.key===key);if(!c)return;ov.innerHTML=recipeHTML(c,true);ov.hidden=false;ov.querySelector("[data-close]").focus()}
+function closeModal(){ov.hidden=true;ov.innerHTML="";catKey=null}
+ov.addEventListener("click",e=>{if(e.target===ov||e.target.closest("[data-close]"))closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeModal()});
+
+function setMode(key,m){if(m==="cook")delete W.mode[key];else W.mode[key]=m}
+function goWeek(w){useWeek(w);save();renderAll();window.scrollTo(0,0)}
+document.addEventListener("click",e=>{
+  const o=e.target.closest("[data-open]");if(o)return openRecipe(o.dataset.open);
+  const pk=e.target.closest("[data-pick]");if(pk)return openCatalog(pk.dataset.pick);
+  const s=e.target.closest("[data-swap]");if(s)return swap(s.dataset.swap);
+  const ch=e.target.closest("[data-choose]");
+  if(ch&&catKey){const id=ch.dataset.choose,k=catKey;W.plan[k]=id;W.pin[k]=1;delete W.mode[k];build("keep");closeModal();renderAll();toast(RB[id].n+" au menu de "+slotLabel(SK[k]));return}
+  const vw=e.target.closest("[data-view]");
+  if(vw){const d=vw.closest(".citem").querySelector(".cdet");d.hidden=!d.hidden;vw.textContent=d.hidden?"Voir":"Masquer";return}
+  const cf=e.target.closest("[data-catf]");if(cf){catF=cf.dataset.catf;renderCatList(cf.dataset.sfx,cf.dataset.sfx==="m"?catKey:null);return}
+  const d=e.target.closest("[data-day]");
+  if(d){const i=d.dataset.day,off=W.mode[i+"m"]==="skip"&&W.mode[i+"s"]==="skip";setMode(i+"m",off?"cook":"skip");setMode(i+"s",off?"cook":"skip");build("keep");renderAll();return}
+  const ss=e.target.closest("[data-sess]");if(ss){W.shopSess=+ss.dataset.sess;save();renderShop();return}
+  const p=e.target.closest("[data-pref]");
+  if(p){const id=p.dataset.pref,v=S.prefs[id];S.prefs[id]=v===1?-1:v===-1?0:1;if(!S.prefs[id])delete S.prefs[id];build("keep");renderAll()}
+});
+document.addEventListener("input",e=>{
+  const q=e.target.closest("[data-catq]");
+  if(q){catQ=q.value;renderCatList(q.dataset.catq,q.dataset.catq==="m"?catKey:null)}
+});
+document.addEventListener("change",e=>{
+  const c=e.target.closest("[data-check]");
+  if(c){const id=c.dataset.check;if(c.checked)W.checked[id]=1;else delete W.checked[id];save();c.closest("li").classList.toggle("done",c.checked);return}
+  const m=e.target.closest("[data-mode]");
+  if(m){setMode(m.dataset.mode,m.value);build("keep");renderAll()}
+});
+document.getElementById("prevW").addEventListener("click",()=>goWeek(S.cur-1));
+document.getElementById("nextW").addEventListener("click",()=>goWeek(S.cur+1));
+document.getElementById("kidBoost").addEventListener("change",e=>{S.kid=e.target.checked;save();renderAll()});
+document.getElementById("regen").addEventListener("click",()=>{W.pin={};build("random");renderAll();toast("Nouvelle semaine générée")});
+document.getElementById("reset").addEventListener("click",()=>{W.mode={};W.pin={};build(S.cur===0?"default":"seed");renderAll();toast("Menu proposé rétabli")});
+document.getElementById("restLunch").addEventListener("click",()=>{
+  ["1m","3m","4m"].forEach(k=>{if(W.mode[k]!=="skip")W.mode[k]="rest"});build("keep");renderAll();toast("Midis de mardi, jeudi et vendredi en restes de la veille");
+});
+document.getElementById("clearPrefs").addEventListener("click",()=>{S.prefs={};build("keep");renderAll()});
+document.getElementById("uncheck").addEventListener("click",()=>{const ss=W.shopSess??1;Object.keys(W.checked).forEach(k=>{if(k.startsWith(ss+":"))delete W.checked[k]});save();renderShop()});
+document.getElementById("copyList").addEventListener("click",()=>{
+  const ss=W.shopSess??1;
+  const title=(ss?"Courses session "+ss+" · ":"Courses · ")+"semaine du "+dateOf(0);
+  const txt=title+"\n\n"+shopping(ss).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,q])=>"- "+I[id].n+" : "+fmt(q,I[id].u,true)).join("\n")).join("\n\n");
+  const done=()=>toast("Liste copiée");
+  const fallback=()=>{const ta=document.getElementById("copyArea");ta.value=txt;ta.select();try{document.execCommand("copy");done()}catch(err){toast("Copie impossible, sélectionnez la liste à la main")}};
+  try{navigator.clipboard.writeText(txt).then(done,fallback)}catch(err){fallback()}
+});
+
+const VIEWS=["semaine","batch","gouts","recettes","courses"];
+function route(){
+  const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"semaine";
+  VIEWS.forEach(x=>document.getElementById("v-"+x).hidden=x!==v);
+  document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.getAttribute("href")==="#"+v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",route);
+useWeek(S.cur||0);renderAll();route();
+</script>
+
+</html>
