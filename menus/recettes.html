@@ -711,12 +711,16 @@ Object.assign(I.creme,{n:"Crème fraîche 15 %"});I.mozza.n="Mozzarella";I.lardo
 // Options facultatives par recette : un accompagnement en plus, par personne
 const SOUPLIKE=/velouté|soupe|ramen|pho|laksa|harira|bortsch|minestrone|pozole|salade/i;
 function optionsFor(r){
+  // uniquement des ingrédients absents de la recette
+  const has=id=>r.ing.some(([x])=>x===id);
+  const bread=["baguette","painmie","pita","tortillas","painburger","galette","patepizza","brick","farinemais"].some(has);
+  const starch=r.ing.some(([id])=>I[id].s);
+  const sauce=["tomatecc","coco","creme","lait","bouillon","beurrecacahuete"].some(has);
   const out=[];
-  const st=r.ing.find(([id])=>I[id].s&&!["patepizza","brick","pateravioli","lasagne"].includes(id));
-  if(st)out.push([st[0],Math.round(st[1]*0.5*10)/10]);
-  if(!st||SOUPLIKE.test(r.n))out.push(["baguette",40]);
-  if(/pâtes|spaghetti|tagliatelles|coquillettes|gratin|lasagnes|gnocchis|risotto|polenta/i.test(r.n)&&!r.ing.some(([id])=>id==="parmesan"))out.push(["parmesan",8]);
-  return out.filter((o,i,a)=>a.findIndex(x=>x[0]===o[0])===i);
+  if(!starch)out.push(SOUPLIKE.test(r.n)||!sauce?["baguette",40]:["riz",40]);
+  else if(!bread&&(sauce||SOUPLIKE.test(r.n)))out.push(["baguette",40]);
+  if(/pâtes|spaghetti|tagliatelles|coquillettes|gratin|lasagnes|gnocchis|risotto|polenta/i.test(r.n))out.push(["parmesan",8]);
+  return out.filter(([id],i,a)=>!has(id)&&a.findIndex(x=>x[0]===id)===i);
 }
 
 // Étape dédiée à chaque ingrédient optionnel
@@ -725,6 +729,7 @@ function optSteps(r,n){
     const qty=fmt(q*n,I[id].u,false),nm=I[id].n.toLowerCase(),inR=r.ing.some(([x])=>x===id);
     if(inR)return `Préparer ${qty} de ${nm} en plus, en même temps et de la même façon que le reste.`;
     if(id==="baguette")return `Servir avec ${qty} de baguette, tranchée ou grillée.`;
+    if(id==="riz")return `Cuire ${qty} de riz et le servir à côté.`;
     if(id==="parmesan")return `Parsemer ${qty} de parmesan râpé au moment de servir.`;
     return `Servir avec ${qty} de ${nm}.`;
   });
@@ -849,7 +854,7 @@ function fillIngs(){
   document.getElementById("servN").textContent=servings;
   document.getElementById("ings").innerHTML=r.ing.map(([id,qq])=>`<li><span class="num">${fmt(qq*servings,I[id].u)}</span><span>${esc(I[id].n)}</span></li>`).join("");
   document.getElementById("steps").innerHTML=r.st.map(s=>`<li><span>${esc(s)}</span></li>`).join("")+optStepHTML(r,servings);
-  document.getElementById("ings").innerHTML+=optionsFor(r).map(([id,qq])=>`<li class="opt"><span class="num">${fmt(qq*servings,I[id].u)}</span><span>${esc(I[id].n)}${r.ing.some(([x])=>x===id)?" en plus":""} <em>(optionnel)</em></span></li>`).join("");
+  document.getElementById("ings").innerHTML+=optionsFor(r).map(([id,qq])=>`<li class="opt"><span class="num">${fmt(qq*servings,I[id].u)}</span><span>${esc(I[id].n)} <em>(optionnel)</em></span></li>`).join("");
 }
 function closeModal(){ov.hidden=true;ov.innerHTML="";current=null}
 let tT;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(tT);tT=setTimeout(()=>t.hidden=true,2600)}
