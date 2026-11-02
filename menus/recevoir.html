@@ -612,20 +612,20 @@ const R=AP.map(([id,n,cat,t,w,y,ing,st,tags,four])=>{
 const DIETS=[["gluten","Gluten"],["lait","Lait / lactose"],["oeuf","Œufs"],["arachide","Arachide"],["fruitscoque","Fruits à coque"],["poisson","Poisson"],["crustaces","Crustacés, coquillages"],["soja","Soja"],["sesame","Sésame"],["celeri","Céleri"],["moutarde","Moutarde"],["porc","Porc"],["alcool","Alcool"],["vegetarien","Végétarien"]];
 const DIET_N=Object.fromEntries(DIETS);
 const DIET_RX={
-  gluten:/farine(?! de mais)|pates?\b(?! de curry)|spaghetti|penne|tagliatelle|macaroni|lasagne|ravioli|gnocchi|nouilles chinoises|\bpains?\b|baguette|semoule|boulgour|chapelure|corn flakes|tortillas de ble|feuilles de brick|feuilles a raviolis|blinis|gressins|biscuits|sauce soja|crepes|bouillon cube|biere/,
+  gluten:/farine(?! de mais)|\bble\b|pates?\b(?! de curry)|spaghetti|penne|tagliatelle|macaroni|lasagne|ravioli|gnocchi|nouilles chinoises|\bpains?\b|baguette|semoule|boulgour|chapelure|corn flakes|tortillas de ble|feuilles de brick|feuilles a raviolis|blinis|gressins|biscuits|sauce soja|crepes|bouillon cube|biere/,
   lait:/\blait\b(?! de coco)|creme(?! de sesame)|beurre(?! de cacahuete)|fromage|yaourt|mozzarella|parmesan|emmental|comte|cheddar|feta|chevre|reblochon|ricotta|halloumi|mascarpone|camembert|brebis|faisselle/,
   oeuf:/\boeufs?\b(?! de cabillaud)|mayonnaise|blinis|biscuits a la cuillere|crepes/,
   arachide:/cacahuete|arachide/,
   fruitscoque:/noix(?! de coco)|amande|cajou|noisette|pistache|pesto|\bpignons?\b/,
-  poisson:/saumon|cabillaud|colin|\blieu\b|thon|sardine|maquereau|truite|anchois|poisson|morue/,
-  crustaces:/crevette|\bmoules?\b/,
+  poisson:/daurade|dorade|saumon|cabillaud|colin|\blieu\b|thon|sardine|maquereau|truite|anchois|poisson|morue/,
+  crustaces:/crevette|\bmoules?\b|huitre/,
   soja:/(?<!pousses de )soja|tofu|edamame|miso/,
   sesame:/sesame|tahini/,
   celeri:/celeri/,
   moutarde:/moutarde/,
   porc:/porc|jambon|lardons|chorizo|saucisson|chair a saucisse/,
-  alcool:/\bvin\b|biere/,
-  viande:/poulet|dinde|boeuf|veau|agneau|canard|paleron|rumsteck|steak|saucisse|merguez|viande/
+  alcool:/(?<!vinaigre de )\bvin\b|biere|mirin/,
+  viande:/poulet|dinde|boeuf|\bveau\b|agneau|canard|paleron|rumsteck|steak|saucisse|merguez|viande/
 };
 const _dn=s=>String(s).toLowerCase().replace(/œ/g,"oe").normalize("NFD").replace(/[̀-ͯ]/g,"");
 const _dIng={},_dRec={};
@@ -690,7 +690,7 @@ const CLOUD=(()=>{
   API=API.replace(/\/+$/,"");
   const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
   const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
-  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions"];
+  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier"];
   let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
   let hooks={apply(){},status(){}},busy=false,again=false,timer=null,status="idle",lastErr="",view="login",note="";
   const J=JSON.stringify,clone=o=>JSON.parse(J(o===undefined?null:o));
@@ -713,14 +713,14 @@ const CLOUD=(()=>{
   function local(){
     const P=read(LP)||{},A=read(LA)||{};
     const perso={};PERSO_KEYS.forEach(k=>{const v=k==="note"?A.note:P[k];if(v!==undefined)perso[k]=clone(v)});
-    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{})}};
+    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{}),panier:clone(read("menus.panier")||{})}};
   }
   function applyLocal(perso,shared){
     const P=read(LP)||{},A=read(LA)||{fav:{},note:{}};
     PERSO_KEYS.forEach(k=>{if(k==="note")A.note=perso.note||{};else if(perso[k]!==undefined)P[k]=perso[k];});
     P.weeks=shared.weeks||{};A.fav=shared.fav||{};
     write(LP,P);write(LA,A);
-    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});
+    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});write("menus.panier",shared.panier||{});
   }
   // Fusion à trois : on garde ce qui a changé ici depuis la dernière synchro, le reste vient du serveur
   function mergeMap(b,m,t){
