@@ -392,9 +392,9 @@ html.ck-on,html.ck-on body{overflow:hidden}
   <section id="v-idees">
     <div class="wrap hero">
       <div>
-        <span class="eyebrow">Apéro, apéro dînatoire, buffet</span>
+        <span class="eyebrow">Apéro, plat, dessert : à vous de choisir</span>
         <h1>Ce soir, <em>on reçoit.</em></h1>
-        <p>Tartinades maison, verrines, bouchées chaudes, planches et mocktails. Choisissez, et on calcule tout : les quantités pour vos invités, la liste de courses et l'heure à laquelle lancer chaque chose.</p>
+        <p>Un apéro, un plat, un dessert, ou les trois : dites oui ou non à chacun. Tartinades, bouchées chaudes, plats mijotés et desserts maison. Choisissez, et on calcule tout : les quantités pour vos invités, la liste de courses et l'heure à laquelle lancer chaque chose.</p>
       </div>
       <div class="plancard" id="plancard"></div>
     </div>
@@ -1214,6 +1214,12 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}}
 let cat="",q="",flt=new Set();
 const PER={apero:6,dinatoire:14,repas:4};
 const FORMULES={apero:"Apéro",dinatoire:"Apéro dînatoire",repas:"Apéro + plat + dessert"};
+// Composition de la réception : apéro, plat, dessert (oui / non) ; P.f garde la taille de l'apéro quand il n'y a pas de plat
+if(P.f==="repas"){P.m={a:1,p:1,d:1};P.f="apero"}
+if(!P.m)P.m={a:1,p:0,d:0};
+const M=()=>P.m;
+const perHead=()=>!M().a?0:M().p?4:PER[P.f];
+function formule(){const m=M(),parts=[];if(m.a)parts.push(m.p?"Apéro":FORMULES[P.f]);if(m.p)parts.push(parts.length?"plat":"Plat");if(m.d)parts.push(parts.length?"dessert":"Dessert");return parts.join(" + ")||"Rien de prévu"}
 const MEAL=new Set(["plat","dessert"]);
 
 // ---------- Invités, intolérances et historique ----------
@@ -1240,7 +1246,7 @@ function plan(){
   const ids=Object.keys(P.sel).filter(id=>RB[id]);
   const food=ids.filter(id=>RB[id].cat!=="boisson"&&!MEAL.has(RB[id].cat)),drink=ids.filter(id=>RB[id].cat==="boisson");
   const plats=ids.filter(id=>RB[id].cat==="plat"),desserts=ids.filter(id=>RB[id].cat==="dessert");
-  const target=P.g*PER[P.f];
+  const target=P.g*perHead();
   const qty={};
   const share=(list,total)=>{
     const fixed=list.filter(id=>P.sel[id]!=null),auto=list.filter(id=>P.sel[id]==null);
@@ -1249,7 +1255,7 @@ function plan(){
     auto.forEach(id=>{const r=RB[id];let n=Math.ceil(rest/Math.max(1,auto.length));if(r.cat==="verrine")n=Math.max(n,P.g);qty[id]=Math.max(1,n)});
   };
   share(food,target);
-  share(drink,P.g*(P.f==="dinatoire"?3:2));
+  share(drink,P.g*(M().a&&P.f==="dinatoire"&&!M().p?3:2));
   share(plats,Math.ceil(P.g*(plats.length>1?1.2:1)));
   share(desserts,Math.ceil(P.g*(desserts.length>1?1.2:1)));
   const pieces=food.reduce((a,id)=>a+qty[id],0);
@@ -1265,7 +1271,7 @@ const MIX={
   repas:{tartinade:1,froid:1,chaud:1,planche:1,boisson:1,plat:1,dessert:1}
 };
 function compose(){
-  const mix=MIX[P.f];P.sel={};
+  const m=M(),mix=Object.assign({},m.a?(m.p?MIX.repas:MIX[P.f]):{});delete mix.plat;delete mix.dessert;if(m.p)mix.plat=1;if(m.d)mix.dessert=1;P.sel={};
   const pool=R.filter(r=>[...flt].filter(t=>t!=="ok").every(t=>t==="veille"?r.w==="veille":has(r,t))&&!conf(r).length);
   const usedMain=new Set();
   Object.entries(mix).forEach(([c,n])=>{
@@ -1291,15 +1297,22 @@ const match=r=>{
   if(q){const t=norm(r.n+" "+CATS[r.cat].n+" "+r.ing.map(([id])=>I[id].n).join(" "));if(!norm(q).split(/\s+/).every(w=>t.includes(w)))return false}
   return true;
 };
+function hintText(pl){const m=M(),g=P.g;
+  if(!m.a&&!m.p&&!m.d)return "Choisissez au moins un apéro, un plat ou un dessert.";
+  const parts=[];
+  if(m.a)parts.push(m.p?"un apéro léger, environ 4 bouchées par personne (<b class=\"num\">"+pl.target+"</b> au total)":P.f==="dinatoire"?"un apéro dînatoire, environ 14 bouchées par personne (<b class=\"num\">"+pl.target+"</b>), qui remplace le repas":"un apéro, environ 6 bouchées par personne (<b class=\"num\">"+pl.target+"</b>)");
+  if(m.p)parts.push("un plat ("+g+" parts)");if(m.d)parts.push("un dessert ("+g+" parts)");
+  return "Pour "+g+" personnes : "+parts.join(", puis ")+". "+(m.p||m.d?"Choisissez dans les catégories Plats et Desserts, ou laissez-nous composer.":"")}
 function renderPlanCard(){
   const pl=plan();
   document.getElementById("plancard").innerHTML=`<h2>Votre réception</h2>
     <div class="prow"><span>Invités</span><span class="step"><button type="button" data-g="-1" aria-label="Un invité de moins" ${P.g<=2?"disabled":""}>−</button><b class="num" aria-live="polite">${P.g}</b><button type="button" data-g="1" aria-label="Un invité de plus" ${P.g>=60?"disabled":""}>+</button></span></div>
     <div class="who"><span class="wl">Qui vient ?</span><div class="whochips">${(()=>{const f=Object.values(dread("foyer")),inv=Object.entries(dread("invites")).sort((p,q)=>(p[1].nom||"").localeCompare(q[1].nom||"","fr"));
       return (f.length?`<button type="button" class="wchip ${P.foyer!==false?"on":""}" data-who="foyer" aria-pressed="${P.foyer!==false}">Le foyer (${f.length})</button>`:"")+inv.map(([id,p])=>`<button type="button" class="wchip ${P.who&&P.who[id]?"on":""}" data-who="${id}" aria-pressed="${!!(P.who&&P.who[id])}">${esc(p.nom||"Sans nom")}${(p.r||[]).length?' <i title="'+esc((p.r||[]).map(k=>DIET_N[k]).join(", "))+'">⚠</i>':""}</button>`).join("")+`<a class="wadd" href="#invites">${inv.length?"Gérer mes invités":"+ Ajouter mes invités et leurs intolérances"}</a>`})()}</div></div>
-    <div class="prow"><span>Formule</span><span class="seg" role="group" aria-label="Formule">${Object.entries(FORMULES).map(([k,l])=>`<button type="button" data-f="${k}" aria-pressed="${P.f===k}">${l}</button>`).join("")}</span></div>
+    ${[["a","Apéro"],["p","Plat"],["d","Dessert"]].map(([k,l])=>`<div class="prow"><span>${l}</span><span class="seg" role="group" aria-label="${l}"><button type="button" data-m="${k}" data-v="1" aria-pressed="${!!M()[k]}">Oui</button><button type="button" data-m="${k}" data-v="0" aria-pressed="${!M()[k]}">Non</button></span></div>`).join("")}
+    ${M().a&&!M().p?`<div class="prow"><span>Type d'apéro</span><span class="seg" role="group" aria-label="Type d'apéro"><button type="button" data-f="apero" aria-pressed="${P.f==="apero"}">Apéro</button><button type="button" data-f="dinatoire" aria-pressed="${P.f==="dinatoire"}">Dînatoire</button></span></div>`:""}
     <div class="prow"><label for="hArr">Arrivée des invités</label><input type="time" id="hArr" value="${esc(P.h)}"></div>
-    <p class="hint">${P.f==="dinatoire"?"Apéro dînatoire : environ 14 bouchées par personne, il remplace le repas.":P.f==="repas"?"Un apéro léger (environ 4 bouchées par personne), puis un plat et un dessert à table. Choisissez-les dans les catégories Plats et Desserts, ou laissez-nous composer.":"Apéro : environ 6 bouchées par personne, avant de passer à table."} Soit <b class="num">${pl.target}</b> bouchées${P.f==="repas"?" à l'apéro":""} pour ${P.g} personnes.</p>
+    <p class="hint">${hintText(pl)}</p>
     <div class="actions"><button type="button" class="btn primary" data-compose>Composer pour moi</button><a class="btn" href="#mon-apero">Ma réception${pl.ids.length?" ("+pl.ids.length+")":""}</a></div>`;
 }
 function renderCats(){
@@ -1324,8 +1337,8 @@ function renderGrid(){
   document.getElementById("grid").innerHTML=list.length?list.map(card).join(""):'<div class="none"><b>Aucune idée avec ces filtres.</b><br>Retirez un filtre ou changez de catégorie.</div>';
 }
 function renderDock(){
-  const pl=plan(),pct=Math.min(100,Math.round(pl.pieces/pl.target*100));
-  document.getElementById("dock").innerHTML=pl.ids.length?`<div class="in"><span class="txt">${pl.ids.length} recette${pl.ids.length>1?"s":""} · ${P.g} invités · <span class="num">${pl.pieces}</span>/${pl.target} bouchées</span><span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span>${location.hash==="#mon-apero"?'<a href="#idees">+ Ajouter des idées</a>':'<a href="#mon-apero">Voir ma réception →</a>'}</div>`:"";
+  const pl=plan(),pct=pl.target?Math.min(100,Math.round(pl.pieces/pl.target*100)):100;
+  document.getElementById("dock").innerHTML=pl.ids.length?`<div class="in"><span class="txt">${pl.ids.length} recette${pl.ids.length>1?"s":""} · ${P.g} invités · ${pl.target?`<span class="num">${pl.pieces}</span>/${pl.target} bouchées`:esc(formule())}</span><span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span>${location.hash==="#mon-apero"?'<a href="#idees">+ Ajouter des idées</a>':'<a href="#mon-apero">Voir ma réception →</a>'}</div>`:"";
   document.body.style.paddingBottom=pl.ids.length?"84px":"0";
 }
 
@@ -1333,13 +1346,13 @@ function renderDock(){
 function advice(pl){
   const out=[],cnt=c=>pl.ids.filter(id=>RB[id].cat===c).length;
   if(!pl.ids.length)return out;
-  if(pl.pieces<pl.target*0.9)out.push(["","Il manque environ "+(pl.target-pl.pieces)+" bouchées : ajoutez une idée ou augmentez les quantités."]);
-  if(!cnt("boisson"))out.push(["","Pensez à une boisson sans alcool maison : citronnade, thé glacé ou mojito sans alcool."]);
-  if(!cnt("chaud")&&P.f==="dinatoire")out.push(["","Un apéro dînatoire sans bouchée chaude, c'est rare : les feuilletés ou les mini-pizzas plaisent à tout le monde."]);
-  if(P.f==="repas"&&!cnt("plat"))out.push(["bad","Il manque le plat : choisissez-en un dans la catégorie Plats (les mijotés se préparent la veille, idéal pour recevoir)."]);
-  if(P.f==="repas"&&!cnt("dessert"))out.push(["","Et pour finir ? Ajoutez un dessert : tiramisu, mousse au chocolat ou tarte Tatin."]);
+  if(M().a&&pl.pieces<pl.target*0.9)out.push(["","Il manque environ "+(pl.target-pl.pieces)+" bouchées : ajoutez une idée ou augmentez les quantités."]);
+  if(M().a&&!cnt("boisson"))out.push(["","Pensez à une boisson sans alcool maison : citronnade, thé glacé ou mojito sans alcool."]);
+  if(!cnt("chaud")&&M().a&&!M().p&&P.f==="dinatoire")out.push(["","Un apéro dînatoire sans bouchée chaude, c'est rare : les feuilletés ou les mini-pizzas plaisent à tout le monde."]);
+  if(M().p&&!cnt("plat"))out.push(["bad","Il manque le plat : choisissez-en un dans la catégorie Plats (les mijotés se préparent la veille, idéal pour recevoir)."]);
+  if(M().d&&!cnt("dessert"))out.push(["","Et pour finir ? Ajoutez un dessert : tiramisu, mousse au chocolat ou tarte Tatin."]);
   if(cnt("plat")&&cnt("plat")+cnt("dessert")>=2&&pl.ids.filter(id=>MEAL.has(RB[id].cat)&&RB[id].w==="minute").length>=2)out.push(["","Plat et dessert sont tous les deux à faire à la minute : choisissez-en un qui se prépare la veille pour rester avec vos invités."]);
-  if(P.f==="dinatoire"&&!cnt("douceur"))out.push(["","Pour finir en douceur : brochettes de fruits ou truffes au chocolat."]);
+  if(M().a&&!M().p&&!M().d&&P.f==="dinatoire"&&!cnt("douceur"))out.push(["","Pour finir en douceur : brochettes de fruits ou truffes au chocolat."]);
   if(cnt("tartinade")&&!pl.ids.some(id=>RB[id].cat==="planche"&&RB[id].id==="crudites"))out.push(["","Les tartinades vont très bien avec un plateau de crudités à tremper."]);
   const minute=pl.ids.filter(id=>RB[id].w==="minute").length;
   if(minute>=4)out.push(["",minute+" recettes sont à faire à la minute : remplacez-en une par une recette qui se prépare la veille pour profiter de vos invités."]);
@@ -1354,16 +1367,16 @@ function advice(pl){
 function renderSel(){
   const pl=plan(),el=document.getElementById("selbox");
   if(!pl.ids.length){el.innerHTML=`<h2>Ma réception</h2><div class="empty"><b>Rien pour l'instant.</b><br>Ajoutez des idées, ou laissez-nous composer un apéro équilibré.<div class="row" style="justify-content:center;margin-top:12px"><button type="button" class="btn primary" data-compose>Composer pour moi</button><a class="btn" href="#idees">Voir les idées</a></div></div>`;return}
-  const pct=Math.min(100,Math.round(pl.pieces/pl.target*100));
+  const pct=pl.target?Math.min(100,Math.round(pl.pieces/pl.target*100)):100;
   const order=Object.keys(CATS);
   const ids=[...pl.ids].sort((a,b)=>order.indexOf(RB[a].cat)-order.indexOf(RB[b].cat));
   const prep=ids.reduce((a,id)=>a+RB[id].t*Math.max(1,Math.ceil(factor(id,pl)*0.6+0.4)),0);
   const prepVeille=ids.filter(id=>RB[id].w==="veille").reduce((a,id)=>a+RB[id].t,0);
   el.innerHTML=`<div class="prow"><h2>Ma réception</h2><button type="button" class="btn sm ghost" data-clear>Tout retirer</button></div>
-    <p class="muted" style="margin:0">${FORMULES[P.f]} pour <b>${P.g} invités</b>, arrivée à <b class="num">${esc(P.h)}</b>. <a href="#idees">Modifier</a></p>
-    <div class="gauge"><div class="lab"><span>Bouchées prévues</span><span class="num">${pl.pieces} / ${pl.target}</span></div><div class="g"><i style="width:${pct}%"></i></div>
+    <p class="muted" style="margin:0">${esc(formule())} pour <b>${P.g} invités</b>, arrivée à <b class="num">${esc(P.h)}</b>. <a href="#idees">Modifier</a></p>
+    <div class="gauge">${M().a?`<div class="lab"><span>Bouchées prévues</span><span class="num">${pl.pieces} / ${pl.target}</span></div><div class="g"><i style="width:${pct}%"></i></div>`:""}
       ${pl.plats.length||pl.desserts.length?`<div class="lab"><span>À table : ${pl.plats.map(id=>esc(RB[id].n)+" ("+pl.qty[id]+" parts)").join(", ")||"aucun plat"}</span><span>${pl.desserts.map(id=>esc(RB[id].n)+" ("+pl.qty[id]+" parts)").join(", ")||"aucun dessert"}</span></div>`:""}
-      <div class="lab"><span>≈ ${Math.round(pl.pieces/P.g)} bouchées et ${Math.round(pl.kcal/P.g)} kcal par personne</span><span>≈ ${Math.floor(prep/60)} h ${pad(prep%60)} en cuisine, cuissons comprises${prepVeille?", dont "+Math.round(prepVeille/5)*5+" min la veille":""}</span></div></div>
+      <div class="lab"><span>≈ ${M().a?Math.round(pl.pieces/P.g)+" bouchées et ":""}${Math.round(pl.kcal/P.g)} kcal par personne</span><span>≈ ${Math.floor(prep/60)} h ${pad(prep%60)} en cuisine, cuissons comprises${prepVeille?", dont "+Math.round(prepVeille/5)*5+" min la veille":""}</span></div></div>
     <ul class="advice">${advice(pl).map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("")}</ul>
     <ul class="sel">${ids.map(id=>{const r=RB[id],n=pl.qty[id],st=r.cat==="verrine"||r.cat==="boisson"||r.y<=12?1:2;
       return `<li><i style="background:${CATS[r.cat].c}"></i><span><button type="button" class="nm" data-open="${id}">${esc(r.n)}</button><span class="sub">${CATS[r.cat].n} · ${WHEN[r.w][0].toLowerCase()}${P.sel[id]!=null?' · <button type="button" class="nm" style="font-size:12px;color:var(--accent)" data-auto="'+id+'">quantité auto</button>':""}</span></span>
@@ -1402,7 +1415,7 @@ function timeline(pl){
   // Préparations à la minute (hors four)
   const quick=rs.filter(r=>r.w==="minute"&&!r.four&&r.cat!=="boisson"&&!MEAL.has(r.cat));
   // À table : plat puis dessert
-  const TP=T+70,TD=T+135,plats=rs.filter(r=>r.cat==="plat"),desserts=rs.filter(r=>r.cat==="dessert");
+  const TP=T+(M().a?70:20),TD=TP+65,plats=rs.filter(r=>r.cat==="plat"),desserts=rs.filter(r=>r.cat==="dessert");
   plats.forEach(r=>{
     if(r.four){if(r.four.min<=120)add(TP-r.four.min-15,"Préchauffer le four à "+r.four.temp+" °C pour le plat",null);add(TP-r.four.min,"Enfourner le plat · "+r.four.temp+" °C, "+(r.four.min>=120?Math.round(r.four.min/60)+" h":r.four.min+" min"),[name(r)+detail(r,pl,false)],true)}
     else if(r.w==="minute")add(TP-Math.min(r.t,45),"Lancer la cuisson du plat",[name(r)+detail(r,pl,false)],true);
@@ -1418,14 +1431,14 @@ function timeline(pl){
   // Four : vagues de bouchées chaudes
   const ovenItems=rs.filter(r=>r.four&&!MEAL.has(r.cat)&&(r.cat==="chaud"||r.w==="minute")).sort((a,b)=>b.four.temp-a.four.temp||a.four.min-b.four.min);
   if(ovenItems.length){
-    let t=T-ovenItems[0].four.min+(P.f==="dinatoire"?10:0);
+    let t=T-ovenItems[0].four.min+(P.f==="dinatoire"&&!M().p?10:0);
     // la première fournée est prête à l'arrivée, puis une toutes les 20 minutes environ
     const slots=[];let cur=null;
     ovenItems.forEach(r=>{
       if(cur&&cur.temp===r.four.temp&&cur.items.length<2){cur.items.push(r);cur.min=Math.max(cur.min,r.four.min);}
       else{cur={temp:r.four.temp,min:r.four.min,items:[r]};slots.push(cur)}
     });
-    let ready=T+(P.f==="dinatoire"?10:0);
+    let ready=T+(P.f==="dinatoire"&&!M().p?10:0);
     slots.forEach((s,i)=>{s.start=ready-s.min;ready+=Math.max(15,s.min)+5});
     add(slots[0].start-15,"Préchauffer le four à "+slots[0].temp+" °C",null,true);
     slots.forEach((s,i)=>{
@@ -1487,7 +1500,7 @@ function renderInvites(){
     ${peopleEditor("invites",{note:true,extra:(id)=>hist(id),empty:"Aucun invité pour l'instant.",addLabel:"+ Ajouter un invité"})}`;
   hl.innerHTML=`<h2>Historique des réceptions</h2>${recs.length?`<ul class="hist">${recs.map(([id,x])=>{
       const names=(x.who||[]).map(g=>inv[g]?inv[g].nom||"un invité":null).filter(Boolean);
-      return `<li><div class="hh"><b>${dfr(x.date)}</b><span class="muted">${FORMULES[x.f]||"Apéro"} · ${x.g||""} pers.${names.length?" · avec "+esc(names.join(", ")):""}</span></div>
+      return `<li><div class="hh"><b>${dfr(x.date)}</b><span class="muted">${esc(x.lab||FORMULES[x.f]||"Apéro")} · ${x.g||""} pers.${names.length?" · avec "+esc(names.join(", ")):""}</span></div>
         <div class="hd2">${(x.recettes||[]).filter(r=>RB[r]).map(r=>`<button type="button" class="hdish" data-open="${r}" style="--cc:${CATS[RB[r].cat].c}">${esc(RB[r].n)}</button>`).join("")}</div>
         <div class="row"><button type="button" class="btn sm" data-redo="${id}">Reprendre ce menu</button><button type="button" class="btn sm ghost" data-recdel="${id}">Supprimer</button></div></li>`}).join("")}</ul>`
     :'<p class="muted">Aucune réception enregistrée. Après un apéro, cliquez sur « Enregistrer dans l\'historique » dans « Ma réception ».</p>'}`;
@@ -1531,9 +1544,10 @@ document.addEventListener("click",e=>{
   if(e.target.closest("[data-close]")||e.target===ov){closeSheet();return}
   const tg=e.target.closest("[data-toggle]");if(tg){toggle(tg.dataset.toggle);return}
   if(!ov.hidden)return;
-  if(e.target.closest("[data-compose]")){compose();renderAll();toast("Menu composé : "+Object.keys(P.sel).length+" recettes");if(location.hash!=="#mon-apero")location.hash="mon-apero";return}
+  if(e.target.closest("[data-compose]")){if(!M().a&&!M().p&&!M().d){toast("Choisissez d'abord apéro, plat ou dessert");return}compose();renderAll();toast("Menu composé : "+Object.keys(P.sel).length+" recettes");if(location.hash!=="#mon-apero")location.hash="mon-apero";return}
   const g=e.target.closest("[data-g]");if(g){P.g=Math.max(2,Math.min(60,P.g+ +g.dataset.g));save();renderAll();return}
   const f=e.target.closest("[data-f]");if(f){P.f=f.dataset.f;save();renderAll();return}
+  const mm=e.target.closest("[data-m]");if(mm){P.m[mm.dataset.m]=+mm.dataset.v;save();renderAll();return}
   const c=e.target.closest("[data-cat]");if(c){cat=c.dataset.cat;renderCats();renderGrid();return}
   const qf=e.target.closest("[data-qf]");if(qf){const k=qf.dataset.qf;flt.has(k)?flt.delete(k):flt.add(k);renderCats();renderGrid();return}
   const qq=e.target.closest("[data-q]");if(qq){const id=qq.dataset.q,pl=plan();P.sel[id]=Math.max(1,pl.qty[id]+ +qq.dataset.d);save();renderAll();return}
@@ -1541,9 +1555,9 @@ document.addEventListener("click",e=>{
   const tb=e.target.closest("[data-tab]");if(tb){P.tab=tb.dataset.tab;save();renderOut();return}
   if(e.target.closest("[data-clear]")){P.sel={};save();renderAll();return}
   const wg=e.target.closest("[data-who]");if(wg){const id=wg.dataset.who;if(id==="foyer"){P.foyer=P.foyer===false;}else{P.who=P.who||{};if(P.who[id]){delete P.who[id];P.g=Math.max(2,P.g-1)}else{P.who[id]=1;P.g=Math.min(60,P.g+1)}}save();renderAll();return}
-  if(e.target.closest("[data-saverec]")){const pl=plan();if(!pl.ids.length)return;const all=dread("receptions"),d=(document.getElementById("rDate")||{}).value||today();all[newId()]={date:d,who:Object.keys(P.who||{}),foyer:P.foyer!==false,recettes:pl.ids,f:P.f,g:P.g,t:Date.now()};dwrite("receptions",all);toast("Réception du "+dfr(d)+" enregistrée");renderAll();return}
+  if(e.target.closest("[data-saverec]")){const pl=plan();if(!pl.ids.length)return;const all=dread("receptions"),d=(document.getElementById("rDate")||{}).value||today();all[newId()]={date:d,who:Object.keys(P.who||{}),foyer:P.foyer!==false,recettes:pl.ids,f:P.f,m:Object.assign({},M()),lab:formule(),g:P.g,t:Date.now()};dwrite("receptions",all);toast("Réception du "+dfr(d)+" enregistrée");renderAll();return}
   const rd=e.target.closest("[data-recdel]");if(rd){const all=dread("receptions");delete all[rd.dataset.recdel];dwrite("receptions",all);renderAll();return}
-  const rr=e.target.closest("[data-redo]");if(rr){const x=dread("receptions")[rr.dataset.redo];if(!x)return;P.sel={};(x.recettes||[]).forEach(id=>{if(RB[id])P.sel[id]=null});P.who={};(x.who||[]).forEach(id=>P.who[id]=1);P.f=x.f||P.f;P.g=x.g||P.g;save();renderAll();location.hash="mon-apero";toast("Menu repris : pensez à varier un peu !");return}
+  const rr=e.target.closest("[data-redo]");if(rr){const x=dread("receptions")[rr.dataset.redo];if(!x)return;P.sel={};(x.recettes||[]).forEach(id=>{if(RB[id])P.sel[id]=null});P.who={};(x.who||[]).forEach(id=>P.who[id]=1);if(x.f==="repas"){P.f="apero";P.m={a:1,p:1,d:1}}else P.f=x.f||P.f;if(x.m)P.m=Object.assign({},x.m);P.g=x.g||P.g;save();renderAll();location.hash="mon-apero";toast("Menu repris : pensez à varier un peu !");return}
   if(e.target.closest("[data-uncheck]")){P.chk={};save();renderOut();return}
   if(e.target.closest("[data-copy]")){
     const pl=plan();const txt="Courses apéro · "+P.g+" invités\n\n"+shopping(pl).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,q])=>"- "+I[id].n+" : "+fmt(q,I[id].u,true)).join("\n")).join("\n\n");
