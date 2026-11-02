@@ -120,6 +120,45 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 
 #results{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:16px}
 .card{display:flex;flex-direction:column;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0;overflow:hidden;min-width:0}
+/* Compte */
+.accbtn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px 4px 4px;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--f-body)}
+.accbtn:hover{border-color:var(--accent)}
+.accbtn .av{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:13px}
+@media (max-width:520px){.accbtn .nm{display:none}.accbtn{padding:4px 8px 4px 4px}}
+.accpanel{background:var(--surface);color:var(--ink);border-radius:16px;max-width:540px;width:100%;position:relative;padding:24px;display:flex;flex-direction:column;gap:14px}
+#accBody{display:flex;flex-direction:column;gap:14px}
+.accpanel h3{font-family:var(--f-display);font-weight:400;font-size:26px;padding-right:96px;margin:0}
+.accpanel h4{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.accpanel p{margin:0}
+.accsec{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.acctabs{display:inline-flex;gap:4px;background:var(--bg);border-radius:999px;padding:3px;align-self:flex-start}
+.acctabs button{border:0;background:none;border-radius:999px;padding:6px 14px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;font-family:var(--f-body)}
+.acctabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.accform{display:flex;flex-direction:column;gap:10px}
+.accform.inline{flex-direction:row;align-items:flex-end;flex-wrap:wrap}
+.accform.inline .accf{flex:1 1 200px}
+.accf{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}
+.accf input{font:inherit;font-size:16px;font-weight:400;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);min-width:0}
+.accmsg{background:var(--accent-soft);color:var(--accent);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
+.accmsg.bad{background:var(--bad-soft);color:var(--bad)}
+.accpanel .small{font-size:12.5px}
+.accpanel .muted{color:var(--muted)}
+.accstatus{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sdot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--accent);flex:0 0 auto}
+.sdot.saving{background:#E0A526}
+.sdot.err{background:var(--bad)}
+.members{display:flex;flex-wrap:wrap;gap:6px}
+.mem{background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700}
+.code{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg);border-radius:12px;padding:10px 14px}
+.code span{font-size:13px;color:var(--muted)}
+.code b{font-size:24px;letter-spacing:.2em}
+.accpanel .row{display:flex;flex-wrap:wrap;gap:8px}
+.accpanel .btn{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer}
+.accpanel .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.accpanel .btn.sm{padding:5px 12px;font-size:13px}
+.accpanel .btn.danger{background:var(--bad);border-color:var(--bad);color:var(--surface)}
+.accpanel .btn.linkbad{border-color:transparent;background:none;color:var(--bad)}
+.confirm{display:flex;flex-direction:column;gap:8px;align-items:flex-start;background:var(--bad-soft);border-radius:12px;padding:12px}
 .card{cursor:pointer}
 .card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ctop{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -217,6 +256,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 <header class="top"><div class="wrap">
   <span class="logo">Le tour du monde en cuisine</span>
   <a class="back" href="index.html">Semainier</a>
+  <button type="button" class="accbtn" id="accBtn" hidden></button>
 </div></header>
 
 <main class="wrap">
@@ -251,7 +291,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
     </section>
   </div>
 </main>
-<footer class="wrap foot">Vos menus, favoris, notes et goûts sont enregistrés sur cet appareil, dans ce navigateur. Chaque personne qui ouvre le site a les siens.</footer>
+<footer class="wrap foot">Sans compte, vos menus, favoris, notes et goûts restent sur cet appareil, dans ce navigateur. Avec un compte, vous les retrouvez sur tous vos appareils et pouvez les partager en groupe.</footer>
 <div class="overlay" id="overlay" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <script>
@@ -979,7 +1019,7 @@ const AV_KEY="recettes.avis";
 let AV={fav:{},note:{}};
 function avLoad(){try{const o=JSON.parse(localStorage.getItem(AV_KEY)||"null");if(o)AV={fav:o.fav||{},note:o.note||{}}}catch(e){}}
 avLoad();
-function avSave(){try{localStorage.setItem(AV_KEY,JSON.stringify(AV))}catch(e){}}
+function avSave(){try{localStorage.setItem(AV_KEY,JSON.stringify(AV))}catch(e){}cloudChanged()}
 const isFav=id=>!!AV.fav[id];
 const noteOf=id=>AV.note[id]||0;
 function toggleFav(id){if(AV.fav[id])delete AV.fav[id];else AV.fav[id]=1;avSave()}
@@ -990,6 +1030,218 @@ const starsShow=id=>{const n=noteOf(id);return n?`<span class="stshow" title="Ma
 const avisInner=id=>`${favBtn(id,true)}<span class="mynote">Ma note ${starsInput(id)}</span>${noteOf(id)?'<span class="muted" style="font-size:12px;font-weight:400">Touchez la même étoile pour effacer</span>':""}`;
 window.addEventListener("storage",e=>{if(e.key===AV_KEY)avLoad()});
 
+
+// ---------- Compte, groupe et synchronisation ----------
+// Sans compte, tout reste dans ce navigateur. Avec un compte, les données sont
+// synchronisées avec le serveur ; dans un groupe, le semainier et les favoris sont partagés.
+const CLOUD=(()=>{
+  const DEFAULT_API="https://menus-api-oemz.onrender.com";
+  let API=DEFAULT_API;try{API=localStorage.getItem("menus.api")||DEFAULT_API}catch(e){}
+  API=API.replace(/\/+$/,"");
+  const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
+  const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
+  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],MAPS=["prefs","note","weeks","fav"];
+  let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
+  let hooks={apply(){},status(){}},busy=false,again=false,timer=null,status="idle",lastErr="",view="login",note="";
+  const J=JSON.stringify,clone=o=>JSON.parse(J(o===undefined?null:o));
+  const keep=()=>{try{acc?localStorage.setItem(TK,J(acc)):localStorage.removeItem(TK)}catch(e){}};
+  const read=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
+  const write=(k,v)=>{try{localStorage.setItem(k,J(v))}catch(e){}};
+  const esc2=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  async function api(method,path,body){
+    const h={"Content-Type":"application/json"};if(acc&&acc.token)h.Authorization="Bearer "+acc.token;
+    let r;
+    try{r=await fetch(API+path,{method,headers:h,body:body?J(body):undefined})}
+    catch(e){throw Object.assign(new Error("Le serveur ne répond pas. Vérifiez votre connexion et réessayez."),{net:true})}
+    let j={};try{j=await r.json()}catch(e){}
+    if(r.status===401&&acc&&!/^\/auth\//.test(path)){acc=null;keep();setStatus("idle");}
+    if(!r.ok)throw Object.assign(new Error(j.error||"Erreur "+r.status),{status:r.status,body:j});
+    return j;
+  }
+  // Données locales, découpées en partie personnelle et partie partageable
+  function local(){
+    const P=read(LP)||{},A=read(LA)||{};
+    const perso={};PERSO_KEYS.forEach(k=>{const v=k==="note"?A.note:P[k];if(v!==undefined)perso[k]=clone(v)});
+    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{})}};
+  }
+  function applyLocal(perso,shared){
+    const P=read(LP)||{},A=read(LA)||{fav:{},note:{}};
+    PERSO_KEYS.forEach(k=>{if(k==="note")A.note=perso.note||{};else if(perso[k]!==undefined)P[k]=perso[k];});
+    P.weeks=shared.weeks||{};A.fav=shared.fav||{};
+    write(LP,P);write(LA,A);
+  }
+  // Fusion à trois : on garde ce qui a changé ici depuis la dernière synchro, le reste vient du serveur
+  function mergeMap(b,m,t){
+    b=b||{};m=m||{};t=t||{};const out=clone(t);
+    new Set([...Object.keys(m),...Object.keys(b)]).forEach(k=>{
+      if(J(m[k])!==J(b[k])){if(m[k]===undefined)delete out[k];else out[k]=clone(m[k]);}
+    });
+    return out;
+  }
+  function merge(b,m,t){
+    if(!b)return clone(t);
+    const out=clone(t)||{};
+    new Set([...Object.keys(m||{}),...Object.keys(b)]).forEach(k=>{
+      if(MAPS.includes(k))out[k]=mergeMap(b[k],(m||{})[k],(t||{})[k]);
+      else if(J((m||{})[k])!==J(b[k])){if((m||{})[k]===undefined)delete out[k];else out[k]=clone(m[k]);}
+    });
+    return out;
+  }
+  function setStatus(s,err){status=s;lastErr=err||"";hooks.status(s);paintBtn();const st=document.getElementById("accStatus");if(st)st.innerHTML=statusText();}
+  function statusText(){
+    if(status==="saving")return '<span class="sdot saving"></span>Enregistrement…';
+    if(status==="error")return '<span class="sdot err"></span>'+esc2(lastErr||"Pas de connexion : vos changements seront envoyés plus tard.");
+    return '<span class="sdot ok"></span>Tout est enregistré';
+  }
+
+  async function sync(retry){
+    if(!enabled||!acc||!acc.token)return;
+    if(busy){again=true;return}
+    busy=true;setStatus("saving");
+    try{
+      const before=J(local());
+      for(let i=0;i<4;i++){
+        const st=await api("GET","/state");
+        acc.user=st.user;acc.group=st.group;
+        const L=local(),inGroup=!!st.group;
+        // Personnel (sans groupe, il contient aussi le semainier et les favoris)
+        const pLocal=inGroup?L.perso:Object.assign({},L.perso,L.shared);
+        const pServer=st.perso.data||{};
+        let pFinal;
+        if(st.perso.version===0)pFinal=pLocal;
+        else if(!acc.lastP)pFinal=clone(pServer);
+        else pFinal=merge(JSON.parse(acc.lastP),pLocal,pServer);
+        if(inGroup){delete pFinal.weeks;delete pFinal.fav;}
+        // Partagé
+        let sFinal=null;
+        if(inGroup){
+          const sServer=st.shared.data||{};
+          const sBase=acc.baseGid===st.group.id&&acc.base?acc.base:null;
+          sFinal=sBase?merge(sBase,L.shared,sServer):clone(sServer);
+          sFinal.weeks=sFinal.weeks||{};sFinal.fav=sFinal.fav||{};
+        }
+        applyLocal(pFinal,inGroup?sFinal:{weeks:pFinal.weeks||{},fav:pFinal.fav||{}});
+        if(J(pFinal)!==J(pServer)){const r=await api("PUT","/perso",{data:pFinal});acc.pv=r.version;}
+        acc.lastP=J(pFinal);
+        if(inGroup){
+          if(J(sFinal)!==J(st.shared.data||{})){
+            try{const r=await api("PUT","/shared",{data:sFinal,version:st.shared.version});acc.sv=r.version;}
+            catch(e){if(e.status===409&&e.body&&e.body.conflict){acc.base=acc.baseGid===st.group.id?acc.base:null;keep();continue}throw e}
+          }else acc.sv=st.shared.version;
+          acc.base=sFinal;acc.baseGid=st.group.id;
+        }else{acc.base=null;acc.baseGid=null;}
+        keep();break;
+      }
+      if(J(local())!==before)hooks.apply();
+      setStatus("ok");
+    }catch(e){
+      setStatus(acc?"error":"idle",e.message);
+    }finally{
+      busy=false;
+      if(again){again=false;schedule(400)}
+      const p=document.getElementById("accPanel");if(p&&!p.contains(document.activeElement))renderPanel();
+    }
+  }
+  function schedule(ms){if(!enabled||!acc)return;clearTimeout(timer);timer=setTimeout(sync,ms==null?1200:ms)}
+
+  // ---------- Fenêtre du compte ----------
+  const ov=()=>document.getElementById("overlay");
+  function open(){const o=ov();if(!o)return;o.innerHTML=`<article class="rcard accpanel" id="accPanel" role="dialog" aria-modal="true" aria-label="Mon compte"><button class="close" type="button" data-close>Fermer ×</button><div id="accBody"></div></article>`;o.hidden=false;renderPanel();if(acc)sync();}
+  function field(id,label,type,extra){return `<label class="accf" for="${id}"><span>${label}</span><input id="${id}" name="${id}" type="${type}" ${extra||""}></label>`}
+  function renderPanel(){
+    const b=document.getElementById("accBody");if(!b)return;
+    const msg=note?`<p class="accmsg ${note.startsWith("!")?"bad":""}" role="status">${esc2(note.replace(/^!/,""))}</p>`:"";
+    if(!acc){
+      b.innerHTML=`<h3>${view==="login"?"Se connecter":"Créer un compte"}</h3>
+        <p class="muted">Un compte permet de retrouver votre semainier, vos favoris et vos notes sur tous vos appareils, et de les partager en groupe.</p>
+        <div class="acctabs" role="tablist"><button type="button" role="tab" aria-selected="${view==="login"}" data-acc="view-login">J'ai un compte</button><button type="button" role="tab" aria-selected="${view==="register"}" data-acc="view-register">Créer un compte</button></div>
+        ${msg}
+        <form class="accform" data-accform="${view}" novalidate>
+          ${field("accUser","Identifiant","text",'autocomplete="username" autocapitalize="none" spellcheck="false" required')}
+          ${view==="register"?field("accName","Prénom","text",'autocomplete="given-name" required'):""}
+          ${field("accPass","Mot de passe"+(view==="register"?" (8 caractères minimum)":""),"password",`autocomplete="${view==="register"?"new-password":"current-password"}" required`)}
+          <button class="btn primary" type="submit">${view==="login"?"Se connecter":"Créer mon compte"}</button>
+        </form>
+        ${view==="register"?'<p class="muted small">Aucune adresse e-mail n\'est demandée. Notez bien votre mot de passe : il ne peut pas être récupéré. Ce que vous avez déjà fait sur cet appareil est conservé dans votre nouveau compte.</p>':'<p class="muted small">En vous connectant, les données de votre compte remplacent celles de cet appareil.</p>'}`;
+      return;
+    }
+    const g=acc.group;
+    b.innerHTML=`<h3>Bonjour ${esc2(acc.user?acc.user.name:"")}</h3>
+      <p class="muted">Identifiant : <b>${esc2(acc.user?acc.user.username:"")}</b></p>
+      <p class="accstatus" id="accStatus">${statusText()}</p>
+      ${msg}
+      <section class="accsec"><h4>Groupe</h4>
+      ${g?`<p>Vous êtes dans le groupe <b>${esc2(g.name)}</b>. Le semainier et les favoris sont partagés entre ses membres ; vos notes et vos goûts restent personnels.</p>
+        <p class="members">${g.members.map(m=>`<span class="mem">${esc2(m.name)}</span>`).join("")}</p>
+        <div class="code"><span>Code d'invitation</span><b class="num" id="accCode">${esc2(g.code)}</b><button class="btn sm" type="button" data-acc="copy">Copier</button></div>
+        <p class="muted small">Pour inviter quelqu'un : il crée son compte, puis saisit ce code dans « Rejoindre un groupe ».</p>
+        ${view==="leave"?`<div class="confirm"><p>Quitter le groupe ? Vous gardez une copie du semainier et des favoris actuels.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`:`<button class="btn" type="button" data-acc="view-leave">Quitter le groupe</button>`}`
+      :`<p>Créez un groupe pour partager le semainier et les favoris (avec votre conjoint, par exemple), ou rejoignez-en un avec son code.</p>
+        <form class="accform inline" data-accform="create" novalidate>${field("accGroup","Nom du groupe","text",'placeholder="Famille Martin" maxlength="40"')}<button class="btn primary" type="submit">Créer le groupe</button></form>
+        <form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Rejoindre un groupe","text",'placeholder="Code à 6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<button class="btn" type="submit">Rejoindre</button></form>
+        <p class="muted small">En rejoignant un groupe, son semainier remplace le vôtre ; vos favoris s'ajoutent aux siens.</p>`}
+      </section>
+      <section class="accsec"><h4>Mon compte</h4>
+      ${view==="password"?`<form class="accform" data-accform="password" novalidate>${field("accCur","Mot de passe actuel","password",'autocomplete="current-password"')}${field("accNew","Nouveau mot de passe (8 caractères minimum)","password",'autocomplete="new-password"')}<div class="row"><button class="btn primary" type="submit">Changer le mot de passe</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
+      :view==="delete"?`<form class="accform" data-accform="delete" novalidate><p>Supprimer définitivement votre compte et ses données enregistrées ? Ce qui est sur cet appareil reste disponible sans compte.</p>${field("accDel","Mot de passe","password",'autocomplete="current-password"')}<div class="row"><button class="btn danger" type="submit">Supprimer mon compte</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
+      :`<div class="row"><button class="btn" type="button" data-acc="logout">Se déconnecter</button><button class="btn" type="button" data-acc="view-password">Changer de mot de passe</button><button class="btn linkbad" type="button" data-acc="view-delete">Supprimer mon compte</button></div>`}
+      </section>`;
+  }
+  async function act(fn,okMsg){
+    note="";try{await fn();note=okMsg||"";}catch(e){note="!"+e.message}
+    renderPanel();
+  }
+  function startSession(r,fresh){
+    acc={token:r.token,user:r.state.user,group:r.state.group,lastP:null,base:null,baseGid:null};
+    if(fresh===false){/* connexion : le compte remplace l'appareil */}
+    keep();view="main";
+  }
+  document.addEventListener("click",e=>{
+    const a=e.target.closest("[data-acc]");
+    if(a){
+      const k=a.dataset.acc;
+      if(k==="open"){note="";view=acc?"main":"login";open();return}
+      if(k.startsWith("view-")){view=k.slice(5);note="";renderPanel();const f=document.querySelector("#accBody input");if(f)try{f.focus()}catch(_){};return}
+      if(k==="copy"){const c=(acc&&acc.group&&acc.group.code)||"";const done=()=>{note="Code copié : "+c;renderPanel()};try{navigator.clipboard.writeText(c).then(done,()=>{note="Code : "+c;renderPanel()})}catch(_){note="Code : "+c;renderPanel()};return}
+      if(k==="logout"){act(async()=>{try{await api("POST","/auth/logout")}catch(_){}acc=null;keep();view="login";setStatus("idle")},"Vous êtes déconnecté. Vos données restent sur cet appareil.");return}
+      if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave");acc.group=st.group;acc.base=null;acc.baseGid=null;keep();view="main";await sync()},"Vous avez quitté le groupe.");return}
+    }
+    const btn=e.target.closest("#accBtn");if(btn){note="";view=acc?"main":"login";open();}
+  });
+  document.addEventListener("submit",e=>{
+    const f=e.target.closest("form[data-accform]");if(!f)return;
+    e.preventDefault();
+    const v=id=>{const el=document.getElementById(id);return el?el.value:""};
+    const kind=f.dataset.accform;
+    if(kind==="login")act(async()=>{const r=await api("POST","/auth/login",{username:v("accUser").trim(),password:v("accPass")});startSession(r,false);await sync();hooks.apply();},"Connecté.");
+    if(kind==="register")act(async()=>{const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass")});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
+    if(kind==="create")act(async()=>{await sync();const L=local();const st=await api("POST","/groups",{name:v("accGroup"),data:L.shared});acc.group=st.group;acc.base=clone(L.shared);acc.baseGid=st.group.id;acc.sv=st.shared.version;keep();await sync();},"Groupe créé. Partagez le code ci-dessous.");
+    if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn")});acc.group=st.group;acc.base={weeks:clone(L.shared.weeks),fav:{}};acc.baseGid=st.group.id;keep();await sync();hooks.apply();},"Bienvenue dans le groupe.");
+    if(kind==="password")act(async()=>{await api("POST","/account/password",{current:v("accCur"),next:v("accNew")});view="main";},"Mot de passe changé. Vos autres appareils devront se reconnecter.");
+    if(kind==="delete")act(async()=>{await api("POST","/account/delete",{password:v("accDel")});acc=null;keep();view="login";setStatus("idle")},"Votre compte a été supprimé.");
+  });
+  function paintBtn(){
+    const b=document.getElementById("accBtn");if(!b)return;
+    if(!enabled){b.hidden=true;return}
+    b.hidden=false;
+    const n=acc&&acc.user?acc.user.name:"";
+    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av">?</span><span class="nm">Se connecter</span>`;
+    b.setAttribute("aria-label",acc?"Mon compte ("+n+")":"Se connecter ou créer un compte");
+  }
+  // Synchro régulière pour voir les changements des autres membres du groupe
+  setInterval(()=>{if(acc&&document.visibilityState==="visible")sync()},30000);
+  document.addEventListener("visibilitychange",()=>{if(acc&&document.visibilityState==="visible")sync()});
+  window.addEventListener("online",()=>{if(acc)sync()});
+  return {
+    enabled,
+    init(h){hooks=Object.assign(hooks,h||{});paintBtn();if(acc)sync();},
+    changed(){schedule()},
+    get account(){return acc},
+  };
+})();
+
+function cloudChanged(){try{CLOUD.changed()}catch(e){}}
 // ---------- Page recettes ----------
 const BASICS=new Set(["oignon","ail","citron","persil","citronvert","menthe"]);
 const GROUP_ORDER=["Viandes","Poissons & crevettes","Œufs & légumineuses","Légumes","Fruits","Féculents","Fromages & crème","Fruits secs","Autres"];
@@ -1072,7 +1324,7 @@ function addToMenu(id,day,when){
   const key=day+(when==="Midi"?"m":"s");
   W.plan=W.plan||{};W.pin=W.pin||{};W.mode=W.mode||{};
   W.plan[key]=id;W.pin[key]=1;delete W.mode[key];
-  try{localStorage.setItem("semainier.v3",JSON.stringify(S));return w}catch(e){return null}
+  try{localStorage.setItem("semainier.v3",JSON.stringify(S));cloudChanged();return w}catch(e){return null}
 }
 
 // ---------- fiche ----------
@@ -1131,6 +1383,7 @@ document.getElementById("q").addEventListener("input",e=>{q=e.target.value;rende
 document.getElementById("sort").addEventListener("change",e=>{sort=e.target.value;save();render()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeModal()});
 renderHero();render();
+CLOUD.init({apply(){avLoad();render();document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis))}});
 </script>
 
 </html>
