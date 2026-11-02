@@ -332,6 +332,9 @@ img.art.ready{opacity:1}
 .accpanel .btn.linkbad{border-color:transparent;background:none;color:var(--bad)}
 .confirm{display:flex;flex-direction:column;gap:8px;align-items:flex-start;background:var(--bad-soft);border-radius:12px;padding:12px}
 
+.aisle.opt h3{color:var(--warm);border-bottom-color:var(--warm)}
+.aisnote{margin:4px 0 6px;font-size:12.5px;color:var(--muted)}
+
 /* Modale */
 .overlay{position:fixed;inset:0;background:rgba(10,20,14,.55);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
 .overlay .rcard{max-width:760px;width:100%;position:relative}
@@ -361,7 +364,7 @@ img.art.ready{opacity:1}
     <div class="lede">
       <div>
         <h2>Les menus de la semaine, pour toute la famille</h2>
-        <p>Des plats du monde entier, faciles à préparer à l'avance. Certains ingrédients sont marqués « optionnel » (pain, riz, fromage) : à ajouter selon l'appétit de chacun.</p>
+        <p>Des plats du monde entier, faciles à préparer à l'avance. Certaines recettes proposent un accompagnement marqué « optionnel » (pain, riz ou fromage) pour ceux qui ont plus faim. Dans la liste de courses, ils sont regroupés à part : vous décidez sur place.</p>
         <p>Réglez le nombre de personnes du midi et du soir, puis ajustez un repas avec − et + si besoin : les quantités suivent. Supprimez un repas avec la croix. Un repas peut aussi reprendre les restes du repas d'avant. La session de <a href="#batch">batch cooking</a> et la liste de courses suivent. Indiquez vos goûts dans <a href="#gouts">Mes goûts</a>.</p>
       </div>
     </div>
@@ -369,7 +372,6 @@ img.art.ready{opacity:1}
       <button class="btn primary" id="regen" type="button">Nouvelle semaine au hasard</button>
       <button class="btn" id="restLunch" type="button">Midis en semaine = restes de la veille</button>
       <button class="btn" id="reset" type="button">Revenir au menu proposé</button>
-      <label class="toggle"><input type="checkbox" id="kidBoost" checked> Ajouter les options facultatives aux courses</label>
     </div>
     <div class="defaults" id="defaults"></div>
     <div class="week" id="week"></div>
@@ -420,7 +422,7 @@ img.art.ready{opacity:1}
 <script>
 // ---------- Ingrédients ----------
 // u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
-const AISLES={bo:"Boucherie & poissonnerie",fl:"Fruits & légumes",cr:"Crèmerie, œufs & frais",co:"Épicerie & conserves",pa:"Pain",pl:"Placard (à vérifier)"};
+const AISLES={bo:"Boucherie & poissonnerie",fl:"Fruits & légumes",cr:"Crèmerie, œufs & frais",co:"Épicerie & conserves",pa:"Pain",pl:"Placard (à vérifier)",op:"Optionnel : selon l'appétit"};
 const I={
  poulet:{n:"Blanc de poulet",r:"bo",u:"g",k:1.1,c:"Viandes"},
  dinde:{n:"Escalope de dinde",r:"bo",u:"g",k:1.05,c:"Viandes"},
@@ -1461,8 +1463,8 @@ const WH=sl=>sl.when==="Midi"?"midi":"soir";
 const PN=sl=>(W&&W.pers&&W.pers[sl.key])||S.def[WH(sl)];
 const persOf=c=>c.eat.reduce((a,e)=>a+PN(e),0);
 function qtyBase(c,id,q){return c.eat.reduce((a,e)=>a+q*PN(e),0)}
-function optQty(c,id){if(!S.kid)return 0;const o=optionsFor(c.r).find(x=>x[0]===id);if(!o)return 0;return c.eat.reduce((a,e)=>a+PN(e)*o[1],0)}
-function qtyCook(c,id,q){return qtyBase(c,id,q)+optQty(c,id)}
+function optQty(c,id){const o=optionsFor(c.r).find(x=>x[0]===id);if(!o)return 0;return c.eat.reduce((a,e)=>a+PN(e)*o[1],0)}
+function qtyCook(c,id,q){return qtyBase(c,id,q)}
 const slotLabel=s=>DAYS[s.day].toLowerCase()+" "+s.when.toLowerCase();
 const frozen=e=>{const k=srcKey(e.key);const ses=sessionOf(SK[k||e.key].day);return e.day-ses.ref>3};
 
@@ -1627,11 +1629,13 @@ function renderBatch(){
 }
 
 // ---------- Courses ----------
+let OPTFOR={};
 function shopping(sess){
-  const tot={};
-  cooks().filter(c=>!sess||sessionOf(c.sl.day).n===sess).forEach(c=>{c.r.ing.forEach(([id,q])=>{tot[id]=(tot[id]||0)+qtyCook(c,id,q)});optionsFor(c.r).forEach(([id])=>{if(!c.r.ing.some(([x])=>x===id)){const v=optQty(c,id);if(v)tot[id]=(tot[id]||0)+v}})});
+  const tot={},opt={};OPTFOR={};
+  cooks().filter(c=>!sess||sessionOf(c.sl.day).n===sess).forEach(c=>{c.r.ing.forEach(([id,q])=>{tot[id]=(tot[id]||0)+qtyCook(c,id,q)});optionsFor(c.r).forEach(([id])=>{const v=optQty(c,id);if(v){opt[id]=(opt[id]||0)+v;(OPTFOR[id]=OPTFOR[id]||new Set()).add(shortName(c.r))}})});
   const by={};
   Object.entries(tot).forEach(([id,q])=>{const r=I[id].r;(by[r]=by[r]||[]).push([id,q])});
+  if(Object.keys(opt).length)by.op=Object.entries(opt);
   return Object.keys(AISLES).filter(a=>by[a]).map(a=>[a,by[a].sort((x,y)=>I[x[0]].n.localeCompare(I[y[0]].n,"fr"))]);
 }
 const hint=(id,q)=>{const x=I[id];if(!x.w)return"";const n=Math.max(1,Math.ceil(q/x.w-0.05));return "≈ "+n+" "+x.wl+(n>1&&!x.wl.includes(" ")?"s":"")};
@@ -1639,9 +1643,9 @@ function renderShop(){
   const ss=W.shopSess??1;
   document.querySelectorAll("[data-sess]").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.sess===ss)));
   const list=shopping(ss);
-  document.getElementById("shop").innerHTML=list.length?list.map(([a,items])=>`<div class="aisle"><h3>${AISLES[a]}</h3><ul>${items.map(([id,q])=>{
-    const ck=ss+":"+id,done=!!W.checked[ck];const h=hint(id,q);
-    return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${ck}" id="ck-${ss}-${id}" ${done?"checked":""}><span>${esc(I[id].n)}${h?`<span class="hint">${h}</span>`:""}</span><span class="q">${fmt(q,I[id].u,true)}</span></label></li>`}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
+  document.getElementById("shop").innerHTML=list.length?list.map(([a,items])=>`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${items.map(([id,q])=>{
+    const k=(a==="op"?"op-":"")+id,ck=ss+":"+k,done=!!W.checked[ck];const h=a==="op"&&OPTFOR[id]?"avec : "+esc([...OPTFOR[id]].join(", ")):hint(id,q);
+    return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${ck}" id="ck-${ss}-${k}" ${done?"checked":""}><span>${esc(I[id].n)}${h?`<span class="hint">${h}</span>`:""}</span><span class="q">${fmt(q,I[id].u,true)}</span></label></li>`}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
 }
 
 // ---------- Goûts ----------
@@ -1663,7 +1667,7 @@ function renderDefaults(){
     <span class="muted" style="font-size:13px">Pour un repas différent, utilisez − et + directement sur le repas.</span>`;
 }
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));if(catKey)renderCatList("m",catKey);renderWeek()}
-function renderAll(){renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();document.getElementById("kidBoost").checked=S.kid}
+function renderAll(){renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs()}
 
 // ---------- Interactions ----------
 let toastT;
@@ -1707,7 +1711,6 @@ document.addEventListener("change",e=>{
 });
 document.getElementById("prevW").addEventListener("click",()=>goWeek(S.cur-1));
 document.getElementById("nextW").addEventListener("click",()=>goWeek(S.cur+1));
-document.getElementById("kidBoost").addEventListener("change",e=>{S.kid=e.target.checked;save();renderAll()});
 document.getElementById("regen").addEventListener("click",()=>{W.pin={};build("random");renderAll();toast("Nouvelle semaine générée")});
 document.getElementById("reset").addEventListener("click",()=>{W.mode={};W.pin={};build(S.cur===0?"default":"seed");renderAll();toast("Menu proposé rétabli")});
 document.getElementById("restLunch").addEventListener("click",()=>{
