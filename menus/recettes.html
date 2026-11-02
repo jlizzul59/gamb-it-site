@@ -161,6 +161,24 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 .accpanel .btn.danger{background:var(--bad);border-color:var(--bad);color:var(--surface)}
 .accpanel .btn.linkbad{border-color:transparent;background:none;color:var(--bad)}
 .confirm{display:flex;flex-direction:column;gap:8px;align-items:flex-start;background:var(--bad-soft);border-radius:12px;padding:12px}
+/* Foyer, invités et intolérances */
+.ppl{display:flex;flex-direction:column;gap:12px}
+.pp{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.pphead{display:flex;gap:8px;align-items:center}
+.ppname{flex:1;min-width:0;font:inherit;font-weight:700;font-size:16px;border:1px solid transparent;border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--ink)}
+.ppname:focus{border-color:var(--accent);outline:none}
+.ppdel{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 8px;border-radius:8px}
+.ppdel:hover{color:var(--bad);background:var(--bad-soft)}
+.ppchips{display:flex;flex-wrap:wrap;gap:5px}
+.dchip{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:4px 10px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.dchip:hover{border-color:var(--bad)}
+.dchip.on{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.ppnote{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--bg);color:var(--ink);min-width:0}
+.ppempty{color:var(--muted);margin:0;font-size:14px}
+.ppadd{align-self:flex-start}
+.warnd{font-size:11px;font-weight:800;color:var(--bad);background:var(--bad-soft);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.warnbox{background:var(--bad-soft);color:var(--bad);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
+.card .warnd{align-self:flex-start}
 .card{cursor:pointer}
 .card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ctop{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -1178,6 +1196,80 @@ const avisInner=id=>`${favBtn(id,true)}<span class="mynote">Ma note ${starsInput
 window.addEventListener("storage",e=>{if(e.key===AV_KEY)avLoad()});
 
 
+
+// ---------- Intolérances, régimes, foyer et invités ----------
+const DIETS=[["gluten","Gluten"],["lait","Lait / lactose"],["oeuf","Œufs"],["arachide","Arachide"],["fruitscoque","Fruits à coque"],["poisson","Poisson"],["crustaces","Crustacés, coquillages"],["soja","Soja"],["sesame","Sésame"],["celeri","Céleri"],["moutarde","Moutarde"],["porc","Porc"],["alcool","Alcool"],["vegetarien","Végétarien"]];
+const DIET_N=Object.fromEntries(DIETS);
+const DIET_RX={
+  gluten:/farine(?! de mais)|pates?\b(?! de curry)|spaghetti|penne|tagliatelle|macaroni|lasagne|ravioli|gnocchi|nouilles chinoises|\bpains?\b|baguette|semoule|boulgour|chapelure|corn flakes|tortillas de ble|feuilles de brick|feuilles a raviolis|blinis|gressins|biscuits|sauce soja|crepes|bouillon cube|biere/,
+  lait:/\blait\b(?! de coco)|creme(?! de sesame)|beurre(?! de cacahuete)|fromage|yaourt|mozzarella|parmesan|emmental|comte|cheddar|feta|chevre|reblochon|ricotta|halloumi|mascarpone|camembert|brebis|faisselle/,
+  oeuf:/\boeufs?\b(?! de cabillaud)|mayonnaise|blinis|biscuits a la cuillere|crepes/,
+  arachide:/cacahuete|arachide/,
+  fruitscoque:/noix(?! de coco)|amande|cajou|noisette|pistache|pesto|\bpignons?\b/,
+  poisson:/saumon|cabillaud|colin|\blieu\b|thon|sardine|maquereau|truite|anchois|poisson|morue/,
+  crustaces:/crevette|\bmoules?\b/,
+  soja:/(?<!pousses de )soja|tofu|edamame|miso/,
+  sesame:/sesame|tahini/,
+  celeri:/celeri/,
+  moutarde:/moutarde/,
+  porc:/porc|jambon|lardons|chorizo|saucisson|chair a saucisse/,
+  alcool:/\bvin\b|biere/,
+  viande:/poulet|dinde|boeuf|veau|agneau|canard|paleron|rumsteck|steak|saucisse|merguez|viande/
+};
+const _dn=s=>String(s).toLowerCase().replace(/œ/g,"oe").normalize("NFD").replace(/[̀-ͯ]/g,"");
+const _dIng={},_dRec={};
+function dietOfIng(name){if(!(name in _dIng)){const s=_dn(name);_dIng[name]=Object.keys(DIET_RX).filter(k=>DIET_RX[k].test(s))}return _dIng[name]}
+function dietOfRecipe(r,dict){
+  if(_dRec[r.id])return _dRec[r.id];
+  const set=new Set();r.ing.forEach(([id])=>{if(dict[id]&&!(r.serve&&r.serve.includes(id)))dietOfIng(dict[id].n).forEach(k=>set.add(k))});
+  if(set.has("porc")||set.has("poisson")||set.has("crustaces")||set.has("viande"))set.add("vegetarien");
+  set.delete("viande");
+  return _dRec[r.id]=set;
+}
+// Personnes : foyer (qui mange à la maison) et invités, enregistrés en objets {id: {...}}
+const DK={foyer:"menus.foyer",invites:"menus.invites",receptions:"menus.receptions"};
+function dread(k){try{return JSON.parse(localStorage.getItem(DK[k])||"null")||{}}catch(e){return {}}}
+function dwrite(k,v){try{localStorage.setItem(DK[k],JSON.stringify(v))}catch(e){}try{CLOUD.changed()}catch(e){}}
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+// Conflits d'une recette avec une liste de personnes : [[régime, [prénoms]]]
+function conflicts(r,dict,people){
+  if(!people||!people.length)return [];
+  const set=dietOfRecipe(r,dict),out={};
+  people.forEach(p=>(p.r||[]).forEach(k=>{if(set.has(k))(out[k]=out[k]||[]).push(p.nom||"quelqu'un")}));
+  return Object.entries(out);
+}
+const conflictText=c=>c.map(([k,w])=>DIET_N[k].toLowerCase()+" ("+w.join(", ")+")").join(" · ");
+const conflictShort=c=>c.map(([k])=>DIET_N[k]).join(", ");
+const _e=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// Éditeur de personnes, partagé par les pages
+const DIETUI={onChange(){}};
+function peopleEditor(kind,opts){
+  opts=opts||{};
+  const ppl=Object.entries(dread(kind)).sort((a,b)=>(a[1].t||0)-(b[1].t||0));
+  return `<div class="ppl">${ppl.length?ppl.map(([id,p])=>`<div class="pp">
+      <div class="pphead"><input class="ppname" id="pn-${id}" data-pkind="${kind}" data-pname="${id}" value="${_e(p.nom)}" placeholder="Prénom" aria-label="Prénom" maxlength="30">
+      <button type="button" class="ppdel" data-pkind="${kind}" data-pdel="${id}" aria-label="Retirer ${_e(p.nom||"cette personne")}">Retirer</button></div>
+      <div class="ppchips" role="group" aria-label="Intolérances et régimes de ${_e(p.nom||"cette personne")}">${DIETS.map(([k,l])=>{const on=(p.r||[]).includes(k);return `<button type="button" class="dchip ${on?"on":""}" data-pkind="${kind}" data-pdiet="${id}" data-k="${k}" aria-pressed="${on}">${l}</button>`}).join("")}</div>
+      ${opts.note?`<input class="ppnote" id="pnote-${id}" data-pkind="${kind}" data-pnote="${id}" value="${_e(p.note)}" placeholder="Note : n'aime pas les champignons, adore le fromage…" aria-label="Note" maxlength="140">`:""}
+      ${opts.extra?opts.extra(id,p):""}
+    </div>`).join(""):`<p class="ppempty">${opts.empty||"Personne pour l'instant."}</p>`}
+    <button type="button" class="btn sm ppadd" data-pkind="${kind}" data-padd>${opts.addLabel||"+ Ajouter une personne"}</button></div>`;
+}
+document.addEventListener("click",e=>{
+  const d=e.target.closest("[data-pdiet]");
+  if(d){const k=d.dataset.pkind,all=dread(k),p=all[d.dataset.pdiet];if(!p)return;p.r=p.r||[];const i=p.r.indexOf(d.dataset.k);if(i<0)p.r.push(d.dataset.k);else p.r.splice(i,1);dwrite(k,all);DIETUI.onChange(k);return}
+  const x=e.target.closest("[data-pdel]");
+  if(x){const k=x.dataset.pkind,all=dread(k);delete all[x.dataset.pdel];dwrite(k,all);DIETUI.onChange(k);return}
+  const a=e.target.closest("[data-padd]");
+  if(a){const k=a.dataset.pkind,all=dread(k),id=newId();all[id]={nom:"",r:[],t:Date.now()};dwrite(k,all);DIETUI.onChange(k);setTimeout(()=>{const el=document.getElementById("pn-"+id);if(el)try{el.focus()}catch(_){}},30);return}
+});
+document.addEventListener("change",e=>{
+  const n=e.target.closest("[data-pname]");
+  if(n){const k=n.dataset.pkind,all=dread(k),p=all[n.dataset.pname];if(!p)return;p.nom=n.value.trim().slice(0,30);dwrite(k,all);DIETUI.onChange(k,true);return}
+  const t=e.target.closest("[data-pnote]");
+  if(t){const k=t.dataset.pkind,all=dread(k),p=all[t.dataset.pnote];if(!p)return;p.note=t.value.trim().slice(0,140);dwrite(k,all);DIETUI.onChange(k,true);return}
+});
+
 // ---------- Compte, groupe et synchronisation ----------
 // Sans compte, tout reste dans ce navigateur. Avec un compte, les données sont
 // synchronisées avec le serveur ; dans un groupe, le semainier et les favoris sont partagés.
@@ -1187,7 +1279,7 @@ const CLOUD=(()=>{
   API=API.replace(/\/+$/,"");
   const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
   const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
-  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],MAPS=["prefs","note","weeks","fav"];
+  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions"];
   let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
   let hooks={apply(){},status(){}},busy=false,again=false,timer=null,status="idle",lastErr="",view="login",note="";
   const J=JSON.stringify,clone=o=>JSON.parse(J(o===undefined?null:o));
@@ -1210,13 +1302,14 @@ const CLOUD=(()=>{
   function local(){
     const P=read(LP)||{},A=read(LA)||{};
     const perso={};PERSO_KEYS.forEach(k=>{const v=k==="note"?A.note:P[k];if(v!==undefined)perso[k]=clone(v)});
-    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{})}};
+    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{})}};
   }
   function applyLocal(perso,shared){
     const P=read(LP)||{},A=read(LA)||{fav:{},note:{}};
     PERSO_KEYS.forEach(k=>{if(k==="note")A.note=perso.note||{};else if(perso[k]!==undefined)P[k]=perso[k];});
     P.weeks=shared.weeks||{};A.fav=shared.fav||{};
     write(LP,P);write(LA,A);
+    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});
   }
   // Fusion à trois : on garde ce qui a changé ici depuis la dernière synchro, le reste vient du serveur
   function mergeMap(b,m,t){
@@ -1259,16 +1352,16 @@ const CLOUD=(()=>{
         if(st.perso.version===0)pFinal=pLocal;
         else if(!acc.lastP)pFinal=clone(pServer);
         else pFinal=merge(JSON.parse(acc.lastP),pLocal,pServer);
-        if(inGroup){delete pFinal.weeks;delete pFinal.fav;}
+        if(inGroup)SHARED_KEYS.forEach(k=>delete pFinal[k]);
         // Partagé
         let sFinal=null;
         if(inGroup){
           const sServer=st.shared.data||{};
           const sBase=acc.baseGid===st.group.id&&acc.base?acc.base:null;
           sFinal=sBase?merge(sBase,L.shared,sServer):clone(sServer);
-          sFinal.weeks=sFinal.weeks||{};sFinal.fav=sFinal.fav||{};
+          SHARED_KEYS.forEach(k=>{sFinal[k]=sFinal[k]||{}});
         }
-        applyLocal(pFinal,inGroup?sFinal:{weeks:pFinal.weeks||{},fav:pFinal.fav||{}});
+        applyLocal(pFinal,inGroup?sFinal:Object.fromEntries(SHARED_KEYS.map(k=>[k,pFinal[k]||{}])));
         if(J(pFinal)!==J(pServer)){const r=await api("PUT","/perso",{data:pFinal});acc.pv=r.version;}
         acc.lastP=J(pFinal);
         if(inGroup){
@@ -1319,12 +1412,12 @@ const CLOUD=(()=>{
       <p class="accstatus" id="accStatus">${statusText()}</p>
       ${msg}
       <section class="accsec"><h4>Groupe</h4>
-      ${g?`<p>Vous êtes dans le groupe <b>${esc2(g.name)}</b>. Le semainier et les favoris sont partagés entre ses membres ; vos notes et vos goûts restent personnels.</p>
+      ${g?`<p>Vous êtes dans le groupe <b>${esc2(g.name)}</b>. Sont partagés entre ses membres : le semainier, les favoris, les intolérances du foyer, les invités et l'historique des réceptions. Vos notes et vos goûts restent personnels.</p>
         <p class="members">${g.members.map(m=>`<span class="mem">${esc2(m.name)}</span>`).join("")}</p>
         <div class="code"><span>Code d'invitation</span><b class="num" id="accCode">${esc2(g.code)}</b><button class="btn sm" type="button" data-acc="copy">Copier</button></div>
         <p class="muted small">Pour inviter quelqu'un : il crée son compte, puis saisit ce code dans « Rejoindre un groupe ».</p>
         ${view==="leave"?`<div class="confirm"><p>Quitter le groupe ? Vous gardez une copie du semainier et des favoris actuels.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`:`<button class="btn" type="button" data-acc="view-leave">Quitter le groupe</button>`}`
-      :`<p>Créez un groupe pour partager le semainier et les favoris (avec votre conjoint, par exemple), ou rejoignez-en un avec son code.</p>
+      :`<p>Créez un groupe pour partager le semainier, les favoris, le foyer et les invités (avec votre conjoint, par exemple), ou rejoignez-en un avec son code.</p>
         <form class="accform inline" data-accform="create" novalidate>${field("accGroup","Nom du groupe","text",'placeholder="Famille Martin" maxlength="40"')}<button class="btn primary" type="submit">Créer le groupe</button></form>
         <form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Rejoindre un groupe","text",'placeholder="Code à 6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<button class="btn" type="submit">Rejoindre</button></form>
         <p class="muted small">En rejoignant un groupe, son semainier remplace le vôtre ; vos favoris s'ajoutent aux siens.</p>`}
@@ -1413,7 +1506,9 @@ try{const s=JSON.parse(localStorage.getItem("recettes.filtres")||"null");if(s){s
 Object.keys(sel).forEach(k=>{if(!I[k])delete sel[k]});
 function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,quick:[...quick],servings,region,sort}))}catch(e){}}
 
-const QUICK=[["fav","♥ Favoris",r=>isFav(r.id)],["top","Mes notes ≥ 4",r=>noteOf(r.id)>=4],["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
+let FOY=[];function loadFoy(){FOY=Object.values(dread("foyer")).filter(p=>(p.r||[]).length)}loadFoy();
+const foyConf=r=>conflicts(r,I,FOY);
+const QUICK=[["foyer","Compatible avec le foyer",r=>!foyConf(r).length],["fav","♥ Favoris",r=>isFav(r.id)],["top","Mes notes ≥ 4",r=>noteOf(r.id)>=4],["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
 const has=(r,id)=>r.ing.some(([x])=>x===id);
 function matches(r,ignoreRegion){
   if(!ignoreRegion&&region&&r.reg!==region)return false;
@@ -1442,7 +1537,7 @@ function render(){
   document.getElementById("count").innerHTML=`<b>${res.length}</b> recette${res.length>1?"s":""}${region?" · "+region:""}`;
   const act=Object.entries(sel).map(([id,v])=>`<button type="button" class="pill ${v===1?"in":"out"}" data-rm="${id}" aria-label="Retirer ${esc(I[id].n)}">${v===1?"Avec":"Sans"} ${esc(I[id].n.toLowerCase())} ×</button>`).join("");
   document.getElementById("active").innerHTML=act||region||quick.size||q?act+`<button type="button" class="clear" data-clearall>Tout effacer</button>`:"";
-  document.getElementById("quick").innerHTML=QUICK.map(([k,l])=>`<button type="button" class="qf" data-q="${k}" aria-pressed="${quick.has(k)}">${l}</button>`).join("");
+  document.getElementById("quick").innerHTML=QUICK.filter(([k])=>k!=="foyer"||FOY.length).map(([k,l])=>`<button type="button" class="qf" data-q="${k}" aria-pressed="${quick.has(k)}">${l}</button>`).join("");
   document.getElementById("sort").value=sort;
   const n=Object.keys(sel).length;document.getElementById("toggleFacets").textContent="Ingrédients"+(n?" ("+n+")":"");
   const groups={};
@@ -1457,7 +1552,7 @@ function render(){
   document.getElementById("results").innerHTML=res.length?res.map(r=>{
     const main=r.ing.filter(([id])=>I[id].r!=="pl"&&!BASICS.has(id)).map(([id])=>sel[id]===1?`<mark>${esc(I[id].n.toLowerCase())}</mark>`:esc(I[id].n.toLowerCase())).join(", ");
     return `<div class="card" role="button" tabindex="0" data-r="${r.id}" aria-label="${esc(r.n)}"><div class="ph" style="background:${ART.BG[r.reg]}"></div>
-      <div class="bd"><div class="ctop"><span class="where tag">${esc(r.pays)}</span>${favBtn(r.id)}</div><span class="cname">${esc(r.n)}</span><span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span></div></div>`;
+      <div class="bd"><div class="ctop"><span class="where tag">${esc(r.pays)}</span>${favBtn(r.id)}</div><span class="cname">${esc(r.n)}</span>${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}<span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span></div></div>`;
   }).join(""):`<div class="none"><b>Aucune recette avec cette combinaison.</b><br>Retirez un ingrédient, un filtre ou changez de région.</div>`;
   ART.hydrate(document.getElementById("results"));
 }
@@ -1487,6 +1582,7 @@ function openRecipe(id){
       <div class="facts"><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion</span>${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}
         <span class="serv">Portions <button type="button" class="sb" data-s="-1" aria-label="Une portion de moins">−</button><b class="num" id="servN">${servings}</b><button type="button" class="sb" data-s="1" aria-label="Une portion de plus">+</button></span></div>
       <div class="avis" data-avis="${r.id}">${avisInner(r.id)}</div>
+      ${foyConf(r).length?`<div class="warnbox">Attention, contient : ${esc(conflictText(foyConf(r)))}</div>`:""}
       <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings" id="ings"></ul></div>
         <div><h4>Préparation</h4><ol class="steps" id="steps"></ol></div></div>
       <div class="bcnote"><b>En batch cooking :</b> ${bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc.j)}</div>
@@ -1530,7 +1626,7 @@ document.getElementById("q").addEventListener("input",e=>{q=e.target.value;rende
 document.getElementById("sort").addEventListener("change",e=>{sort=e.target.value;save();render()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeModal()});
 renderHero();render();
-CLOUD.init({apply(){avLoad();render();document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis))}});
+CLOUD.init({apply(){avLoad();loadFoy();render();document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis))}});
 </script>
 
 </html>

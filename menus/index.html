@@ -336,6 +336,28 @@ img.art.ready{opacity:1}
 .aisle.opt h3{color:var(--warm);border-bottom-color:var(--warm)}
 .aisnote{margin:4px 0 6px;font-size:12.5px;color:var(--muted)}
 
+/* Foyer, invités et intolérances */
+.ppl{display:flex;flex-direction:column;gap:12px}
+.pp{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.pphead{display:flex;gap:8px;align-items:center}
+.ppname{flex:1;min-width:0;font:inherit;font-weight:700;font-size:16px;border:1px solid transparent;border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--ink)}
+.ppname:focus{border-color:var(--accent);outline:none}
+.ppdel{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 8px;border-radius:8px}
+.ppdel:hover{color:var(--bad);background:var(--bad-soft)}
+.ppchips{display:flex;flex-wrap:wrap;gap:5px}
+.dchip{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:4px 10px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.dchip:hover{border-color:var(--bad)}
+.dchip.on{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.ppnote{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--bg);color:var(--ink);min-width:0}
+.ppempty{color:var(--muted);margin:0;font-size:14px}
+.ppadd{align-self:flex-start}
+.warnd{font-size:11px;font-weight:800;color:var(--bad);background:var(--bad-soft);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.warnbox{background:var(--bad-soft);color:var(--bad);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
+.foyerbox{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:24px;align-items:start;padding-bottom:24px;border-bottom:1px solid var(--line)}
+.foyerbox h2{font-size:30px;margin-bottom:6px}
+.foyerbox p{margin:0;color:var(--muted);max-width:52ch}
+@media (max-width:820px){.foyerbox{grid-template-columns:1fr}}
+
 /* Modale */
 .overlay{position:fixed;inset:0;background:rgba(10,20,14,.55);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
 .overlay .rcard{max-width:760px;width:100%;position:relative}
@@ -385,6 +407,10 @@ img.art.ready{opacity:1}
   </section>
 
   <section class="view" id="v-gouts" hidden>
+    <div class="foyerbox">
+      <div><h2>Le foyer : intolérances et régimes</h2><p>Ajoutez les personnes qui mangent à la maison et ce qu'elles doivent éviter. Les recettes concernées ne sont plus proposées dans le semainier, et un avertissement s'affiche si vous en choisissez une. Si vous êtes dans un groupe, le foyer est partagé.</p></div>
+      <div id="foyer"></div>
+    </div>
     <div class="prefintro">
       <div>
         <h2>Ce que vous aimez, ce que vous évitez</h2>
@@ -1301,6 +1327,80 @@ const avisInner=id=>`${favBtn(id,true)}<span class="mynote">Ma note ${starsInput
 window.addEventListener("storage",e=>{if(e.key===AV_KEY)avLoad()});
 
 
+
+// ---------- Intolérances, régimes, foyer et invités ----------
+const DIETS=[["gluten","Gluten"],["lait","Lait / lactose"],["oeuf","Œufs"],["arachide","Arachide"],["fruitscoque","Fruits à coque"],["poisson","Poisson"],["crustaces","Crustacés, coquillages"],["soja","Soja"],["sesame","Sésame"],["celeri","Céleri"],["moutarde","Moutarde"],["porc","Porc"],["alcool","Alcool"],["vegetarien","Végétarien"]];
+const DIET_N=Object.fromEntries(DIETS);
+const DIET_RX={
+  gluten:/farine(?! de mais)|pates?\b(?! de curry)|spaghetti|penne|tagliatelle|macaroni|lasagne|ravioli|gnocchi|nouilles chinoises|\bpains?\b|baguette|semoule|boulgour|chapelure|corn flakes|tortillas de ble|feuilles de brick|feuilles a raviolis|blinis|gressins|biscuits|sauce soja|crepes|bouillon cube|biere/,
+  lait:/\blait\b(?! de coco)|creme(?! de sesame)|beurre(?! de cacahuete)|fromage|yaourt|mozzarella|parmesan|emmental|comte|cheddar|feta|chevre|reblochon|ricotta|halloumi|mascarpone|camembert|brebis|faisselle/,
+  oeuf:/\boeufs?\b(?! de cabillaud)|mayonnaise|blinis|biscuits a la cuillere|crepes/,
+  arachide:/cacahuete|arachide/,
+  fruitscoque:/noix(?! de coco)|amande|cajou|noisette|pistache|pesto|\bpignons?\b/,
+  poisson:/saumon|cabillaud|colin|\blieu\b|thon|sardine|maquereau|truite|anchois|poisson|morue/,
+  crustaces:/crevette|\bmoules?\b/,
+  soja:/(?<!pousses de )soja|tofu|edamame|miso/,
+  sesame:/sesame|tahini/,
+  celeri:/celeri/,
+  moutarde:/moutarde/,
+  porc:/porc|jambon|lardons|chorizo|saucisson|chair a saucisse/,
+  alcool:/\bvin\b|biere/,
+  viande:/poulet|dinde|boeuf|veau|agneau|canard|paleron|rumsteck|steak|saucisse|merguez|viande/
+};
+const _dn=s=>String(s).toLowerCase().replace(/œ/g,"oe").normalize("NFD").replace(/[̀-ͯ]/g,"");
+const _dIng={},_dRec={};
+function dietOfIng(name){if(!(name in _dIng)){const s=_dn(name);_dIng[name]=Object.keys(DIET_RX).filter(k=>DIET_RX[k].test(s))}return _dIng[name]}
+function dietOfRecipe(r,dict){
+  if(_dRec[r.id])return _dRec[r.id];
+  const set=new Set();r.ing.forEach(([id])=>{if(dict[id]&&!(r.serve&&r.serve.includes(id)))dietOfIng(dict[id].n).forEach(k=>set.add(k))});
+  if(set.has("porc")||set.has("poisson")||set.has("crustaces")||set.has("viande"))set.add("vegetarien");
+  set.delete("viande");
+  return _dRec[r.id]=set;
+}
+// Personnes : foyer (qui mange à la maison) et invités, enregistrés en objets {id: {...}}
+const DK={foyer:"menus.foyer",invites:"menus.invites",receptions:"menus.receptions"};
+function dread(k){try{return JSON.parse(localStorage.getItem(DK[k])||"null")||{}}catch(e){return {}}}
+function dwrite(k,v){try{localStorage.setItem(DK[k],JSON.stringify(v))}catch(e){}try{CLOUD.changed()}catch(e){}}
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+// Conflits d'une recette avec une liste de personnes : [[régime, [prénoms]]]
+function conflicts(r,dict,people){
+  if(!people||!people.length)return [];
+  const set=dietOfRecipe(r,dict),out={};
+  people.forEach(p=>(p.r||[]).forEach(k=>{if(set.has(k))(out[k]=out[k]||[]).push(p.nom||"quelqu'un")}));
+  return Object.entries(out);
+}
+const conflictText=c=>c.map(([k,w])=>DIET_N[k].toLowerCase()+" ("+w.join(", ")+")").join(" · ");
+const conflictShort=c=>c.map(([k])=>DIET_N[k]).join(", ");
+const _e=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// Éditeur de personnes, partagé par les pages
+const DIETUI={onChange(){}};
+function peopleEditor(kind,opts){
+  opts=opts||{};
+  const ppl=Object.entries(dread(kind)).sort((a,b)=>(a[1].t||0)-(b[1].t||0));
+  return `<div class="ppl">${ppl.length?ppl.map(([id,p])=>`<div class="pp">
+      <div class="pphead"><input class="ppname" id="pn-${id}" data-pkind="${kind}" data-pname="${id}" value="${_e(p.nom)}" placeholder="Prénom" aria-label="Prénom" maxlength="30">
+      <button type="button" class="ppdel" data-pkind="${kind}" data-pdel="${id}" aria-label="Retirer ${_e(p.nom||"cette personne")}">Retirer</button></div>
+      <div class="ppchips" role="group" aria-label="Intolérances et régimes de ${_e(p.nom||"cette personne")}">${DIETS.map(([k,l])=>{const on=(p.r||[]).includes(k);return `<button type="button" class="dchip ${on?"on":""}" data-pkind="${kind}" data-pdiet="${id}" data-k="${k}" aria-pressed="${on}">${l}</button>`}).join("")}</div>
+      ${opts.note?`<input class="ppnote" id="pnote-${id}" data-pkind="${kind}" data-pnote="${id}" value="${_e(p.note)}" placeholder="Note : n'aime pas les champignons, adore le fromage…" aria-label="Note" maxlength="140">`:""}
+      ${opts.extra?opts.extra(id,p):""}
+    </div>`).join(""):`<p class="ppempty">${opts.empty||"Personne pour l'instant."}</p>`}
+    <button type="button" class="btn sm ppadd" data-pkind="${kind}" data-padd>${opts.addLabel||"+ Ajouter une personne"}</button></div>`;
+}
+document.addEventListener("click",e=>{
+  const d=e.target.closest("[data-pdiet]");
+  if(d){const k=d.dataset.pkind,all=dread(k),p=all[d.dataset.pdiet];if(!p)return;p.r=p.r||[];const i=p.r.indexOf(d.dataset.k);if(i<0)p.r.push(d.dataset.k);else p.r.splice(i,1);dwrite(k,all);DIETUI.onChange(k);return}
+  const x=e.target.closest("[data-pdel]");
+  if(x){const k=x.dataset.pkind,all=dread(k);delete all[x.dataset.pdel];dwrite(k,all);DIETUI.onChange(k);return}
+  const a=e.target.closest("[data-padd]");
+  if(a){const k=a.dataset.pkind,all=dread(k),id=newId();all[id]={nom:"",r:[],t:Date.now()};dwrite(k,all);DIETUI.onChange(k);setTimeout(()=>{const el=document.getElementById("pn-"+id);if(el)try{el.focus()}catch(_){}},30);return}
+});
+document.addEventListener("change",e=>{
+  const n=e.target.closest("[data-pname]");
+  if(n){const k=n.dataset.pkind,all=dread(k),p=all[n.dataset.pname];if(!p)return;p.nom=n.value.trim().slice(0,30);dwrite(k,all);DIETUI.onChange(k,true);return}
+  const t=e.target.closest("[data-pnote]");
+  if(t){const k=t.dataset.pkind,all=dread(k),p=all[t.dataset.pnote];if(!p)return;p.note=t.value.trim().slice(0,140);dwrite(k,all);DIETUI.onChange(k,true);return}
+});
+
 // ---------- Compte, groupe et synchronisation ----------
 // Sans compte, tout reste dans ce navigateur. Avec un compte, les données sont
 // synchronisées avec le serveur ; dans un groupe, le semainier et les favoris sont partagés.
@@ -1310,7 +1410,7 @@ const CLOUD=(()=>{
   API=API.replace(/\/+$/,"");
   const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
   const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
-  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],MAPS=["prefs","note","weeks","fav"];
+  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions"];
   let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
   let hooks={apply(){},status(){}},busy=false,again=false,timer=null,status="idle",lastErr="",view="login",note="";
   const J=JSON.stringify,clone=o=>JSON.parse(J(o===undefined?null:o));
@@ -1333,13 +1433,14 @@ const CLOUD=(()=>{
   function local(){
     const P=read(LP)||{},A=read(LA)||{};
     const perso={};PERSO_KEYS.forEach(k=>{const v=k==="note"?A.note:P[k];if(v!==undefined)perso[k]=clone(v)});
-    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{})}};
+    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{})}};
   }
   function applyLocal(perso,shared){
     const P=read(LP)||{},A=read(LA)||{fav:{},note:{}};
     PERSO_KEYS.forEach(k=>{if(k==="note")A.note=perso.note||{};else if(perso[k]!==undefined)P[k]=perso[k];});
     P.weeks=shared.weeks||{};A.fav=shared.fav||{};
     write(LP,P);write(LA,A);
+    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});
   }
   // Fusion à trois : on garde ce qui a changé ici depuis la dernière synchro, le reste vient du serveur
   function mergeMap(b,m,t){
@@ -1382,16 +1483,16 @@ const CLOUD=(()=>{
         if(st.perso.version===0)pFinal=pLocal;
         else if(!acc.lastP)pFinal=clone(pServer);
         else pFinal=merge(JSON.parse(acc.lastP),pLocal,pServer);
-        if(inGroup){delete pFinal.weeks;delete pFinal.fav;}
+        if(inGroup)SHARED_KEYS.forEach(k=>delete pFinal[k]);
         // Partagé
         let sFinal=null;
         if(inGroup){
           const sServer=st.shared.data||{};
           const sBase=acc.baseGid===st.group.id&&acc.base?acc.base:null;
           sFinal=sBase?merge(sBase,L.shared,sServer):clone(sServer);
-          sFinal.weeks=sFinal.weeks||{};sFinal.fav=sFinal.fav||{};
+          SHARED_KEYS.forEach(k=>{sFinal[k]=sFinal[k]||{}});
         }
-        applyLocal(pFinal,inGroup?sFinal:{weeks:pFinal.weeks||{},fav:pFinal.fav||{}});
+        applyLocal(pFinal,inGroup?sFinal:Object.fromEntries(SHARED_KEYS.map(k=>[k,pFinal[k]||{}])));
         if(J(pFinal)!==J(pServer)){const r=await api("PUT","/perso",{data:pFinal});acc.pv=r.version;}
         acc.lastP=J(pFinal);
         if(inGroup){
@@ -1442,12 +1543,12 @@ const CLOUD=(()=>{
       <p class="accstatus" id="accStatus">${statusText()}</p>
       ${msg}
       <section class="accsec"><h4>Groupe</h4>
-      ${g?`<p>Vous êtes dans le groupe <b>${esc2(g.name)}</b>. Le semainier et les favoris sont partagés entre ses membres ; vos notes et vos goûts restent personnels.</p>
+      ${g?`<p>Vous êtes dans le groupe <b>${esc2(g.name)}</b>. Sont partagés entre ses membres : le semainier, les favoris, les intolérances du foyer, les invités et l'historique des réceptions. Vos notes et vos goûts restent personnels.</p>
         <p class="members">${g.members.map(m=>`<span class="mem">${esc2(m.name)}</span>`).join("")}</p>
         <div class="code"><span>Code d'invitation</span><b class="num" id="accCode">${esc2(g.code)}</b><button class="btn sm" type="button" data-acc="copy">Copier</button></div>
         <p class="muted small">Pour inviter quelqu'un : il crée son compte, puis saisit ce code dans « Rejoindre un groupe ».</p>
         ${view==="leave"?`<div class="confirm"><p>Quitter le groupe ? Vous gardez une copie du semainier et des favoris actuels.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`:`<button class="btn" type="button" data-acc="view-leave">Quitter le groupe</button>`}`
-      :`<p>Créez un groupe pour partager le semainier et les favoris (avec votre conjoint, par exemple), ou rejoignez-en un avec son code.</p>
+      :`<p>Créez un groupe pour partager le semainier, les favoris, le foyer et les invités (avec votre conjoint, par exemple), ou rejoignez-en un avec son code.</p>
         <form class="accform inline" data-accform="create" novalidate>${field("accGroup","Nom du groupe","text",'placeholder="Famille Martin" maxlength="40"')}<button class="btn primary" type="submit">Créer le groupe</button></form>
         <form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Rejoindre un groupe","text",'placeholder="Code à 6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<button class="btn" type="submit">Rejoindre</button></form>
         <p class="muted small">En rejoignant un groupe, son semainier remplace le vôtre ; vos favoris s'ajoutent aux siens.</p>`}
@@ -1550,7 +1651,9 @@ function useWeek(w){
 
 function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 const kcal=r=>Math.round(r.ing.reduce((a,[id,q])=>a+q*I[id].k,0));
-const allowed=r=>r.ing.every(([id])=>S.prefs[id]!==-1);
+let FOY=[];function loadFoy(){FOY=Object.values(dread("foyer")).filter(p=>(p.r||[]).length)}
+const foyConf=r=>conflicts(r,I,FOY);
+const allowed=r=>r.ing.every(([id])=>S.prefs[id]!==-1)&&!foyConf(r).length;
 const likes=r=>r.ing.filter(([id])=>S.prefs[id]===1).length;
 const isVege=r=>!r.ing.some(([id])=>I[id].c==="Viandes"||I[id].c==="Poissons & crevettes");
 const isFish=r=>r.ing.some(([id])=>I[id].c==="Poissons & crevettes");
@@ -1661,7 +1764,7 @@ function renderWeek(){
         <div class="when"><span>${sl.when}</span><span class="wr">${mode!=="skip"?`<button class="del" type="button" data-skip="${sl.key}" aria-label="Supprimer le repas du ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" title="Supprimer ce repas">×</button>`:""}</span></div>
         ${body}
         ${mode!=="skip"?`<div class="prow"><span>Personnes</span><span class="pstep"><button type="button" class="pm" data-pers="${sl.key}" data-d="-1" aria-label="Une personne de moins, ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" ${PN(sl)<=1?"disabled":""}>−</button><b class="num ${W.pers&&W.pers[sl.key]?"custom":""}">${PN(sl)}</b><button type="button" class="pm" data-pers="${sl.key}" data-d="1" aria-label="Une personne de plus, ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" ${PN(sl)>=12?"disabled":""}>+</button></span></div>`:""}
-        <div class="meta"><span class="num">${r&&mode!=="skip"?"≈ "+kcal(r)+" kcal":""}</span>${r&&!isRest&&mode!=="skip"?tagHTML(r):""}</div>
+        <div class="meta"><span class="num">${r&&mode!=="skip"?"≈ "+kcal(r)+" kcal":""}</span>${r&&!isRest&&mode!=="skip"?tagHTML(r):""}</div>${r&&mode!=="skip"&&foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}
         <div class="ctrl"><select id="mode-${sl.key}" data-mode="${sl.key}" aria-label="${DAYS[i]} ${sl.when.toLowerCase()}">
           <option value="cook" ${mode==="cook"?"selected":""}>Cuisiné</option>
           <option value="rest" ${mode==="rest"?"selected":""} ${restOK?"":"disabled"}>Restes du repas d'avant</option>
@@ -1685,6 +1788,7 @@ function recipeHTML(c,modal){
     <div class="rhead"><small>${DAYS[c.sl.day]} ${dateOf(c.sl.day)} · ${c.sl.when}${extra.length?" + restes "+extra.map(slotLabel).join(", "):""}</small><h3>${esc(r.n)}</h3>
     <div class="rfacts"><span>${esc(r.pays)}</span><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion</span>${tagHTML(r)}</div>
     <div class="avis" data-avis="${r.id}">${avisInner(r.id)}</div>
+    ${foyConf(r).length?`<div class="warnbox" style="margin-top:10px">Attention, contient : ${esc(conflictText(foyConf(r)))}</div>`:""}
     <div class="rpers"><span>Personnes</span><span class="pstep"><button type="button" class="pm" data-pers="${c.sl.key}" data-d="-1" aria-label="Une personne de moins" ${PN(c.sl)<=1?"disabled":""}>−</button><b class="num ${W.pers&&W.pers[c.sl.key]?"custom":""}">${PN(c.sl)}</b><button type="button" class="pm" data-pers="${c.sl.key}" data-d="1" aria-label="Une personne de plus" ${PN(c.sl)>=12?"disabled":""}>+</button></span>${extra.length?`<span class="muted">+ ${extra.reduce((a,e)=>a+PN(e),0)} pour les restes · ${pers} portions au total</span>`:""}</div></div>
     <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings">${ing}${optLines}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}${optStepHTML(r,pers)}</ol>
     <div class="bcnote"><b>Session du ${sessionOf(c.sl.day).short} :</b> ${bt.length?bt.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(BC[r.id].j)}</div></div></div>
@@ -1712,7 +1816,7 @@ function renderCatList(sfx,key){
   const inWeek=new Set(cooks().map(c=>c.r.id));
   const list=R.filter(catMatches).sort((a,b)=>(allowed(b)-allowed(a))||(isFav(b.id)-isFav(a.id))||(noteOf(b.id)-noteOf(a.id))||(likes(b)-likes(a))||a.n.localeCompare(b.n,"fr"));
   lEl.innerHTML=list.length?list.map(r=>{
-    const bad=r.ing.filter(([id])=>S.prefs[id]===-1).map(([id])=>I[id].n);
+    const bad=r.ing.filter(([id])=>S.prefs[id]===-1).map(([id])=>I[id].n).concat(foyConf(r).map(([k,w])=>DIET_N[k].toLowerCase()+" ("+w.join(", ")+")"));
     const cur=key&&W.plan[key]===r.id;
     return `<div class="citem ${bad.length?"is-bad":""}">
       <div class="cmain"><b>${esc(r.n)}</b> ${favBtn(r.id)}<div class="cmeta">${starsShow(r.id)}<span>${esc(r.pays)}</span><span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${tagHTML(r)}${cur?'<span class="tag">Plat actuel</span>':inWeek.has(r.id)?'<span class="tag">Déjà au menu</span>':""}${bad.length?'<span class="tag no">Contient : '+esc(bad.join(", "))+'</span>':""}</div></div>
@@ -1813,7 +1917,9 @@ function renderDefaults(){
     <span class="muted" style="font-size:13px">Pour un repas différent, utilisez − et + directement sur le repas.</span>`;
 }
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));if(catKey)renderCatList("m",catKey);renderWeek()}
-function renderAll(){renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs()}
+function renderFoyer(){const el=document.getElementById("foyer");if(el)el.innerHTML=peopleEditor("foyer",{empty:"Personne n'est encore indiqué. Ajoutez par exemple chaque membre de la famille.",addLabel:"+ Ajouter un membre du foyer"})}
+DIETUI.onChange=(k,soft)=>{if(k!=="foyer")return;const before=JSON.stringify(W.plan);loadFoy();build("keep");const n=Object.keys(W.plan).filter(x=>JSON.parse(before)[x]!==W.plan[x]).length;if(soft){renderWeek();return}renderAll();if(n)toast(n+" repas remplacé"+(n>1?"s":"")+" pour respecter le foyer")};
+function renderAll(){loadFoy();renderFoyer();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs()}
 
 // ---------- Interactions ----------
 let toastT;
@@ -1881,11 +1987,11 @@ function route(){
   window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
-useWeek(S.cur||0);renderAll();route();
+loadFoy();useWeek(S.cur||0);renderAll();route();
 function reloadFromStorage(){
   try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(o)S=Object.assign({prefs:{},kid:true,cur:0,weeks:{}},o)}catch(e){}
   if(!S.def||S.def.midi==null){const o=S.def||{};S.def={midi:o.l2||2,soir:o.fam||4}}if(S.optN==null)S.optN=2;
-  avLoad();useWeek(S.cur||0);renderAll();
+  avLoad();loadFoy();useWeek(S.cur||0);renderAll();
 }
 CLOUD.init({apply:reloadFromStorage});
 </script>

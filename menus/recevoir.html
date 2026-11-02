@@ -172,6 +172,95 @@ a.btn.primary{color:var(--accent-ink)}
 .empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 
+/* Foyer, invités et intolérances */
+.ppl{display:flex;flex-direction:column;gap:12px}
+.pp{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.pphead{display:flex;gap:8px;align-items:center}
+.ppname{flex:1;min-width:0;font:inherit;font-weight:700;font-size:16px;border:1px solid transparent;border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--ink)}
+.ppname:focus{border-color:var(--accent);outline:none}
+.ppdel{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 8px;border-radius:8px}
+.ppdel:hover{color:var(--bad);background:var(--bad-soft)}
+.ppchips{display:flex;flex-wrap:wrap;gap:5px}
+.dchip{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:4px 10px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.dchip:hover{border-color:var(--bad)}
+.dchip.on{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.ppnote{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--bg);color:var(--ink);min-width:0}
+.ppempty{color:var(--muted);margin:0;font-size:14px}
+.ppadd{align-self:flex-start}
+.warnd{font-size:11px;font-weight:800;color:var(--bad);background:var(--bad-soft);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.warnbox{background:var(--bad-soft);color:var(--bad);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
+/* Compte */
+.accbtn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px 4px 4px;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--f-body)}
+.accbtn:hover{border-color:var(--accent)}
+.accbtn .av{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:13px}
+@media (max-width:520px){.accbtn .nm{display:none}.accbtn{padding:4px 8px 4px 4px}}
+@media (max-width:1560px){.top .accbtn .nm{display:none}.top .accbtn{padding:4px 8px 4px 4px}}
+.accpanel{background:var(--surface);color:var(--ink);border-radius:16px;max-width:540px;width:100%;position:relative;padding:24px;display:flex;flex-direction:column;gap:14px}
+#accBody{display:flex;flex-direction:column;gap:14px}
+.accpanel h3{font-family:var(--f-display);font-weight:400;font-size:26px;padding-right:96px;margin:0}
+.accpanel h4{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.accpanel p{margin:0}
+.accsec{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.acctabs{display:inline-flex;gap:4px;background:var(--bg);border-radius:999px;padding:3px;align-self:flex-start}
+.acctabs button{border:0;background:none;border-radius:999px;padding:6px 14px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;font-family:var(--f-body)}
+.acctabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.accform{display:flex;flex-direction:column;gap:10px}
+.accform.inline{flex-direction:row;align-items:flex-end;flex-wrap:wrap}
+.accform.inline .accf{flex:1 1 200px}
+.accf{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}
+.accf input{font:inherit;font-size:16px;font-weight:400;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);min-width:0}
+.accmsg{background:var(--accent-soft);color:var(--accent);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
+.accmsg.bad{background:var(--bad-soft);color:var(--bad)}
+.accpanel .small{font-size:12.5px}
+.accpanel .muted{color:var(--muted)}
+.accstatus{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sdot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--accent);flex:0 0 auto}
+.sdot.saving{background:#E0A526}
+.sdot.err{background:var(--bad)}
+.members{display:flex;flex-wrap:wrap;gap:6px}
+.mem{background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700}
+.code{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg);border-radius:12px;padding:10px 14px}
+.code span{font-size:13px;color:var(--muted)}
+.code b{font-size:24px;letter-spacing:.2em}
+.accpanel .row{display:flex;flex-wrap:wrap;gap:8px}
+.accpanel .btn{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer}
+.accpanel .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.accpanel .btn.sm{padding:5px 12px;font-size:13px}
+.accpanel .btn.danger{background:var(--bad);border-color:var(--bad);color:var(--surface)}
+.accpanel .btn.linkbad{border-color:transparent;background:none;color:var(--bad)}
+.confirm{display:flex;flex-direction:column;gap:8px;align-items:flex-start;background:var(--bad-soft);border-radius:12px;padding:12px}
+
+.aisle.opt h3{color:var(--warm);border-bottom-color:var(--warm)}
+.aisnote{margin:4px 0 6px;font-size:12.5px;color:var(--muted)}
+
+.who{display:flex;flex-direction:column;gap:8px}
+.who .wl{font-weight:700;font-size:14px}
+.whochips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.wchip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 12px;font-weight:700;font-size:13px;color:var(--muted)}
+.wchip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.wchip i{font-style:normal}
+.wadd{font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;padding:5px 6px}
+.wadd:hover{text-decoration:underline}
+.card.risk{opacity:.72}
+.card.risk:hover{opacity:1}
+.card .warnd{align-self:flex-start;white-space:normal}
+.pill.served{background:var(--accent-soft);color:var(--accent);white-space:normal;align-self:flex-start}
+.servedbox{background:var(--accent-soft);color:var(--accent);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
+.advice li.bad{background:var(--bad-soft);color:var(--bad);font-weight:600}
+.savebox{display:flex;flex-direction:column;gap:10px;background:var(--bg);border-radius:14px;padding:14px}
+.savebox>div:first-child{display:flex;flex-direction:column;gap:2px;font-size:14px}
+input[type=date]{border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--surface);font-weight:600}
+.pphist{margin:0;font-size:13px}
+.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.hist li{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-bottom:1px solid var(--line)}
+.hh{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.hh b{font-family:var(--f-display);font-weight:400;font-size:19px}
+.hd2{display:flex;flex-wrap:wrap;gap:6px}
+.hdish{border:1px solid var(--line);border-left:4px solid var(--cc);background:var(--surface);border-radius:8px;padding:3px 10px;font-size:13px;font-weight:600;color:var(--ink)}
+.hdish:hover{border-color:var(--accent)}
+.box h2{font-size:28px}
+.top .accbtn{margin-left:4px}
+
 /* Fiche */
 .overlay{position:fixed;inset:0;background:rgba(20,8,20,.62);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
 .sheet{background:var(--surface);border-radius:20px;max-width:820px;width:100%;position:relative;overflow:hidden}
@@ -206,7 +295,9 @@ footer.foot{padding-block:24px 30px;color:var(--muted);font-size:13px;border-top
     <a href="recettes.html">Recettes</a>
     <a href="#idees" id="lkIdees">Idées d'apéro</a>
     <a href="#mon-apero" id="lkPlan">Mon apéro</a>
+    <a href="#invites" id="lkInv">Mes invités</a>
   </nav>
+  <button type="button" class="accbtn" id="accBtn" hidden></button>
 </div></header>
 
 <main>
@@ -229,6 +320,13 @@ footer.foot{padding-block:24px 30px;color:var(--muted);font-size:13px;border-top
     </div>
   </section>
 
+  <section id="v-invites" hidden>
+    <div class="wrap plan">
+      <div class="box" id="invbox"></div>
+      <div class="box" id="histbox"></div>
+    </div>
+  </section>
+
   <section id="v-plan" hidden>
     <div class="wrap plan">
       <div class="box" id="selbox"></div>
@@ -236,7 +334,7 @@ footer.foot{padding-block:24px 30px;color:var(--muted);font-size:13px;border-top
     </div>
   </section>
 </main>
-<footer class="wrap foot">Votre apéro est enregistré sur cet appareil, dans ce navigateur.</footer>
+<footer class="wrap foot">Sans compte, vos invités, leurs intolérances et l'historique restent sur cet appareil. Avec un compte, ils sont enregistrés en ligne et partagés avec votre groupe.</footer>
 <div class="dock" id="dock"></div>
 <div class="overlay" id="overlay" hidden></div>
 <div class="toast" id="toast" hidden></div>
@@ -493,8 +591,296 @@ const AP=[
 const RB={};
 const R=AP.map(([id,n,cat,t,w,y,ing,st,tags,four])=>{
   const r={id,n,cat,t,w,y,ing:ing.split(",").map(x=>{const[a,b]=x.split(":");return[a,+b]}),st,tags:tags||"",four:four?{temp:+four.split("/")[0],min:+four.split("/")[1]}:null};
+  // ce qui accompagne une tartinade (pain, pita, chips…) peut être remplacé par des crudités
+  if(cat==="tartinade"||id==="camembert")r.serve=[r.ing[r.ing.length-1][0]];
   RB[id]=r;return r;
 });
+
+// ---------- Intolérances, régimes, foyer et invités ----------
+const DIETS=[["gluten","Gluten"],["lait","Lait / lactose"],["oeuf","Œufs"],["arachide","Arachide"],["fruitscoque","Fruits à coque"],["poisson","Poisson"],["crustaces","Crustacés, coquillages"],["soja","Soja"],["sesame","Sésame"],["celeri","Céleri"],["moutarde","Moutarde"],["porc","Porc"],["alcool","Alcool"],["vegetarien","Végétarien"]];
+const DIET_N=Object.fromEntries(DIETS);
+const DIET_RX={
+  gluten:/farine(?! de mais)|pates?\b(?! de curry)|spaghetti|penne|tagliatelle|macaroni|lasagne|ravioli|gnocchi|nouilles chinoises|\bpains?\b|baguette|semoule|boulgour|chapelure|corn flakes|tortillas de ble|feuilles de brick|feuilles a raviolis|blinis|gressins|biscuits|sauce soja|crepes|bouillon cube|biere/,
+  lait:/\blait\b(?! de coco)|creme(?! de sesame)|beurre(?! de cacahuete)|fromage|yaourt|mozzarella|parmesan|emmental|comte|cheddar|feta|chevre|reblochon|ricotta|halloumi|mascarpone|camembert|brebis|faisselle/,
+  oeuf:/\boeufs?\b(?! de cabillaud)|mayonnaise|blinis|biscuits a la cuillere|crepes/,
+  arachide:/cacahuete|arachide/,
+  fruitscoque:/noix(?! de coco)|amande|cajou|noisette|pistache|pesto|\bpignons?\b/,
+  poisson:/saumon|cabillaud|colin|\blieu\b|thon|sardine|maquereau|truite|anchois|poisson|morue/,
+  crustaces:/crevette|\bmoules?\b/,
+  soja:/(?<!pousses de )soja|tofu|edamame|miso/,
+  sesame:/sesame|tahini/,
+  celeri:/celeri/,
+  moutarde:/moutarde/,
+  porc:/porc|jambon|lardons|chorizo|saucisson|chair a saucisse/,
+  alcool:/\bvin\b|biere/,
+  viande:/poulet|dinde|boeuf|veau|agneau|canard|paleron|rumsteck|steak|saucisse|merguez|viande/
+};
+const _dn=s=>String(s).toLowerCase().replace(/œ/g,"oe").normalize("NFD").replace(/[̀-ͯ]/g,"");
+const _dIng={},_dRec={};
+function dietOfIng(name){if(!(name in _dIng)){const s=_dn(name);_dIng[name]=Object.keys(DIET_RX).filter(k=>DIET_RX[k].test(s))}return _dIng[name]}
+function dietOfRecipe(r,dict){
+  if(_dRec[r.id])return _dRec[r.id];
+  const set=new Set();r.ing.forEach(([id])=>{if(dict[id]&&!(r.serve&&r.serve.includes(id)))dietOfIng(dict[id].n).forEach(k=>set.add(k))});
+  if(set.has("porc")||set.has("poisson")||set.has("crustaces")||set.has("viande"))set.add("vegetarien");
+  set.delete("viande");
+  return _dRec[r.id]=set;
+}
+// Personnes : foyer (qui mange à la maison) et invités, enregistrés en objets {id: {...}}
+const DK={foyer:"menus.foyer",invites:"menus.invites",receptions:"menus.receptions"};
+function dread(k){try{return JSON.parse(localStorage.getItem(DK[k])||"null")||{}}catch(e){return {}}}
+function dwrite(k,v){try{localStorage.setItem(DK[k],JSON.stringify(v))}catch(e){}try{CLOUD.changed()}catch(e){}}
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+// Conflits d'une recette avec une liste de personnes : [[régime, [prénoms]]]
+function conflicts(r,dict,people){
+  if(!people||!people.length)return [];
+  const set=dietOfRecipe(r,dict),out={};
+  people.forEach(p=>(p.r||[]).forEach(k=>{if(set.has(k))(out[k]=out[k]||[]).push(p.nom||"quelqu'un")}));
+  return Object.entries(out);
+}
+const conflictText=c=>c.map(([k,w])=>DIET_N[k].toLowerCase()+" ("+w.join(", ")+")").join(" · ");
+const conflictShort=c=>c.map(([k])=>DIET_N[k]).join(", ");
+const _e=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// Éditeur de personnes, partagé par les pages
+const DIETUI={onChange(){}};
+function peopleEditor(kind,opts){
+  opts=opts||{};
+  const ppl=Object.entries(dread(kind)).sort((a,b)=>(a[1].t||0)-(b[1].t||0));
+  return `<div class="ppl">${ppl.length?ppl.map(([id,p])=>`<div class="pp">
+      <div class="pphead"><input class="ppname" id="pn-${id}" data-pkind="${kind}" data-pname="${id}" value="${_e(p.nom)}" placeholder="Prénom" aria-label="Prénom" maxlength="30">
+      <button type="button" class="ppdel" data-pkind="${kind}" data-pdel="${id}" aria-label="Retirer ${_e(p.nom||"cette personne")}">Retirer</button></div>
+      <div class="ppchips" role="group" aria-label="Intolérances et régimes de ${_e(p.nom||"cette personne")}">${DIETS.map(([k,l])=>{const on=(p.r||[]).includes(k);return `<button type="button" class="dchip ${on?"on":""}" data-pkind="${kind}" data-pdiet="${id}" data-k="${k}" aria-pressed="${on}">${l}</button>`}).join("")}</div>
+      ${opts.note?`<input class="ppnote" id="pnote-${id}" data-pkind="${kind}" data-pnote="${id}" value="${_e(p.note)}" placeholder="Note : n'aime pas les champignons, adore le fromage…" aria-label="Note" maxlength="140">`:""}
+      ${opts.extra?opts.extra(id,p):""}
+    </div>`).join(""):`<p class="ppempty">${opts.empty||"Personne pour l'instant."}</p>`}
+    <button type="button" class="btn sm ppadd" data-pkind="${kind}" data-padd>${opts.addLabel||"+ Ajouter une personne"}</button></div>`;
+}
+document.addEventListener("click",e=>{
+  const d=e.target.closest("[data-pdiet]");
+  if(d){const k=d.dataset.pkind,all=dread(k),p=all[d.dataset.pdiet];if(!p)return;p.r=p.r||[];const i=p.r.indexOf(d.dataset.k);if(i<0)p.r.push(d.dataset.k);else p.r.splice(i,1);dwrite(k,all);DIETUI.onChange(k);return}
+  const x=e.target.closest("[data-pdel]");
+  if(x){const k=x.dataset.pkind,all=dread(k);delete all[x.dataset.pdel];dwrite(k,all);DIETUI.onChange(k);return}
+  const a=e.target.closest("[data-padd]");
+  if(a){const k=a.dataset.pkind,all=dread(k),id=newId();all[id]={nom:"",r:[],t:Date.now()};dwrite(k,all);DIETUI.onChange(k);setTimeout(()=>{const el=document.getElementById("pn-"+id);if(el)try{el.focus()}catch(_){}},30);return}
+});
+document.addEventListener("change",e=>{
+  const n=e.target.closest("[data-pname]");
+  if(n){const k=n.dataset.pkind,all=dread(k),p=all[n.dataset.pname];if(!p)return;p.nom=n.value.trim().slice(0,30);dwrite(k,all);DIETUI.onChange(k,true);return}
+  const t=e.target.closest("[data-pnote]");
+  if(t){const k=t.dataset.pkind,all=dread(k),p=all[t.dataset.pnote];if(!p)return;p.note=t.value.trim().slice(0,140);dwrite(k,all);DIETUI.onChange(k,true);return}
+});
+
+// ---------- Compte, groupe et synchronisation ----------
+// Sans compte, tout reste dans ce navigateur. Avec un compte, les données sont
+// synchronisées avec le serveur ; dans un groupe, le semainier et les favoris sont partagés.
+const CLOUD=(()=>{
+  const DEFAULT_API="https://menus-api-oemz.onrender.com";
+  let API=DEFAULT_API;try{API=localStorage.getItem("menus.api")||DEFAULT_API}catch(e){}
+  API=API.replace(/\/+$/,"");
+  const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
+  const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
+  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions"];
+  let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
+  let hooks={apply(){},status(){}},busy=false,again=false,timer=null,status="idle",lastErr="",view="login",note="";
+  const J=JSON.stringify,clone=o=>JSON.parse(J(o===undefined?null:o));
+  const keep=()=>{try{acc?localStorage.setItem(TK,J(acc)):localStorage.removeItem(TK)}catch(e){}};
+  const read=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
+  const write=(k,v)=>{try{localStorage.setItem(k,J(v))}catch(e){}};
+  const esc2=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  async function api(method,path,body){
+    const h={"Content-Type":"application/json"};if(acc&&acc.token)h.Authorization="Bearer "+acc.token;
+    let r;
+    try{r=await fetch(API+path,{method,headers:h,body:body?J(body):undefined})}
+    catch(e){throw Object.assign(new Error("Le serveur ne répond pas. Vérifiez votre connexion et réessayez."),{net:true})}
+    let j={};try{j=await r.json()}catch(e){}
+    if(r.status===401&&acc&&!/^\/auth\//.test(path)){acc=null;keep();setStatus("idle");}
+    if(!r.ok)throw Object.assign(new Error(j.error||"Erreur "+r.status),{status:r.status,body:j});
+    return j;
+  }
+  // Données locales, découpées en partie personnelle et partie partageable
+  function local(){
+    const P=read(LP)||{},A=read(LA)||{};
+    const perso={};PERSO_KEYS.forEach(k=>{const v=k==="note"?A.note:P[k];if(v!==undefined)perso[k]=clone(v)});
+    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{})}};
+  }
+  function applyLocal(perso,shared){
+    const P=read(LP)||{},A=read(LA)||{fav:{},note:{}};
+    PERSO_KEYS.forEach(k=>{if(k==="note")A.note=perso.note||{};else if(perso[k]!==undefined)P[k]=perso[k];});
+    P.weeks=shared.weeks||{};A.fav=shared.fav||{};
+    write(LP,P);write(LA,A);
+    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});
+  }
+  // Fusion à trois : on garde ce qui a changé ici depuis la dernière synchro, le reste vient du serveur
+  function mergeMap(b,m,t){
+    b=b||{};m=m||{};t=t||{};const out=clone(t);
+    new Set([...Object.keys(m),...Object.keys(b)]).forEach(k=>{
+      if(J(m[k])!==J(b[k])){if(m[k]===undefined)delete out[k];else out[k]=clone(m[k]);}
+    });
+    return out;
+  }
+  function merge(b,m,t){
+    if(!b)return clone(t);
+    const out=clone(t)||{};
+    new Set([...Object.keys(m||{}),...Object.keys(b)]).forEach(k=>{
+      if(MAPS.includes(k))out[k]=mergeMap(b[k],(m||{})[k],(t||{})[k]);
+      else if(J((m||{})[k])!==J(b[k])){if((m||{})[k]===undefined)delete out[k];else out[k]=clone(m[k]);}
+    });
+    return out;
+  }
+  function setStatus(s,err){status=s;lastErr=err||"";hooks.status(s);paintBtn();const st=document.getElementById("accStatus");if(st)st.innerHTML=statusText();}
+  function statusText(){
+    if(status==="saving")return '<span class="sdot saving"></span>Enregistrement…';
+    if(status==="error")return '<span class="sdot err"></span>'+esc2(lastErr||"Pas de connexion : vos changements seront envoyés plus tard.");
+    return '<span class="sdot ok"></span>Tout est enregistré';
+  }
+
+  async function sync(retry){
+    if(!enabled||!acc||!acc.token)return;
+    if(busy){again=true;return}
+    busy=true;setStatus("saving");
+    try{
+      const before=J(local());
+      for(let i=0;i<4;i++){
+        const st=await api("GET","/state");
+        acc.user=st.user;acc.group=st.group;
+        const L=local(),inGroup=!!st.group;
+        // Personnel (sans groupe, il contient aussi le semainier et les favoris)
+        const pLocal=inGroup?L.perso:Object.assign({},L.perso,L.shared);
+        const pServer=st.perso.data||{};
+        let pFinal;
+        if(st.perso.version===0)pFinal=pLocal;
+        else if(!acc.lastP)pFinal=clone(pServer);
+        else pFinal=merge(JSON.parse(acc.lastP),pLocal,pServer);
+        if(inGroup)SHARED_KEYS.forEach(k=>delete pFinal[k]);
+        // Partagé
+        let sFinal=null;
+        if(inGroup){
+          const sServer=st.shared.data||{};
+          const sBase=acc.baseGid===st.group.id&&acc.base?acc.base:null;
+          sFinal=sBase?merge(sBase,L.shared,sServer):clone(sServer);
+          SHARED_KEYS.forEach(k=>{sFinal[k]=sFinal[k]||{}});
+        }
+        applyLocal(pFinal,inGroup?sFinal:Object.fromEntries(SHARED_KEYS.map(k=>[k,pFinal[k]||{}])));
+        if(J(pFinal)!==J(pServer)){const r=await api("PUT","/perso",{data:pFinal});acc.pv=r.version;}
+        acc.lastP=J(pFinal);
+        if(inGroup){
+          if(J(sFinal)!==J(st.shared.data||{})){
+            try{const r=await api("PUT","/shared",{data:sFinal,version:st.shared.version});acc.sv=r.version;}
+            catch(e){if(e.status===409&&e.body&&e.body.conflict){acc.base=acc.baseGid===st.group.id?acc.base:null;keep();continue}throw e}
+          }else acc.sv=st.shared.version;
+          acc.base=sFinal;acc.baseGid=st.group.id;
+        }else{acc.base=null;acc.baseGid=null;}
+        keep();break;
+      }
+      if(J(local())!==before)hooks.apply();
+      setStatus("ok");
+    }catch(e){
+      setStatus(acc?"error":"idle",e.message);
+    }finally{
+      busy=false;
+      if(again){again=false;schedule(400)}
+      const p=document.getElementById("accPanel");if(p&&!p.contains(document.activeElement))renderPanel();
+    }
+  }
+  function schedule(ms){if(!enabled||!acc)return;clearTimeout(timer);timer=setTimeout(sync,ms==null?1200:ms)}
+
+  // ---------- Fenêtre du compte ----------
+  const ov=()=>document.getElementById("overlay");
+  function open(){const o=ov();if(!o)return;o.innerHTML=`<article class="rcard accpanel" id="accPanel" role="dialog" aria-modal="true" aria-label="Mon compte"><button class="close" type="button" data-close>Fermer ×</button><div id="accBody"></div></article>`;o.hidden=false;renderPanel();if(acc)sync();}
+  function field(id,label,type,extra){return `<label class="accf" for="${id}"><span>${label}</span><input id="${id}" name="${id}" type="${type}" ${extra||""}></label>`}
+  function renderPanel(){
+    const b=document.getElementById("accBody");if(!b)return;
+    const msg=note?`<p class="accmsg ${note.startsWith("!")?"bad":""}" role="status">${esc2(note.replace(/^!/,""))}</p>`:"";
+    if(!acc){
+      b.innerHTML=`<h3>${view==="login"?"Se connecter":"Créer un compte"}</h3>
+        <p class="muted">Un compte permet de retrouver votre semainier, vos favoris et vos notes sur tous vos appareils, et de les partager en groupe.</p>
+        <div class="acctabs" role="tablist"><button type="button" role="tab" aria-selected="${view==="login"}" data-acc="view-login">J'ai un compte</button><button type="button" role="tab" aria-selected="${view==="register"}" data-acc="view-register">Créer un compte</button></div>
+        ${msg}
+        <form class="accform" data-accform="${view}" novalidate>
+          ${field("accUser","Identifiant","text",'autocomplete="username" autocapitalize="none" spellcheck="false" required')}
+          ${view==="register"?field("accName","Prénom","text",'autocomplete="given-name" required'):""}
+          ${field("accPass","Mot de passe"+(view==="register"?" (8 caractères minimum)":""),"password",`autocomplete="${view==="register"?"new-password":"current-password"}" required`)}
+          <button class="btn primary" type="submit">${view==="login"?"Se connecter":"Créer mon compte"}</button>
+        </form>
+        ${view==="register"?'<p class="muted small">Aucune adresse e-mail n\'est demandée. Notez bien votre mot de passe : il ne peut pas être récupéré. Ce que vous avez déjà fait sur cet appareil est conservé dans votre nouveau compte.</p>':'<p class="muted small">En vous connectant, les données de votre compte remplacent celles de cet appareil.</p>'}`;
+      return;
+    }
+    const g=acc.group;
+    b.innerHTML=`<h3>Bonjour ${esc2(acc.user?acc.user.name:"")}</h3>
+      <p class="muted">Identifiant : <b>${esc2(acc.user?acc.user.username:"")}</b></p>
+      <p class="accstatus" id="accStatus">${statusText()}</p>
+      ${msg}
+      <section class="accsec"><h4>Groupe</h4>
+      ${g?`<p>Vous êtes dans le groupe <b>${esc2(g.name)}</b>. Sont partagés entre ses membres : le semainier, les favoris, les intolérances du foyer, les invités et l'historique des réceptions. Vos notes et vos goûts restent personnels.</p>
+        <p class="members">${g.members.map(m=>`<span class="mem">${esc2(m.name)}</span>`).join("")}</p>
+        <div class="code"><span>Code d'invitation</span><b class="num" id="accCode">${esc2(g.code)}</b><button class="btn sm" type="button" data-acc="copy">Copier</button></div>
+        <p class="muted small">Pour inviter quelqu'un : il crée son compte, puis saisit ce code dans « Rejoindre un groupe ».</p>
+        ${view==="leave"?`<div class="confirm"><p>Quitter le groupe ? Vous gardez une copie du semainier et des favoris actuels.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`:`<button class="btn" type="button" data-acc="view-leave">Quitter le groupe</button>`}`
+      :`<p>Créez un groupe pour partager le semainier, les favoris, le foyer et les invités (avec votre conjoint, par exemple), ou rejoignez-en un avec son code.</p>
+        <form class="accform inline" data-accform="create" novalidate>${field("accGroup","Nom du groupe","text",'placeholder="Famille Martin" maxlength="40"')}<button class="btn primary" type="submit">Créer le groupe</button></form>
+        <form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Rejoindre un groupe","text",'placeholder="Code à 6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<button class="btn" type="submit">Rejoindre</button></form>
+        <p class="muted small">En rejoignant un groupe, son semainier remplace le vôtre ; vos favoris s'ajoutent aux siens.</p>`}
+      </section>
+      <section class="accsec"><h4>Mon compte</h4>
+      ${view==="password"?`<form class="accform" data-accform="password" novalidate>${field("accCur","Mot de passe actuel","password",'autocomplete="current-password"')}${field("accNew","Nouveau mot de passe (8 caractères minimum)","password",'autocomplete="new-password"')}<div class="row"><button class="btn primary" type="submit">Changer le mot de passe</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
+      :view==="delete"?`<form class="accform" data-accform="delete" novalidate><p>Supprimer définitivement votre compte et ses données enregistrées ? Ce qui est sur cet appareil reste disponible sans compte.</p>${field("accDel","Mot de passe","password",'autocomplete="current-password"')}<div class="row"><button class="btn danger" type="submit">Supprimer mon compte</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
+      :`<div class="row"><button class="btn" type="button" data-acc="logout">Se déconnecter</button><button class="btn" type="button" data-acc="view-password">Changer de mot de passe</button><button class="btn linkbad" type="button" data-acc="view-delete">Supprimer mon compte</button></div>`}
+      </section>`;
+  }
+  async function act(fn,okMsg){
+    note="";try{await fn();note=okMsg||"";}catch(e){note="!"+e.message}
+    renderPanel();
+  }
+  function startSession(r,fresh){
+    acc={token:r.token,user:r.state.user,group:r.state.group,lastP:null,base:null,baseGid:null};
+    if(fresh===false){/* connexion : le compte remplace l'appareil */}
+    keep();view="main";
+  }
+  document.addEventListener("click",e=>{
+    const a=e.target.closest("[data-acc]");
+    if(a){
+      const k=a.dataset.acc;
+      if(k==="open"){note="";view=acc?"main":"login";open();return}
+      if(k.startsWith("view-")){view=k.slice(5);note="";renderPanel();const f=document.querySelector("#accBody input");if(f)try{f.focus()}catch(_){};return}
+      if(k==="copy"){const c=(acc&&acc.group&&acc.group.code)||"";const done=()=>{note="Code copié : "+c;renderPanel()};try{navigator.clipboard.writeText(c).then(done,()=>{note="Code : "+c;renderPanel()})}catch(_){note="Code : "+c;renderPanel()};return}
+      if(k==="logout"){act(async()=>{try{await api("POST","/auth/logout")}catch(_){}acc=null;keep();view="login";setStatus("idle")},"Vous êtes déconnecté. Vos données restent sur cet appareil.");return}
+      if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave");acc.group=st.group;acc.base=null;acc.baseGid=null;keep();view="main";await sync()},"Vous avez quitté le groupe.");return}
+    }
+    const btn=e.target.closest("#accBtn");if(btn){note="";view=acc?"main":"login";open();}
+  });
+  document.addEventListener("submit",e=>{
+    const f=e.target.closest("form[data-accform]");if(!f)return;
+    e.preventDefault();
+    const v=id=>{const el=document.getElementById(id);return el?el.value:""};
+    const kind=f.dataset.accform;
+    if(kind==="login")act(async()=>{const r=await api("POST","/auth/login",{username:v("accUser").trim(),password:v("accPass")});startSession(r,false);await sync();hooks.apply();},"Connecté.");
+    if(kind==="register")act(async()=>{const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass")});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
+    if(kind==="create")act(async()=>{await sync();const L=local();const st=await api("POST","/groups",{name:v("accGroup"),data:L.shared});acc.group=st.group;acc.base=clone(L.shared);acc.baseGid=st.group.id;acc.sv=st.shared.version;keep();await sync();},"Groupe créé. Partagez le code ci-dessous.");
+    if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn")});acc.group=st.group;acc.base={weeks:clone(L.shared.weeks),fav:{}};acc.baseGid=st.group.id;keep();await sync();hooks.apply();},"Bienvenue dans le groupe.");
+    if(kind==="password")act(async()=>{await api("POST","/account/password",{current:v("accCur"),next:v("accNew")});view="main";},"Mot de passe changé. Vos autres appareils devront se reconnecter.");
+    if(kind==="delete")act(async()=>{await api("POST","/account/delete",{password:v("accDel")});acc=null;keep();view="login";setStatus("idle")},"Votre compte a été supprimé.");
+  });
+  function paintBtn(){
+    const b=document.getElementById("accBtn");if(!b)return;
+    if(!enabled){b.hidden=true;return}
+    b.hidden=false;
+    const n=acc&&acc.user?acc.user.name:"";
+    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.3-7 8.5-7s7.7 2.4 8.5 7z"/></svg></span><span class="nm">Connexion</span>`;
+    b.setAttribute("aria-label",acc?"Mon compte ("+n+")":"Se connecter ou créer un compte");
+  }
+  // Synchro régulière pour voir les changements des autres membres du groupe
+  setInterval(()=>{if(acc&&document.visibilityState==="visible")sync()},30000);
+  document.addEventListener("visibilitychange",()=>{if(acc&&document.visibilityState==="visible")sync()});
+  window.addEventListener("online",()=>{if(acc)sync()});
+  return {
+    enabled,
+    init(h){hooks=Object.assign(hooks,h||{});paintBtn();if(acc)sync();},
+    changed(){schedule()},
+    get account(){return acc},
+  };
+})();
+
+function cloudChanged(){try{CLOUD.changed()}catch(e){}}
 
 // ---------- Outils ----------
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -522,13 +908,32 @@ const hm=m=>{m=((m%1440)+1440)%1440;return pad(Math.floor(m/60))+":"+pad(m%60)};
 
 // ---------- État ----------
 const KEY="recevoir.v1";
-let P={g:8,f:"apero",h:"19:30",sel:{},chk:{},tab:"plan"};
+let P={g:8,f:"apero",h:"19:30",sel:{},chk:{},tab:"plan",who:{},foyer:true};
 try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(o)P=Object.assign(P,o)}catch(e){}
 Object.keys(P.sel).forEach(id=>{if(!RB[id])delete P.sel[id]});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}}
 let cat="",q="",flt=new Set();
 const PER={apero:6,dinatoire:14};
 const FORMULES={apero:"Apéro",dinatoire:"Apéro dînatoire"};
+
+// ---------- Invités, intolérances et historique ----------
+function guests(){const all=dread("invites");return Object.entries(all).filter(([id])=>P.who&&P.who[id]).map(([id,p])=>Object.assign({id},p))}
+function people(){return (P.foyer!==false?Object.values(dread("foyer")):[]).concat(guests())}
+const conf=r=>conflicts(r,I,people());
+const anyDiet=()=>people().some(p=>(p.r||[]).length);
+function serveNote(r){
+  if(!r.serve)return "";
+  const id=r.serve[0],d=dietOfIng(I[id].n),who=people().filter(p=>(p.r||[]).some(k=>d.includes(k))).map(p=>p.nom||"un invité");
+  return who.length?"Pour "+who.join(", ")+" : servez aussi des bâtonnets de légumes à la place de « "+I[id].n.toLowerCase()+" ».":"";
+}
+function served(r){
+  const recs=dread("receptions"),gs=guests(),out=[];
+  Object.values(recs).forEach(x=>{if(!(x.recettes||[]).includes(r.id))return;gs.forEach(g=>{if((x.who||[]).includes(g.id))out.push({nom:g.nom||"un invité",date:x.date})})});
+  return out.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+}
+const dfr=d=>{try{return new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"})}catch(e){return d}};
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+const servedText=s=>{const by={};s.forEach(x=>{if(!by[x.nom])by[x.nom]=x.date});return "Déjà servi à "+Object.entries(by).map(([n,d])=>n+" ("+dfr(d)+")").join(", ")};
 
 // ---------- Calcul des quantités ----------
 function plan(){
@@ -557,12 +962,12 @@ const MIX={
 };
 function compose(){
   const mix=MIX[P.f];P.sel={};
-  const pool=R.filter(r=>[...flt].every(t=>has(r,t)));
+  const pool=R.filter(r=>[...flt].filter(t=>t!=="ok").every(t=>t==="veille"?r.w==="veille":has(r,t))&&!conf(r).length);
   const usedMain=new Set();
   Object.entries(mix).forEach(([c,n])=>{
     let cands=pool.filter(r=>r.cat===c).sort(()=>Math.random()-.5);
     // un peu de « waouh » et d'équilibre entre la veille et la minute
-    cands.sort((a,b)=>(has(b,"w")-has(a,"w"))*.3+(Math.random()-.5));
+    cands.sort((a,b)=>(has(b,"w")-has(a,"w"))*.3+(served(a).length?1:0)-(served(b).length?1:0)+(Math.random()-.5));
     let k=0;
     for(const r of cands){
       if(k>=n)break;
@@ -575,10 +980,10 @@ function compose(){
 }
 
 // ---------- Rendu : idées ----------
-const QF=[["v","Végétarien"],["c","Sans cuisson"],["k","Les enfants adorent"],["w","Effet waouh"],["veille","Se prépare la veille"]];
+const QF=[["ok","Compatible avec mes invités"],["v","Végétarien"],["c","Sans cuisson"],["k","Les enfants adorent"],["w","Effet waouh"],["veille","Se prépare la veille"]];
 const match=r=>{
   if(cat&&r.cat!==cat)return false;
-  for(const t of flt){if(t==="veille"){if(r.w!=="veille")return false}else if(!has(r,t))return false}
+  for(const t of flt){if(t==="veille"){if(r.w!=="veille")return false}else if(t==="ok"){if(conf(r).length)return false}else if(!has(r,t))return false}
   if(q){const t=norm(r.n+" "+CATS[r.cat].n+" "+r.ing.map(([id])=>I[id].n).join(" "));if(!norm(q).split(/\s+/).every(w=>t.includes(w)))return false}
   return true;
 };
@@ -586,6 +991,8 @@ function renderPlanCard(){
   const pl=plan();
   document.getElementById("plancard").innerHTML=`<h2>Votre réception</h2>
     <div class="prow"><span>Invités</span><span class="step"><button type="button" data-g="-1" aria-label="Un invité de moins" ${P.g<=2?"disabled":""}>−</button><b class="num" aria-live="polite">${P.g}</b><button type="button" data-g="1" aria-label="Un invité de plus" ${P.g>=60?"disabled":""}>+</button></span></div>
+    <div class="who"><span class="wl">Qui vient ?</span><div class="whochips">${(()=>{const f=Object.values(dread("foyer")),inv=Object.entries(dread("invites")).sort((p,q)=>(p[1].nom||"").localeCompare(q[1].nom||"","fr"));
+      return (f.length?`<button type="button" class="wchip ${P.foyer!==false?"on":""}" data-who="foyer" aria-pressed="${P.foyer!==false}">Le foyer (${f.length})</button>`:"")+inv.map(([id,p])=>`<button type="button" class="wchip ${P.who&&P.who[id]?"on":""}" data-who="${id}" aria-pressed="${!!(P.who&&P.who[id])}">${esc(p.nom||"Sans nom")}${(p.r||[]).length?' <i title="'+esc((p.r||[]).map(k=>DIET_N[k]).join(", "))+'">⚠</i>':""}</button>`).join("")+`<a class="wadd" href="#invites">${inv.length?"Gérer mes invités":"+ Ajouter mes invités et leurs intolérances"}</a>`})()}</div></div>
     <div class="prow"><span>Formule</span><span class="seg" role="group" aria-label="Formule">${Object.entries(FORMULES).map(([k,l])=>`<button type="button" data-f="${k}" aria-pressed="${P.f===k}">${l}</button>`).join("")}</span></div>
     <div class="prow"><label for="hArr">Arrivée des invités</label><input type="time" id="hArr" value="${esc(P.h)}"></div>
     <p class="hint">${P.f==="dinatoire"?"Apéro dînatoire : environ 14 bouchées par personne, il remplace le repas.":"Apéro : environ 6 bouchées par personne, avant de passer à table."} Soit <b class="num">${pl.target}</b> bouchées pour ${P.g} personnes.</p>
@@ -595,13 +1002,15 @@ function renderCats(){
   const base=R.filter(r=>{const c=cat;cat="";const ok=match(r);cat=c;return ok});
   document.getElementById("cats").innerHTML=[["","Tout",base.length,"linear-gradient("+Object.values(CATS).map(c=>c.c).join(",")+")"]].concat(Object.entries(CATS).map(([k,c])=>[k,c.n,base.filter(r=>r.cat===k).length,c.c]))
     .map(([k,l,n,bg])=>`<button type="button" class="cat" data-cat="${k}" aria-pressed="${cat===k}"><i style="background:${bg}"></i>${l} <small>${n}</small></button>`).join("");
-  document.getElementById("qf").innerHTML=QF.map(([k,l])=>`<button type="button" class="qf" data-qf="${k}" aria-pressed="${flt.has(k)}">${l}</button>`).join("");
+  document.getElementById("qf").innerHTML=QF.filter(([k])=>k!=="ok"||anyDiet()).map(([k,l])=>`<button type="button" class="qf" data-qf="${k}" aria-pressed="${flt.has(k)}">${l}</button>`).join("");
 }
 function card(r){
   const inSel=r.id in P.sel,c=CATS[r.cat];
-  return `<article class="card ${inSel?"in":""}" style="--cc:${c.c}" data-open="${r.id}" tabindex="0" role="button" aria-label="${esc(r.n)}">
+  const cf=conf(r),sv=served(r);
+  return `<article class="card ${inSel?"in":""} ${cf.length?"risk":""}" style="--cc:${c.c}" data-open="${r.id}" tabindex="0" role="button" aria-label="${esc(r.n)}">
     <span class="ct">${c.n}</span><h3>${esc(r.n)}</h3>
     <div class="meta"><span>${r.t} min</span><span>${r.y} ${unitWord(r,r.y)}</span><span class="num">≈ ${kcalUnit(r)} kcal</span></div>
+    ${cf.length?`<span class="warnd" title="${esc(conflictText(cf))}">⚠ Contient : ${esc(conflictText(cf))}</span>`:""}${sv.length?`<span class="pill served">${esc(servedText(sv))}</span>`:""}
     <div class="meta"><span class="pill ${WHEN[r.w][1]}">${WHEN[r.w][0]}</span>${has(r,"w")?'<span class="pill waouh">Effet waouh</span>':""}${has(r,"v")?'<span class="pill">Végétarien</span>':""}${has(r,"k")?'<span class="pill">Les enfants adorent</span>':""}</div>
     <div class="foot"><span></span><button type="button" class="add ${inSel?"on":""}" data-toggle="${r.id}" aria-pressed="${inSel}">${inSel?"✓ Ajouté":"+ Ajouter"}</button></div>
   </article>`;
@@ -629,6 +1038,9 @@ function advice(pl){
   if(minute>=4)out.push(["",minute+" recettes sont à faire à la minute : remplacez-en une par une recette qui se prépare la veille pour profiter de vos invités."]);
   const oven=new Set(pl.ids.map(id=>RB[id]).filter(r=>r.four&&(r.cat==="chaud"||r.w==="minute")).map(r=>r.four.temp));
   if(oven.size>2)out.push(["","Vos bouchées chaudes demandent "+oven.size+" températures de four différentes : le plan horaire les enchaîne pour vous."]);
+  pl.ids.forEach(id=>{const c=conf(RB[id]);if(c.length)out.unshift(["bad","Attention : "+RB[id].n+" contient "+conflictText(c)+"."])});
+  pl.ids.forEach(id=>{const n=serveNote(RB[id]);if(n)out.push(["",RB[id].n+" — "+n])});
+  pl.ids.forEach(id=>{const s=served(RB[id]);if(s.length)out.push(["",RB[id].n+" : "+servedText(s).toLowerCase()+". Envie de changer ?"])});
   if(!out.length)out.push(["good","Bel équilibre ! Tout est prévu, il ne reste qu'à suivre le plan."]);
   return out;
 }
@@ -649,6 +1061,8 @@ function renderSel(){
       return `<li><i style="background:${CATS[r.cat].c}"></i><span><button type="button" class="nm" data-open="${id}">${esc(r.n)}</button><span class="sub">${CATS[r.cat].n} · ${WHEN[r.w][0].toLowerCase()}${P.sel[id]!=null?' · <button type="button" class="nm" style="font-size:12px;color:var(--accent)" data-auto="'+id+'">quantité auto</button>':""}</span></span>
         <span class="step"><button type="button" data-q="${id}" data-d="-${st}" aria-label="Moins">−</button><b class="num" title="${unitWord(r,n)}">${n}</b><button type="button" data-q="${id}" data-d="${st}" aria-label="Plus">+</button></span>
         <button type="button" class="x" data-toggle="${id}" aria-label="Retirer ${esc(r.n)}">×</button></li>`}).join("")}</ul>
+    <div class="savebox"><div><b>Une fois la réception passée</b><span class="muted">Gardez une trace de ce que vous avez servi${guests().length?" à "+esc(guests().map(g=>g.nom||"un invité").join(", ")):""}, pour varier la prochaine fois.</span></div>
+      <div class="row"><label class="muted" for="rDate">Date</label><input type="date" id="rDate" value="${today()}"><button type="button" class="btn sm primary" data-saverec>Enregistrer dans l'historique</button></div></div>
     <div class="row"><button type="button" class="btn sm" data-compose>Recomposer au hasard</button><a class="btn sm" href="#idees">+ Ajouter des idées</a></div>`;
 }
 function timeline(pl){
@@ -726,6 +1140,24 @@ function renderOut(){
     ${body}`;
 }
 
+// ---------- Mes invités et historique ----------
+function renderInvites(){
+  const el=document.getElementById("invbox"),hl=document.getElementById("histbox");if(!el||!hl)return;
+  const recs=Object.entries(dread("receptions")).sort((x,y)=>String(y[1].date).localeCompare(String(x[1].date))||(y[1].t||0)-(x[1].t||0));
+  const inv=dread("invites");
+  const hist=id=>{const mine=recs.filter(([,x])=>(x.who||[]).includes(id));if(!mine.length)return '<p class="pphist muted">Jamais reçu pour l\'instant.</p>';
+    const dishes=[...new Set(mine.flatMap(([,x])=>x.recettes||[]))].filter(r=>RB[r]).map(r=>RB[r].n);
+    return `<p class="pphist"><b>Reçu ${mine.length} fois</b>, la dernière le ${dfr(mine[0][1].date)}. Déjà servi : ${esc(dishes.slice(0,8).join(", "))}${dishes.length>8?"…":""}</p>`};
+  el.innerHTML=`<h2>Mes invités</h2><p class="muted" style="margin:0">Notez leurs intolérances et ce qu'ils aiment. Quand ils viennent, les recettes à risque sont signalées et écartées des propositions.</p>
+    ${peopleEditor("invites",{note:true,extra:(id)=>hist(id),empty:"Aucun invité pour l'instant.",addLabel:"+ Ajouter un invité"})}`;
+  hl.innerHTML=`<h2>Historique des réceptions</h2>${recs.length?`<ul class="hist">${recs.map(([id,x])=>{
+      const names=(x.who||[]).map(g=>inv[g]?inv[g].nom||"un invité":null).filter(Boolean);
+      return `<li><div class="hh"><b>${dfr(x.date)}</b><span class="muted">${FORMULES[x.f]||"Apéro"} · ${x.g||""} pers.${names.length?" · avec "+esc(names.join(", ")):""}</span></div>
+        <div class="hd2">${(x.recettes||[]).filter(r=>RB[r]).map(r=>`<button type="button" class="hdish" data-open="${r}" style="--cc:${CATS[RB[r].cat].c}">${esc(RB[r].n)}</button>`).join("")}</div>
+        <div class="row"><button type="button" class="btn sm" data-redo="${id}">Reprendre ce menu</button><button type="button" class="btn sm ghost" data-recdel="${id}">Supprimer</button></div></li>`}).join("")}</ul>`
+    :'<p class="muted">Aucune réception enregistrée. Après un apéro, cliquez sur « Enregistrer dans l\'historique » dans « Mon apéro ».</p>'}`;
+}
+
 // ---------- Fiche recette ----------
 const ov=document.getElementById("overlay");let cur=null;
 function openSheet(id){
@@ -736,6 +1168,7 @@ function openSheet(id){
     <div class="hd"><small>${CATS[r.cat].n}</small><h3>${esc(r.n)}</h3></div>
     <div class="bd">
       <div class="facts"><span>${r.t} min</span><span class="num">≈ ${kcalUnit(r)} kcal / ${unitWord(r,1)}</span><span class="pill ${WHEN[r.w][1]}">${WHEN[r.w][0]}</span>${r.four?`<span class="pill">Four ${r.four.temp} °C</span>`:""}${has(r,"v")?'<span class="pill">Végétarien</span>':""}${has(r,"c")?'<span class="pill">Sans cuisson</span>':""}</div>
+      ${conf(r).length?`<div class="warnbox">Attention, contient : ${esc(conflictText(conf(r)))}</div>`:""}${serveNote(r)?`<div class="servedbox">${esc(serveNote(r))}</div>`:""}${served(r).length?`<div class="servedbox">${esc(servedText(served(r)))}</div>`:""}
       <div class="prow"><span>${inSel?"Prévu pour votre apéro":"Quantité de la recette"} : <b class="num">${n}</b> ${unitWord(r,n)}</span>
         <button type="button" class="btn ${inSel?"":"primary"}" data-toggle="${id}">${inSel?"✓ Dans mon apéro · retirer":"+ Ajouter à mon apéro"}</button></div>
       <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings">${r.ing.map(([i,q])=>`<li><span class="num">${fmt(q*f,I[i].u)}</span><span>${esc(I[i].n)}</span></li>`).join("")}</ul></div>
@@ -747,11 +1180,11 @@ function closeSheet(){ov.hidden=true;ov.innerHTML="";cur=null}
 
 // ---------- Vue et événements ----------
 let toastT;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2400)}
-function renderAll(){renderPlanCard();renderCats();renderGrid();renderSel();renderOut();renderDock()}
+function renderAll(){renderPlanCard();renderCats();renderGrid();renderSel();renderOut();renderInvites();renderDock()}
 function route(){
-  const p=location.hash==="#mon-apero";
-  document.getElementById("v-idees").hidden=p;document.getElementById("v-plan").hidden=!p;
-  const a1=document.getElementById("lkIdees"),a2=document.getElementById("lkPlan");a1.removeAttribute("aria-current");a2.removeAttribute("aria-current");(p?a2:a1).setAttribute("aria-current","page");
+  const v=location.hash==="#mon-apero"?"plan":location.hash==="#invites"?"invites":"idees";
+  ["idees","plan","invites"].forEach(x=>document.getElementById("v-"+x).hidden=x!==v);
+  [["lkIdees","idees"],["lkPlan","plan"],["lkInv","invites"]].forEach(([l,x])=>{const el=document.getElementById(l);if(x===v)el.setAttribute("aria-current","page");else el.removeAttribute("aria-current")});
   renderDock();window.scrollTo(0,0);
 }
 function toggle(id){
@@ -771,6 +1204,10 @@ document.addEventListener("click",e=>{
   const au=e.target.closest("[data-auto]");if(au){P.sel[au.dataset.auto]=null;save();renderAll();return}
   const tb=e.target.closest("[data-tab]");if(tb){P.tab=tb.dataset.tab;save();renderOut();return}
   if(e.target.closest("[data-clear]")){P.sel={};save();renderAll();return}
+  const wg=e.target.closest("[data-who]");if(wg){const id=wg.dataset.who;if(id==="foyer"){P.foyer=P.foyer===false;}else{P.who=P.who||{};if(P.who[id]){delete P.who[id];P.g=Math.max(2,P.g-1)}else{P.who[id]=1;P.g=Math.min(60,P.g+1)}}save();renderAll();return}
+  if(e.target.closest("[data-saverec]")){const pl=plan();if(!pl.ids.length)return;const all=dread("receptions"),d=(document.getElementById("rDate")||{}).value||today();all[newId()]={date:d,who:Object.keys(P.who||{}),foyer:P.foyer!==false,recettes:pl.ids,f:P.f,g:P.g,t:Date.now()};dwrite("receptions",all);toast("Réception du "+dfr(d)+" enregistrée");renderAll();return}
+  const rd=e.target.closest("[data-recdel]");if(rd){const all=dread("receptions");delete all[rd.dataset.recdel];dwrite("receptions",all);renderAll();return}
+  const rr=e.target.closest("[data-redo]");if(rr){const x=dread("receptions")[rr.dataset.redo];if(!x)return;P.sel={};(x.recettes||[]).forEach(id=>{if(RB[id])P.sel[id]=null});P.who={};(x.who||[]).forEach(id=>P.who[id]=1);P.f=x.f||P.f;P.g=x.g||P.g;save();renderAll();location.hash="mon-apero";toast("Menu repris : pensez à varier un peu !");return}
   if(e.target.closest("[data-uncheck]")){P.chk={};save();renderOut();return}
   if(e.target.closest("[data-copy]")){
     const pl=plan();const txt="Courses apéro · "+P.g+" invités\n\n"+shopping(pl).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,q])=>"- "+I[id].n+" : "+fmt(q,I[id].u,true)).join("\n")).join("\n\n");
@@ -791,6 +1228,8 @@ document.addEventListener("keydown",e=>{
 });
 document.getElementById("q").addEventListener("input",e=>{q=e.target.value;renderCats();renderGrid()});
 window.addEventListener("hashchange",route);
+DIETUI.onChange=()=>renderAll();
+CLOUD.init({apply(){renderAll()}});
 renderAll();route();
 </script>
 </body>
