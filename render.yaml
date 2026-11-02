@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: menus-api
+    runtime: node
+    plan: starter
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      # À renseigner lors de la création : "External Database URL" de la base Postgres existante
+      - key: DATABASE_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://gamb-it-apps.fr,https://www.gamb-it-apps.fr
