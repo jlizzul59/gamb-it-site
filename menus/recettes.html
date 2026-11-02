@@ -120,6 +120,25 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 
 #results{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:16px}
 .card{display:flex;flex-direction:column;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0;overflow:hidden;min-width:0}
+.card{cursor:pointer}
+.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ctop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.favb{border:0;background:none;color:var(--muted);font-size:19px;line-height:1;padding:2px 5px;border-radius:999px;cursor:pointer}
+.favb:hover{color:var(--bad)}
+.favb.on{color:var(--bad)}
+.favb.big{font-size:14px;font-weight:700;border:1px solid var(--line);background:var(--surface);padding:6px 12px}
+.favb.big.on{border-color:var(--bad);background:var(--bad-soft)}
+.stars{display:inline-flex;gap:0;vertical-align:middle}
+.st{border:0;background:none;padding:0 2px;font-size:22px;line-height:1;color:var(--line);cursor:pointer}
+.st.on{color:#E0A526}
+.stars:hover .st{color:#E0A526}
+.stars .st:hover~.st{color:var(--line)}
+.stshow{color:#E0A526;font-size:12px;letter-spacing:1px;white-space:nowrap}
+.stshow i{font-style:normal;color:var(--line)}
+.avis{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font-size:14px;font-weight:600;margin-top:10px}
+.mynote{display:inline-flex;align-items:center;gap:8px}
+.favdot{color:var(--bad);font-size:13px}
+.foot{padding-block:22px 40px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
 .card .ph{height:8px}
 .card .where{position:static!important;align-self:flex-start;background:var(--bg)!important;color:var(--muted)!important}
 .card .where{position:absolute;left:10px;top:10px;font-size:11px;font-weight:800;letter-spacing:.04em;background:rgba(255,255,255,.92);color:#1C2A20;border-radius:999px;padding:3px 9px}
@@ -216,7 +235,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
   <div class="tools">
     <label class="search"><input type="search" id="q" placeholder="Rechercher : curry, gratin, Mexique, saumon…" autocomplete="off" aria-label="Rechercher une recette"></label>
     <div id="quick" style="display:flex;flex-wrap:wrap;gap:6px"></div>
-    <select class="sort" id="sort" aria-label="Trier les recettes"><option value="nom">Trier : nom</option><option value="kcal">Trier : calories</option><option value="temps">Trier : les plus rapides</option><option value="region">Trier : par région</option></select>
+    <select class="sort" id="sort" aria-label="Trier les recettes"><option value="nom">Trier : nom</option><option value="note">Trier : mes notes</option><option value="kcal">Trier : calories</option><option value="temps">Trier : les plus rapides</option><option value="region">Trier : par région</option></select>
     <button type="button" id="toggleFacets" aria-expanded="false" aria-controls="side">Ingrédients</button>
   </div>
 
@@ -232,6 +251,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
     </section>
   </div>
 </main>
+<footer class="wrap foot">Vos menus, favoris, notes et goûts sont enregistrés sur cet appareil, dans ce navigateur. Chaque personne qui ouvre le site a les siens.</footer>
 <div class="overlay" id="overlay" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <script>
@@ -953,6 +973,23 @@ const ART={hydrate(){},BG:{"France":"#E9E1D2","Europe":"#CDB08A","Moyen-Orient":
 const DARKREG=new Set(["Asie","Amériques"]);
 const artImg=()=>"";
 
+
+// ---------- Favoris et notes (enregistrés sur cet appareil) ----------
+const AV_KEY="recettes.avis";
+let AV={fav:{},note:{}};
+function avLoad(){try{const o=JSON.parse(localStorage.getItem(AV_KEY)||"null");if(o)AV={fav:o.fav||{},note:o.note||{}}}catch(e){}}
+avLoad();
+function avSave(){try{localStorage.setItem(AV_KEY,JSON.stringify(AV))}catch(e){}}
+const isFav=id=>!!AV.fav[id];
+const noteOf=id=>AV.note[id]||0;
+function toggleFav(id){if(AV.fav[id])delete AV.fav[id];else AV.fav[id]=1;avSave()}
+function setNote(id,v){if(AV.note[id]===v)delete AV.note[id];else AV.note[id]=v;avSave()}
+const favBtn=(id,big)=>{const on=isFav(id);return `<button type="button" class="favb ${on?"on":""} ${big?"big":""}" data-fav="${id}" aria-pressed="${on}" aria-label="${on?"Retirer des favoris":"Ajouter aux favoris"}" title="${on?"Retirer des favoris":"Ajouter aux favoris"}">${on?"♥":"♡"}${big?(on?" Favori":" Ajouter aux favoris"):""}</button>`};
+const starsInput=id=>`<span class="stars" role="group" aria-label="Ma note">${[1,2,3,4,5].map(v=>`<button type="button" class="st ${v<=noteOf(id)?"on":""}" data-rate="${id}" data-v="${v}" aria-label="${v} sur 5" aria-pressed="${v===noteOf(id)}">★</button>`).join("")}</span>`;
+const starsShow=id=>{const n=noteOf(id);return n?`<span class="stshow" title="Ma note : ${n} sur 5" aria-label="Ma note : ${n} sur 5">${"★".repeat(n)}<i>${"★".repeat(5-n)}</i></span>`:""};
+const avisInner=id=>`${favBtn(id,true)}<span class="mynote">Ma note ${starsInput(id)}</span>${noteOf(id)?'<span class="muted" style="font-size:12px;font-weight:400">Touchez la même étoile pour effacer</span>':""}`;
+window.addEventListener("storage",e=>{if(e.key===AV_KEY)avLoad()});
+
 // ---------- Page recettes ----------
 const BASICS=new Set(["oignon","ail","citron","persil","citronvert","menthe"]);
 const GROUP_ORDER=["Viandes","Poissons & crevettes","Œufs & légumineuses","Légumes","Fruits","Féculents","Fromages & crème","Fruits secs","Autres"];
@@ -977,7 +1014,7 @@ try{const s=JSON.parse(localStorage.getItem("recettes.filtres")||"null");if(s){s
 Object.keys(sel).forEach(k=>{if(!I[k])delete sel[k]});
 function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,quick:[...quick],servings,region,sort}))}catch(e){}}
 
-const QUICK=[["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
+const QUICK=[["fav","♥ Favoris",r=>isFav(r.id)],["top","Mes notes ≥ 4",r=>noteOf(r.id)>=4],["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
 const has=(r,id)=>r.ing.some(([x])=>x===id);
 function matches(r,ignoreRegion){
   if(!ignoreRegion&&region&&r.reg!==region)return false;
@@ -986,7 +1023,7 @@ function matches(r,ignoreRegion){
   if(q){const t=norm(r.n+" "+r.pays+" "+r.reg+" "+r.ing.map(([id])=>I[id].n).join(" "));if(!norm(q).split(/\s+/).every(w=>t.includes(w)))return false}
   return true;
 }
-const SORTS={nom:(a,b)=>a.n.localeCompare(b.n,"fr"),kcal:(a,b)=>kcal(a)-kcal(b),temps:(a,b)=>a.t-b.t||a.n.localeCompare(b.n,"fr"),region:(a,b)=>REGIONS.indexOf(a.reg)-REGIONS.indexOf(b.reg)||a.pays.localeCompare(b.pays,"fr")||a.n.localeCompare(b.n,"fr")};
+const SORTS={nom:(a,b)=>a.n.localeCompare(b.n,"fr"),note:(a,b)=>noteOf(b.id)-noteOf(a.id)||(isFav(b.id)-isFav(a.id))||a.n.localeCompare(b.n,"fr"),kcal:(a,b)=>kcal(a)-kcal(b),temps:(a,b)=>a.t-b.t||a.n.localeCompare(b.n,"fr"),region:(a,b)=>REGIONS.indexOf(a.reg)-REGIONS.indexOf(b.reg)||a.pays.localeCompare(b.pays,"fr")||a.n.localeCompare(b.n,"fr")};
 
 // ---------- ouverture ----------
 function renderHero(){
@@ -1020,8 +1057,8 @@ function render(){
   }).join("");
   document.getElementById("results").innerHTML=res.length?res.map(r=>{
     const main=r.ing.filter(([id])=>I[id].r!=="pl"&&!BASICS.has(id)).map(([id])=>sel[id]===1?`<mark>${esc(I[id].n.toLowerCase())}</mark>`:esc(I[id].n.toLowerCase())).join(", ");
-    return `<button type="button" class="card" data-r="${r.id}"><div class="ph" style="background:${ART.BG[r.reg]}"></div>
-      <div class="bd"><span class="where tag">${esc(r.pays)}</span><span class="cname">${esc(r.n)}</span><span class="cmeta"><span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span></div></button>`;
+    return `<div class="card" role="button" tabindex="0" data-r="${r.id}" aria-label="${esc(r.n)}"><div class="ph" style="background:${ART.BG[r.reg]}"></div>
+      <div class="bd"><div class="ctop"><span class="where tag">${esc(r.pays)}</span>${favBtn(r.id)}</div><span class="cname">${esc(r.n)}</span><span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span></div></div>`;
   }).join(""):`<div class="none"><b>Aucune recette avec cette combinaison.</b><br>Retirez un ingrédient, un filtre ou changez de région.</div>`;
   ART.hydrate(document.getElementById("results"));
 }
@@ -1050,6 +1087,7 @@ function openRecipe(id){
     <div class="in">
       <div class="facts"><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion</span>${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}
         <span class="serv">Portions <button type="button" class="sb" data-s="-1" aria-label="Une portion de moins">−</button><b class="num" id="servN">${servings}</b><button type="button" class="sb" data-s="1" aria-label="Une portion de plus">+</button></span></div>
+      <div class="avis" data-avis="${r.id}">${avisInner(r.id)}</div>
       <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings" id="ings"></ul></div>
         <div><h4>Préparation</h4><ol class="steps" id="steps"></ol></div></div>
       <div class="bcnote"><b>En batch cooking :</b> ${bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc.j)}</div>
@@ -1076,6 +1114,8 @@ document.addEventListener("click",e=>{
   if(e.target.closest("[data-close]")||e.target===ov){closeModal();return}
   if(e.target.closest("[data-add]")){const d=+document.getElementById("addDay").value,w=document.getElementById("addWhen").value;const wk=addToMenu(current,d,w);toast(wk===null?"Impossible d'enregistrer dans ce navigateur":RB[current].n+" ajouté : "+DAYS[d].toLowerCase()+" "+w.toLowerCase());return}
   const sb=e.target.closest("[data-s]");if(sb){servings=Math.max(1,Math.min(12,servings+ +sb.dataset.s));save();fillIngs();return}
+  const fv=e.target.closest("[data-fav]");if(fv){const id=fv.dataset.fav;toggleFav(id);refreshAvis();toast(isFav(id)?RB[id].n+" ajouté aux favoris":"Retiré des favoris");return}
+  const rt=e.target.closest("[data-rate]");if(rt){setNote(rt.dataset.rate,+rt.dataset.v);refreshAvis();return}
   if(!ov.hidden)return;
   const f=e.target.closest("[data-f]");if(f){const id=f.dataset.f,v=sel[id];if(!v)sel[id]=1;else if(v===1)sel[id]=-1;else delete sel[id];save();render();return}
   const rm=e.target.closest("[data-rm]");if(rm){delete sel[rm.dataset.rm];save();render();return}
@@ -1085,6 +1125,8 @@ document.addEventListener("click",e=>{
   const tf=e.target.closest("#toggleFacets");if(tf){const p=document.getElementById("side");p.classList.toggle("open");tf.setAttribute("aria-expanded",p.classList.contains("open"));return}
   const c=e.target.closest("[data-r]");if(c){openRecipe(c.dataset.r);return}
 });
+function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));render()}
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&ov.hidden){const c=e.target.closest&&e.target.closest('.card[data-r]');if(c&&e.target===c){e.preventDefault();openRecipe(c.dataset.r)}}});
 document.getElementById("q").addEventListener("input",e=>{q=e.target.value;render()});
 document.getElementById("sort").addEventListener("change",e=>{sort=e.target.value;save();render()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeModal()});
