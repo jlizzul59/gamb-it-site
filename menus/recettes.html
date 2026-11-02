@@ -1140,6 +1140,10 @@ K.forEach(([id,n,f,p,t,tag,ing,st,bc,j,pays,reg])=>{
 });
 
 const CLASSIC=new Set(K.map(x=>x[0]));
+// ---------- Doublons fusionnés : chaque recette retirée renvoie vers sa jumelle ----------
+const ALIAS={"saladepates": "patespesto", "periafr": "piripiri", "piripiricrev": "currycrevettes", "fishcurry": "moqueca", "kpoulettikka": "tikka", "butterchicken": "tikka", "ksaumongrille": "teriyaki", "kpizzareine": "pizza", "calzone": "pizza", "gratinpates": "coquillettes", "kmacaroni": "coquillettes", "ksaumonepinards": "patessaumon", "kcannelloni": "lasagnesveg", "parmentiercolin": "brandade", "kcroque": "croques", "mongolian": "boeufbrocoli", "rumsteck": "ksteakfrites", "kpouletroticlassique": "pouletroti", "carbonara": "kcarbo", "kcarbocreme": "kcarbo", "karrabbiata": "ktomatebasilic", "paella": "kpaellaclassique", "kcesarclassique": "cesar", "kchili": "chili", "kriscantonais": "rizcantonais", "edamamebowl": "bowlsaumon", "kgaletteoeuf": "galettes", "couscous": "kcouscousclassique", "mijote": "boeufcarottes", "bolo": "kbolo", "kratatouilleriz": "ratatouille", "kmoulescreme": "moulesfrites", "escondidinho": "khachisclassique", "hachis": "khachisclassique", "kravioli": "ravioliepinards", "kgnocchisgratin": "gnocchis", "kquichesaumon": "quiche", "blanquette": "kblanquette", "kpouletchampi": "dinde", "kescalopecreme": "dinde", "ksoupechou": "kpaysanne", "kpoireauxpdt": "velouteporeaux", "kpotironclassique": "veloute", "pumpkinsoup": "veloute", "cultivateur": "ksoupelegumes", "kminestroneclassique": "minestrone", "chickennoodle": "kpoulettsoupe", "pancit": "miegoreng", "chowmein": "miegoreng", "kwokpoulet": "udon", "fijicurry": "fishcurry", "kokoda": "moqueca", "shishtaouk": "souvlaki", "pitas": "shawarma", "shopska": "grecque", "adana": "keftas", "lahmacun": "pide", "carnitas": "pastor", "kfajitasclassique": "fajitas", "ksaucissepuree": "saucissepuree", "kpouletpane": "nuggets", "kpoissonpane": "poissonpane", "kcordonbleu": "cordonbleu", "kmilanaise": "schnitzel", "arrozpollo": "jollof", "jambalaya": "kpaellaclassique", "chaufa": "nasigoreng", "kimchirice": "rizcantonais", "kraclette": "tartiflette", "kgratindauphinois": "dauphinois", "bigos": "choucroute", "irishstew": "navarin", "daube": "kbourguignon", "kvealmarengo": "kosso", "klapin": "cacciatora", "huli": "pouletananas", "colombo": "cari", "kpoulettcurry": "curryvert", "tabouleboulgour": "ktaboulefr", "chevrechaud": "kchevrechaud", "poketon": "poke", "kcrevettesriz": "crevettesail", "klieuprovencale": "colinvierge", "polpette": "kboulettes", "boulettes": "kboulettes", "kthon": "spaghettithon", "kpesto": "patespesto", "kjambonpates": "tagliatelles", "lasagnes": "klasagnesbolo", "cajou": "kungpao"};
+const resolve=id=>{let k=id;for(let n=0;n<5&&ALIAS[k];n++)k=ALIAS[k];return k};
+for(const id in ALIAS){const i=R.findIndex(r=>r.id===id);if(i>=0)R.splice(i,1);delete RB[id];delete BC[id]}
 // ---------- Présentation neutre : noms, produits, options facultatives ----------
 const clean=s=>s.replace(/\s+(allégée?s?|légères?|légers?)(?=[\s,.:;)]|$)/gi,"").replace(/\s+,/g,",");
 R.forEach(r=>{r.n=clean(r.n);r.st=r.st.map(clean);delete r.kid});
@@ -1182,7 +1186,7 @@ const artImg=()=>"";
 // ---------- Favoris et notes (enregistrés sur cet appareil) ----------
 const AV_KEY="recettes.avis";
 let AV={fav:{},note:{}};
-function avLoad(){try{const o=JSON.parse(localStorage.getItem(AV_KEY)||"null");if(o)AV={fav:o.fav||{},note:o.note||{}}}catch(e){}}
+function avLoad(){try{const o=JSON.parse(localStorage.getItem(AV_KEY)||"null");if(o)AV={fav:o.fav||{},note:o.note||{}}}catch(e){}["fav","note"].forEach(t=>Object.keys(AV[t]).forEach(k=>{if(ALIAS[k]){const v=AV[t][k];delete AV[t][k];if(!AV[t][resolve(k)])AV[t][resolve(k)]=v}}))}
 avLoad();
 function avSave(){try{localStorage.setItem(AV_KEY,JSON.stringify(AV))}catch(e){}cloudChanged()}
 const isFav=id=>!!AV.fav[id];

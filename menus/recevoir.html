@@ -261,6 +261,18 @@ input[type=date]{border:1px solid var(--line);border-radius:10px;padding:6px 10p
 .box h2{font-size:28px}
 .top .accbtn{margin-left:4px}
 
+.tldet{display:flex;flex-direction:column;gap:8px}
+.tlr{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--surface)}
+.tlr summary{cursor:pointer;font-size:14.5px;line-height:1.4}
+.tlr summary .muted{font-size:13px}
+.tlr[open] summary{margin-bottom:6px}
+.tling{font-size:13.5px;color:var(--muted);margin:0 0 8px;line-height:1.5}
+.tling b{color:var(--ink)}
+.tlsteps{margin:0 0 6px;padding-left:20px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.tl .t .tlr{margin-top:6px}
+.linkbtn{border:0;background:none;color:var(--accent);font:inherit;font-weight:700;padding:0;cursor:pointer;text-align:left}
+.linkbtn:hover{text-decoration:underline}
+
 /* Fiche */
 .overlay{position:fixed;inset:0;background:rgba(20,8,20,.62);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
 .sheet{background:var(--surface);border-radius:20px;max-width:820px;width:100%;position:relative;overflow:hidden}
@@ -1065,10 +1077,24 @@ function renderSel(){
       <div class="row"><label class="muted" for="rDate">Date</label><input type="date" id="rDate" value="${today()}"><button type="button" class="btn sm primary" data-saverec>Enregistrer dans l'historique</button></div></div>
     <div class="row"><button type="button" class="btn sm" data-compose>Recomposer au hasard</button><a class="btn sm" href="#idees">+ Ajouter des idées</a></div>`;
 }
+// Fiche détaillée dans le plan : ingrédients pesés pour la réception et toutes les étapes
+function ingLine(i,q){
+  const x=I[i],v=fmt(q,x.u),nm=x.n.toLowerCase();
+  if(["g","ml","cs","cc","bouquet"].includes(x.u))return v+" "+(/^[aeiouyéèêœh]/.test(nm)?"d'":"de ")+nm;
+  if(x.u==="gousse")return v+" d'"+nm;
+  return v+" "+nm;
+}
+function detail(r,pl,open){
+  const f=factor(r.id,pl),n=pl.qty[r.id];
+  return `<details class="tlr" ${open?"open":""}><summary><b>${esc(r.n)}</b> <span class="muted">· ${n} ${unitWord(r,n)} · ${r.t} min${r.four?" · four "+r.four.temp+" °C":""}</span></summary>
+    <p class="tling"><b>Il vous faut :</b> ${r.ing.map(([i,q])=>esc(ingLine(i,q*f))).join(" · ")}</p>
+    <ol class="tlsteps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
+    <button type="button" class="linkbtn" data-open="${r.id}">Ouvrir la fiche</button></details>`;
+}
 function timeline(pl){
   const T=(()=>{const m=/^(\d{1,2}):(\d{2})$/.exec(P.h||"");return m?(+m[1])*60+(+m[2]):19*60+30})();
   const rs=pl.ids.map(id=>RB[id]);
-  const name=r=>esc(r.n)+(r.cat!=="boisson"?` <span class="muted">(${pl.qty[r.id]} ${unitWord(r,pl.qty[r.id])})</span>`:"");
+  const name=r=>`<button type="button" class="linkbtn" data-open="${r.id}">${esc(r.n)}</button>`+(r.cat!=="boisson"?` <span class="muted">(${pl.qty[r.id]} ${unitWord(r,pl.qty[r.id])})</span>`:"");
   const veille=rs.filter(r=>r.w==="veille"),jour=rs.filter(r=>r.w==="jour");
   const ev=[];
   const add=(m,title,items,big)=>{if(items&&!items.length)return;ev.push({m,title,items,big})};
@@ -1079,7 +1105,7 @@ function timeline(pl){
   add(T-20,"Sortir les tartinades du réfrigérateur",rs.filter(r=>r.cat==="tartinade").map(r=>esc(r.n)));
   // Préparations à la minute (hors four)
   const quick=rs.filter(r=>r.w==="minute"&&!r.four&&r.cat!=="boisson");
-  add(T-30,"Préparer les éléments à la minute",quick.map(name));
+  add(T-30,"Préparer les éléments à la minute",quick.map(r=>name(r)+detail(r,pl,false)));
   // Four : vagues de bouchées chaudes
   const ovenItems=rs.filter(r=>r.four&&(r.cat==="chaud"||r.w==="minute")).sort((a,b)=>b.four.temp-a.four.temp||a.four.min-b.four.min);
   if(ovenItems.length){
@@ -1109,7 +1135,7 @@ function timeline(pl){
   add(T-10,"Allumer les bougies, lancer la musique, souffler un coup",null);
   add(T,"Arrivée des invités",null,true);
   ev.sort((a,b)=>a.m-b.m);
-  const block=(title,items)=>items.length?`<p class="tlhead">${title}</p><ul class="timeline">${items.map(r=>`<li class="tl"><span class="h"></span><span class="dot"></span><span class="t"><b>${name(r)}</b><span class="muted" style="font-size:13px">${esc(r.st[0])}</span></span></li>`).join("")}</ul>`:"";
+  const block=(title,items)=>items.length?`<p class="tlhead">${title}</p><div class="tldet">${items.map(r=>detail(r,pl,true)).join("")}</div>`:"";
   return block("La veille",veille)+block("Le jour même, dans la journée",jour)
     +`<p class="tlhead">Le soir J</p><ul class="timeline">${ev.map(e=>`<li class="tl ${e.big?"big":""}"><span class="h">${hm(e.m)}</span><span class="dot"></span><span class="t"><b>${esc(e.title)}</b>${e.items&&e.items.length?"<ul>"+e.items.map(x=>"<li>"+x+"</li>").join("")+"</ul>":""}</span></li>`).join("")}</ul>`;
 }

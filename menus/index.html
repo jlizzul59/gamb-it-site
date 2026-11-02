@@ -45,11 +45,17 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding-block:12px}
+.top .toprow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding-block:10px 6px}
+.toprow .accbtn{margin-left:auto}
+.top .tabrow{padding-block:0 8px}
 .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .brand h1{font-size:24px}
 .brand span{color:var(--muted);font-size:13px}
-nav.tabs{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+nav.tabs{display:flex;gap:4px;align-items:center;overflow-x:auto;scrollbar-width:none;margin-inline:-6px;padding-inline:6px}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs a{white-space:nowrap}
+.tabsep{width:1px;height:20px;background:var(--line);margin:0 6px;flex:0 0 auto}
+nav.tabs a.ext::after{content:" ↗";font-size:11px;opacity:.6}
 nav.tabs a{padding:7px 10px;border-radius:999px;color:var(--muted);text-decoration:none;font-weight:600;font-size:14px}
 nav.tabs a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
 nav.tabs a:hover:not([aria-current="page"]){background:var(--accent-soft);color:var(--ink)}
@@ -297,7 +303,7 @@ img.art.ready{opacity:1}
 .accbtn:hover{border-color:var(--accent)}
 .accbtn .av{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:13px}
 @media (max-width:520px){.accbtn .nm{display:none}.accbtn{padding:4px 8px 4px 4px}}
-@media (max-width:1560px){.top .accbtn .nm{display:none}.top .accbtn{padding:4px 8px 4px 4px}}
+
 .accpanel{background:var(--surface);color:var(--ink);border-radius:16px;max-width:540px;width:100%;position:relative;padding:24px;display:flex;flex-direction:column;gap:14px}
 #accBody{display:flex;flex-direction:column;gap:14px}
 .accpanel h3{font-family:var(--f-display);font-weight:400;font-size:26px;padding-right:96px;margin:0}
@@ -367,19 +373,22 @@ img.art.ready{opacity:1}
 </style>
 
 <header class="top">
-  <div class="wrap">
+  <div class="wrap toprow">
     <div class="brand"><h1>Semainier</h1></div>
     <div class="weeknav"><button class="wbtn" id="prevW" type="button" aria-label="Semaine précédente">‹</button><span id="weekLabel" aria-live="polite">Semaine 1</span><button class="wbtn" id="nextW" type="button" aria-label="Semaine suivante">›</button></div>
+    <button type="button" class="accbtn" id="accBtn" hidden></button>
+  </div>
+  <div class="wrap tabrow">
     <nav class="tabs" aria-label="Sections">
       <a href="#semaine">Semaine</a>
       <a href="#batch">Batch cooking</a>
-      <a href="recettes.html">Catalogue</a>
-      <a href="recevoir.html">On reçoit</a>
-      <a href="#gouts">Mes goûts</a>
-      <a href="#recettes">Recettes</a>
+      <a href="#recettes">Recettes de la semaine</a>
       <a href="#courses">Courses</a>
+      <a href="#gouts">Mes goûts</a>
+      <span class="tabsep" aria-hidden="true"></span>
+      <a href="recettes.html" class="ext">Catalogue des recettes</a>
+      <a href="recevoir.html" class="ext">On reçoit</a>
     </nav>
-    <button type="button" class="accbtn" id="accBtn" hidden></button>
   </div>
 </header>
 
@@ -1271,6 +1280,10 @@ K.forEach(([id,n,f,p,t,tag,ing,st,bc,j,pays,reg])=>{
 });
 
 const CLASSIC=new Set(K.map(x=>x[0]));
+// ---------- Doublons fusionnés : chaque recette retirée renvoie vers sa jumelle ----------
+const ALIAS={"saladepates": "patespesto", "periafr": "piripiri", "piripiricrev": "currycrevettes", "fishcurry": "moqueca", "kpoulettikka": "tikka", "butterchicken": "tikka", "ksaumongrille": "teriyaki", "kpizzareine": "pizza", "calzone": "pizza", "gratinpates": "coquillettes", "kmacaroni": "coquillettes", "ksaumonepinards": "patessaumon", "kcannelloni": "lasagnesveg", "parmentiercolin": "brandade", "kcroque": "croques", "mongolian": "boeufbrocoli", "rumsteck": "ksteakfrites", "kpouletroticlassique": "pouletroti", "carbonara": "kcarbo", "kcarbocreme": "kcarbo", "karrabbiata": "ktomatebasilic", "paella": "kpaellaclassique", "kcesarclassique": "cesar", "kchili": "chili", "kriscantonais": "rizcantonais", "edamamebowl": "bowlsaumon", "kgaletteoeuf": "galettes", "couscous": "kcouscousclassique", "mijote": "boeufcarottes", "bolo": "kbolo", "kratatouilleriz": "ratatouille", "kmoulescreme": "moulesfrites", "escondidinho": "khachisclassique", "hachis": "khachisclassique", "kravioli": "ravioliepinards", "kgnocchisgratin": "gnocchis", "kquichesaumon": "quiche", "blanquette": "kblanquette", "kpouletchampi": "dinde", "kescalopecreme": "dinde", "ksoupechou": "kpaysanne", "kpoireauxpdt": "velouteporeaux", "kpotironclassique": "veloute", "pumpkinsoup": "veloute", "cultivateur": "ksoupelegumes", "kminestroneclassique": "minestrone", "chickennoodle": "kpoulettsoupe", "pancit": "miegoreng", "chowmein": "miegoreng", "kwokpoulet": "udon", "fijicurry": "fishcurry", "kokoda": "moqueca", "shishtaouk": "souvlaki", "pitas": "shawarma", "shopska": "grecque", "adana": "keftas", "lahmacun": "pide", "carnitas": "pastor", "kfajitasclassique": "fajitas", "ksaucissepuree": "saucissepuree", "kpouletpane": "nuggets", "kpoissonpane": "poissonpane", "kcordonbleu": "cordonbleu", "kmilanaise": "schnitzel", "arrozpollo": "jollof", "jambalaya": "kpaellaclassique", "chaufa": "nasigoreng", "kimchirice": "rizcantonais", "kraclette": "tartiflette", "kgratindauphinois": "dauphinois", "bigos": "choucroute", "irishstew": "navarin", "daube": "kbourguignon", "kvealmarengo": "kosso", "klapin": "cacciatora", "huli": "pouletananas", "colombo": "cari", "kpoulettcurry": "curryvert", "tabouleboulgour": "ktaboulefr", "chevrechaud": "kchevrechaud", "poketon": "poke", "kcrevettesriz": "crevettesail", "klieuprovencale": "colinvierge", "polpette": "kboulettes", "boulettes": "kboulettes", "kthon": "spaghettithon", "kpesto": "patespesto", "kjambonpates": "tagliatelles", "lasagnes": "klasagnesbolo", "cajou": "kungpao"};
+const resolve=id=>{let k=id;for(let n=0;n<5&&ALIAS[k];n++)k=ALIAS[k];return k};
+for(const id in ALIAS){const i=R.findIndex(r=>r.id===id);if(i>=0)R.splice(i,1);delete RB[id];delete BC[id]}
 // ---------- Présentation neutre : noms, produits, options facultatives ----------
 const clean=s=>s.replace(/\s+(allégée?s?|légères?|légers?)(?=[\s,.:;)]|$)/gi,"").replace(/\s+,/g,",");
 R.forEach(r=>{r.n=clean(r.n);r.st=r.st.map(clean);delete r.kid});
@@ -1313,7 +1326,7 @@ const artImg=()=>"";
 // ---------- Favoris et notes (enregistrés sur cet appareil) ----------
 const AV_KEY="recettes.avis";
 let AV={fav:{},note:{}};
-function avLoad(){try{const o=JSON.parse(localStorage.getItem(AV_KEY)||"null");if(o)AV={fav:o.fav||{},note:o.note||{}}}catch(e){}}
+function avLoad(){try{const o=JSON.parse(localStorage.getItem(AV_KEY)||"null");if(o)AV={fav:o.fav||{},note:o.note||{}}}catch(e){}["fav","note"].forEach(t=>Object.keys(AV[t]).forEach(k=>{if(ALIAS[k]){const v=AV[t][k];delete AV[t][k];if(!AV[t][resolve(k)])AV[t][resolve(k)]=v}}))}
 avLoad();
 function avSave(){try{localStorage.setItem(AV_KEY,JSON.stringify(AV))}catch(e){}cloudChanged()}
 const isFav=id=>!!AV.fav[id];
@@ -1624,6 +1637,8 @@ DAYS.forEach((d,i)=>{
 });
 const SK=Object.fromEntries(SLOTS.map(s=>[s.key,s]));
 const DEFAULT={"0m":"buddha","0s":"tikka","1m":"cesar","1s":"hachis","2m":"nuggets","2s":"veloute","3m":"poke","3s":"teriyaki","4m":"wraps","4s":"pizza","5m":"cabillaud","5s":"burger","6m":"mignon","6s":"shakshuka"};
+for(const k in DEFAULT)DEFAULT[k]=resolve(DEFAULT[k]);
+const remapWeeks=()=>Object.values(S.weeks||{}).forEach(w=>{for(const k in (w.plan||{}))if(w.plan[k])w.plan[k]=resolve(w.plan[k])});
 const SESSIONS=[
  {n:1,short:"dimanche",days:[0,1,2],ref:-1,cover:"lundi à mercredi"},
  {n:2,short:"mercredi",days:[3,4,5,6],ref:2,cover:"jeudi à dimanche",late:true}
@@ -1640,7 +1655,7 @@ try{
   if(raw)S={...S,...JSON.parse(raw)};
   else{const old=localStorage.getItem("semainier.v2");if(old){const o=JSON.parse(old);S.prefs=o.prefs||{};S.kid=o.kid!==false;S.weeks[0]={plan:o.plan||{},mode:o.mode||{},pin:{},checked:o.checked||{},shopSess:o.shopSess||1}}}
 }catch(e){}
-if(!S.def||S.def.midi==null){const o=S.def||{};S.def={midi:o.l2||2,soir:o.fam||4}}if(S.optN==null)S.optN=2;
+if(!S.def||S.def.midi==null){const o=S.def||{};S.def={midi:o.l2||2,soir:o.fam||4}}if(S.optN==null)S.optN=2;remapWeeks();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}cloudChanged()}
 let W;
 function useWeek(w){
@@ -1990,7 +2005,7 @@ window.addEventListener("hashchange",route);
 loadFoy();useWeek(S.cur||0);renderAll();route();
 function reloadFromStorage(){
   try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(o)S=Object.assign({prefs:{},kid:true,cur:0,weeks:{}},o)}catch(e){}
-  if(!S.def||S.def.midi==null){const o=S.def||{};S.def={midi:o.l2||2,soir:o.fam||4}}if(S.optN==null)S.optN=2;
+  if(!S.def||S.def.midi==null){const o=S.def||{};S.def={midi:o.l2||2,soir:o.fam||4}}if(S.optN==null)S.optN=2;remapWeeks();
   avLoad();loadFoy();useWeek(S.cur||0);renderAll();
 }
 CLOUD.init({apply:reloadFromStorage});
