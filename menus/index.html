@@ -45,12 +45,12 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding-block:12px}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding-block:12px}
 .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .brand h1{font-size:24px}
 .brand span{color:var(--muted);font-size:13px}
 nav.tabs{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
-nav.tabs a{padding:7px 14px;border-radius:999px;color:var(--muted);text-decoration:none;font-weight:600;font-size:14px}
+nav.tabs a{padding:7px 10px;border-radius:999px;color:var(--muted);text-decoration:none;font-weight:600;font-size:14px}
 nav.tabs a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
 nav.tabs a:hover:not([aria-current="page"]){background:var(--accent-soft);color:var(--ink)}
 
@@ -347,7 +347,7 @@ img.art.ready{opacity:1}
     <nav class="tabs" aria-label="Sections">
       <a href="#semaine">Semaine</a>
       <a href="#batch">Batch cooking</a>
-      <a href="recettes.html">Toutes les recettes</a>
+      <a href="recettes.html">Catalogue</a>
       <a href="#gouts">Mes goûts</a>
       <a href="#recettes">Recettes</a>
       <a href="#courses">Courses</a>
@@ -1348,7 +1348,7 @@ const CLOUD=(()=>{
     if(!enabled){b.hidden=true;return}
     b.hidden=false;
     const n=acc&&acc.user?acc.user.name:"";
-    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av">?</span><span class="nm">Se connecter</span>`;
+    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av">?</span><span class="nm">Connexion</span>`;
     b.setAttribute("aria-label",acc?"Mon compte ("+n+")":"Se connecter ou créer un compte");
   }
   // Synchro régulière pour voir les changements des autres membres du groupe

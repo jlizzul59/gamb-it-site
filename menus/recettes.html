@@ -1226,7 +1226,7 @@ const CLOUD=(()=>{
     if(!enabled){b.hidden=true;return}
     b.hidden=false;
     const n=acc&&acc.user?acc.user.name:"";
-    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av">?</span><span class="nm">Se connecter</span>`;
+    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av">?</span><span class="nm">Connexion</span>`;
     b.setAttribute("aria-label",acc?"Mon compte ("+n+")":"Se connecter ou créer un compte");
   }
   // Synchro régulière pour voir les changements des autres membres du groupe
