@@ -297,6 +297,7 @@ img.art.ready{opacity:1}
 .accbtn:hover{border-color:var(--accent)}
 .accbtn .av{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:13px}
 @media (max-width:520px){.accbtn .nm{display:none}.accbtn{padding:4px 8px 4px 4px}}
+@media (max-width:1560px){.top .accbtn .nm{display:none}.top .accbtn{padding:4px 8px 4px 4px}}
 .accpanel{background:var(--surface);color:var(--ink);border-radius:16px;max-width:540px;width:100%;position:relative;padding:24px;display:flex;flex-direction:column;gap:14px}
 #accBody{display:flex;flex-direction:column;gap:14px}
 .accpanel h3{font-family:var(--f-display);font-weight:400;font-size:26px;padding-right:96px;margin:0}
@@ -351,6 +352,7 @@ img.art.ready{opacity:1}
       <a href="#semaine">Semaine</a>
       <a href="#batch">Batch cooking</a>
       <a href="recettes.html">Catalogue</a>
+      <a href="recevoir.html">On reçoit</a>
       <a href="#gouts">Mes goûts</a>
       <a href="#recettes">Recettes</a>
       <a href="#courses">Courses</a>
@@ -1494,7 +1496,7 @@ const CLOUD=(()=>{
     if(!enabled){b.hidden=true;return}
     b.hidden=false;
     const n=acc&&acc.user?acc.user.name:"";
-    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av">?</span><span class="nm">Connexion</span>`;
+    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.3-7 8.5-7s7.7 2.4 8.5 7z"/></svg></span><span class="nm">Connexion</span>`;
     b.setAttribute("aria-label",acc?"Mon compte ("+n+")":"Se connecter ou créer un compte");
   }
   // Synchro régulière pour voir les changements des autres membres du groupe

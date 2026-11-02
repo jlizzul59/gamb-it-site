@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>On reçoit</title>
+<meta name="description" content="Plus de 80 idées d'apéro, de la tartinade au mocktail, et un plan de bataille pour recevoir sans stress : quantités, courses et horaires.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="gamb-it-apps.fr">
+<meta property="og:title" content="On reçoit">
+<meta property="og:description" content="Plus de 80 idées d'apéro et un plan de bataille pour recevoir sans stress : quantités, courses et horaires.">
+<meta property="og:url" content="https://gamb-it-apps.fr/menus/recevoir.html">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : en-tête collant → ouverture (titre + carte d'organisation) → rayons de catégories → grille d'idées ; vue « Mon apéro » : sélection + plan horaire + courses */
+:root{
+  --bg:#F4F2F5; --surface:#FFFFFF; --ink:#24172A; --muted:#6B5E70; --line:#E2DAE5;
+  --accent:#6B2D5C; --accent-ink:#FFFFFF; --accent-soft:#F1E5EF;
+  --gold:#A8740F; --gold-soft:#FBF0D9; --bad:#A2372A; --bad-soft:#F6E2DE; --ok:#2F7A55;
+  --f-display:"Young Serif", Georgia, "Times New Roman", serif;
+  --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#171219; --surface:#221A25; --ink:#EFE7F1; --muted:#A99BAE; --line:#3A2E3E;
+  --accent:#DDA0CC; --accent-ink:#1B1020; --accent-soft:#3A2337;
+  --gold:#E9B949; --gold-soft:#3A2F17; --bad:#E58072; --bad-soft:#3B2220; --ok:#7DC497; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#171219; --surface:#221A25; --ink:#EFE7F1; --muted:#A99BAE; --line:#3A2E3E;
+  --accent:#DDA0CC; --accent-ink:#1B1020; --accent-soft:#3A2337;
+  --gold:#E9B949; --gold-soft:#3A2F17; --bad:#E58072; --bad-soft:#3B2220; --ok:#7DC497; color-scheme:dark }
+*{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;padding-bottom:84px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:400;margin:0;line-height:1.1;text-wrap:balance}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:8px 18px;padding-block:10px;flex-wrap:wrap}
+.logo{font-family:var(--f-display);font-size:22px;text-decoration:none;color:var(--ink)}
+.logo i{font-style:normal;color:var(--accent)}
+.toplinks{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+.toplinks a{text-decoration:none;font-weight:700;font-size:14px;color:var(--muted);padding:7px 12px;border-radius:999px}
+.toplinks a:hover{background:var(--accent-soft);color:var(--ink)}
+.toplinks a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:36px;align-items:center;padding-block:36px 26px}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.hero h1{font-size:clamp(40px,6vw,72px);margin:10px 0 14px;letter-spacing:-.01em}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{margin:0;color:var(--muted);font-size:17px;max-width:48ch}
+.plancard{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 40px -24px rgba(60,20,60,.35)}
+.plancard h2{font-size:22px}
+.prow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.prow label,.prow>span{font-weight:700;font-size:14px}
+.step{display:inline-flex;align-items:center;gap:4px;background:var(--bg);border-radius:999px;padding:3px}
+.step button{width:34px;height:34px;border-radius:50%;border:0;background:var(--surface);font-size:18px;font-weight:700;line-height:1}
+.step button:hover:not(:disabled){background:var(--accent);color:var(--accent-ink)}
+.step button:disabled{opacity:.35;cursor:default}
+.step b{min-width:3ch;text-align:center;font-size:17px}
+.seg{display:inline-flex;gap:3px;background:var(--bg);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+input[type=time]{border:1px solid var(--line);border-radius:10px;padding:7px 10px;background:var(--bg);font-weight:700;font-variant-numeric:tabular-nums}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:10px 18px;font-weight:800;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn:hover{border-color:var(--accent)}
+a.btn{color:var(--ink)}
+a.btn.primary{color:var(--accent-ink)}
+.box a:not(.btn),.plancard a:not(.btn){color:var(--accent);font-weight:700}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.sm{padding:6px 12px;font-size:13px}
+.btn.ghost{border-color:transparent;background:none;color:var(--muted)}
+.plancard .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.plancard .hint{font-size:13px;color:var(--muted);margin:0}
+
+.cats{display:flex;gap:8px;overflow-x:auto;padding:4px 0 14px;scrollbar-width:thin}
+.cat{flex:0 0 auto;display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:8px 14px 8px 10px;font-weight:700;font-size:14px}
+.cat i{width:12px;height:28px;border-radius:6px;display:block}
+.cat small{font-family:var(--f-mono);font-weight:500;color:var(--muted);font-size:12px}
+.cat[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cat[aria-pressed="true"] small{color:inherit;opacity:.75}
+
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 0;border-top:1px solid var(--line);border-bottom:2px solid var(--ink);margin-bottom:18px}
+.tools input[type=search]{flex:1 1 240px;min-width:0;border:1px solid var(--line);border-radius:999px;padding:10px 14px;background:var(--surface);font-size:15px}
+.qf{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--muted)}
+.qf[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:14px}
+.card{position:relative;display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 16px 14px 20px;cursor:pointer;min-width:0;overflow:hidden}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--cc)}
+.card:hover{border-color:var(--accent)}
+.card.in{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.card .ct{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.card h3{font-family:var(--f-body);font-weight:800;font-size:16px;line-height:1.3}
+.meta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--muted);align-items:center}
+.pill{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted);white-space:nowrap}
+.pill.veille{background:var(--accent-soft);color:var(--accent)}
+.pill.minute{background:var(--gold-soft);color:var(--gold)}
+.pill.waouh{background:var(--gold-soft);color:var(--gold)}
+.card .foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:6px}
+.add{border:1px solid var(--accent);background:none;color:var(--accent);border-radius:999px;padding:6px 14px;font-weight:800;font-size:13px}
+.add:hover{background:var(--accent-soft)}
+.add.on{background:var(--accent);color:var(--accent-ink)}
+.none{grid-column:1/-1;padding:36px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:16px;color:var(--muted)}
+
+/* Barre flottante */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:7;padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));pointer-events:none}
+.dock .in{max-width:760px;margin:0 auto;background:var(--ink);color:var(--bg);border-radius:999px;display:flex;align-items:center;gap:14px;padding:8px 8px 8px 20px;pointer-events:auto;box-shadow:0 12px 30px -10px rgba(0,0,0,.45)}
+.dock .txt{flex:1;min-width:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dock .bar{height:6px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;width:120px;flex:0 0 auto}
+.dock .bar i{display:block;height:100%;background:var(--gold)}
+.dock a{background:var(--bg);color:var(--ink);text-decoration:none;font-weight:800;font-size:14px;border-radius:999px;padding:9px 16px;white-space:nowrap}
+@media (max-width:560px){.dock .bar{display:none}}
+
+/* Mon apéro */
+.plan{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:28px;align-items:start;padding-block:28px 40px}
+.plan h2{font-size:30px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.box h3{font-size:22px}
+.gauge{display:flex;flex-direction:column;gap:6px}
+.gauge .g{height:10px;border-radius:999px;background:var(--bg);overflow:hidden}
+.gauge .g i{display:block;height:100%;background:var(--accent);border-radius:999px}
+.gauge .lab{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.advice{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.advice li{font-size:13.5px;background:var(--gold-soft);color:var(--ink);border-radius:10px;padding:8px 12px}
+.advice li.good{background:var(--accent-soft)}
+.sel{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.sel li{display:grid;grid-template-columns:8px minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.sel li i{width:8px;align-self:stretch;border-radius:4px}
+.sel .nm{font-weight:700;font-size:14.5px;line-height:1.3;background:none;border:0;text-align:left;padding:0}
+.sel .nm:hover{color:var(--accent);text-decoration:underline}
+.sel .sub{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.sel .step button{width:28px;height:28px;font-size:15px}
+.sel .step b{font-size:14px;min-width:3.2ch}
+.x{border:0;background:none;color:var(--muted);font-size:18px;width:28px;height:28px;border-radius:50%}
+.x:hover{background:var(--bad-soft);color:var(--bad)}
+.tabs2{display:flex;gap:4px;background:var(--bg);border-radius:999px;padding:3px;align-self:flex-start;flex-wrap:wrap}
+.tabs2 button{border:0;background:none;border-radius:999px;padding:7px 14px;font-weight:800;font-size:13px;color:var(--muted)}
+.tabs2 button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.timeline{list-style:none;margin:0;padding:0;position:relative}
+.timeline::before{content:"";position:absolute;left:62px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl{display:grid;grid-template-columns:52px 22px minmax(0,1fr);gap:0 10px;padding:6px 0}
+.tl .h{font-family:var(--f-mono);font-size:13px;font-weight:500;text-align:right;padding-top:2px;color:var(--muted)}
+.tl .dot{width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);margin:4px 0 0 5px;position:relative;z-index:1}
+.tl.big .dot{background:var(--accent)}
+.tl.big .h{color:var(--accent);font-weight:700}
+.tl .t{font-size:14px}
+.tl .t b{display:block;font-size:14.5px}
+.tl .t ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:13.5px}
+.tlhead{font-family:var(--f-display);font-size:18px;margin:14px 0 4px}
+.tlhead:first-child{margin-top:0}
+.shop{columns:2 240px;column-gap:24px}
+.aisle{break-inside:avoid;margin-bottom:16px}
+.aisle h4{font-family:var(--f-body);font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-bottom:4px;border-bottom:2px solid var(--ink)}
+.aisle ul{list-style:none;margin:0;padding:0}
+.aisle label{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer}
+.aisle input{accent-color:var(--accent);margin:0;transform:translateY(2px)}
+.aisle .q{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.aisle .hint{display:block;font-size:12px;color:var(--muted)}
+.aisle li.done label{color:var(--muted);text-decoration:line-through}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* Fiche */
+.overlay{position:fixed;inset:0;background:rgba(20,8,20,.62);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.sheet{background:var(--surface);border-radius:20px;max-width:820px;width:100%;position:relative;overflow:hidden}
+.sheet .hd{padding:26px 24px 20px;border-bottom:1px solid var(--line);position:relative}
+.sheet .hd::before{content:"";position:absolute;left:0;top:0;right:0;height:6px;background:var(--cc)}
+.sheet .hd small{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sheet .hd h3{font-size:clamp(24px,3.4vw,34px);margin-top:6px;padding-right:90px}
+.close{position:absolute;z-index:3;top:16px;right:16px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-weight:800}
+.sheet .bd{padding:20px 24px 24px;display:flex;flex-direction:column;gap:18px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:14px;color:var(--muted)}
+.rbody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:24px}
+.rbody h4{font-family:var(--f-body);font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.ings{list-style:none;margin:0;padding:0;font-size:14px}
+.ings li{display:grid;grid-template-columns:86px minmax(0,1fr);gap:8px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.ings .num{color:var(--accent);text-align:right}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s;font-size:14.5px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;margin-bottom:10px}
+.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:12px;font-weight:800}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;z-index:30;font-weight:700;max-width:calc(100% - 32px)}
+footer.foot{padding-block:24px 30px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+@media (max-width:600px){.toplinks{margin-left:0;width:100%;justify-content:space-between}.toplinks a{padding:6px 8px;font-size:13px}}
+@media (max-width:900px){.hero,.plan{grid-template-columns:1fr}.hero{gap:22px;padding-block:24px 18px}}
+@media (max-width:600px){.rbody{grid-template-columns:1fr}.tools{gap:6px}.sel li{grid-template-columns:8px minmax(0,1fr) auto;}.sel li .x{grid-column:3;grid-row:1}.sel li .step{grid-column:2}}
+@media (prefers-reduced-motion:no-preference){.card{transition:transform .15s,box-shadow .15s}.card:hover{transform:translateY(-2px)}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="logo" href="#idees">On <i>reçoit</i></a>
+  <nav class="toplinks" aria-label="Pages">
+    <a href="index.html">Semainier</a>
+    <a href="recettes.html">Recettes</a>
+    <a href="#idees" id="lkIdees">Idées d'apéro</a>
+    <a href="#mon-apero" id="lkPlan">Mon apéro</a>
+  </nav>
+</div></header>
+
+<main>
+  <section id="v-idees">
+    <div class="wrap hero">
+      <div>
+        <span class="eyebrow">Apéro, apéro dînatoire, buffet</span>
+        <h1>Ce soir, <em>on reçoit.</em></h1>
+        <p>Tartinades maison, verrines, bouchées chaudes, planches et mocktails. Choisissez, et on calcule tout : les quantités pour vos invités, la liste de courses et l'heure à laquelle lancer chaque chose.</p>
+      </div>
+      <div class="plancard" id="plancard"></div>
+    </div>
+    <div class="wrap">
+      <nav class="cats" id="cats" aria-label="Catégories"></nav>
+      <div class="tools">
+        <input type="search" id="q" placeholder="Rechercher : houmous, saumon, feuilletés…" aria-label="Rechercher une idée d'apéro" autocomplete="off">
+        <div id="qf" class="row"></div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <section id="v-plan" hidden>
+    <div class="wrap plan">
+      <div class="box" id="selbox"></div>
+      <div class="box" id="outbox"></div>
+    </div>
+  </section>
+</main>
+<footer class="wrap foot">Votre apéro est enregistré sur cet appareil, dans ce navigateur.</footer>
+<div class="dock" id="dock"></div>
+<div class="overlay" id="overlay" hidden></div>
+<div class="toast" id="toast" hidden></div>
+<textarea id="copyArea" style="position:fixed;left:-9999px;top:0" aria-hidden="true" tabindex="-1"></textarea>
+<script>
+// ---------- Ingrédients de l'apéro ----------
+// r : rayon · u : unité · k : kcal par unité · w/wl : poids d'une pièce pour l'aide aux courses
+const AISLES={bo:"Boucherie, charcuterie & poisson",fl:"Fruits & légumes",cr:"Crèmerie & frais",co:"Épicerie",pa:"Boulangerie",bs:"Boissons",pl:"Placard (à vérifier)"};
+const I={
+ poischiches:{n:"Pois chiches (boîte, égouttés)",r:"co",u:"g",k:1.4},
+ tahin:{n:"Tahini (crème de sésame)",r:"co",u:"cs",k:90},
+ citron:{n:"Citrons",r:"fl",u:"pc",k:20},
+ citronvert:{n:"Citrons verts",r:"fl",u:"pc",k:20},
+ ail:{n:"Ail",r:"fl",u:"gousse",k:4},
+ huile:{n:"Huile d'olive",r:"pl",u:"cs",k:90},
+ cumin:{n:"Cumin",r:"pl",u:"cc",k:5},
+ paprika:{n:"Paprika",r:"pl",u:"cc",k:5},
+ curry:{n:"Curry",r:"pl",u:"cc",k:5},
+ piment:{n:"Piment d'Espelette ou en poudre",r:"pl",u:"cc",k:5},
+ herbes:{n:"Herbes de Provence ou thym",r:"pl",u:"cc",k:2},
+ moutarde:{n:"Moutarde",r:"pl",u:"cs",k:20},
+ miel:{n:"Miel",r:"pl",u:"cs",k:60},
+ soja:{n:"Sauce soja",r:"pl",u:"cs",k:10},
+ sucre:{n:"Sucre",r:"pl",u:"g",k:4},
+ farine:{n:"Farine",r:"pl",u:"g",k:3.6},
+ levure:{n:"Levure chimique (sachet)",r:"pl",u:"pc",k:30},
+ cacao:{n:"Cacao en poudre",r:"pl",u:"g",k:3.5},
+ the:{n:"Thé noir (sachets)",r:"pl",u:"pc",k:0},
+ sesame:{n:"Graines de sésame",r:"pl",u:"cc",k:18},
+ betterave:{n:"Betteraves cuites",r:"fl",u:"g",k:0.45,w:250,wl:"betterave"},
+ thon:{n:"Thon au naturel (boîte)",r:"co",u:"g",k:1.15},
+ sardines:{n:"Sardines à l'huile (boîte)",r:"co",u:"g",k:2.1,w:115,wl:"boîte"},
+ maquereau:{n:"Maquereau fumé",r:"cr",u:"g",k:2.9},
+ fromagefrais:{n:"Fromage frais nature (type Saint-Môret)",r:"cr",u:"g",k:2.3},
+ fromageblanc:{n:"Fromage blanc ou faisselle",r:"cr",u:"g",k:0.75},
+ yaourtgrec:{n:"Yaourt à la grecque",r:"cr",u:"g",k:1.2},
+ ciboulette:{n:"Ciboulette",r:"fl",u:"bouquet",k:5},
+ persil:{n:"Persil plat",r:"fl",u:"bouquet",k:5},
+ coriandre:{n:"Coriandre",r:"fl",u:"bouquet",k:5},
+ menthe:{n:"Menthe",r:"fl",u:"bouquet",k:5},
+ aneth:{n:"Aneth",r:"fl",u:"bouquet",k:5},
+ basilic:{n:"Basilic",r:"fl",u:"bouquet",k:5},
+ romarin:{n:"Romarin",r:"fl",u:"bouquet",k:5},
+ saumon:{n:"Pavé de saumon",r:"bo",u:"g",k:2.0},
+ saumonfume:{n:"Saumon fumé",r:"bo",u:"g",k:1.8},
+ oeufscabillaud:{n:"Œufs de cabillaud fumés",r:"bo",u:"g",k:1.3},
+ cabillaud:{n:"Cabillaud ou morue dessalée",r:"bo",u:"g",k:0.8},
+ crevettes:{n:"Crevettes cuites décortiquées",r:"bo",u:"g",k:0.9},
+ poulet:{n:"Blanc de poulet",r:"bo",u:"g",k:1.1},
+ ailes:{n:"Ailes de poulet",r:"bo",u:"g",k:2.0},
+ boeuf:{n:"Bœuf haché",r:"bo",u:"g",k:2.0},
+ saucisse:{n:"Chair à saucisse",r:"bo",u:"g",k:2.6},
+ lardons:{n:"Lardons",r:"bo",u:"g",k:2.5},
+ jambon:{n:"Jambon blanc",r:"bo",u:"g",k:1.1},
+ jamboncru:{n:"Jambon cru (tranches fines)",r:"bo",u:"g",k:2.5},
+ chorizo:{n:"Chorizo",r:"bo",u:"g",k:4.5},
+ saucisson:{n:"Saucisson sec",r:"bo",u:"g",k:4.2},
+ painmie:{n:"Pain de mie",r:"pa",u:"pc",k:70},
+ baguette:{n:"Baguette",r:"pa",u:"g",k:2.7,w:250,wl:"baguette"},
+ painrond:{n:"Pain de campagne rond (pour pain surprise)",r:"pa",u:"pc",k:2100},
+ pita:{n:"Pains pita",r:"pa",u:"pc",k:160},
+ blinis:{n:"Blinis",r:"pa",u:"pc",k:30},
+ tortillas:{n:"Tortillas de blé",r:"pa",u:"pc",k:140},
+ painburger:{n:"Mini-pains à burger",r:"pa",u:"pc",k:100},
+ grissini:{n:"Gressins",r:"co",u:"pc",k:20},
+ chips:{n:"Chips de maïs (tortilla chips)",r:"co",u:"g",k:5},
+ lait:{n:"Lait",r:"cr",u:"ml",k:0.46},
+ creme:{n:"Crème fraîche liquide",r:"cr",u:"ml",k:3},
+ beurre:{n:"Beurre",r:"cr",u:"g",k:7.4},
+ oeuf:{n:"Œufs",r:"cr",u:"pc",k:75},
+ aubergine:{n:"Aubergines",r:"fl",u:"g",k:0.25,w:300,wl:"aubergine"},
+ olivesnoires:{n:"Olives noires dénoyautées",r:"co",u:"g",k:2.5},
+ olivesvertes:{n:"Olives vertes",r:"co",u:"g",k:1.5},
+ capres:{n:"Câpres",r:"co",u:"cs",k:3},
+ anchois:{n:"Filets d'anchois",r:"co",u:"pc",k:8},
+ avocat:{n:"Avocats mûrs",r:"fl",u:"pc",k:240},
+ tomate:{n:"Tomates",r:"fl",u:"g",k:0.18,w:120,wl:"tomate"},
+ tomatescerises:{n:"Tomates cerises",r:"fl",u:"g",k:0.2,w:250,wl:"barquette"},
+ sauce:{n:"Sauce tomate (pulpe)",r:"co",u:"g",k:0.4},
+ oignonrouge:{n:"Oignon rouge",r:"fl",u:"pc",k:40},
+ oignon:{n:"Oignons",r:"fl",u:"g",k:0.4,w:100,wl:"oignon"},
+ echalote:{n:"Échalotes",r:"fl",u:"pc",k:10},
+ concombre:{n:"Concombre",r:"fl",u:"g",k:0.12,w:350,wl:"concombre"},
+ poivron:{n:"Poivrons rouges",r:"fl",u:"g",k:0.25,w:150,wl:"poivron"},
+ noix:{n:"Cerneaux de noix",r:"co",u:"g",k:6.5},
+ amandes:{n:"Amandes entières",r:"co",u:"g",k:6},
+ beurrecacahuete:{n:"Beurre de cacahuète",r:"co",u:"cs",k:95},
+ coco:{n:"Lait de coco",r:"co",u:"ml",k:1.8},
+ chapelure:{n:"Chapelure",r:"co",u:"g",k:3.7},
+ feta:{n:"Feta",r:"cr",u:"g",k:2.6},
+ chevre:{n:"Chèvre (bûche)",r:"cr",u:"g",k:2.8},
+ chevrefrais:{n:"Chèvre frais",r:"cr",u:"g",k:1.8},
+ mozza:{n:"Mozzarella",r:"cr",u:"g",k:2.5},
+ mozzaperles:{n:"Billes de mozzarella",r:"cr",u:"g",k:2.5},
+ comte:{n:"Comté",r:"cr",u:"g",k:4.1},
+ parmesan:{n:"Parmesan",r:"cr",u:"g",k:4},
+ emmental:{n:"Emmental râpé",r:"cr",u:"g",k:3.6},
+ cheddar:{n:"Cheddar en tranches",r:"cr",u:"pc",k:60},
+ camembert:{n:"Camembert au lait cru",r:"cr",u:"pc",k:620},
+ brebis:{n:"Fromage de brebis (type manchego)",r:"cr",u:"g",k:4},
+ mascarpone:{n:"Mascarpone",r:"cr",u:"g",k:4.3},
+ patepizza:{n:"Pâte à pizza (rouleau)",r:"cr",u:"pc",k:700},
+ patefeuilletee:{n:"Pâte feuilletée (rouleau)",r:"cr",u:"pc",k:900},
+ patebrisee:{n:"Pâte brisée (rouleau)",r:"cr",u:"pc",k:880},
+ brick:{n:"Feuilles de brick",r:"pa",u:"pc",k:30},
+ galettesriz:{n:"Galettes de riz",r:"co",u:"pc",k:30},
+ vermicelles:{n:"Vermicelles de riz",r:"co",u:"g",k:3.6},
+ semoule:{n:"Semoule fine",r:"co",u:"g",k:3.5},
+ lentilles:{n:"Lentilles vertes",r:"co",u:"g",k:3.3},
+ lentillescorail:{n:"Lentilles corail",r:"co",u:"g",k:3.4},
+ petitspois:{n:"Petits pois (surgelés)",r:"co",u:"g",k:0.8},
+ mais:{n:"Maïs (boîte)",r:"co",u:"g",k:0.8},
+ maispop:{n:"Maïs à pop-corn",r:"co",u:"g",k:3.8},
+ bouillon:{n:"Bouillon cube de légumes",r:"pl",u:"pc",k:10},
+ pdt:{n:"Pommes de terre",r:"fl",u:"g",k:0.8},
+ carotte:{n:"Carottes",r:"fl",u:"g",k:0.4,w:100,wl:"carotte"},
+ celeri:{n:"Céleri branche",r:"fl",u:"g",k:0.2,w:300,wl:"pied"},
+ radis:{n:"Radis",r:"fl",u:"g",k:0.16,w:250,wl:"botte"},
+ choufleur:{n:"Chou-fleur",r:"fl",u:"g",k:0.25,w:600,wl:"chou-fleur"},
+ courgette:{n:"Courgettes",r:"fl",u:"g",k:0.17,w:200,wl:"courgette"},
+ champignons:{n:"Gros champignons de Paris",r:"fl",u:"g",k:0.22,w:250,wl:"barquette"},
+ salade:{n:"Salade (jeunes pousses)",r:"fl",u:"g",k:0.15},
+ pamplemousse:{n:"Pamplemousse",r:"fl",u:"pc",k:80},
+ melon:{n:"Melon",r:"fl",u:"pc",k:300},
+ figues:{n:"Figues fraîches",r:"fl",u:"pc",k:40},
+ fraises:{n:"Fraises",r:"fl",u:"g",k:0.3,w:250,wl:"barquette"},
+ ananas:{n:"Ananas frais",r:"fl",u:"g",k:0.5,w:1000,wl:"ananas"},
+ raisin:{n:"Raisin",r:"fl",u:"g",k:0.7},
+ kiwi:{n:"Kiwis",r:"fl",u:"pc",k:45},
+ peche:{n:"Pêches ou nectarines",r:"fl",u:"pc",k:50},
+ gingembre:{n:"Gingembre frais",r:"fl",u:"g",k:0.8},
+ chocolat:{n:"Chocolat noir pâtissier",r:"co",u:"g",k:5.3},
+ boudoirs:{n:"Biscuits à la cuillère",r:"co",u:"pc",k:25},
+ cafe:{n:"Café fort",r:"pl",u:"ml",k:0.02},
+ cornichons:{n:"Cornichons",r:"co",u:"g",k:0.3},
+ cornflakes:{n:"Corn flakes nature",r:"co",u:"g",k:3.8},
+ ketchup:{n:"Ketchup",r:"pl",u:"cs",k:20},
+ mayo:{n:"Mayonnaise",r:"pl",u:"cs",k:95},
+ huilefriture:{n:"Huile pour friture",r:"pl",u:"ml",k:1},
+ eaugazeuse:{n:"Eau gazeuse",r:"bs",u:"ml",k:0},
+ jusananas:{n:"Jus d'ananas",r:"bs",u:"ml",k:0.5},
+ jusorange:{n:"Jus d'orange",r:"bs",u:"ml",k:0.45},
+ grenadine:{n:"Sirop de grenadine",r:"bs",u:"ml",k:2.7},
+ glacons:{n:"Glaçons",r:"bs",u:"pc",k:0}
+};
+
+// ---------- Recettes ----------
+// [id, nom, catégorie, minutes, quand, rendement, "ing", [étapes], tags, four "temp/min"]
+// quand : veille (se prépare la veille) · jour (le jour même) · minute (au dernier moment)
+// tags : v végétarien · c sans cuisson · k les enfants adorent · w effet waouh
+const CATS={
+ tartinade:{n:"Tartinades & dips",u:["portion","portions"],c:"#C9862F"},
+ verrine:{n:"Verrines",u:["verrine","verrines"],c:"#3C8A6E"},
+ froid:{n:"Bouchées froides",u:["bouchée","bouchées"],c:"#3D6FA8"},
+ chaud:{n:"Bouchées chaudes",u:["bouchée","bouchées"],c:"#C04A2E"},
+ planche:{n:"Planches & grignotage",u:["portion","portions"],c:"#8A6A3B"},
+ douceur:{n:"Douceurs",u:["pièce","pièces"],c:"#A84C86"},
+ boisson:{n:"Boissons sans alcool",u:["verre","verres"],c:"#2E8BA0"}
+};
+const AP=[
+// ===== TARTINADES =====
+["houmous","Houmous maison","tartinade",15,"veille",24,"poischiches:400,tahin:2,citron:1,ail:1,huile:3,cumin:0.5,paprika:0.25,pita:4",["Égoutter les pois chiches en gardant un peu de leur jus.","Mixer avec le tahini, le jus du citron, l'ail, le cumin et 2 c. à s. d'huile.","Détendre avec le jus des pois chiches jusqu'à une texture bien crémeuse. Saler.","Servir avec un filet d'huile, une pincée de paprika et les pitas grillées en triangles."],"vc"],
+["houmousbetterave","Houmous rose à la betterave","tartinade",15,"veille",24,"poischiches:250,betterave:200,tahin:1.5,citron:0.5,ail:1,huile:2,cumin:0.5,pita:4",["Mixer les pois chiches égouttés avec la betterave, le tahini, le citron, l'ail et le cumin.","Ajouter l'huile en filet jusqu'à une texture lisse.","Servir avec les pitas grillées : la couleur fait toujours son effet."],"vcw"],
+["rillettesthon","Rillettes de thon","tartinade",10,"veille",20,"thon:280,fromagefrais:150,citron:0.5,ciboulette:0.5,moutarde:0.5,baguette:250",["Émietter le thon égoutté à la fourchette.","Mélanger avec le fromage frais, la moutarde, le jus de citron et la ciboulette ciselée. Poivrer.","Réserver au frais. Servir sur des tranches de baguette grillées."],"ck"],
+["rillettessaumon","Rillettes aux deux saumons","tartinade",20,"veille",22,"saumon:200,saumonfume:100,fromagefrais:120,citron:0.5,aneth:0.5,baguette:250",["Pocher le saumon frais 8 min dans l'eau frémissante, le laisser refroidir et l'émietter.","Couper le saumon fumé en petits dés.","Mélanger les deux saumons avec le fromage frais, le citron et l'aneth.","Réserver au frais au moins 2 h."],"w"],
+["rillettessardines","Rillettes de sardines","tartinade",10,"veille",18,"sardines:230,fromagefrais:80,citron:0.5,echalote:1,ciboulette:0.5,baguette:200",["Retirer l'arête centrale des sardines.","Écraser avec le fromage frais, le citron, l'échalote très finement hachée et la ciboulette.","Poivrer généreusement, réserver au frais."],"c"],
+["rillettesmaquereau","Rillettes de maquereau fumé","tartinade",10,"veille",20,"maquereau:250,fromagefrais:120,citron:0.5,ciboulette:0.5,baguette:200",["Retirer la peau du maquereau et l'émietter.","Mélanger avec le fromage frais, le citron et la ciboulette.","Réserver au frais."],"c"],
+["rillettespoulet","Rillettes de poulet aux cornichons","tartinade",25,"veille",20,"poulet:300,fromagefrais:100,moutarde:1,cornichons:40,persil:0.5,baguette:200",["Pocher le poulet 15 min, le laisser refroidir puis l'effilocher très finement.","Mélanger avec le fromage frais, la moutarde, les cornichons hachés et le persil.","Réserver au frais."],"k"],
+["tarama","Tarama maison","tartinade",15,"veille",20,"oeufscabillaud:100,painmie:2,lait:50,huile:8,citron:1,blinis:20",["Tremper le pain de mie sans croûte dans le lait, puis l'essorer.","Retirer la peau des œufs de cabillaud. Mixer avec le pain et le jus de citron.","Verser l'huile en filet en mixant, comme une mayonnaise, jusqu'à une texture mousseuse.","Réserver 2 h au frais. Servir avec des blinis tièdes."],"cw"],
+["caviaraubergine","Caviar d'aubergine","tartinade",50,"veille",24,"aubergine:700,ail:1,citron:0.5,huile:3,cumin:0.5,coriandre:0.5,pita:4",["Couper les aubergines en deux, quadriller la chair et rôtir 40 min à 200 °C.","Récupérer la chair à la cuillère, l'écraser avec l'ail, le citron, l'huile et le cumin.","Ajouter la coriandre ciselée. Servir frais avec les pitas."],"v","200/40"],
+["tapenade","Tapenade noire","tartinade",10,"veille",20,"olivesnoires:200,capres:1,anchois:4,ail:1,huile:3,citron:0.25,baguette:200",["Mixer grossièrement les olives, les câpres, les anchois et l'ail.","Ajouter l'huile et un filet de citron.","Servir sur des croûtons grillés."],"c"],
+["guacamole","Guacamole","tartinade",15,"jour",20,"avocat:3,citronvert:1,tomate:120,oignonrouge:0.5,coriandre:0.5,piment:0.25,chips:150",["Écraser les avocats avec le jus du citron vert.","Ajouter la tomate en petits dés, l'oignon rouge haché, la coriandre et une pincée de piment.","Couvrir au contact d'un film pour qu'il ne noircisse pas. Servir avec les chips de maïs."],"vck"],
+["tzatziki","Tzatziki","tartinade",15,"veille",20,"yaourtgrec:400,concombre:250,ail:1,menthe:0.5,huile:1,citron:0.25,carotte:300",["Râper le concombre, le saler et le presser dans un torchon pour retirer l'eau.","Mélanger avec le yaourt, l'ail râpé, la menthe ciselée, le citron et l'huile.","Servir avec des bâtonnets de carotte."],"vc"],
+["muhammara","Muhammara, poivrons rôtis et noix","tartinade",45,"veille",20,"poivron:400,noix:60,chapelure:25,cumin:0.5,huile:2,miel:0.5,citron:0.5,pita:3",["Rôtir les poivrons 30 min à 220 °C, les peler.","Mixer avec les noix, la chapelure, le cumin, le miel et le citron.","Ajouter l'huile en filet. Servir avec les pitas."],"vw","220/30"],
+["fetamiel","Feta fouettée au miel et au thym","tartinade",10,"jour",18,"feta:200,yaourtgrec:100,miel:1,huile:1,herbes:0.5,baguette:200",["Mixer la feta avec le yaourt jusqu'à une crème lisse.","Étaler dans un plat creux, arroser de miel et d'huile, parsemer de thym.","Servir avec des toasts."],"vcw"],
+["cervelle","Cervelle de canut","tartinade",15,"veille",20,"fromageblanc:400,creme:50,ciboulette:1,persil:0.5,echalote:1,ail:1,radis:250,concombre:200",["Égoutter le fromage blanc, le battre avec la crème.","Ajouter les herbes ciselées, l'échalote et l'ail hachés. Saler, poivrer.","Servir bien frais avec des radis et des bâtonnets de concombre."],"vc"],
+["dippetitspois","Dip de petits pois, menthe et feta","tartinade",15,"jour",20,"petitspois:400,menthe:0.5,citron:0.5,feta:60,huile:2,grissini:20",["Cuire les petits pois 5 min, les refroidir dans l'eau glacée.","Mixer avec la menthe, le citron, l'huile et la moitié de la feta.","Émietter le reste de la feta dessus. Servir avec les gressins."],"v"],
+["diplentilles","Crème de lentilles corail au curry","tartinade",25,"veille",20,"lentillescorail:150,coco:100,curry:1,citron:0.5,oignon:50,huile:1,pita:3",["Faire revenir l'oignon avec le curry.","Ajouter les lentilles et 3 fois leur volume d'eau, cuire 15 min.","Mixer avec le lait de coco et le citron. Servir tiède ou froid avec les pitas."],"v"],
+// ===== VERRINES =====
+["vavocrevette","Verrines avocat, crevettes et pamplemousse","verrine",20,"jour",8,"avocat:2,crevettes:200,pamplemousse:1,citronvert:1,fromageblanc:150,ciboulette:0.5",["Écraser les avocats avec le citron vert, répartir au fond des verrines.","Ajouter le pamplemousse en suprêmes et les crevettes.","Finir par une cuillère de fromage blanc à la ciboulette. Réserver au frais."],"cw"],
+["vbetterave","Verrines betterave, chèvre et noix","verrine",15,"veille",8,"betterave:300,chevrefrais:150,fromageblanc:100,noix:30,miel:1,ciboulette:0.5",["Mixer la betterave en crème, la répartir dans les verrines.","Fouetter le chèvre frais avec le fromage blanc et la ciboulette, en déposer une couche.","Parsemer de noix concassées et d'un filet de miel."],"vcw"],
+["vtomatemozza","Verrines tomates cerises, mozzarella et pesto","verrine",10,"jour",8,"tomatescerises:300,mozzaperles:250,basilic:0.5,huile:1,ail:0.5",["Couper les tomates cerises en quatre, les assaisonner d'huile et d'ail.","Alterner tomates et billes de mozzarella dans les verrines.","Finir par des feuilles de basilic."],"vck"],
+["vgaspacho","Shots de gaspacho","verrine",15,"veille",12,"tomate:800,concombre:150,poivron:100,oignonrouge:0.5,ail:1,huile:3,baguette:50",["Mixer tous les légumes avec le pain et l'huile. Saler.","Réfrigérer au moins 3 h.","Servir très frais dans de petits verres."],"vc"],
+["vsaumon","Verrines saumon fumé et concombre","verrine",15,"jour",8,"saumonfume:150,concombre:250,fromagefrais:150,citron:0.5,aneth:0.5",["Couper le concombre en tout petits dés.","Fouetter le fromage frais avec le citron et l'aneth.","Alterner concombre, crème et lanières de saumon fumé."],"c"],
+["vpetitspois","Shots de velouté de petits pois et lardons","verrine",25,"veille",10,"petitspois:400,menthe:0.5,bouillon:1,creme:50,lardons:60",["Cuire les petits pois 8 min dans 50 cl d'eau avec le bouillon.","Mixer avec la crème et la menthe.","Servir chaud ou froid, avec des lardons grillés sur le dessus."],"w"],
+["vtaboule","Verrines de taboulé","verrine",20,"veille",10,"semoule:120,tomate:200,concombre:150,menthe:0.5,persil:1,citron:1,huile:2",["Mouiller la semoule avec le même volume d'eau bouillante salée, laisser gonfler.","Ajouter tomates et concombre en petits dés, les herbes ciselées, le citron et l'huile.","Réserver au frais et répartir en verrines."],"vk"],
+["vmexicaine","Verrines mexicaines","verrine",15,"jour",8,"avocat:2,citronvert:1,tomate:200,oignonrouge:0.5,fromageblanc:150,mais:100,chips:60",["Écraser les avocats avec le citron vert.","Mélanger tomates, maïs et oignon rouge en petits dés.","Alterner guacamole, salsa et fromage blanc. Planter une chip de maïs dans chaque verrine."],"vk"],
+["vmimosa","Verrines thon, tomate et œuf mimosa","verrine",20,"jour",8,"oeuf:6,thon:140,tomate:200,fromageblanc:100,ciboulette:0.5",["Cuire les œufs 10 min, les écaler.","Mélanger le thon avec le fromage blanc et la ciboulette.","Alterner tomate en dés et thon, finir par le jaune d'œuf râpé."],"k"],
+["vmelon","Verrines melon, jambon cru et menthe","verrine",15,"jour",8,"melon:1,jamboncru:120,menthe:0.25,huile:0.5",["Former des billes de melon.","Les répartir dans les verrines avec des chiffonnades de jambon cru.","Ajouter la menthe et un filet d'huile. Idéal en été."],"c"],
+["vlentilles","Verrines lentilles et saumon fumé","verrine",30,"veille",8,"lentilles:150,saumonfume:120,echalote:1,moutarde:0.5,huile:2,fromagefrais:80",["Cuire les lentilles 20 min, les égoutter.","Les assaisonner tièdes avec l'échalote, la moutarde et l'huile.","Répartir, ajouter le saumon en lanières et une pointe de fromage frais."],""],
+["vchoufleur","Crème de chou-fleur au curry et amandes","verrine",30,"veille",10,"choufleur:400,curry:1,creme:80,bouillon:1,amandes:30",["Cuire le chou-fleur 20 min dans de l'eau avec le bouillon et le curry.","Mixer avec la crème.","Servir dans des verrines avec des amandes grillées concassées."],"v"],
+["vcourgette","Velouté froid de courgette et feta","verrine",25,"veille",10,"courgette:500,feta:100,menthe:0.5,fromagefrais:50,bouillon:1",["Cuire les courgettes 15 min avec le bouillon.","Mixer avec le fromage frais et la menthe, refroidir.","Servir avec de la feta émiettée."],"v"],
+// ===== BOUCHÉES FROIDES =====
+["bruschetta","Bruschetta tomate et basilic","froid",20,"minute",20,"baguette:250,tomate:400,basilic:0.5,ail:1,huile:3",["Couper les tomates en petits dés, les assaisonner d'huile, de sel et de basilic. Laisser mariner.","Griller les tranches de baguette 5 min à 200 °C, les frotter d'ail.","Garnir au dernier moment pour que le pain reste croustillant."],"vk","200/5"],
+["blinissaumon","Blinis au saumon fumé","froid",15,"minute",20,"blinis:20,saumonfume:150,fromagefrais:120,citron:0.5,aneth:0.5",["Fouetter le fromage frais avec le citron.","Tiédir les blinis 2 min.","Garnir d'une cuillère de crème, d'une lanière de saumon et d'aneth."],"cw"],
+["roulesjambon","Roulés de jambon au fromage frais","froid",15,"veille",32,"jambon:250,fromagefrais:150,ciboulette:0.5",["Tartiner les tranches de jambon de fromage frais à la ciboulette.","Les rouler serré, filmer et réserver au frais.","Couper en tronçons de 2 cm, piquer d'un cure-dent."],"ck"],
+["roulessaumon","Roulés de saumon fumé","froid",15,"veille",30,"saumonfume:200,fromagefrais:150,aneth:0.5,citron:0.25",["Tartiner les tranches de saumon de fromage frais à l'aneth et au citron.","Rouler serré, filmer et réserver au frais.","Couper en tronçons au moment de servir."],"c"],
+["piquesmozza","Piques tomate, mozzarella et basilic","froid",15,"jour",20,"tomatescerises:250,mozzaperles:250,basilic:0.5,huile:1",["Enfiler sur des piques une tomate cerise, une feuille de basilic et une bille de mozzarella.","Arroser d'un filet d'huile au moment de servir."],"vck"],
+["piquesmelon","Piques melon et jambon cru","froid",15,"jour",20,"melon:1,jamboncru:120",["Couper le melon en cubes.","Envelopper chaque cube d'un morceau de jambon cru, piquer.","Garder au frais."],"c"],
+["crostinifigue","Crostini figue, chèvre et jambon cru","froid",20,"minute",16,"baguette:200,figues:5,chevre:120,jamboncru:80,miel:1",["Griller les tranches de baguette.","Garnir d'une rondelle de chèvre, d'un quartier de figue et d'un pli de jambon cru.","Arroser d'un filet de miel."],"w","200/5"],
+["oeufsmimosa","Œufs mimosa","froid",25,"veille",12,"oeuf:6,mayo:2,moutarde:0.5,ciboulette:0.5,paprika:0.25",["Cuire les œufs 10 min, les refroidir et les couper en deux.","Écraser les jaunes avec la mayonnaise et la moutarde.","Garnir les blancs, parsemer de ciboulette et de paprika."],"vk"],
+["tortillacubes","Tortilla espagnole en cubes","froid",45,"veille",30,"pdt:500,oeuf:6,oignon:150,huile:3",["Cuire doucement les pommes de terre en fines tranches et l'oignon dans l'huile, 20 min à couvert.","Les mélanger aux œufs battus, cuire 10 min à feu doux puis retourner 5 min.","Laisser refroidir et couper en cubes. Servir à température ambiante."],"vk"],
+["wraps","Wraps roulés poulet-crudités","froid",25,"veille",32,"tortillas:4,fromagefrais:150,poulet:150,salade:50,carotte:100",["Cuire le poulet, l'émincer finement. Râper la carotte.","Tartiner les tortillas de fromage frais, garnir de salade, carotte et poulet.","Rouler serré, filmer, réserver au frais. Couper en tronçons au moment de servir."],"k"],
+["canapes","Canapés de concombre au saumon","froid",15,"jour",24,"concombre:300,fromagefrais:150,saumonfume:100,aneth:0.5",["Couper le concombre en rondelles épaisses.","Déposer une noisette de fromage frais et un morceau de saumon.","Finir par un brin d'aneth."],"c"],
+["painsurprise","Pain surprise maison","froid",45,"veille",40,"painrond:1,beurre:60,jambon:150,saumonfume:100,emmental:100,fromagefrais:100,concombre:100",["Découper le chapeau du pain, évider la mie d'un seul bloc en glissant le couteau le long de la croûte.","Trancher ce bloc de mie en fines tranches.","Garnir les tranches deux à deux : jambon-beurre, saumon-fromage frais, emmental-concombre.","Couper en petits triangles, les ranger dans la croûte, remettre le chapeau. Filmer et garder au frais."],"kw"],
+["radis","Radis, beurre salé et fleur de sel","froid",10,"jour",20,"radis:500,beurre:60,baguette:150",["Laver les radis en gardant un peu de fanes.","Servir avec du beurre demi-sel bien froid, de la fleur de sel et du pain.","Simple et toujours un succès."],"vc"],
+["pinchos","Pinchos chorizo, brebis et olive","froid",15,"jour",20,"chorizo:150,brebis:150,olivesvertes:100,tomatescerises:100",["Couper le chorizo et le fromage en cubes.","Enfiler sur des piques : chorizo, fromage, olive ou tomate cerise.","Garder au frais jusqu'au service."],"c"],
+["rouleaux","Rouleaux de printemps aux crevettes","froid",40,"jour",24,"galettesriz:12,crevettes:200,vermicelles:80,salade:80,carotte:100,menthe:0.5,beurrecacahuete:2,soja:2",["Cuire les vermicelles, râper la carotte.","Tremper une galette de riz quelques secondes, garnir de salade, vermicelles, carotte, menthe et crevettes, rouler serré.","Couper chaque rouleau en deux. Servir avec une sauce beurre de cacahuète, soja et un peu d'eau."],"w"],
+["gressins","Gressins au jambon cru","froid",10,"minute",20,"grissini:20,jamboncru:120",["Enrouler une demi-tranche de jambon cru autour de chaque gressin.","Les dresser debout dans un verre."],"ck"],
+["cakesale","Cake jambon-olives en cubes","froid",60,"veille",30,"farine:150,oeuf:3,lait:100,huile:6,jambon:150,olivesvertes:100,emmental:100,levure:1",["Mélanger farine, levure et œufs, puis le lait et l'huile.","Ajouter le jambon en dés, les olives et l'emmental.","Cuire 45 min à 180 °C dans un moule à cake. Refroidir et couper en cubes."],"k","180/45"],
+// ===== BOUCHÉES CHAUDES =====
+["minipizzas","Mini-pizzas","chaud",25,"minute",24,"patepizza:1,sauce:150,mozza:125,jambon:80,olivesnoires:30,herbes:0.5",["Découper des disques dans la pâte avec un verre.","Garnir de sauce tomate, jambon, mozzarella, olive et herbes.","Cuire 12 min à 220 °C."],"k","220/12"],
+["feuilletes","Feuilletés à la saucisse","chaud",30,"veille",30,"patefeuilletee:2,saucisse:300,moutarde:1,oeuf:1",["Tartiner une pâte de moutarde, la couvrir de chair à saucisse, couvrir de la seconde pâte.","Rouler serré, filmer et réserver au frais (ou congeler).","Couper en rondelles, dorer à l'œuf, cuire 20 min à 200 °C."],"k","200/20"],
+["gougeres","Gougères au comté","chaud",40,"jour",30,"farine:125,beurre:80,oeuf:4,comte:100",["Porter à ébullition 25 cl d'eau avec le beurre et une pincée de sel. Verser la farine d'un coup, dessécher 1 min.","Hors du feu, incorporer les œufs un à un, puis le comté râpé.","Former des petites boules, cuire 25 min à 200 °C. Les réchauffer 5 min avant de servir."],"vw","200/5"],
+["toastschevre","Toasts chèvre-miel gratinés","chaud",15,"minute",16,"baguette:200,chevre:150,miel:2,herbes:0.5",["Couvrir chaque tranche de baguette d'une rondelle de chèvre.","Arroser de miel, parsemer de thym.","Gratiner 8 min à 200 °C."],"vk","200/8"],
+["miniquiches","Mini-quiches lorraines","chaud",40,"jour",24,"patebrisee:1,lardons:120,oeuf:3,creme:150,emmental:60",["Foncer des moules à mini-tartelettes avec la pâte.","Répartir les lardons grillés, verser œufs et crème battus, parsemer d'emmental.","Cuire 20 min à 180 °C. Réchauffer 5 min avant de servir."],"k","180/5"],
+["palmiers","Palmiers pesto et parmesan","chaud",25,"veille",30,"patefeuilletee:1,basilic:0.5,huile:2,parmesan:30",["Mixer le basilic, l'huile et 20 g de parmesan en pesto, l'étaler sur la pâte.","Rouler les deux côtés vers le centre, filmer, réserver au frais.","Couper en tranches, parsemer de parmesan, cuire 15 min à 200 °C."],"vk","200/15"],
+["satay","Brochettes de poulet satay","chaud",30,"veille",20,"poulet:500,beurrecacahuete:3,coco:100,soja:2,curry:1,citronvert:1",["Couper le poulet en lanières, les mariner avec soja, curry et la moitié du lait de coco.","Les enfiler sur des piques.","Cuire 12 min à 220 °C. Servir avec la sauce : beurre de cacahuète, reste de coco et citron vert chauffés."],"w","220/12"],
+["keftas","Boulettes keftas, sauce yaourt-menthe","chaud",30,"veille",30,"boeuf:500,oignon:50,persil:0.5,cumin:1,yaourtgrec:200,menthe:0.5",["Mélanger le bœuf avec l'oignon et le persil hachés, le cumin, le sel.","Former de petites boulettes, les réserver au frais.","Cuire 12 min à 200 °C. Servir avec le yaourt à la menthe."],"k","200/12"],
+["accras","Accras de morue","chaud",40,"veille",30,"cabillaud:300,farine:200,oeuf:1,levure:1,ciboulette:0.5,persil:0.5,piment:0.25,huilefriture:500",["Pocher le poisson 8 min, l'émietter finement.","Mélanger farine, levure, œuf et 20 cl d'eau. Ajouter poisson, herbes et piment. Réserver la pâte au frais.","Au dernier moment, frire des cuillerées 3 min dans l'huile chaude. Égoutter sur du papier."],"w"],
+["samoussas","Samoussas au bœuf","chaud",45,"veille",16,"brick:8,boeuf:250,oignon:50,petitspois:100,curry:1,huile:2",["Cuire le bœuf avec l'oignon, le curry et les petits pois.","Couper les feuilles de brick en deux, plier en triangles autour d'une cuillère de farce.","Badigeonner d'huile, cuire 12 min à 200 °C."],"","200/12"],
+["croquetas","Croquetas au jambon","chaud",60,"veille",24,"jamboncru:100,lait:400,farine:90,beurre:50,oeuf:2,chapelure:100,huilefriture:400",["Fondre le beurre, ajouter 50 g de farine, puis le lait : cuire une béchamel très épaisse. Ajouter le jambon haché.","Refroidir une nuit au frais.","Former des boudins, les passer dans la farine, l'œuf puis la chapelure. Frire 2 min au dernier moment."],"kw"],
+["champignons","Champignons farcis au fromage frais","chaud",25,"jour",16,"champignons:500,fromagefrais:120,ail:1,persil:0.5,chapelure:20",["Retirer les pieds des champignons, les hacher avec l'ail et le persil.","Mélanger au fromage frais, garnir les chapeaux, parsemer de chapelure.","Cuire 15 min à 200 °C."],"v","200/15"],
+["madeleines","Madeleines chèvre et tomate","chaud",35,"jour",24,"farine:120,oeuf:3,lait:60,huile:5,chevre:100,tomatescerises:100,herbes:0.5,levure:1",["Mélanger farine, levure, œufs, lait et huile.","Ajouter le chèvre et les tomates en petits dés, les herbes.","Remplir des moules à madeleines, cuire 12 min à 180 °C. Réchauffer 3 min."],"v","180/3"],
+["falafels","Falafels, sauce tahini","chaud",40,"veille",24,"poischiches:400,oignon:50,persil:1,coriandre:0.5,cumin:1,farine:30,huile:3,tahin:2,yaourtgrec:150",["Mixer les pois chiches avec l'oignon, les herbes, le cumin et la farine.","Former des boulettes, les réserver au frais.","Huiler et cuire 20 min à 200 °C. Servir avec le yaourt au tahini."],"v","200/20"],
+["nuggets","Nuggets maison et ketchup","chaud",30,"jour",30,"poulet:500,cornflakes:100,oeuf:1,ketchup:4",["Couper le poulet en morceaux, les passer dans l'œuf puis les corn flakes écrasés.","Réserver au frais.","Cuire 15 min à 210 °C."],"k","210/15"],
+["miniburgers","Mini-burgers","chaud",30,"minute",12,"painburger:12,boeuf:400,cheddar:6,tomatescerises:100,salade:30,ketchup:3",["Former 12 petits steaks.","Les cuire 2 min par face, poser une demi-tranche de cheddar.","Monter avec salade, rondelle de tomate et ketchup. Piquer d'un pic."],"kw"],
+["camembert","Camembert rôti au miel et à l'ail","chaud",25,"minute",10,"camembert:1,ail:1,miel:1,romarin:0.25,baguette:300",["Retirer l'emballage plastique, remettre le camembert dans sa boîte en bois.","Entailler le dessus, piquer d'ail et de romarin, arroser de miel.","Cuire 15 min à 200 °C. Servir au centre de la table avec des mouillettes de pain."],"vw","200/15"],
+["painail","Pain à l'ail et au persil","chaud",15,"jour",20,"baguette:300,beurre:80,ail:3,persil:0.5",["Mélanger le beurre mou avec l'ail écrasé et le persil.","Entailler la baguette tous les 2 cm sans couper la base, garnir de beurre. Emballer dans de l'aluminium.","Cuire 12 min à 200 °C, ouvrir les 3 dernières minutes."],"vk","200/12"],
+["ailes","Ailes de poulet laquées","chaud",50,"veille",20,"ailes:1000,miel:3,soja:3,ail:1,paprika:1,sesame:1",["Mariner les ailes avec miel, soja, ail et paprika (la veille de préférence).","Cuire 35 min à 210 °C en les retournant.","Parsemer de sésame."],"kw","210/35"],
+// ===== PLANCHES =====
+["planche","Planche charcuterie et fromages","planche",15,"jour",12,"jamboncru:150,saucisson:150,chorizo:80,comte:150,chevre:120,camembert:0.5,raisin:300,baguette:300,cornichons:100",["Sortir les fromages 1 h avant.","Disposer charcuteries pliées, fromages en morceaux, raisin et cornichons sur une grande planche.","Ajouter le pain tranché au dernier moment."],"cw"],
+["crudites","Plateau de crudités à tremper","planche",20,"jour",20,"carotte:400,concombre:300,celeri:200,tomatescerises:250,radis:250,choufleur:250",["Tailler carottes, concombre et céleri en bâtonnets, détailler le chou-fleur en petits bouquets.","Garder au frais sous un torchon humide.","Servir autour de deux tartinades."],"vck"],
+["olives","Olives marinées maison","planche",10,"veille",20,"olivesvertes:300,olivesnoires:200,ail:2,citron:0.5,romarin:0.25,huile:4,piment:0.25",["Mélanger les olives avec l'ail écrasé, le zeste de citron, le romarin, le piment et l'huile.","Laisser mariner au moins une nuit."],"vc"],
+["popcorn","Pop-corn salé au paprika fumé","planche",10,"minute",15,"maispop:100,huile:2,paprika:1,beurre:20",["Chauffer l'huile dans une grande casserole, ajouter le maïs et couvrir.","Secouer jusqu'à la fin des éclatements.","Arroser de beurre fondu, saler et saupoudrer de paprika."],"vk"],
+["amandes","Amandes grillées au romarin","planche",15,"jour",15,"amandes:300,romarin:0.25,huile:1,miel:1",["Mélanger les amandes avec l'huile, le miel, le romarin haché et du sel.","Griller 12 min à 170 °C en remuant.","Laisser refroidir : elles deviennent croquantes."],"v","170/12"],
+["tuiles","Tuiles de parmesan","planche",15,"jour",24,"parmesan:150,herbes:0.25",["Déposer de petits tas de parmesan râpé sur une plaque, les aplatir.","Cuire 6 min à 200 °C jusqu'à ce qu'ils dorent.","Laisser durcir avant de les décoller."],"vk","200/6"],
+["chipslegumes","Chips de légumes au four","planche",50,"jour",15,"betterave:300,carotte:200,pdt:200,huile:2",["Trancher très finement les légumes (mandoline).","Les mélanger avec l'huile et le sel, les étaler sans les superposer.","Cuire 40 min à 150 °C en les surveillant."],"vk","150/40"],
+// ===== DOUCEURS =====
+["brochettesfruits","Brochettes de fruits et chocolat fondu","douceur",20,"jour",20,"fraises:250,ananas:400,raisin:200,kiwi:3,chocolat:100",["Couper les fruits en morceaux, les enfiler sur des piques.","Faire fondre le chocolat au bain-marie.","Servir les brochettes avec le chocolat chaud à tremper."],"vk"],
+["truffes","Truffes au chocolat","douceur",30,"veille",25,"chocolat:200,creme:100,beurre:20,cacao:20",["Verser la crème bouillante sur le chocolat haché, ajouter le beurre et lisser.","Laisser prendre 3 h au frais.","Former des boules, les rouler dans le cacao."],"vw"],
+["tiramisu","Verrines de tiramisu","douceur",25,"veille",8,"mascarpone:250,oeuf:3,sucre:60,boudoirs:16,cafe:200,cacao:10",["Fouetter les jaunes avec le sucre, ajouter le mascarpone, puis les blancs montés en neige.","Tremper les biscuits dans le café, alterner avec la crème dans les verrines.","Réfrigérer une nuit, saupoudrer de cacao au moment de servir."],"vw"],
+["mousse","Verrines de mousse au chocolat","douceur",20,"veille",8,"chocolat:200,oeuf:6,sucre:20",["Faire fondre le chocolat, ajouter les jaunes.","Monter les blancs en neige avec le sucre, les incorporer délicatement.","Répartir en verrines, réfrigérer au moins 4 h."],"vk"],
+["fraiseschoco","Fraises enrobées de chocolat","douceur",20,"jour",24,"fraises:400,chocolat:120",["Laver et sécher soigneusement les fraises.","Les tremper à moitié dans le chocolat fondu.","Laisser figer sur du papier cuisson au frais."],"vk"],
+["cookies","Mini-cookies aux pépites","douceur",30,"jour",30,"farine:200,beurre:100,sucre:120,oeuf:1,chocolat:100,levure:0.5",["Mélanger le beurre mou et le sucre, puis l'œuf, la farine et la levure.","Ajouter le chocolat en pépites.","Former de petites boules, cuire 9 min à 180 °C."],"vk","180/9"],
+// ===== BOISSONS =====
+["citronnade","Citronnade maison à la menthe","boisson",15,"veille",10,"citron:5,sucre:120,menthe:0.25,glacons:20",["Chauffer 20 cl d'eau avec le sucre pour faire un sirop, laisser refroidir.","Ajouter le jus des citrons et 1,5 L d'eau fraîche.","Servir avec glaçons, rondelles de citron et menthe."],"vck"],
+["theglace","Thé glacé à la pêche","boisson",15,"veille",10,"the:4,peche:3,sucre:60,citron:1,glacons:20",["Infuser le thé 5 min dans 1,5 L d'eau chaude avec le sucre.","Ajouter les pêches en lamelles et le citron, refroidir une nuit.","Servir très frais."],"vk"],
+["virgin","Mojito sans alcool","boisson",15,"minute",8,"citronvert:4,menthe:1,sucre:60,eaugazeuse:1500,glacons:30",["Écraser dans chaque verre des quartiers de citron vert, de la menthe et du sucre.","Remplir de glace pilée.","Compléter d'eau gazeuse au moment de servir."],"vcw"],
+["punch","Punch des îles sans alcool","boisson",10,"jour",12,"jusananas:1000,jusorange:1000,grenadine:100,citronvert:2,glacons:30",["Mélanger les jus et le jus des citrons verts.","Verser la grenadine au fond du saladier pour un dégradé.","Ajouter des rondelles de citron vert et de la glace."],"vck"],
+["eauaromatisee","Eau infusée concombre, citron et menthe","boisson",10,"jour",10,"concombre:200,citron:1,menthe:0.5,glacons:20",["Couper le concombre et le citron en fines rondelles.","Les mettre dans une grande carafe avec la menthe et 2 L d'eau fraîche.","Laisser infuser 2 h au frais."],"vc"],
+["gingerbeer","Limonade au gingembre maison","boisson",20,"veille",10,"gingembre:100,citronvert:3,sucre:100,eaugazeuse:1500,glacons:20",["Râper le gingembre, le faire infuser 15 min dans 30 cl d'eau chaude avec le sucre. Filtrer.","Ajouter le jus des citrons verts, refroidir.","Au moment de servir, allonger d'eau gazeuse très froide."],"vw"]
+];
+const RB={};
+const R=AP.map(([id,n,cat,t,w,y,ing,st,tags,four])=>{
+  const r={id,n,cat,t,w,y,ing:ing.split(",").map(x=>{const[a,b]=x.split(":");return[a,+b]}),st,tags:tags||"",four:four?{temp:+four.split("/")[0],min:+four.split("/")[1]}:null};
+  RB[id]=r;return r;
+});
+
+// ---------- Outils ----------
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const frac=x=>{const w=Math.floor(x),h=x-w;return ((w?w:"")+(h>=0.25&&h<0.75?(w?" ½":"½"):""))||(h>=0.75?String(w+1):"0")};
+function fmt(q,u,shop){
+  if(u==="g"||u==="ml"){
+    let v=shop?Math.ceil(q/10)*10:Math.max(5,Math.round(q/5)*5);
+    if(v>=1000)return (Math.round(v/100)/10).toString().replace(".",",")+(u==="g"?" kg":" L");
+    return v+" "+u;
+  }
+  if(u==="cs"||u==="cc"){const v=Math.max(0.5,Math.round(q*2)/2);return frac(v)+(u==="cs"?" c. à s.":" c. à c.")}
+  let v=shop?Math.ceil(q-0.01):Math.max(0.5,Math.round(q*2)/2);
+  if(u==="gousse")return frac(v)+(v>1?" gousses":" gousse");
+  if(u==="bouquet")return frac(v)+(v>1?" bouquets":" bouquet");
+  return frac(v);
+}
+const kcalBatch=r=>r.ing.reduce((a,[id,q])=>a+q*I[id].k,0);
+const kcalUnit=r=>Math.round(kcalBatch(r)/r.y);
+const unitWord=(r,n)=>CATS[r.cat].u[n>1?1:0];
+const WHEN={veille:["La veille","veille"],jour:["Le jour même",""],minute:["À la minute","minute"]};
+const has=(r,t)=>r.tags.includes(t);
+const pad=n=>String(n).padStart(2,"0");
+const hm=m=>{m=((m%1440)+1440)%1440;return pad(Math.floor(m/60))+":"+pad(m%60)};
+
+// ---------- État ----------
+const KEY="recevoir.v1";
+let P={g:8,f:"apero",h:"19:30",sel:{},chk:{},tab:"plan"};
+try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(o)P=Object.assign(P,o)}catch(e){}
+Object.keys(P.sel).forEach(id=>{if(!RB[id])delete P.sel[id]});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}}
+let cat="",q="",flt=new Set();
+const PER={apero:6,dinatoire:14};
+const FORMULES={apero:"Apéro",dinatoire:"Apéro dînatoire"};
+
+// ---------- Calcul des quantités ----------
+function plan(){
+  const ids=Object.keys(P.sel).filter(id=>RB[id]);
+  const food=ids.filter(id=>RB[id].cat!=="boisson"),drink=ids.filter(id=>RB[id].cat==="boisson");
+  const target=P.g*PER[P.f];
+  const qty={};
+  const share=(list,total)=>{
+    const fixed=list.filter(id=>P.sel[id]!=null),auto=list.filter(id=>P.sel[id]==null);
+    fixed.forEach(id=>qty[id]=P.sel[id]);
+    const rest=Math.max(0,total-fixed.reduce((a,id)=>a+P.sel[id],0));
+    auto.forEach(id=>{const r=RB[id];let n=Math.ceil(rest/Math.max(1,auto.length));if(r.cat==="verrine")n=Math.max(n,P.g);qty[id]=Math.max(1,n)});
+  };
+  share(food,target);
+  share(drink,P.g*(P.f==="dinatoire"?3:2));
+  const pieces=food.reduce((a,id)=>a+qty[id],0);
+  const kcal=food.reduce((a,id)=>a+qty[id]*kcalUnit(RB[id]),0);
+  return {ids,food,drink,qty,target,pieces,kcal};
+}
+const factor=(id,pl)=>pl.qty[id]/RB[id].y;
+
+// ---------- Sélection automatique ----------
+const MIX={
+  apero:{tartinade:1,verrine:1,froid:2,chaud:1,planche:1,boisson:1},
+  dinatoire:{tartinade:2,verrine:2,froid:3,chaud:3,planche:1,douceur:1,boisson:1}
+};
+function compose(){
+  const mix=MIX[P.f];P.sel={};
+  const pool=R.filter(r=>[...flt].every(t=>has(r,t)));
+  const usedMain=new Set();
+  Object.entries(mix).forEach(([c,n])=>{
+    let cands=pool.filter(r=>r.cat===c).sort(()=>Math.random()-.5);
+    // un peu de « waouh » et d'équilibre entre la veille et la minute
+    cands.sort((a,b)=>(has(b,"w")-has(a,"w"))*.3+(Math.random()-.5));
+    let k=0;
+    for(const r of cands){
+      if(k>=n)break;
+      const main=r.ing[0][0];
+      if(usedMain.has(main)&&cands.length>n)continue;
+      P.sel[r.id]=null;usedMain.add(main);k++;
+    }
+  });
+  save();
+}
+
+// ---------- Rendu : idées ----------
+const QF=[["v","Végétarien"],["c","Sans cuisson"],["k","Les enfants adorent"],["w","Effet waouh"],["veille","Se prépare la veille"]];
+const match=r=>{
+  if(cat&&r.cat!==cat)return false;
+  for(const t of flt){if(t==="veille"){if(r.w!=="veille")return false}else if(!has(r,t))return false}
+  if(q){const t=norm(r.n+" "+CATS[r.cat].n+" "+r.ing.map(([id])=>I[id].n).join(" "));if(!norm(q).split(/\s+/).every(w=>t.includes(w)))return false}
+  return true;
+};
+function renderPlanCard(){
+  const pl=plan();
+  document.getElementById("plancard").innerHTML=`<h2>Votre réception</h2>
+    <div class="prow"><span>Invités</span><span class="step"><button type="button" data-g="-1" aria-label="Un invité de moins" ${P.g<=2?"disabled":""}>−</button><b class="num" aria-live="polite">${P.g}</b><button type="button" data-g="1" aria-label="Un invité de plus" ${P.g>=60?"disabled":""}>+</button></span></div>
+    <div class="prow"><span>Formule</span><span class="seg" role="group" aria-label="Formule">${Object.entries(FORMULES).map(([k,l])=>`<button type="button" data-f="${k}" aria-pressed="${P.f===k}">${l}</button>`).join("")}</span></div>
+    <div class="prow"><label for="hArr">Arrivée des invités</label><input type="time" id="hArr" value="${esc(P.h)}"></div>
+    <p class="hint">${P.f==="dinatoire"?"Apéro dînatoire : environ 14 bouchées par personne, il remplace le repas.":"Apéro : environ 6 bouchées par personne, avant de passer à table."} Soit <b class="num">${pl.target}</b> bouchées pour ${P.g} personnes.</p>
+    <div class="actions"><button type="button" class="btn primary" data-compose>Composer pour moi</button><a class="btn" href="#mon-apero">Mon apéro${pl.ids.length?" ("+pl.ids.length+")":""}</a></div>`;
+}
+function renderCats(){
+  const base=R.filter(r=>{const c=cat;cat="";const ok=match(r);cat=c;return ok});
+  document.getElementById("cats").innerHTML=[["","Tout",base.length,"linear-gradient("+Object.values(CATS).map(c=>c.c).join(",")+")"]].concat(Object.entries(CATS).map(([k,c])=>[k,c.n,base.filter(r=>r.cat===k).length,c.c]))
+    .map(([k,l,n,bg])=>`<button type="button" class="cat" data-cat="${k}" aria-pressed="${cat===k}"><i style="background:${bg}"></i>${l} <small>${n}</small></button>`).join("");
+  document.getElementById("qf").innerHTML=QF.map(([k,l])=>`<button type="button" class="qf" data-qf="${k}" aria-pressed="${flt.has(k)}">${l}</button>`).join("");
+}
+function card(r){
+  const inSel=r.id in P.sel,c=CATS[r.cat];
+  return `<article class="card ${inSel?"in":""}" style="--cc:${c.c}" data-open="${r.id}" tabindex="0" role="button" aria-label="${esc(r.n)}">
+    <span class="ct">${c.n}</span><h3>${esc(r.n)}</h3>
+    <div class="meta"><span>${r.t} min</span><span>${r.y} ${unitWord(r,r.y)}</span><span class="num">≈ ${kcalUnit(r)} kcal</span></div>
+    <div class="meta"><span class="pill ${WHEN[r.w][1]}">${WHEN[r.w][0]}</span>${has(r,"w")?'<span class="pill waouh">Effet waouh</span>':""}${has(r,"v")?'<span class="pill">Végétarien</span>':""}${has(r,"k")?'<span class="pill">Les enfants adorent</span>':""}</div>
+    <div class="foot"><span></span><button type="button" class="add ${inSel?"on":""}" data-toggle="${r.id}" aria-pressed="${inSel}">${inSel?"✓ Ajouté":"+ Ajouter"}</button></div>
+  </article>`;
+}
+function renderGrid(){
+  const list=R.filter(match);
+  document.getElementById("grid").innerHTML=list.length?list.map(card).join(""):'<div class="none"><b>Aucune idée avec ces filtres.</b><br>Retirez un filtre ou changez de catégorie.</div>';
+}
+function renderDock(){
+  const pl=plan(),pct=Math.min(100,Math.round(pl.pieces/pl.target*100));
+  document.getElementById("dock").innerHTML=pl.ids.length?`<div class="in"><span class="txt">${pl.ids.length} recette${pl.ids.length>1?"s":""} · ${P.g} invités · <span class="num">${pl.pieces}</span>/${pl.target} bouchées</span><span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span>${location.hash==="#mon-apero"?'<a href="#idees">+ Ajouter des idées</a>':'<a href="#mon-apero">Voir mon apéro →</a>'}</div>`:"";
+  document.body.style.paddingBottom=pl.ids.length?"84px":"0";
+}
+
+// ---------- Rendu : mon apéro ----------
+function advice(pl){
+  const out=[],cnt=c=>pl.ids.filter(id=>RB[id].cat===c).length;
+  if(!pl.ids.length)return out;
+  if(pl.pieces<pl.target*0.9)out.push(["","Il manque environ "+(pl.target-pl.pieces)+" bouchées : ajoutez une idée ou augmentez les quantités."]);
+  if(!cnt("boisson"))out.push(["","Pensez à une boisson sans alcool maison : citronnade, thé glacé ou mojito sans alcool."]);
+  if(!cnt("chaud")&&P.f==="dinatoire")out.push(["","Un apéro dînatoire sans bouchée chaude, c'est rare : les feuilletés ou les mini-pizzas plaisent à tout le monde."]);
+  if(P.f==="dinatoire"&&!cnt("douceur"))out.push(["","Pour finir en douceur : brochettes de fruits ou truffes au chocolat."]);
+  if(cnt("tartinade")&&!pl.ids.some(id=>RB[id].cat==="planche"&&RB[id].id==="crudites"))out.push(["","Les tartinades vont très bien avec un plateau de crudités à tremper."]);
+  const minute=pl.ids.filter(id=>RB[id].w==="minute").length;
+  if(minute>=4)out.push(["",minute+" recettes sont à faire à la minute : remplacez-en une par une recette qui se prépare la veille pour profiter de vos invités."]);
+  const oven=new Set(pl.ids.map(id=>RB[id]).filter(r=>r.four&&(r.cat==="chaud"||r.w==="minute")).map(r=>r.four.temp));
+  if(oven.size>2)out.push(["","Vos bouchées chaudes demandent "+oven.size+" températures de four différentes : le plan horaire les enchaîne pour vous."]);
+  if(!out.length)out.push(["good","Bel équilibre ! Tout est prévu, il ne reste qu'à suivre le plan."]);
+  return out;
+}
+function renderSel(){
+  const pl=plan(),el=document.getElementById("selbox");
+  if(!pl.ids.length){el.innerHTML=`<h2>Mon apéro</h2><div class="empty"><b>Rien pour l'instant.</b><br>Ajoutez des idées, ou laissez-nous composer un apéro équilibré.<div class="row" style="justify-content:center;margin-top:12px"><button type="button" class="btn primary" data-compose>Composer pour moi</button><a class="btn" href="#idees">Voir les idées</a></div></div>`;return}
+  const pct=Math.min(100,Math.round(pl.pieces/pl.target*100));
+  const order=Object.keys(CATS);
+  const ids=[...pl.ids].sort((a,b)=>order.indexOf(RB[a].cat)-order.indexOf(RB[b].cat));
+  const prep=ids.reduce((a,id)=>a+RB[id].t*Math.max(1,Math.ceil(factor(id,pl)*0.6+0.4)),0);
+  const prepVeille=ids.filter(id=>RB[id].w==="veille").reduce((a,id)=>a+RB[id].t,0);
+  el.innerHTML=`<div class="prow"><h2>Mon apéro</h2><button type="button" class="btn sm ghost" data-clear>Tout retirer</button></div>
+    <p class="muted" style="margin:0">${FORMULES[P.f]} pour <b>${P.g} invités</b>, arrivée à <b class="num">${esc(P.h)}</b>. <a href="#idees">Modifier</a></p>
+    <div class="gauge"><div class="lab"><span>Bouchées prévues</span><span class="num">${pl.pieces} / ${pl.target}</span></div><div class="g"><i style="width:${pct}%"></i></div>
+      <div class="lab"><span>≈ ${Math.round(pl.pieces/P.g)} bouchées et ${Math.round(pl.kcal/P.g)} kcal par personne</span><span>≈ ${Math.floor(prep/60)} h ${pad(prep%60)} en cuisine, cuissons comprises${prepVeille?", dont "+Math.round(prepVeille/5)*5+" min la veille":""}</span></div></div>
+    <ul class="advice">${advice(pl).map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("")}</ul>
+    <ul class="sel">${ids.map(id=>{const r=RB[id],n=pl.qty[id],st=r.cat==="verrine"||r.cat==="boisson"||r.y<=12?1:2;
+      return `<li><i style="background:${CATS[r.cat].c}"></i><span><button type="button" class="nm" data-open="${id}">${esc(r.n)}</button><span class="sub">${CATS[r.cat].n} · ${WHEN[r.w][0].toLowerCase()}${P.sel[id]!=null?' · <button type="button" class="nm" style="font-size:12px;color:var(--accent)" data-auto="'+id+'">quantité auto</button>':""}</span></span>
+        <span class="step"><button type="button" data-q="${id}" data-d="-${st}" aria-label="Moins">−</button><b class="num" title="${unitWord(r,n)}">${n}</b><button type="button" data-q="${id}" data-d="${st}" aria-label="Plus">+</button></span>
+        <button type="button" class="x" data-toggle="${id}" aria-label="Retirer ${esc(r.n)}">×</button></li>`}).join("")}</ul>
+    <div class="row"><button type="button" class="btn sm" data-compose>Recomposer au hasard</button><a class="btn sm" href="#idees">+ Ajouter des idées</a></div>`;
+}
+function timeline(pl){
+  const T=(()=>{const m=/^(\d{1,2}):(\d{2})$/.exec(P.h||"");return m?(+m[1])*60+(+m[2]):19*60+30})();
+  const rs=pl.ids.map(id=>RB[id]);
+  const name=r=>esc(r.n)+(r.cat!=="boisson"?` <span class="muted">(${pl.qty[r.id]} ${unitWord(r,pl.qty[r.id])})</span>`:"");
+  const veille=rs.filter(r=>r.w==="veille"),jour=rs.filter(r=>r.w==="jour");
+  const ev=[];
+  const add=(m,title,items,big)=>{if(items&&!items.length)return;ev.push({m,title,items,big})};
+  // Plats froids à sortir et dresser
+  const cold=rs.filter(r=>["tartinade","verrine","froid","planche","douceur"].includes(r.cat)&&r.w!=="minute");
+  if(rs.some(r=>r.id==="planche"||r.id==="camembert"))add(T-75,"Sortir les fromages pour qu'ils soient à bonne température",null);
+  add(T-45,"Dresser les plats froids et les garder au frais",cold.map(name));
+  add(T-20,"Sortir les tartinades du réfrigérateur",rs.filter(r=>r.cat==="tartinade").map(r=>esc(r.n)));
+  // Préparations à la minute (hors four)
+  const quick=rs.filter(r=>r.w==="minute"&&!r.four&&r.cat!=="boisson");
+  add(T-30,"Préparer les éléments à la minute",quick.map(name));
+  // Four : vagues de bouchées chaudes
+  const ovenItems=rs.filter(r=>r.four&&(r.cat==="chaud"||r.w==="minute")).sort((a,b)=>b.four.temp-a.four.temp||a.four.min-b.four.min);
+  if(ovenItems.length){
+    let t=T-ovenItems[0].four.min+(P.f==="dinatoire"?10:0);
+    // la première fournée est prête à l'arrivée, puis une toutes les 20 minutes environ
+    const slots=[];let cur=null;
+    ovenItems.forEach(r=>{
+      if(cur&&cur.temp===r.four.temp&&cur.items.length<2){cur.items.push(r);cur.min=Math.max(cur.min,r.four.min);}
+      else{cur={temp:r.four.temp,min:r.four.min,items:[r]};slots.push(cur)}
+    });
+    let ready=T+(P.f==="dinatoire"?10:0);
+    slots.forEach((s,i)=>{s.start=ready-s.min;ready+=Math.max(15,s.min)+5});
+    add(slots[0].start-15,"Préchauffer le four à "+slots[0].temp+" °C",null,true);
+    slots.forEach((s,i)=>{
+      const prev=slots[i-1];
+      const tempNote=prev&&prev.temp!==s.temp?" (régler le four à "+s.temp+" °C)":"";
+      add(s.start,"Enfourner"+tempNote,s.items.map(r=>name(r)+` · ${r.four.temp} °C, ${r.four.min} min`),true);
+      add(s.start+s.min,"Servir chaud",s.items.map(r=>esc(r.n)));
+    });
+  }
+  // Friture
+  const fry=rs.filter(r=>r.cat==="chaud"&&!r.four);
+  add(T+15,"Cuire à la poêle ou frire, et servir aussitôt",fry.map(name));
+  // Boissons
+  const drinks=rs.filter(r=>r.cat==="boisson");
+  add(T-15,"Boissons : glaçons, carafes et verres",drinks.map(r=>esc(r.n)+(r.w==="minute"?" (à préparer verre par verre)":"")));
+  add(T-10,"Allumer les bougies, lancer la musique, souffler un coup",null);
+  add(T,"Arrivée des invités",null,true);
+  ev.sort((a,b)=>a.m-b.m);
+  const block=(title,items)=>items.length?`<p class="tlhead">${title}</p><ul class="timeline">${items.map(r=>`<li class="tl"><span class="h"></span><span class="dot"></span><span class="t"><b>${name(r)}</b><span class="muted" style="font-size:13px">${esc(r.st[0])}</span></span></li>`).join("")}</ul>`:"";
+  return block("La veille",veille)+block("Le jour même, dans la journée",jour)
+    +`<p class="tlhead">Le soir J</p><ul class="timeline">${ev.map(e=>`<li class="tl ${e.big?"big":""}"><span class="h">${hm(e.m)}</span><span class="dot"></span><span class="t"><b>${esc(e.title)}</b>${e.items&&e.items.length?"<ul>"+e.items.map(x=>"<li>"+x+"</li>").join("")+"</ul>":""}</span></li>`).join("")}</ul>`;
+}
+function shopping(pl){
+  const tot={};
+  pl.ids.forEach(id=>{const f=factor(id,pl);RB[id].ing.forEach(([i,q])=>{tot[i]=(tot[i]||0)+q*f})});
+  const by={};
+  Object.entries(tot).forEach(([i,q])=>{(by[I[i].r]=by[I[i].r]||[]).push([i,q])});
+  return Object.keys(AISLES).filter(a=>by[a]).map(a=>[a,by[a].sort((x,y)=>I[x[0]].n.localeCompare(I[y[0]].n,"fr"))]);
+}
+const hint=(id,q)=>{const x=I[id];if(!x.w)return"";const n=Math.max(1,Math.ceil(q/x.w-0.05));return "≈ "+n+" "+x.wl+(n>1&&!x.wl.includes(" ")?"s":"")};
+function renderOut(){
+  const pl=plan(),el=document.getElementById("outbox");
+  if(!pl.ids.length){el.innerHTML=`<h3>Le plan de bataille</h3><p class="muted">Dès que vous aurez choisi vos recettes, vous trouverez ici l'heure à laquelle lancer chaque chose, et la liste de courses.</p>`;return}
+  const tab=P.tab||"plan";
+  let body="";
+  if(tab==="plan")body=timeline(pl);
+  else if(tab==="courses"){
+    const list=shopping(pl);
+    body=`<div class="row"><button type="button" class="btn sm primary" data-copy>Copier la liste</button><button type="button" class="btn sm ghost" data-uncheck>Tout décocher</button></div>
+      <div class="shop">${list.map(([a,items])=>`<div class="aisle"><h4>${AISLES[a]}</h4><ul>${items.map(([id,q])=>{const done=!!P.chk[id],h=hint(id,q);
+        return `<li class="${done?"done":""}"><label><input type="checkbox" data-chk="${id}" id="ck-${id}" ${done?"checked":""}><span>${esc(I[id].n)}${h?`<span class="hint">${h}</span>`:""}</span><span class="q">${fmt(q,I[id].u,true)}</span></label></li>`}).join("")}</ul></div>`).join("")}</div>`;
+  }else{
+    body=pl.ids.map(id=>{const r=RB[id],f=factor(id,pl);return `<div style="border-top:1px solid var(--line);padding-top:14px"><h4 style="font-size:19px;margin-bottom:8px">${esc(r.n)} <span class="muted num" style="font-size:13px;font-family:var(--f-mono)">· ${pl.qty[id]} ${unitWord(r,pl.qty[id])}</span></h4><div class="rbody"><ul class="ings">${r.ing.map(([i,q])=>`<li><span class="num">${fmt(q*f,I[i].u)}</span><span>${esc(I[i].n)}</span></li>`).join("")}</ul><ol class="steps">${r.st.map(s=>`<li><span>${esc(s)}</span></li>`).join("")}</ol></div></div>`}).join("");
+  }
+  el.innerHTML=`<div class="prow"><h3>Le plan de bataille</h3></div>
+    <div class="tabs2" role="tablist">${[["plan","Horaires"],["courses","Courses"],["recettes","Toutes les recettes"]].map(([k,l])=>`<button type="button" role="tab" aria-selected="${tab===k}" data-tab="${k}">${l}</button>`).join("")}</div>
+    ${body}`;
+}
+
+// ---------- Fiche recette ----------
+const ov=document.getElementById("overlay");let cur=null;
+function openSheet(id){
+  const r=RB[id];if(!r)return;cur=id;
+  const pl=plan(),inSel=id in P.sel,n=inSel?pl.qty[id]:r.y,f=n/r.y;
+  ov.innerHTML=`<article class="sheet" role="dialog" aria-modal="true" aria-label="${esc(r.n)}" style="--cc:${CATS[r.cat].c}">
+    <button class="close" type="button" data-close>Fermer ×</button>
+    <div class="hd"><small>${CATS[r.cat].n}</small><h3>${esc(r.n)}</h3></div>
+    <div class="bd">
+      <div class="facts"><span>${r.t} min</span><span class="num">≈ ${kcalUnit(r)} kcal / ${unitWord(r,1)}</span><span class="pill ${WHEN[r.w][1]}">${WHEN[r.w][0]}</span>${r.four?`<span class="pill">Four ${r.four.temp} °C</span>`:""}${has(r,"v")?'<span class="pill">Végétarien</span>':""}${has(r,"c")?'<span class="pill">Sans cuisson</span>':""}</div>
+      <div class="prow"><span>${inSel?"Prévu pour votre apéro":"Quantité de la recette"} : <b class="num">${n}</b> ${unitWord(r,n)}</span>
+        <button type="button" class="btn ${inSel?"":"primary"}" data-toggle="${id}">${inSel?"✓ Dans mon apéro · retirer":"+ Ajouter à mon apéro"}</button></div>
+      <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings">${r.ing.map(([i,q])=>`<li><span class="num">${fmt(q*f,I[i].u)}</span><span>${esc(I[i].n)}</span></li>`).join("")}</ul></div>
+        <div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li><span>${esc(s)}</span></li>`).join("")}</ol></div></div>
+    </div></article>`;
+  ov.hidden=false;try{ov.querySelector("[data-close]").focus({preventScroll:true})}catch(e){}
+}
+function closeSheet(){ov.hidden=true;ov.innerHTML="";cur=null}
+
+// ---------- Vue et événements ----------
+let toastT;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2400)}
+function renderAll(){renderPlanCard();renderCats();renderGrid();renderSel();renderOut();renderDock()}
+function route(){
+  const p=location.hash==="#mon-apero";
+  document.getElementById("v-idees").hidden=p;document.getElementById("v-plan").hidden=!p;
+  const a1=document.getElementById("lkIdees"),a2=document.getElementById("lkPlan");a1.removeAttribute("aria-current");a2.removeAttribute("aria-current");(p?a2:a1).setAttribute("aria-current","page");
+  renderDock();window.scrollTo(0,0);
+}
+function toggle(id){
+  if(id in P.sel){delete P.sel[id];toast("Retiré : "+RB[id].n)}else{P.sel[id]=null;toast("Ajouté : "+RB[id].n)}
+  save();renderAll();if(cur)openSheet(cur);
+}
+document.addEventListener("click",e=>{
+  if(e.target.closest("[data-close]")||e.target===ov){closeSheet();return}
+  const tg=e.target.closest("[data-toggle]");if(tg){toggle(tg.dataset.toggle);return}
+  if(!ov.hidden)return;
+  if(e.target.closest("[data-compose]")){compose();renderAll();toast("Apéro composé : "+Object.keys(P.sel).length+" recettes");if(location.hash!=="#mon-apero")location.hash="mon-apero";return}
+  const g=e.target.closest("[data-g]");if(g){P.g=Math.max(2,Math.min(60,P.g+ +g.dataset.g));save();renderAll();return}
+  const f=e.target.closest("[data-f]");if(f){P.f=f.dataset.f;save();renderAll();return}
+  const c=e.target.closest("[data-cat]");if(c){cat=c.dataset.cat;renderCats();renderGrid();return}
+  const qf=e.target.closest("[data-qf]");if(qf){const k=qf.dataset.qf;flt.has(k)?flt.delete(k):flt.add(k);renderCats();renderGrid();return}
+  const qq=e.target.closest("[data-q]");if(qq){const id=qq.dataset.q,pl=plan();P.sel[id]=Math.max(1,pl.qty[id]+ +qq.dataset.d);save();renderAll();return}
+  const au=e.target.closest("[data-auto]");if(au){P.sel[au.dataset.auto]=null;save();renderAll();return}
+  const tb=e.target.closest("[data-tab]");if(tb){P.tab=tb.dataset.tab;save();renderOut();return}
+  if(e.target.closest("[data-clear]")){P.sel={};save();renderAll();return}
+  if(e.target.closest("[data-uncheck]")){P.chk={};save();renderOut();return}
+  if(e.target.closest("[data-copy]")){
+    const pl=plan();const txt="Courses apéro · "+P.g+" invités\n\n"+shopping(pl).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,q])=>"- "+I[id].n+" : "+fmt(q,I[id].u,true)).join("\n")).join("\n\n");
+    const done=()=>toast("Liste copiée");
+    const fb=()=>{const ta=document.getElementById("copyArea");ta.value=txt;ta.select();try{document.execCommand("copy");done()}catch(err){toast("Copie impossible, sélectionnez la liste à la main")}};
+    try{navigator.clipboard.writeText(txt).then(done,fb)}catch(err){fb()}
+    return;
+  }
+  const o=e.target.closest("[data-open]");if(o){openSheet(o.dataset.open);return}
+});
+document.addEventListener("change",e=>{
+  const ck=e.target.closest("[data-chk]");if(ck){if(ck.checked)P.chk[ck.dataset.chk]=1;else delete P.chk[ck.dataset.chk];save();ck.closest("li").classList.toggle("done",ck.checked);return}
+  if(e.target.id==="hArr"){P.h=e.target.value||"19:30";save();renderSel();renderOut();return}
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&!ov.hidden){closeSheet();return}
+  if((e.key==="Enter"||e.key===" ")&&ov.hidden&&e.target.matches&&e.target.matches(".card[data-open]")){e.preventDefault();openSheet(e.target.dataset.open)}
+});
+document.getElementById("q").addEventListener("input",e=>{q=e.target.value;renderCats();renderGrid()});
+window.addEventListener("hashchange",route);
+renderAll();route();
+</script>
+</body>
+</html>
