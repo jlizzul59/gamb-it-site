@@ -370,6 +370,71 @@ img.art.ready{opacity:1}
 .close{position:absolute;top:12px;right:12px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;font-weight:600}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;z-index:30}
 @media (prefers-reduced-motion:no-preference){ .meal{transition:border-color .15s} .meal:hover{border-color:var(--accent)} }
+
+/* Mode cuisine */
+.cookb{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--ink);color:var(--bg);border-radius:999px;padding:10px 18px;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.cookb:hover{opacity:.9}
+.cookb span{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--bg);color:var(--ink);font-size:10px}
+html.ck-on,html.ck-on body{overflow:hidden}
+.ck{position:fixed;inset:0;z-index:60;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.ck[hidden]{display:none}
+.ck-top{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--surface)}
+.ck-tt{flex:1;min-width:0;display:flex;flex-direction:column}
+.ck-tt small{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.ck-tt b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ck-ib{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.ck-ib[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.ck-bar{height:5px;background:var(--line)}
+.ck-bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.ck-body{flex:1;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:18px;padding:28px max(20px,calc((100% - 860px)/2)) 24px;position:relative}
+.ck-body:has(.ck-ings:not([hidden])){grid-template-columns:minmax(0,1fr) 300px}
+.ck-count{grid-column:1/-1;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ck-step{font-size:clamp(22px,3.4vw,32px);line-height:1.4;margin:0;font-weight:500;text-wrap:pretty}
+.ck-opt{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--warm,#B85A14);background:var(--warm-soft,#F7E8DA);border-radius:999px;padding:2px 10px;margin-bottom:10px}
+.ck-need{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+.ck-need b{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ck-need ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:17px}
+.ck-need .num{color:var(--accent);font-weight:700}
+.ck-dur{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.ck-tbtn{border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:12px 20px;font:inherit;font-size:16px;font-weight:800;cursor:pointer}
+.ck-tbtn:hover{background:var(--accent);color:var(--accent-ink)}
+.ck-ings{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;align-self:start;position:sticky;top:0}
+.ck-ings h4{margin:0 0 8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ck-ings ul{list-style:none;margin:0;padding:0}
+.ck-ings label{display:grid;grid-template-columns:20px auto minmax(0,1fr);gap:8px;align-items:center;padding:6px 0;border-bottom:1px dotted var(--line);font-size:14px;cursor:pointer}
+.ck-ings input{width:18px;height:18px;accent-color:var(--accent)}
+.ck-ings .num{color:var(--accent);text-align:right;font-weight:700;white-space:nowrap;min-width:64px}
+.ck-ings li.done span{text-decoration:line-through;color:var(--muted)}
+.ck-tip{font-size:12px;color:var(--muted);margin:8px 0 0}
+.ck-timers{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:10px 16px;border-top:1px solid var(--line);background:var(--surface)}
+.ck-timers[hidden]{display:none}
+.ck-t{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border-radius:999px;padding:6px 6px 6px 16px}
+.ck-t .ck-tl{font-size:12px;opacity:.75}
+.ck-t b{font-size:20px;min-width:4.5ch;text-align:right}
+.ck-t button{border:0;background:var(--bg);color:var(--ink);border-radius:999px;width:32px;height:32px;font-weight:800;cursor:pointer}
+.ck-t.ring{background:var(--bad);animation:ckpulse 1s infinite}
+.ck-t.ring button{width:auto;padding:0 12px}
+@keyframes ckpulse{50%{transform:scale(1.04)}}
+@media (prefers-reduced-motion:reduce){.ck-t.ring{animation:none}.ck-bar i{transition:none}}
+.ck-nav{display:flex;align-items:center;gap:12px;padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
+.ck-btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:14px 22px;font:inherit;font-size:16px;font-weight:800;cursor:pointer;white-space:nowrap}
+.ck-btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.ck-btn:disabled{opacity:.35;cursor:default}
+.ck-dots{flex:1;display:flex;justify-content:center;flex-wrap:wrap;gap:6px}
+.ck-dots button{width:10px;height:10px;border-radius:50%;border:0;padding:0;background:var(--line);cursor:pointer}
+.ck-dots button.past{background:var(--accent);opacity:.45}
+.ck-dots button.on{background:var(--accent);transform:scale(1.4)}
+.ck-end{text-align:center;padding-top:8vh}
+.ck-big{font-family:var(--f-display);font-size:clamp(34px,6vw,56px)}
+.ck-end p{color:var(--muted);font-size:17px}
+@media (max-width:720px){
+  .ck-body,.ck-body:has(.ck-ings:not([hidden])){grid-template-columns:minmax(0,1fr);padding:20px 18px}
+  .ck-ings{position:static;order:-1}
+  .ck-dots{display:none}
+  .ck-nav .ck-btn{flex:1;padding:14px 12px}
+  .ck-tt b{font-size:15px}
+}
+.rcook{margin:12px 0 4px}
 </style>
 
 <header class="top">
@@ -1705,6 +1770,117 @@ const CLOUD=(()=>{
 })();
 
 function cloudChanged(){try{CLOUD.changed()}catch(e){}}
+
+// ---------- Mode cuisine : une étape à la fois ----------
+const COOK=(()=>{
+  const e=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const nz=s=>String(s).toLowerCase().replace(/œ/g,"oe").normalize("NFD").replace(/[̀-ͯ]/g,"");
+  const STOP=new Set(["de","du","des","la","le","les","en","au","aux","et","ou","a","d","l","frais","fraiche","fraiches","boite","egouttes","surgeles","nature","seches","seche","sec","cuit","cuites","cuits","pc","tranches","extra","qualite","sashimi","moyenne","demi","ecreme","fine","fines"]);
+  let R=null,i=0,root=null,lock=null,timers=[],tick=null,showIng=false,done={},ac=null,sx=null;
+  // mots-clés d'un ingrédient pour le repérer dans une étape
+  function keys(name){
+    const base=nz(name).replace(/\(.*?\)/g," ").replace(/[^a-z\s-]/g," ");
+    const w=base.split(/[\s-]+/).filter(x=>x.length>2&&!STOP.has(x));
+    return w.slice(0,2).map(x=>x.replace(/(es|s|x)$/,"")).filter(x=>x.length>2);
+  }
+  function stepIngs(s){
+    const t=nz(s);
+    return R.ings.filter(g=>{const k=g.k||(g.k=keys(g.name));return k.length&&t.includes(k[0])});
+  }
+  // durées repérées dans le texte : « 12 min », « 1 h 30 », « 20-25 min »
+  function durations(s){
+    const out=[],rx=/(\d+)\s*h\s*(\d+)?|(\d+)(?:\s*(?:à|-)\s*(\d+))?\s*min/g;let m;
+    while((m=rx.exec(s))){
+      let sec,label;
+      if(m[1]){sec=(+m[1])*3600+(m[2]?+m[2]*60:0);label=m[1]+" h"+(m[2]?" "+m[2]:"");}
+      else{const a=+m[3],b=m[4]?+m[4]:a;sec=b*60;label=(m[4]?a+"-"+b:a)+" min";}
+      if(sec>=60&&sec<=6*3600&&!out.some(o=>o.sec===sec))out.push({sec,label});
+    }
+    return out.slice(0,3);
+  }
+  const mmss=s=>{s=Math.max(0,Math.round(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0")};
+  function beep(){
+    try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();[0,0.35,0.7].forEach(d=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(0.0001,ac.currentTime+d);g.gain.exponentialRampToValueAtTime(0.3,ac.currentTime+d+0.02);g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+d+0.3);o.start(ac.currentTime+d);o.stop(ac.currentTime+d+0.32)})}catch(x){}
+    try{navigator.vibrate&&navigator.vibrate([300,150,300,150,300])}catch(x){}
+  }
+  async function wake(on){
+    try{if(on&&"wakeLock" in navigator){lock=await navigator.wakeLock.request("screen")}else if(!on&&lock){await lock.release();lock=null}}catch(x){}
+  }
+  document.addEventListener("visibilitychange",()=>{if(root&&document.visibilityState==="visible")wake(true)});
+  function paintTimers(){
+    const el=root&&root.querySelector(".ck-timers");if(!el)return;
+    const now=Date.now();
+    el.innerHTML=timers.map((t,k)=>{const left=(t.end-now)/1000,over=left<=0;
+      return `<div class="ck-t ${over?"ring":""}"><span class="ck-tl">${e(t.label)}</span><b class="num">${over?"C'est prêt !":mmss(left)}</b><button type="button" data-ckstop="${k}" aria-label="Arrêter le minuteur">${over?"OK":"×"}</button></div>`}).join("");
+    el.hidden=!timers.length;
+  }
+  function loop(){
+    const now=Date.now();
+    timers.forEach(t=>{if(!t.rang&&t.end<=now){t.rang=true;beep()}});
+    paintTimers();
+    if(!timers.length){clearInterval(tick);tick=null}
+  }
+  function startTimer(sec,label){
+    timers.push({end:Date.now()+sec*1000,label:label+" · étape "+(i+1),rang:false});
+    if(!tick)tick=setInterval(loop,500);
+    try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume&&ac.resume()}catch(x){}
+    paintTimers();
+  }
+  function paint(){
+    const n=R.steps.length,fin=i>=n,s=fin?"":R.steps[i];
+    const si=fin?[]:stepIngs(s),du=fin?[]:durations(s);
+    root.querySelector(".ck-bar i").style.width=Math.round(Math.min(i,n)/n*100)+"%";
+    root.querySelector(".ck-count").textContent=fin?"Terminé":"Étape "+(i+1)+" sur "+n;
+    root.querySelector(".ck-main").innerHTML=fin
+      ?`<div class="ck-end"><div class="ck-big">Bon appétit !</div><p>Toutes les étapes sont faites.</p><button type="button" class="ck-btn" data-ckgo="0">Revoir depuis le début</button></div>`
+      :`${R.opt&&R.opt.includes(i)?'<span class="ck-opt">Optionnel</span>':""}<p class="ck-step">${e(s)}</p>
+        ${si.length?`<div class="ck-need"><b>Pour cette étape</b><ul>${si.map(g=>`<li><span class="num">${e(g.q)}</span> ${e(g.name)}</li>`).join("")}</ul></div>`:""}
+        ${du.length?`<div class="ck-dur">${du.map(d=>`<button type="button" class="ck-tbtn" data-cktimer="${d.sec}" data-cklab="${e(d.label)}"><span aria-hidden="true">⏱</span> Lancer ${e(d.label)}</button>`).join("")}</div>`:""}`;
+    root.querySelector("[data-ckprev]").disabled=i===0;
+    const nx=root.querySelector("[data-cknext]");nx.textContent=fin?"Fermer":i===n-1?"Terminer ✓":"Étape suivante →";
+    root.querySelector(".ck-dots").innerHTML=R.steps.map((_,k)=>`<button type="button" class="${k===i?"on":k<i?"past":""}" data-ckgo="${k}" aria-label="Aller à l'étape ${k+1}"></button>`).join("");
+    const ing=root.querySelector(".ck-ings");ing.hidden=!showIng;
+    root.querySelector("[data-ckings]").setAttribute("aria-expanded",showIng);
+    ing.innerHTML=`<h4>Ingrédients</h4><ul>${R.ings.map((g,k)=>`<li class="${done[k]?"done":""}"><label><input type="checkbox" data-ckchk="${k}" ${done[k]?"checked":""}><span class="num">${e(g.q)}</span><span>${e(g.name)}</span></label></li>`).join("")}</ul><p class="ck-tip">Cochez ce qui est sorti et pesé.</p>`;
+    paintTimers();
+  }
+  function open(rec){
+    R=rec;i=0;showIng=false;done={};
+    if(!root){root=document.createElement("div");root.className="ck";root.setAttribute("role","dialog");root.setAttribute("aria-modal","true");document.body.appendChild(root)}
+    root.innerHTML=`<div class="ck-top"><div class="ck-tt"><small>${e(R.sub||"Mode cuisine")}</small><b>${e(R.title)}</b></div>
+        <button type="button" class="ck-ib" data-ckings aria-expanded="false">Ingrédients</button><button type="button" class="ck-ib ck-x" data-ckclose aria-label="Quitter le mode cuisine">Quitter ×</button></div>
+      <div class="ck-bar"><i></i></div>
+      <div class="ck-body"><div class="ck-count"></div><div class="ck-main" aria-live="polite"></div><aside class="ck-ings" hidden></aside></div>
+      <div class="ck-timers" hidden></div>
+      <div class="ck-nav"><button type="button" class="ck-btn ghost" data-ckprev>← Précédente</button><div class="ck-dots"></div><button type="button" class="ck-btn" data-cknext>Étape suivante →</button></div>`;
+    root.hidden=false;document.documentElement.classList.add("ck-on");wake(true);paint();
+    try{root.querySelector("[data-cknext]").focus({preventScroll:true})}catch(x){}
+  }
+  function close(){if(!root)return;root.hidden=true;document.documentElement.classList.remove("ck-on");wake(false)}
+  const go=k=>{i=Math.max(0,Math.min(R.steps.length,k));paint();root.querySelector(".ck-body").scrollTop=0};
+  document.addEventListener("click",ev=>{
+    if(!root||root.hidden||!root.contains(ev.target))return;
+    const t=ev.target;
+    if(t.closest("[data-ckclose]")){close();return}
+    if(t.closest("[data-ckprev]")){go(i-1);return}
+    if(t.closest("[data-cknext]")){if(i>=R.steps.length)close();else go(i+1);return}
+    const g=t.closest("[data-ckgo]");if(g){go(+g.dataset.ckgo);return}
+    if(t.closest("[data-ckings]")){showIng=!showIng;paint();return}
+    const tm=t.closest("[data-cktimer]");if(tm){startTimer(+tm.dataset.cktimer,tm.dataset.cklab);return}
+    const st=t.closest("[data-ckstop]");if(st){timers.splice(+st.dataset.ckstop,1);paintTimers();return}
+  });
+  document.addEventListener("change",ev=>{const c=ev.target.closest&&ev.target.closest("[data-ckchk]");if(c&&root&&root.contains(c)){done[c.dataset.ckchk]=c.checked;c.closest("li").classList.toggle("done",c.checked)}});
+  document.addEventListener("keydown",ev=>{
+    if(!root||root.hidden)return;
+    if(ev.key==="ArrowRight"){ev.preventDefault();if(i<R.steps.length)go(i+1)}
+    else if(ev.key==="ArrowLeft"){ev.preventDefault();go(i-1)}
+    else if(ev.key==="Escape"){ev.stopImmediatePropagation();close()}
+  },true);
+  document.addEventListener("touchstart",ev=>{if(root&&!root.hidden&&root.contains(ev.target)&&!ev.target.closest(".ck-ings,.ck-timers"))sx=[ev.touches[0].clientX,ev.touches[0].clientY]},{passive:true});
+  document.addEventListener("touchend",ev=>{if(!sx)return;const dx=ev.changedTouches[0].clientX-sx[0],dy=ev.changedTouches[0].clientY-sx[1];sx=null;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(dx<0&&i<R.steps.length)go(i+1);else if(dx>0)go(i-1)}},{passive:true});
+  return {open,close,get active(){return !!(root&&!root.hidden)}};
+})();
+
 // ---------- Semaines ----------
 const DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const START=new Date(2026,10,2), MAXW=12;
@@ -1884,6 +2060,7 @@ function recipeHTML(c,modal){
     <div class="avis" data-avis="${r.id}">${avisInner(r.id)}</div>
     ${foyConf(r).length?`<div class="warnbox" style="margin-top:10px">Attention, contient : ${esc(conflictText(foyConf(r)))}</div>`:""}
     <div class="rpers"><span>Personnes</span><span class="pstep"><button type="button" class="pm" data-pers="${c.sl.key}" data-d="-1" aria-label="Une personne de moins" ${PN(c.sl)<=1?"disabled":""}>−</button><b class="num ${W.pers&&W.pers[c.sl.key]?"custom":""}">${PN(c.sl)}</b><button type="button" class="pm" data-pers="${c.sl.key}" data-d="1" aria-label="Une personne de plus" ${PN(c.sl)>=12?"disabled":""}>+</button></span>${extra.length?`<span class="muted">+ ${extra.reduce((a,e)=>a+PN(e),0)} pour les restes · ${pers} portions au total</span>`:""}</div></div>
+    <div class="rcook"><button type="button" class="cookb" data-cookslot="${c.sl.key}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button></div>
     <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings">${ing}${optLines}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}${optStepHTML(r,pers)}</ol>
     <div class="bcnote"><b>Session du ${sessionOf(c.sl.day).short} :</b> ${bt.length?bt.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(BC[r.id].j)}</div></div></div>
   </article>`;
@@ -2026,6 +2203,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeMod
 function setMode(key,m){if(m==="cook")delete W.mode[key];else W.mode[key]=m}
 function goWeek(w){useWeek(w);save();renderAll();window.scrollTo(0,0)}
 document.addEventListener("click",e=>{
+  const cks=e.target.closest("[data-cookslot]");if(cks){const c=cooks().find(x=>x.sl.key===cks.dataset.cookslot);if(c){const r=c.r,pers=persOf(c),os=optSteps(r,pers);COOK.open({title:r.n,sub:slotLabel(c.sl)+" · "+pers+" portion"+(pers>1?"s":""),steps:r.st.concat(os),opt:os.map((_,k)=>r.st.length+k),ings:r.ing.map(([id,q])=>({q:fmt(qtyBase(c,id,q),I[id].u,false),name:I[id].n})).concat(optionsFor(r).map(([id,q])=>({q:fmt(q*pers,I[id].u,false),name:I[id].n+" (optionnel)"})))})}return}
   if(!ov.hidden&&(e.target===ov||e.target.closest("[data-close]"))){closeModal();return}
   const o=e.target.closest("[data-open]");if(o)return openRecipe(o.dataset.open);
   const pk=e.target.closest("[data-pick]");if(pk)return openCatalog(pk.dataset.pick);

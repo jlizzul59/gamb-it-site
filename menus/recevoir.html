@@ -47,7 +47,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,[tabindex]:focus-visibl
 .muted{color:var(--muted)}
 
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--surface);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;gap:8px 18px;padding-block:10px;flex-wrap:wrap}
+
 .logo{font-family:var(--f-display);font-size:22px;text-decoration:none;color:var(--ink)}
 .logo i{font-style:normal;color:var(--accent)}
 .toplinks{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
@@ -194,7 +194,7 @@ a.btn.primary{color:var(--accent-ink)}
 .accbtn:hover{border-color:var(--accent)}
 .accbtn .av{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:13px}
 @media (max-width:520px){.accbtn .nm{display:none}.accbtn{padding:4px 8px 4px 4px}}
-@media (max-width:1560px){.top .accbtn .nm{display:none}.top .accbtn{padding:4px 8px 4px 4px}}
+
 .accpanel{background:var(--surface);color:var(--ink);border-radius:16px;max-width:540px;width:100%;position:relative;padding:24px;display:flex;flex-direction:column;gap:14px}
 #accBody{display:flex;flex-direction:column;gap:14px}
 .accpanel h3{font-family:var(--f-display);font-weight:400;font-size:26px;padding-right:96px;margin:0}
@@ -259,7 +259,7 @@ input[type=date]{border:1px solid var(--line);border-radius:10px;padding:6px 10p
 .hdish{border:1px solid var(--line);border-left:4px solid var(--cc);background:var(--surface);border-radius:8px;padding:3px 10px;font-size:13px;font-weight:600;color:var(--ink)}
 .hdish:hover{border-color:var(--accent)}
 .box h2{font-size:28px}
-.top .accbtn{margin-left:4px}
+
 
 .tldet{display:flex;flex-direction:column;gap:8px}
 .tlr{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--surface)}
@@ -297,20 +297,96 @@ footer.foot{padding-block:24px 30px;color:var(--muted);font-size:13px;border-top
 @media (max-width:900px){.hero,.plan{grid-template-columns:1fr}.hero{gap:22px;padding-block:24px 18px}}
 @media (max-width:600px){.rbody{grid-template-columns:1fr}.tools{gap:6px}.sel li{grid-template-columns:8px minmax(0,1fr) auto;}.sel li .x{grid-column:3;grid-row:1}.sel li .step{grid-column:2}}
 @media (prefers-reduced-motion:no-preference){.card{transition:transform .15s,box-shadow .15s}.card:hover{transform:translateY(-2px)}}
+
+/* En-tête sur deux lignes : compte en haut, navigation dessous */
+.top .toprow{display:flex;align-items:center;gap:8px 18px;padding-block:10px 6px}
+.toprow .accbtn{margin-left:auto}
+.top .tabrow{padding-block:0 8px}
+nav.tabs{display:flex;gap:4px;align-items:center;overflow-x:auto;scrollbar-width:none;margin-inline:-6px;padding-inline:6px}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs a,nav.tabs button{white-space:nowrap;padding:7px 10px;border-radius:999px;color:var(--muted);text-decoration:none;font:inherit;font-weight:600;font-size:14px;border:0;background:none;cursor:pointer}
+nav.tabs [aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+nav.tabs a:hover:not([aria-current="page"]),nav.tabs button:hover{background:var(--accent-soft);color:var(--ink)}
+.tabsep{width:1px;height:20px;background:var(--line);margin:0 6px;flex:0 0 auto}
+nav.tabs a.ext::after{content:" ↗";font-size:11px;opacity:.6}
+
+/* Mode cuisine */
+.cookb{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--ink);color:var(--bg);border-radius:999px;padding:10px 18px;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.cookb:hover{opacity:.9}
+.cookb span{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--bg);color:var(--ink);font-size:10px}
+html.ck-on,html.ck-on body{overflow:hidden}
+.ck{position:fixed;inset:0;z-index:60;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.ck[hidden]{display:none}
+.ck-top{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--surface)}
+.ck-tt{flex:1;min-width:0;display:flex;flex-direction:column}
+.ck-tt small{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.ck-tt b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ck-ib{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.ck-ib[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.ck-bar{height:5px;background:var(--line)}
+.ck-bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.ck-body{flex:1;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:18px;padding:28px max(20px,calc((100% - 860px)/2)) 24px;position:relative}
+.ck-body:has(.ck-ings:not([hidden])){grid-template-columns:minmax(0,1fr) 300px}
+.ck-count{grid-column:1/-1;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ck-step{font-size:clamp(22px,3.4vw,32px);line-height:1.4;margin:0;font-weight:500;text-wrap:pretty}
+.ck-opt{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--warm,#B85A14);background:var(--warm-soft,#F7E8DA);border-radius:999px;padding:2px 10px;margin-bottom:10px}
+.ck-need{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+.ck-need b{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ck-need ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:17px}
+.ck-need .num{color:var(--accent);font-weight:700}
+.ck-dur{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.ck-tbtn{border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:12px 20px;font:inherit;font-size:16px;font-weight:800;cursor:pointer}
+.ck-tbtn:hover{background:var(--accent);color:var(--accent-ink)}
+.ck-ings{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;align-self:start;position:sticky;top:0}
+.ck-ings h4{margin:0 0 8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ck-ings ul{list-style:none;margin:0;padding:0}
+.ck-ings label{display:grid;grid-template-columns:20px auto minmax(0,1fr);gap:8px;align-items:center;padding:6px 0;border-bottom:1px dotted var(--line);font-size:14px;cursor:pointer}
+.ck-ings input{width:18px;height:18px;accent-color:var(--accent)}
+.ck-ings .num{color:var(--accent);text-align:right;font-weight:700;white-space:nowrap;min-width:64px}
+.ck-ings li.done span{text-decoration:line-through;color:var(--muted)}
+.ck-tip{font-size:12px;color:var(--muted);margin:8px 0 0}
+.ck-timers{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:10px 16px;border-top:1px solid var(--line);background:var(--surface)}
+.ck-timers[hidden]{display:none}
+.ck-t{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border-radius:999px;padding:6px 6px 6px 16px}
+.ck-t .ck-tl{font-size:12px;opacity:.75}
+.ck-t b{font-size:20px;min-width:4.5ch;text-align:right}
+.ck-t button{border:0;background:var(--bg);color:var(--ink);border-radius:999px;width:32px;height:32px;font-weight:800;cursor:pointer}
+.ck-t.ring{background:var(--bad);animation:ckpulse 1s infinite}
+.ck-t.ring button{width:auto;padding:0 12px}
+@keyframes ckpulse{50%{transform:scale(1.04)}}
+@media (prefers-reduced-motion:reduce){.ck-t.ring{animation:none}.ck-bar i{transition:none}}
+.ck-nav{display:flex;align-items:center;gap:12px;padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
+.ck-btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:14px 22px;font:inherit;font-size:16px;font-weight:800;cursor:pointer;white-space:nowrap}
+.ck-btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.ck-btn:disabled{opacity:.35;cursor:default}
+.ck-dots{flex:1;display:flex;justify-content:center;flex-wrap:wrap;gap:6px}
+.ck-dots button{width:10px;height:10px;border-radius:50%;border:0;padding:0;background:var(--line);cursor:pointer}
+.ck-dots button.past{background:var(--accent);opacity:.45}
+.ck-dots button.on{background:var(--accent);transform:scale(1.4)}
+.ck-end{text-align:center;padding-top:8vh}
+.ck-big{font-family:var(--f-display);font-size:clamp(34px,6vw,56px)}
+.ck-end p{color:var(--muted);font-size:17px}
+@media (max-width:720px){
+  .ck-body,.ck-body:has(.ck-ings:not([hidden])){grid-template-columns:minmax(0,1fr);padding:20px 18px}
+  .ck-ings{position:static;order:-1}
+  .ck-dots{display:none}
+  .ck-nav .ck-btn{flex:1;padding:14px 12px}
+  .ck-tt b{font-size:15px}
+}
 </style>
 </head>
 <body>
-<header class="top"><div class="wrap">
-  <a class="logo" href="#idees">On <i>reçoit</i></a>
-  <nav class="toplinks" aria-label="Pages">
-    <a href="index.html">Semainier</a>
-    <a href="recettes.html">Recettes</a>
-    <a href="#idees" id="lkIdees">Idées d'apéro</a>
-    <a href="#mon-apero" id="lkPlan">Mon apéro</a>
+<header class="top">
+  <div class="wrap toprow"><a class="logo" href="#idees">On <i>reçoit</i></a><button type="button" class="accbtn" id="accBtn" hidden></button></div>
+  <div class="wrap tabrow"><nav class="tabs" aria-label="Pages">
+    <a href="#idees" id="lkIdees">Idées</a>
+    <a href="#mon-apero" id="lkPlan">Ma réception</a>
     <a href="#invites" id="lkInv">Mes invités</a>
-  </nav>
-  <button type="button" class="accbtn" id="accBtn" hidden></button>
-</div></header>
+    <span class="tabsep" aria-hidden="true"></span>
+    <a class="ext" href="index.html">Semainier</a>
+    <a class="ext" href="recettes.html">Catalogue des recettes</a>
+  </nav></div>
+</header>
 
 <main>
   <section id="v-idees">
@@ -600,6 +676,106 @@ const AP=[
 ["eauaromatisee","Eau infusée concombre, citron et menthe","boisson",10,"jour",10,"concombre:200,citron:1,menthe:0.5,glacons:20",["Couper le concombre et le citron en fines rondelles.","Les mettre dans une grande carafe avec la menthe et 2 L d'eau fraîche.","Laisser infuser 2 h au frais."],"vc"],
 ["gingerbeer","Limonade au gingembre maison","boisson",20,"veille",10,"gingembre:100,citronvert:3,sucre:100,eaugazeuse:1500,glacons:20",["Râper le gingembre, le faire infuser 15 min dans 30 cl d'eau chaude avec le sucre. Filtrer.","Ajouter le jus des citrons verts, refroidir.","Au moment de servir, allonger d'eau gazeuse très froide."],"vw"]
 ];
+// recevoir_repas
+
+// ---------- Plats et desserts pour recevoir à table ----------
+Object.assign(I,{
+ paleron:{n:"Bœuf à braiser (paleron, joue)",r:"bo",u:"g",k:1.4},
+ rotiboeuf:{n:"Rôti de bœuf",r:"bo",u:"g",k:1.6},
+ veau:{n:"Épaule de veau en morceaux",r:"bo",u:"g",k:1.3},
+ agneau:{n:"Épaule d'agneau",r:"bo",u:"g",k:2.2},
+ pouletentier:{n:"Poulet fermier entier (1,6 kg)",r:"bo",u:"pc",k:2400},
+ cuisses:{n:"Hauts de cuisse de poulet",r:"bo",u:"g",k:1.6},
+ confit:{n:"Cuisses de canard confites",r:"bo",u:"pc",k:450},
+ merguez:{n:"Merguez",r:"bo",u:"g",k:2.9},
+ filetmignon:{n:"Filet mignon de porc",r:"bo",u:"g",k:1.2},
+ cabillauddos:{n:"Dos de cabillaud",r:"bo",u:"g",k:0.8},
+ crevcrues:{n:"Crevettes crues décortiquées",r:"bo",u:"g",k:0.8},
+ moules:{n:"Moules",r:"bo",u:"g",k:0.45},
+ rizrond:{n:"Riz rond (arborio ou bomba)",r:"co",u:"g",k:3.5},
+ riz:{n:"Riz basmati",r:"co",u:"g",k:3.5},
+ lasagne:{n:"Feuilles de lasagne",r:"co",u:"g",k:3.5},
+ gnocchis:{n:"Gnocchis",r:"cr",u:"g",k:1.6},
+ haricotsrouges:{n:"Haricots rouges (boîte, égouttés)",r:"co",u:"g",k:1.2},
+ tomatecc:{n:"Tomates concassées (boîte)",r:"co",u:"g",k:0.25},
+ concentre:{n:"Concentré de tomate",r:"pl",u:"cs",k:12},
+ vin:{n:"Vin rouge",r:"bs",u:"ml",k:0.85},
+ vinblanc:{n:"Vin blanc sec",r:"bs",u:"ml",k:0.8},
+ laurier:{n:"Feuilles de laurier",r:"pl",u:"pc",k:0},
+ thym:{n:"Thym frais",r:"fl",u:"bouquet",k:5},
+ ras:{n:"Ras el hanout",r:"pl",u:"cc",k:5},
+ cannelle:{n:"Cannelle",r:"pl",u:"cc",k:5},
+ curcuma:{n:"Curcuma",r:"pl",u:"cc",k:5},
+ patecurry:{n:"Pâte de curry vert",r:"pl",u:"cs",k:15},
+ saucepoisson:{n:"Sauce poisson (nuoc-mâm)",r:"pl",u:"cs",k:6},
+ muscade:{n:"Noix de muscade",r:"pl",u:"cc",k:5},
+ maizena:{n:"Maïzena",r:"pl",u:"g",k:3.5},
+ vanille:{n:"Gousses de vanille",r:"pl",u:"pc",k:0},
+ gelatine:{n:"Feuilles de gélatine",r:"pl",u:"pc",k:6},
+ abricots:{n:"Abricots secs",r:"co",u:"g",k:2.4},
+ biscuits:{n:"Spéculoos ou petits-beurre",r:"co",u:"g",k:4.8},
+ poireau:{n:"Poireaux",r:"fl",u:"g",k:0.3},
+ navet:{n:"Navets",r:"fl",u:"g",k:0.25},
+ epinards:{n:"Jeunes pousses d'épinards",r:"fl",u:"g",k:0.23},
+ haricotsverts:{n:"Haricots verts",r:"fl",u:"g",k:0.3},
+ potiron:{n:"Potiron ou butternut",r:"fl",u:"g",k:0.45},
+ grenaille:{n:"Pommes de terre grenaille",r:"fl",u:"g",k:0.8},
+ pommes:{n:"Pommes (type golden ou reinette)",r:"fl",u:"pc",k:80},
+ poires:{n:"Poires",r:"fl",u:"pc",k:90},
+ fruitsrouges:{n:"Fruits rouges (frais ou surgelés)",r:"fl",u:"g",k:0.45},
+ framboises:{n:"Framboises",r:"fl",u:"g",k:0.5},
+ mangue:{n:"Mangues",r:"fl",u:"pc",k:200},
+ orange:{n:"Oranges",r:"fl",u:"pc",k:60},
+ cerises:{n:"Cerises (fraîches ou surgelées)",r:"fl",u:"g",k:0.6},
+ reblochon:{n:"Reblochon",r:"cr",u:"pc",k:1500},
+ cremeepaisse:{n:"Crème fraîche épaisse",r:"cr",u:"g",k:3},
+ fromagefraiscake:{n:"Fromage frais type Philadelphia",r:"cr",u:"g",k:2.5}
+});
+Object.assign(CATS,{
+ plat:{n:"Plats",u:["part","parts"],c:"#6B4E9B"},
+ dessert:{n:"Desserts",u:["part","parts"],c:"#B5446E"}
+});
+AP.push(
+// ===== PLATS =====
+["bourguignon","Bœuf bourguignon","plat",40,"veille",6,"paleron:1200,lardons:150,vin:750,carotte:400,oignon:200,ail:2,champignons:300,farine:30,concentre:1,herbes:1,laurier:2,beurre:40,bouillon:1,pdt:1200,persil:0.5",["La veille au matin (ou l'avant-veille), couper la viande en gros cubes et la mariner dans le vin avec les carottes en rondelles, l'oignon, l'ail, le thym et le laurier.","Égoutter et bien sécher la viande. La dorer en plusieurs fois dans la moitié du beurre avec les lardons, sans surcharger la cocotte.","Remettre les légumes de la marinade, saupoudrer de farine, ajouter le concentré et cuire 2 min en remuant.","Verser le vin de la marinade et le bouillon dilué dans 30 cl d'eau, porter à ébullition puis cuire 3 h à couvert à feu très doux (ou au four à 150 °C).","Faire dorer les champignons dans le reste du beurre et les ajouter. Laisser refroidir et réserver au frais : c'est encore meilleur réchauffé.","Le jour J, réchauffer doucement 30 min et servir avec les pommes de terre vapeur et le persil."],"w"],
+["blanquette","Blanquette de veau à l'ancienne","plat",30,"jour",6,"veau:1200,carotte:400,oignon:150,poireau:150,bouillon:1,laurier:2,thym:0.5,champignons:300,beurre:60,farine:50,cremeepaisse:200,oeuf:2,citron:1,riz:450",["Mettre la viande dans l'eau froide, porter à ébullition 2 min, égoutter et rincer : la sauce restera bien blanche.","Remettre à cuire couvert d'eau avec le bouillon, les carottes en tronçons, l'oignon, le poireau, le thym et le laurier. Frémir 1 h 30.","Cuire les champignons 5 min avec un peu de beurre et un filet de citron.","Roux blanc : faire fondre le reste du beurre, ajouter la farine, puis 75 cl de bouillon filtré en fouettant. Cuire 10 min.","Hors du feu, lier avec la crème et les jaunes d'œufs, ajouter le jus de citron. Réunir viande, carottes, champignons et sauce sans faire bouillir.","Servir avec le riz."],""],
+["agneau7h","Épaule d'agneau confite 7 heures","plat",30,"jour",6,"agneau:1800,ail:12,thym:1,romarin:0.5,vinblanc:300,oignon:200,carotte:300,huile:3,grenaille:1200",["Le matin, préchauffer le four à 120 °C. Frotter l'épaule avec l'huile, le sel et le poivre, la dorer sur toutes les faces dans une cocotte.","Ajouter les oignons, les carottes, les gousses d'ail en chemise, le thym et le romarin, puis le vin blanc et 20 cl d'eau.","Couvrir hermétiquement (papier aluminium sous le couvercle) et enfourner pour 7 h, en arrosant toutes les 2 h.","1 h avant la fin, ajouter les pommes de terre grenaille autour de la viande.","La viande se détache à la cuillère : la servir dans la cocotte, avec l'ail confit à écraser."],"w","120/420"],
+["pouletroti","Poulet fermier rôti au citron et thym, grenailles","plat",20,"jour",6,"pouletentier:1.5,citron:2,thym:1,ail:8,beurre:60,grenaille:1200,huile:2,salade:200",["Sortir les poulets 1 h avant. Préchauffer le four à 200 °C.","Glisser du beurre mou sous la peau des blancs, saler et poivrer généreusement l'intérieur et l'extérieur, garnir l'intérieur de citron et de thym.","Disposer les grenailles coupées en deux et l'ail en chemise autour, arroser d'huile.","Rôtir 1 h 15 en arrosant toutes les 20 min, cuisse vers le haut les 15 dernières minutes pour bien la dorer.","Laisser reposer 15 min sous aluminium avant de découper. Servir avec le jus et la salade."],"k","200/75"],
+["parmentiercanard","Parmentier de canard confit","plat",45,"veille",6,"confit:6,echalote:4,pdt:1500,lait:250,beurre:50,muscade:0.25,chapelure:30,salade:200,noix:50",["Réchauffer les cuisses confites, retirer peau et os, effilocher la viande.","Faire revenir les échalotes émincées dans 2 cs de graisse de canard, ajouter la viande.","Préparer une purée avec le lait chaud, le beurre et la muscade.","Monter le parmentier dans un grand plat : canard, puis purée, puis chapelure. Réserver au frais.","Le jour J, enfourner 30 min à 200 °C jusqu'à ce que le dessus soit bien doré. Servir avec une salade aux noix."],"wk","200/30"],
+["lasagnes","Lasagnes à la bolognaise","plat",60,"veille",6,"boeuf:700,lardons:80,oignon:150,carotte:150,celeri:80,ail:2,vin:150,concentre:2,sauce:800,lasagne:350,beurre:60,farine:60,lait:900,muscade:0.25,parmesan:120,mozza:200",["Bolognaise : faire revenir lardons, oignon, carotte et céleri hachés finement 10 min. Ajouter le bœuf et le dorer, puis l'ail.","Déglacer au vin, ajouter le concentré et la sauce tomate. Mijoter 1 h à feu doux.","Béchamel : beurre et farine, puis le lait en fouettant ; cuire jusqu'à épaississement, saler, muscade.","Monter : béchamel, lasagnes, bolognaise, béchamel, parmesan… sur 4 étages. Finir par béchamel, mozzarella et parmesan. Réserver au frais.","Le jour J, cuire 40 min à 180 °C et laisser reposer 15 min avant de couper."],"k","180/40"],
+["risottochampi","Risotto crémeux aux champignons et parmesan","plat",40,"minute",6,"rizrond:450,champignons:600,echalote:4,ail:1,vinblanc:150,bouillon:2,beurre:80,parmesan:150,thym:0.5,persil:0.5",["Préparer 1,8 L de bouillon chaud. Faire dorer les champignons émincés à feu vif avec un peu de beurre, l'ail et le thym, réserver.","Faire suer les échalotes dans un peu de beurre, ajouter le riz et le nacrer 2 min.","Déglacer au vin blanc, puis ajouter le bouillon louche par louche en remuant, pendant 18 min.","Ajouter les champignons, puis hors du feu le reste du beurre froid et le parmesan. Couvrir 2 min.","Servir aussitôt avec le persil : un risotto n'attend pas."],"v"],
+["saumonbeurreblanc","Saumon rôti, beurre blanc et écrasé de pommes de terre","plat",40,"minute",6,"saumon:1000,pdt:1200,huile:3,ciboulette:1,echalote:3,vinblanc:150,creme:50,beurre:200,citron:1,haricotsverts:600",["Cuire les pommes de terre, les écraser grossièrement avec l'huile d'olive, la ciboulette, sel et poivre. Garder au chaud.","Cuire les haricots verts 7 min à l'eau salée.","Préchauffer le four à 180 °C. Poser le saumon en un grand pavé (ou en portions) sur une plaque, saler, cuire 15 min : il doit rester nacré.","Beurre blanc : réduire l'échalote hachée dans le vin blanc presque à sec, ajouter la crème, puis le beurre froid en dés en fouettant hors du feu. Citron, sel.","Servir le saumon sur l'écrasé, nappé de beurre blanc, avec les haricots verts."],"w","180/15"],
+["tajineagneau","Tajine d'agneau aux abricots et amandes","plat",30,"veille",6,"agneau:1300,oignon:300,ail:2,ras:2,cannelle:1,curcuma:0.5,miel:2,abricots:200,amandes:80,huile:3,coriandre:1,semoule:450,beurre:30",["Faire dorer l'agneau en morceaux dans l'huile, ajouter les oignons émincés et l'ail.","Ajouter les épices, bien enrober, puis de l'eau à mi-hauteur. Couvrir et mijoter 1 h 30.","Ajouter les abricots et le miel, cuire 20 min. Laisser refroidir et réserver au frais.","Le jour J, réchauffer 20 min. Griller les amandes à sec.","Servir avec la semoule au beurre, les amandes et la coriandre."],"w"],
+["couscous","Couscous poulet-merguez","plat",50,"jour",6,"cuisses:900,merguez:500,oignon:200,ras:2,curcuma:0.5,concentre:2,tomatecc:300,poischiches:400,carotte:500,navet:300,courgette:600,potiron:300,coriandre:1,bouillon:1,huile:3,semoule:500,beurre:40",["Dorer le poulet dans l'huile, ajouter les oignons, les épices et le concentré.","Ajouter les tomates, les carottes, les navets, le bouillon et 2 L d'eau. Cuire 30 min.","Ajouter courgettes, courge et pois chiches, cuire 20 min. Le bouillon peut attendre au chaud.","À l'arrivée des invités : griller les merguez et préparer la semoule avec le beurre et un peu de bouillon, puis l'égrainer.","Servir chacun dans son plat : semoule, légumes, viandes, bouillon à part avec la coriandre."],"k"],
+["curryvert","Curry vert de poulet, riz jasmin","plat",30,"jour",6,"cuisses:1000,patecurry:3,coco:800,haricotsverts:300,courgette:300,poivron:200,saucepoisson:3,sucre:20,citronvert:2,basilic:1,coriandre:0.5,riz:450,huile:2",["Faire revenir la pâte de curry dans l'huile avec quelques cuillères de lait de coco jusqu'à ce que ça embaume.","Ajouter le poulet en lamelles, l'enrober 3 min.","Verser le reste du lait de coco, la sauce poisson et le sucre, ajouter les légumes, mijoter 12 min. Réserver.","Au moment du repas, réchauffer et cuire le riz.","Finir avec le citron vert, le basilic et la coriandre."],""],
+["paella","Paella poulet, chorizo et fruits de mer","plat",70,"minute",6,"cuisses:600,chorizo:150,crevcrues:400,moules:800,oignon:150,poivron:300,ail:3,tomate:300,paprika:2,curcuma:1,bouillon:2,rizrond:500,petitspois:200,huile:4,citron:2,persil:0.5",["Préparer avant l'arrivée : légumes coupés, moules grattées, bouillon chaud (1,5 L).","Dans une grande poêle, dorer le poulet et le chorizo dans l'huile, ajouter oignon et poivron.","Ajouter l'ail, les tomates râpées, le paprika et le curcuma, cuire 5 min. Ajouter le riz, le nacrer, verser le bouillon et ne plus remuer.","Cuire 15 min, enfoncer crevettes, moules et petits pois, cuire 8 min.","Laisser le fond accrocher légèrement, reposer 5 min sous un torchon. Servir dans la poêle avec citron et persil."],"w"],
+["filetcroute","Filet mignon en croûte, champignons et jambon cru","plat",40,"jour",6,"filetmignon:1200,champignons:400,echalote:3,beurre:30,jamboncru:120,moutarde:2,patefeuilletee:2,oeuf:1,haricotsverts:600",["Dorer les filets mignons sur toutes les faces, les laisser refroidir.","Duxelles : hacher finement champignons et échalotes, les cuire au beurre jusqu'à évaporation complète. Laisser refroidir.","Badigeonner les filets de moutarde, les envelopper de jambon cru puis de duxelles.","Les rouler dans la pâte feuilletée, souder, dorer à l'œuf et réserver au frais.","Cuire 35 min à 200 °C. Laisser reposer 10 min avant de trancher. Servir avec les haricots verts."],"w","200/35"],
+["cabillaudchorizo","Dos de cabillaud au chorizo, purée à l'huile d'olive","plat",35,"minute",6,"cabillauddos:1000,chorizo:120,huile:5,ail:2,pdt:1300,lait:200,tomatescerises:300,persil:0.5,citron:1",["Préparer la purée avec le lait chaud et 3 cs d'huile d'olive, garder au chaud.","Préchauffer le four à 200 °C. Disposer le cabillaud et les tomates cerises dans un plat, arroser d'huile, saler.","Cuire 12-15 min.","Pendant ce temps, faire griller le chorizo en petits dés à sec avec l'ail jusqu'à ce qu'il rende son huile parfumée.","Napper le poisson de chorizo croustillant, ajouter le persil et le citron, servir avec la purée."],"","200/15"],
+["rotiboeuf","Rôti de bœuf, gratin dauphinois","plat",40,"jour",6,"rotiboeuf:1200,ail:3,thym:0.5,beurre:30,pdt:1500,lait:500,creme:300,muscade:0.25,salade:200",["Gratin (2 h avant) : trancher finement les pommes de terre, les cuire 10 min dans le lait et la crème avec l'ail, sel, muscade. Verser dans un plat beurré et cuire 1 h à 160 °C.","Sortir le rôti 1 h avant. Le saler, le saisir dans le beurre sur toutes les faces.","Monter le four à 220 °C, enfourner le rôti 15 min par livre pour une cuisson rosée (environ 30 min).","Laisser reposer 15 min sous aluminium : c'est ce qui le rend tendre.","Trancher et servir avec le gratin, le jus et la salade."],"wk","220/30"],
+["gnocchisorrentina","Gnocchis alla sorrentina gratinés","plat",30,"jour",6,"gnocchis:1200,sauce:800,ail:2,huile:2,basilic:1,mozza:375,parmesan:80,salade:200",["Faire revenir l'ail dans l'huile, ajouter la sauce tomate et mijoter 15 min. Saler, ajouter la moitié du basilic.","Cuire les gnocchis 2 min à l'eau bouillante, ou les dorer à la poêle.","Les mélanger à la sauce dans un plat à gratin.","Couvrir de mozzarella et de parmesan. Réserver jusqu'au repas.","Gratiner 15 min à 200 °C. Servir avec le reste du basilic et la salade."],"vk","200/15"],
+["curryleg","Curry de légumes et pois chiches au lait de coco","plat",35,"veille",6,"poischiches:800,potiron:600,epinards:300,oignon:200,ail:2,gingembre:30,curry:3,curcuma:1,tomatecc:400,coco:600,citronvert:2,coriandre:1,riz:450,huile:2",["Faire revenir l'oignon dans l'huile, ajouter ail et gingembre râpés, puis les épices.","Ajouter la courge en cubes, les tomates et le lait de coco, mijoter 20 min.","Ajouter les pois chiches, cuire 10 min. Réserver.","Le jour J, réchauffer, ajouter les épinards jusqu'à ce qu'ils tombent, puis le citron vert.","Servir avec le riz et la coriandre."],"v"],
+["tartiflette","Tartiflette","plat",40,"jour",6,"pdt:1500,lardons:300,oignon:250,vinblanc:100,reblochon:1,cremeepaisse:150,ail:1,salade:250",["Cuire les pommes de terre entières 20 min, les peler et les couper en rondelles.","Faire dorer les lardons, ajouter l'oignon émincé et le faire fondre, déglacer au vin blanc.","Frotter un grand plat avec l'ail, alterner pommes de terre et lardons-oignons, napper de crème.","Poser le reblochon coupé en deux dans l'épaisseur, croûte vers le haut. Réserver.","Enfourner 25 min à 200 °C. Servir avec une grande salade."],"k","200/25"],
+["chili","Chili con carne, riz et guacamole","plat",30,"veille",6,"boeuf:900,haricotsrouges:600,oignon:200,poivron:300,ail:2,cumin:2,paprika:2,piment:0.5,concentre:2,tomatecc:800,riz:450,avocat:3,citronvert:2,coriandre:1,fromageblanc:300",["Faire revenir oignon et poivron, ajouter le bœuf et le dorer à feu vif.","Ajouter ail, épices et concentré, puis les tomates et 20 cl d'eau. Mijoter 45 min. Ajouter les haricots 15 min avant la fin. Réserver.","Le jour J, réchauffer et cuire le riz.","Guacamole à la minute : avocats écrasés, citron vert, coriandre, sel.","Servir avec le fromage blanc à part."],"k"],
+["basquaise","Poulet basquaise","plat",30,"veille",6,"cuisses:1200,poivron:900,oignon:300,ail:3,tomatecc:800,vinblanc:150,piment:1,herbes:1,laurier:2,jamboncru:100,huile:3,riz:450",["Faire dorer le poulet salé dans l'huile, réserver.","Faire fondre oignons et poivrons en lanières 15 min, ajouter l'ail, le jambon et le piment.","Déglacer au vin blanc, ajouter tomates et herbes, remettre le poulet et mijoter 35 min. Réserver.","Le jour J, réchauffer 20 min et cuire le riz.","Servir dans la cocotte."],"k"],
+// ===== DESSERTS =====
+["tiramisu","Tiramisu","dessert",25,"veille",8,"mascarpone:500,oeuf:4,sucre:100,boudoirs:30,cafe:400,cacao:20",["Préparer le café fort et le laisser refroidir.","Séparer les blancs des jaunes. Fouetter les jaunes avec le sucre jusqu'à ce qu'ils blanchissent, puis incorporer le mascarpone.","Monter les blancs en neige ferme avec une pincée de sel, les incorporer délicatement.","Tremper rapidement les biscuits dans le café, les ranger dans le plat, couvrir de crème ; recommencer.","Réfrigérer au moins 6 h. Saupoudrer de cacao juste avant de servir."],"wk"],
+["mousse","Mousse au chocolat noir","dessert",20,"veille",8,"chocolat:250,beurre:30,oeuf:6,sucre:30",["Faire fondre le chocolat avec le beurre au bain-marie, laisser tiédir.","Incorporer les jaunes un à un.","Monter les blancs en neige avec une pincée de sel, ajouter le sucre à la fin pour les serrer.","Incorporer un tiers des blancs vivement, puis le reste délicatement à la spatule.","Répartir en verrines ou dans un saladier, réfrigérer au moins 4 h."],"k"],
+["fondant","Fondants au chocolat cœur coulant","dessert",20,"minute",6,"chocolat:200,beurre:150,oeuf:4,sucre:100,farine:40,fruitsrouges:150",["Dans l'après-midi : faire fondre chocolat et beurre, ajouter le sucre, les œufs un à un, puis la farine.","Beurrer et fariner 6 ramequins, les remplir et réserver au frais.","Au moment du dessert, enfourner 9-10 min à 200 °C (12 min s'ils sortent du frigo) : le dessus est cuit, le centre tremble.","Démouler aussitôt sur les assiettes.","Servir avec les fruits rouges."],"wk","200/10"],
+["tatin","Tarte Tatin, crème épaisse","dessert",30,"jour",8,"pommes:8,beurre:80,sucre:150,patefeuilletee:1,cremeepaisse:200,vanille:0.5",["Préparer un caramel à sec avec le sucre dans un moule allant sur le feu, ajouter le beurre hors du feu.","Peler les pommes, les couper en quartiers et les serrer debout sur le caramel.","Cuire 20 min sur le feu doux pour qu'elles confisent.","Couvrir de pâte feuilletée en rentrant les bords, piquer et cuire 30 min à 190 °C.","Laisser tiédir 10 min puis retourner d'un coup sur le plat. Servir tiède avec la crème à la vanille."],"w","190/30"],
+["tartecitron","Tarte au citron meringuée","dessert",60,"veille",8,"patebrisee:1,citron:4,oeuf:5,sucre:250,beurre:80,maizena:20",["Cuire la pâte à blanc 20 min à 180 °C avec du papier et des légumes secs, puis 5 min sans.","Crème au citron : chauffer le jus et le zeste des citrons, 120 g de sucre, 3 œufs entiers + 2 jaunes et la maïzena en fouettant jusqu'à épaississement. Hors du feu, ajouter le beurre.","Verser sur le fond de tarte et réfrigérer.","Meringue : monter les 2 blancs restants en neige, ajouter le reste du sucre petit à petit jusqu'à ce qu'elle soit brillante.","Couvrir la tarte de meringue et la colorer 5 min sous le gril ou au chalumeau."],"w"],
+["cremebrulee","Crème brûlée à la vanille","dessert",20,"veille",6,"creme:500,lait:100,oeuf:6,sucre:130,vanille:1",["Faire infuser la vanille fendue dans la crème et le lait chauds 15 min.","Fouetter les jaunes avec 80 g de sucre, verser la crème chaude en filet.","Répartir dans des ramequins et cuire 1 h à 100 °C : la crème doit trembler légèrement.","Refroidir puis réfrigérer au moins 4 h.","Au moment de servir, saupoudrer du reste de sucre et caraméliser au chalumeau ou sous le gril."],"w"],
+["pannacotta","Panna cotta aux fruits rouges","dessert",15,"veille",6,"creme:500,lait:100,sucre:70,vanille:1,gelatine:3,fruitsrouges:300",["Ramollir la gélatine dans l'eau froide.","Chauffer crème, lait, 50 g de sucre et vanille fendue, sans bouillir. Hors du feu, ajouter la gélatine essorée.","Répartir dans des verrines et réfrigérer au moins 4 h.","Coulis : mixer les fruits rouges avec le reste du sucre, filtrer.","Napper au moment de servir."],""],
+["crumble","Crumble pommes-poires à la cannelle, glace vanille","dessert",20,"jour",8,"pommes:5,poires:3,cannelle:1,farine:150,sucre:120,beurre:120,amandes:50",["Couper pommes et poires en dés, les mettre dans un plat avec la cannelle et 20 g de sucre.","Sabler du bout des doigts la farine, le reste du sucre, le beurre froid et les amandes concassées.","Couvrir les fruits de pâte à crumble. Réserver.","Enfourner 30 min à 180 °C pendant le plat.","Servir tiède (avec une boule de glace vanille si vous en avez)."],"k","180/30"],
+["pavlova","Pavlova aux fruits frais","dessert",30,"veille",8,"oeuf:4,sucre:220,maizena:10,citron:0.5,creme:300,mascarpone:100,fraises:300,kiwi:2,mangue:1,framboises:125",["La veille, monter les blancs en neige, ajouter le sucre petit à petit jusqu'à ce que la meringue soit très brillante, puis la maïzena et quelques gouttes de jus de citron.","Former un grand disque sur papier cuisson, creuser légèrement le centre.","Cuire 1 h 30 à 100 °C, puis laisser sécher dans le four éteint toute la nuit.","Le jour J, fouetter la crème bien froide avec le mascarpone en chantilly. Couper les fruits.","Garnir au dernier moment (la meringue ramollit) : chantilly puis fruits."],"w"],
+["saladefruits","Salade de fruits frais, menthe et citron vert","dessert",20,"jour",6,"ananas:500,mangue:2,orange:3,fraises:250,kiwi:3,citronvert:1,menthe:0.5,miel:1",["Peler et couper les fruits en morceaux réguliers, lever les oranges à vif en récupérant le jus.","Mélanger le jus des oranges, le jus de citron vert et le miel.","Verser sur les fruits, ajouter la menthe ciselée.","Réfrigérer au moins 1 h.","Servir bien frais : le dessert léger après un plat copieux."],"vc"],
+["cheesecake","Cheesecake new-yorkais, coulis de fruits rouges","dessert",30,"veille",10,"biscuits:200,beurre:80,fromagefraiscake:600,cremeepaisse:200,sucre:150,oeuf:3,citron:1,vanille:1,fruitsrouges:300",["Mixer les biscuits, les mélanger au beurre fondu et tasser au fond d'un moule à charnière.","Mélanger le fromage frais, la crème, 130 g de sucre, la vanille et le zeste de citron, puis les œufs un à un sans trop fouetter.","Verser sur le fond et cuire 1 h à 150 °C, puis laisser refroidir dans le four entrouvert (il ne craquera pas).","Réfrigérer une nuit.","Coulis : fruits rouges mixés avec le reste du sucre. Servir à part."],"w"],
+["ileflottante","Îles flottantes, crème anglaise et caramel","dessert",30,"veille",6,"lait:750,vanille:1,oeuf:6,sucre:200,amandes:30",["Crème anglaise : infuser la vanille dans le lait chaud. Blanchir les jaunes avec 80 g de sucre, verser le lait, cuire à feu doux en remuant jusqu'à ce qu'elle nappe la cuillère. Refroidir.","Monter les blancs en neige ferme avec 40 g de sucre.","Pocher des quenelles de blancs 1 min par face dans de l'eau frémissante (ou 30 s au micro-ondes). Égoutter.","Caramel : faire fondre le reste du sucre à sec jusqu'à couleur ambrée.","Servir les îles sur la crème anglaise, avec un filet de caramel et les amandes grillées."],"k"],
+["poireshelene","Poires Belle-Hélène","dessert",30,"jour",6,"poires:6,sucre:150,vanille:1,chocolat:150,creme:100,amandes:40",["Peler les poires en gardant la queue.","Les pocher 20 min dans 1 L d'eau avec le sucre et la vanille fendue. Les laisser refroidir dans le sirop.","Sauce : faire fondre le chocolat dans la crème chaude.","Griller les amandes effilées à sec.","Servir les poires nappées de chocolat chaud, parsemées d'amandes (et une boule de glace vanille si vous en avez)."],"k"],
+["clafoutis","Clafoutis aux cerises","dessert",15,"jour",8,"cerises:600,oeuf:4,sucre:100,farine:80,lait:300,creme:100,beurre:20,vanille:0.5",["Préchauffer le four à 180 °C, beurrer un plat et y répartir les cerises (avec les noyaux pour plus de goût).","Fouetter les œufs avec le sucre, ajouter la farine, puis le lait, la crème et la vanille.","Verser sur les cerises.","Cuire 40 min jusqu'à ce que ce soit doré et pris.","Servir tiède ou froid."],"k","180/40"],
+["brownies","Brownies aux noix","dessert",20,"veille",12,"chocolat:200,beurre:150,sucre:180,oeuf:3,farine:80,noix:100,cacao:15",["Faire fondre chocolat et beurre, ajouter le sucre puis les œufs un à un.","Ajouter la farine, le cacao et les noix concassées.","Verser dans un moule carré chemisé.","Cuire 22 min à 180 °C : le centre doit rester fondant.","Laisser refroidir complètement avant de couper en carrés."],"k"],
+["verrinesfraises","Verrines fraises, mascarpone et spéculoos","dessert",20,"jour",8,"fraises:500,mascarpone:250,creme:200,sucre:60,citron:0.5,biscuits:120,menthe:0.25",["Couper les fraises en dés, les mélanger avec 20 g de sucre et le jus de citron.","Fouetter la crème bien froide avec le mascarpone et le reste du sucre en chantilly ferme.","Émietter les biscuits au fond des verrines.","Alterner fraises et crème, finir par quelques miettes de biscuits et une feuille de menthe.","Réfrigérer jusqu'au service."],"kc"]
+);
+
 const RB={};
 const R=AP.map(([id,n,cat,t,w,y,ing,st,tags,four])=>{
   const r={id,n,cat,t,w,y,ing:ing.split(",").map(x=>{const[a,b]=x.split(":");return[a,+b]}),st,tags:tags||"",four:four?{temp:+four.split("/")[0],min:+four.split("/")[1]}:null};
@@ -894,6 +1070,117 @@ const CLOUD=(()=>{
 
 function cloudChanged(){try{CLOUD.changed()}catch(e){}}
 
+// ---------- Mode cuisine : une étape à la fois ----------
+const COOK=(()=>{
+  const e=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const nz=s=>String(s).toLowerCase().replace(/œ/g,"oe").normalize("NFD").replace(/[̀-ͯ]/g,"");
+  const STOP=new Set(["de","du","des","la","le","les","en","au","aux","et","ou","a","d","l","frais","fraiche","fraiches","boite","egouttes","surgeles","nature","seches","seche","sec","cuit","cuites","cuits","pc","tranches","extra","qualite","sashimi","moyenne","demi","ecreme","fine","fines"]);
+  let R=null,i=0,root=null,lock=null,timers=[],tick=null,showIng=false,done={},ac=null,sx=null;
+  // mots-clés d'un ingrédient pour le repérer dans une étape
+  function keys(name){
+    const base=nz(name).replace(/\(.*?\)/g," ").replace(/[^a-z\s-]/g," ");
+    const w=base.split(/[\s-]+/).filter(x=>x.length>2&&!STOP.has(x));
+    return w.slice(0,2).map(x=>x.replace(/(es|s|x)$/,"")).filter(x=>x.length>2);
+  }
+  function stepIngs(s){
+    const t=nz(s);
+    return R.ings.filter(g=>{const k=g.k||(g.k=keys(g.name));return k.length&&t.includes(k[0])});
+  }
+  // durées repérées dans le texte : « 12 min », « 1 h 30 », « 20-25 min »
+  function durations(s){
+    const out=[],rx=/(\d+)\s*h\s*(\d+)?|(\d+)(?:\s*(?:à|-)\s*(\d+))?\s*min/g;let m;
+    while((m=rx.exec(s))){
+      let sec,label;
+      if(m[1]){sec=(+m[1])*3600+(m[2]?+m[2]*60:0);label=m[1]+" h"+(m[2]?" "+m[2]:"");}
+      else{const a=+m[3],b=m[4]?+m[4]:a;sec=b*60;label=(m[4]?a+"-"+b:a)+" min";}
+      if(sec>=60&&sec<=6*3600&&!out.some(o=>o.sec===sec))out.push({sec,label});
+    }
+    return out.slice(0,3);
+  }
+  const mmss=s=>{s=Math.max(0,Math.round(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0")};
+  function beep(){
+    try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();[0,0.35,0.7].forEach(d=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(0.0001,ac.currentTime+d);g.gain.exponentialRampToValueAtTime(0.3,ac.currentTime+d+0.02);g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+d+0.3);o.start(ac.currentTime+d);o.stop(ac.currentTime+d+0.32)})}catch(x){}
+    try{navigator.vibrate&&navigator.vibrate([300,150,300,150,300])}catch(x){}
+  }
+  async function wake(on){
+    try{if(on&&"wakeLock" in navigator){lock=await navigator.wakeLock.request("screen")}else if(!on&&lock){await lock.release();lock=null}}catch(x){}
+  }
+  document.addEventListener("visibilitychange",()=>{if(root&&document.visibilityState==="visible")wake(true)});
+  function paintTimers(){
+    const el=root&&root.querySelector(".ck-timers");if(!el)return;
+    const now=Date.now();
+    el.innerHTML=timers.map((t,k)=>{const left=(t.end-now)/1000,over=left<=0;
+      return `<div class="ck-t ${over?"ring":""}"><span class="ck-tl">${e(t.label)}</span><b class="num">${over?"C'est prêt !":mmss(left)}</b><button type="button" data-ckstop="${k}" aria-label="Arrêter le minuteur">${over?"OK":"×"}</button></div>`}).join("");
+    el.hidden=!timers.length;
+  }
+  function loop(){
+    const now=Date.now();
+    timers.forEach(t=>{if(!t.rang&&t.end<=now){t.rang=true;beep()}});
+    paintTimers();
+    if(!timers.length){clearInterval(tick);tick=null}
+  }
+  function startTimer(sec,label){
+    timers.push({end:Date.now()+sec*1000,label:label+" · étape "+(i+1),rang:false});
+    if(!tick)tick=setInterval(loop,500);
+    try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume&&ac.resume()}catch(x){}
+    paintTimers();
+  }
+  function paint(){
+    const n=R.steps.length,fin=i>=n,s=fin?"":R.steps[i];
+    const si=fin?[]:stepIngs(s),du=fin?[]:durations(s);
+    root.querySelector(".ck-bar i").style.width=Math.round(Math.min(i,n)/n*100)+"%";
+    root.querySelector(".ck-count").textContent=fin?"Terminé":"Étape "+(i+1)+" sur "+n;
+    root.querySelector(".ck-main").innerHTML=fin
+      ?`<div class="ck-end"><div class="ck-big">Bon appétit !</div><p>Toutes les étapes sont faites.</p><button type="button" class="ck-btn" data-ckgo="0">Revoir depuis le début</button></div>`
+      :`${R.opt&&R.opt.includes(i)?'<span class="ck-opt">Optionnel</span>':""}<p class="ck-step">${e(s)}</p>
+        ${si.length?`<div class="ck-need"><b>Pour cette étape</b><ul>${si.map(g=>`<li><span class="num">${e(g.q)}</span> ${e(g.name)}</li>`).join("")}</ul></div>`:""}
+        ${du.length?`<div class="ck-dur">${du.map(d=>`<button type="button" class="ck-tbtn" data-cktimer="${d.sec}" data-cklab="${e(d.label)}"><span aria-hidden="true">⏱</span> Lancer ${e(d.label)}</button>`).join("")}</div>`:""}`;
+    root.querySelector("[data-ckprev]").disabled=i===0;
+    const nx=root.querySelector("[data-cknext]");nx.textContent=fin?"Fermer":i===n-1?"Terminer ✓":"Étape suivante →";
+    root.querySelector(".ck-dots").innerHTML=R.steps.map((_,k)=>`<button type="button" class="${k===i?"on":k<i?"past":""}" data-ckgo="${k}" aria-label="Aller à l'étape ${k+1}"></button>`).join("");
+    const ing=root.querySelector(".ck-ings");ing.hidden=!showIng;
+    root.querySelector("[data-ckings]").setAttribute("aria-expanded",showIng);
+    ing.innerHTML=`<h4>Ingrédients</h4><ul>${R.ings.map((g,k)=>`<li class="${done[k]?"done":""}"><label><input type="checkbox" data-ckchk="${k}" ${done[k]?"checked":""}><span class="num">${e(g.q)}</span><span>${e(g.name)}</span></label></li>`).join("")}</ul><p class="ck-tip">Cochez ce qui est sorti et pesé.</p>`;
+    paintTimers();
+  }
+  function open(rec){
+    R=rec;i=0;showIng=false;done={};
+    if(!root){root=document.createElement("div");root.className="ck";root.setAttribute("role","dialog");root.setAttribute("aria-modal","true");document.body.appendChild(root)}
+    root.innerHTML=`<div class="ck-top"><div class="ck-tt"><small>${e(R.sub||"Mode cuisine")}</small><b>${e(R.title)}</b></div>
+        <button type="button" class="ck-ib" data-ckings aria-expanded="false">Ingrédients</button><button type="button" class="ck-ib ck-x" data-ckclose aria-label="Quitter le mode cuisine">Quitter ×</button></div>
+      <div class="ck-bar"><i></i></div>
+      <div class="ck-body"><div class="ck-count"></div><div class="ck-main" aria-live="polite"></div><aside class="ck-ings" hidden></aside></div>
+      <div class="ck-timers" hidden></div>
+      <div class="ck-nav"><button type="button" class="ck-btn ghost" data-ckprev>← Précédente</button><div class="ck-dots"></div><button type="button" class="ck-btn" data-cknext>Étape suivante →</button></div>`;
+    root.hidden=false;document.documentElement.classList.add("ck-on");wake(true);paint();
+    try{root.querySelector("[data-cknext]").focus({preventScroll:true})}catch(x){}
+  }
+  function close(){if(!root)return;root.hidden=true;document.documentElement.classList.remove("ck-on");wake(false)}
+  const go=k=>{i=Math.max(0,Math.min(R.steps.length,k));paint();root.querySelector(".ck-body").scrollTop=0};
+  document.addEventListener("click",ev=>{
+    if(!root||root.hidden||!root.contains(ev.target))return;
+    const t=ev.target;
+    if(t.closest("[data-ckclose]")){close();return}
+    if(t.closest("[data-ckprev]")){go(i-1);return}
+    if(t.closest("[data-cknext]")){if(i>=R.steps.length)close();else go(i+1);return}
+    const g=t.closest("[data-ckgo]");if(g){go(+g.dataset.ckgo);return}
+    if(t.closest("[data-ckings]")){showIng=!showIng;paint();return}
+    const tm=t.closest("[data-cktimer]");if(tm){startTimer(+tm.dataset.cktimer,tm.dataset.cklab);return}
+    const st=t.closest("[data-ckstop]");if(st){timers.splice(+st.dataset.ckstop,1);paintTimers();return}
+  });
+  document.addEventListener("change",ev=>{const c=ev.target.closest&&ev.target.closest("[data-ckchk]");if(c&&root&&root.contains(c)){done[c.dataset.ckchk]=c.checked;c.closest("li").classList.toggle("done",c.checked)}});
+  document.addEventListener("keydown",ev=>{
+    if(!root||root.hidden)return;
+    if(ev.key==="ArrowRight"){ev.preventDefault();if(i<R.steps.length)go(i+1)}
+    else if(ev.key==="ArrowLeft"){ev.preventDefault();go(i-1)}
+    else if(ev.key==="Escape"){ev.stopImmediatePropagation();close()}
+  },true);
+  document.addEventListener("touchstart",ev=>{if(root&&!root.hidden&&root.contains(ev.target)&&!ev.target.closest(".ck-ings,.ck-timers"))sx=[ev.touches[0].clientX,ev.touches[0].clientY]},{passive:true});
+  document.addEventListener("touchend",ev=>{if(!sx)return;const dx=ev.changedTouches[0].clientX-sx[0],dy=ev.changedTouches[0].clientY-sx[1];sx=null;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(dx<0&&i<R.steps.length)go(i+1);else if(dx>0)go(i-1)}},{passive:true});
+  return {open,close,get active(){return !!(root&&!root.hidden)}};
+})();
+
+
 // ---------- Outils ----------
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
@@ -925,8 +1212,9 @@ try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(o)P=Object.assign(P
 Object.keys(P.sel).forEach(id=>{if(!RB[id])delete P.sel[id]});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}}
 let cat="",q="",flt=new Set();
-const PER={apero:6,dinatoire:14};
-const FORMULES={apero:"Apéro",dinatoire:"Apéro dînatoire"};
+const PER={apero:6,dinatoire:14,repas:4};
+const FORMULES={apero:"Apéro",dinatoire:"Apéro dînatoire",repas:"Apéro + plat + dessert"};
+const MEAL=new Set(["plat","dessert"]);
 
 // ---------- Invités, intolérances et historique ----------
 function guests(){const all=dread("invites");return Object.entries(all).filter(([id])=>P.who&&P.who[id]).map(([id,p])=>Object.assign({id},p))}
@@ -950,7 +1238,8 @@ const servedText=s=>{const by={};s.forEach(x=>{if(!by[x.nom])by[x.nom]=x.date});
 // ---------- Calcul des quantités ----------
 function plan(){
   const ids=Object.keys(P.sel).filter(id=>RB[id]);
-  const food=ids.filter(id=>RB[id].cat!=="boisson"),drink=ids.filter(id=>RB[id].cat==="boisson");
+  const food=ids.filter(id=>RB[id].cat!=="boisson"&&!MEAL.has(RB[id].cat)),drink=ids.filter(id=>RB[id].cat==="boisson");
+  const plats=ids.filter(id=>RB[id].cat==="plat"),desserts=ids.filter(id=>RB[id].cat==="dessert");
   const target=P.g*PER[P.f];
   const qty={};
   const share=(list,total)=>{
@@ -961,16 +1250,19 @@ function plan(){
   };
   share(food,target);
   share(drink,P.g*(P.f==="dinatoire"?3:2));
+  share(plats,Math.ceil(P.g*(plats.length>1?1.2:1)));
+  share(desserts,Math.ceil(P.g*(desserts.length>1?1.2:1)));
   const pieces=food.reduce((a,id)=>a+qty[id],0);
-  const kcal=food.reduce((a,id)=>a+qty[id]*kcalUnit(RB[id]),0);
-  return {ids,food,drink,qty,target,pieces,kcal};
+  const kcal=food.concat(plats,desserts).reduce((a,id)=>a+qty[id]*kcalUnit(RB[id]),0);
+  return {ids,food,drink,plats,desserts,qty,target,pieces,kcal};
 }
 const factor=(id,pl)=>pl.qty[id]/RB[id].y;
 
 // ---------- Sélection automatique ----------
 const MIX={
   apero:{tartinade:1,verrine:1,froid:2,chaud:1,planche:1,boisson:1},
-  dinatoire:{tartinade:2,verrine:2,froid:3,chaud:3,planche:1,douceur:1,boisson:1}
+  dinatoire:{tartinade:2,verrine:2,froid:3,chaud:3,planche:1,douceur:1,boisson:1},
+  repas:{tartinade:1,froid:1,chaud:1,planche:1,boisson:1,plat:1,dessert:1}
 };
 function compose(){
   const mix=MIX[P.f];P.sel={};
@@ -1007,8 +1299,8 @@ function renderPlanCard(){
       return (f.length?`<button type="button" class="wchip ${P.foyer!==false?"on":""}" data-who="foyer" aria-pressed="${P.foyer!==false}">Le foyer (${f.length})</button>`:"")+inv.map(([id,p])=>`<button type="button" class="wchip ${P.who&&P.who[id]?"on":""}" data-who="${id}" aria-pressed="${!!(P.who&&P.who[id])}">${esc(p.nom||"Sans nom")}${(p.r||[]).length?' <i title="'+esc((p.r||[]).map(k=>DIET_N[k]).join(", "))+'">⚠</i>':""}</button>`).join("")+`<a class="wadd" href="#invites">${inv.length?"Gérer mes invités":"+ Ajouter mes invités et leurs intolérances"}</a>`})()}</div></div>
     <div class="prow"><span>Formule</span><span class="seg" role="group" aria-label="Formule">${Object.entries(FORMULES).map(([k,l])=>`<button type="button" data-f="${k}" aria-pressed="${P.f===k}">${l}</button>`).join("")}</span></div>
     <div class="prow"><label for="hArr">Arrivée des invités</label><input type="time" id="hArr" value="${esc(P.h)}"></div>
-    <p class="hint">${P.f==="dinatoire"?"Apéro dînatoire : environ 14 bouchées par personne, il remplace le repas.":"Apéro : environ 6 bouchées par personne, avant de passer à table."} Soit <b class="num">${pl.target}</b> bouchées pour ${P.g} personnes.</p>
-    <div class="actions"><button type="button" class="btn primary" data-compose>Composer pour moi</button><a class="btn" href="#mon-apero">Mon apéro${pl.ids.length?" ("+pl.ids.length+")":""}</a></div>`;
+    <p class="hint">${P.f==="dinatoire"?"Apéro dînatoire : environ 14 bouchées par personne, il remplace le repas.":P.f==="repas"?"Un apéro léger (environ 4 bouchées par personne), puis un plat et un dessert à table. Choisissez-les dans les catégories Plats et Desserts, ou laissez-nous composer.":"Apéro : environ 6 bouchées par personne, avant de passer à table."} Soit <b class="num">${pl.target}</b> bouchées${P.f==="repas"?" à l'apéro":""} pour ${P.g} personnes.</p>
+    <div class="actions"><button type="button" class="btn primary" data-compose>Composer pour moi</button><a class="btn" href="#mon-apero">Ma réception${pl.ids.length?" ("+pl.ids.length+")":""}</a></div>`;
 }
 function renderCats(){
   const base=R.filter(r=>{const c=cat;cat="";const ok=match(r);cat=c;return ok});
@@ -1033,17 +1325,20 @@ function renderGrid(){
 }
 function renderDock(){
   const pl=plan(),pct=Math.min(100,Math.round(pl.pieces/pl.target*100));
-  document.getElementById("dock").innerHTML=pl.ids.length?`<div class="in"><span class="txt">${pl.ids.length} recette${pl.ids.length>1?"s":""} · ${P.g} invités · <span class="num">${pl.pieces}</span>/${pl.target} bouchées</span><span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span>${location.hash==="#mon-apero"?'<a href="#idees">+ Ajouter des idées</a>':'<a href="#mon-apero">Voir mon apéro →</a>'}</div>`:"";
+  document.getElementById("dock").innerHTML=pl.ids.length?`<div class="in"><span class="txt">${pl.ids.length} recette${pl.ids.length>1?"s":""} · ${P.g} invités · <span class="num">${pl.pieces}</span>/${pl.target} bouchées</span><span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span>${location.hash==="#mon-apero"?'<a href="#idees">+ Ajouter des idées</a>':'<a href="#mon-apero">Voir ma réception →</a>'}</div>`:"";
   document.body.style.paddingBottom=pl.ids.length?"84px":"0";
 }
 
-// ---------- Rendu : mon apéro ----------
+// ---------- Rendu : ma réception ----------
 function advice(pl){
   const out=[],cnt=c=>pl.ids.filter(id=>RB[id].cat===c).length;
   if(!pl.ids.length)return out;
   if(pl.pieces<pl.target*0.9)out.push(["","Il manque environ "+(pl.target-pl.pieces)+" bouchées : ajoutez une idée ou augmentez les quantités."]);
   if(!cnt("boisson"))out.push(["","Pensez à une boisson sans alcool maison : citronnade, thé glacé ou mojito sans alcool."]);
   if(!cnt("chaud")&&P.f==="dinatoire")out.push(["","Un apéro dînatoire sans bouchée chaude, c'est rare : les feuilletés ou les mini-pizzas plaisent à tout le monde."]);
+  if(P.f==="repas"&&!cnt("plat"))out.push(["bad","Il manque le plat : choisissez-en un dans la catégorie Plats (les mijotés se préparent la veille, idéal pour recevoir)."]);
+  if(P.f==="repas"&&!cnt("dessert"))out.push(["","Et pour finir ? Ajoutez un dessert : tiramisu, mousse au chocolat ou tarte Tatin."]);
+  if(cnt("plat")&&cnt("plat")+cnt("dessert")>=2&&pl.ids.filter(id=>MEAL.has(RB[id].cat)&&RB[id].w==="minute").length>=2)out.push(["","Plat et dessert sont tous les deux à faire à la minute : choisissez-en un qui se prépare la veille pour rester avec vos invités."]);
   if(P.f==="dinatoire"&&!cnt("douceur"))out.push(["","Pour finir en douceur : brochettes de fruits ou truffes au chocolat."]);
   if(cnt("tartinade")&&!pl.ids.some(id=>RB[id].cat==="planche"&&RB[id].id==="crudites"))out.push(["","Les tartinades vont très bien avec un plateau de crudités à tremper."]);
   const minute=pl.ids.filter(id=>RB[id].w==="minute").length;
@@ -1058,15 +1353,16 @@ function advice(pl){
 }
 function renderSel(){
   const pl=plan(),el=document.getElementById("selbox");
-  if(!pl.ids.length){el.innerHTML=`<h2>Mon apéro</h2><div class="empty"><b>Rien pour l'instant.</b><br>Ajoutez des idées, ou laissez-nous composer un apéro équilibré.<div class="row" style="justify-content:center;margin-top:12px"><button type="button" class="btn primary" data-compose>Composer pour moi</button><a class="btn" href="#idees">Voir les idées</a></div></div>`;return}
+  if(!pl.ids.length){el.innerHTML=`<h2>Ma réception</h2><div class="empty"><b>Rien pour l'instant.</b><br>Ajoutez des idées, ou laissez-nous composer un apéro équilibré.<div class="row" style="justify-content:center;margin-top:12px"><button type="button" class="btn primary" data-compose>Composer pour moi</button><a class="btn" href="#idees">Voir les idées</a></div></div>`;return}
   const pct=Math.min(100,Math.round(pl.pieces/pl.target*100));
   const order=Object.keys(CATS);
   const ids=[...pl.ids].sort((a,b)=>order.indexOf(RB[a].cat)-order.indexOf(RB[b].cat));
   const prep=ids.reduce((a,id)=>a+RB[id].t*Math.max(1,Math.ceil(factor(id,pl)*0.6+0.4)),0);
   const prepVeille=ids.filter(id=>RB[id].w==="veille").reduce((a,id)=>a+RB[id].t,0);
-  el.innerHTML=`<div class="prow"><h2>Mon apéro</h2><button type="button" class="btn sm ghost" data-clear>Tout retirer</button></div>
+  el.innerHTML=`<div class="prow"><h2>Ma réception</h2><button type="button" class="btn sm ghost" data-clear>Tout retirer</button></div>
     <p class="muted" style="margin:0">${FORMULES[P.f]} pour <b>${P.g} invités</b>, arrivée à <b class="num">${esc(P.h)}</b>. <a href="#idees">Modifier</a></p>
     <div class="gauge"><div class="lab"><span>Bouchées prévues</span><span class="num">${pl.pieces} / ${pl.target}</span></div><div class="g"><i style="width:${pct}%"></i></div>
+      ${pl.plats.length||pl.desserts.length?`<div class="lab"><span>À table : ${pl.plats.map(id=>esc(RB[id].n)+" ("+pl.qty[id]+" parts)").join(", ")||"aucun plat"}</span><span>${pl.desserts.map(id=>esc(RB[id].n)+" ("+pl.qty[id]+" parts)").join(", ")||"aucun dessert"}</span></div>`:""}
       <div class="lab"><span>≈ ${Math.round(pl.pieces/P.g)} bouchées et ${Math.round(pl.kcal/P.g)} kcal par personne</span><span>≈ ${Math.floor(prep/60)} h ${pad(prep%60)} en cuisine, cuissons comprises${prepVeille?", dont "+Math.round(prepVeille/5)*5+" min la veille":""}</span></div></div>
     <ul class="advice">${advice(pl).map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("")}</ul>
     <ul class="sel">${ids.map(id=>{const r=RB[id],n=pl.qty[id],st=r.cat==="verrine"||r.cat==="boisson"||r.y<=12?1:2;
@@ -1089,7 +1385,7 @@ function detail(r,pl,open){
   return `<details class="tlr" ${open?"open":""}><summary><b>${esc(r.n)}</b> <span class="muted">· ${n} ${unitWord(r,n)} · ${r.t} min${r.four?" · four "+r.four.temp+" °C":""}</span></summary>
     <p class="tling"><b>Il vous faut :</b> ${r.ing.map(([i,q])=>esc(ingLine(i,q*f))).join(" · ")}</p>
     <ol class="tlsteps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
-    <button type="button" class="linkbtn" data-open="${r.id}">Ouvrir la fiche</button></details>`;
+    <span class="row"><button type="button" class="cookb" data-cook="${r.id}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button><button type="button" class="linkbtn" data-open="${r.id}">Ouvrir la fiche</button></span></details>`;
 }
 function timeline(pl){
   const T=(()=>{const m=/^(\d{1,2}):(\d{2})$/.exec(P.h||"");return m?(+m[1])*60+(+m[2]):19*60+30})();
@@ -1104,10 +1400,23 @@ function timeline(pl){
   add(T-45,"Dresser les plats froids et les garder au frais",cold.map(name));
   add(T-20,"Sortir les tartinades du réfrigérateur",rs.filter(r=>r.cat==="tartinade").map(r=>esc(r.n)));
   // Préparations à la minute (hors four)
-  const quick=rs.filter(r=>r.w==="minute"&&!r.four&&r.cat!=="boisson");
+  const quick=rs.filter(r=>r.w==="minute"&&!r.four&&r.cat!=="boisson"&&!MEAL.has(r.cat));
+  // À table : plat puis dessert
+  const TP=T+70,TD=T+135,plats=rs.filter(r=>r.cat==="plat"),desserts=rs.filter(r=>r.cat==="dessert");
+  plats.forEach(r=>{
+    if(r.four){if(r.four.min<=120)add(TP-r.four.min-15,"Préchauffer le four à "+r.four.temp+" °C pour le plat",null);add(TP-r.four.min,"Enfourner le plat · "+r.four.temp+" °C, "+(r.four.min>=120?Math.round(r.four.min/60)+" h":r.four.min+" min"),[name(r)+detail(r,pl,false)],true)}
+    else if(r.w==="minute")add(TP-Math.min(r.t,45),"Lancer la cuisson du plat",[name(r)+detail(r,pl,false)],true);
+    else add(TP-30,"Réchauffer doucement le plat",[name(r)]);
+  });
+  if(plats.length)add(TP,"Passer à table",plats.map(r=>esc(r.n)),true);
+  desserts.forEach(r=>{
+    if(r.four)add(TD-r.four.min-(r.w==="minute"?0:20),(r.w==="minute"?"Enfourner le dessert":"Enfourner le dessert pendant le plat")+" · "+r.four.temp+" °C, "+r.four.min+" min",[name(r)+detail(r,pl,false)],true);
+    else add(TD-10,"Sortir et dresser le dessert",[name(r)]);
+  });
+  if(desserts.length)add(TD,"Dessert",desserts.map(r=>esc(r.n)),true);
   add(T-30,"Préparer les éléments à la minute",quick.map(r=>name(r)+detail(r,pl,false)));
   // Four : vagues de bouchées chaudes
-  const ovenItems=rs.filter(r=>r.four&&(r.cat==="chaud"||r.w==="minute")).sort((a,b)=>b.four.temp-a.four.temp||a.four.min-b.four.min);
+  const ovenItems=rs.filter(r=>r.four&&!MEAL.has(r.cat)&&(r.cat==="chaud"||r.w==="minute")).sort((a,b)=>b.four.temp-a.four.temp||a.four.min-b.four.min);
   if(ovenItems.length){
     let t=T-ovenItems[0].four.min+(P.f==="dinatoire"?10:0);
     // la première fournée est prête à l'arrivée, puis une toutes les 20 minutes environ
@@ -1181,7 +1490,7 @@ function renderInvites(){
       return `<li><div class="hh"><b>${dfr(x.date)}</b><span class="muted">${FORMULES[x.f]||"Apéro"} · ${x.g||""} pers.${names.length?" · avec "+esc(names.join(", ")):""}</span></div>
         <div class="hd2">${(x.recettes||[]).filter(r=>RB[r]).map(r=>`<button type="button" class="hdish" data-open="${r}" style="--cc:${CATS[RB[r].cat].c}">${esc(RB[r].n)}</button>`).join("")}</div>
         <div class="row"><button type="button" class="btn sm" data-redo="${id}">Reprendre ce menu</button><button type="button" class="btn sm ghost" data-recdel="${id}">Supprimer</button></div></li>`}).join("")}</ul>`
-    :'<p class="muted">Aucune réception enregistrée. Après un apéro, cliquez sur « Enregistrer dans l\'historique » dans « Mon apéro ».</p>'}`;
+    :'<p class="muted">Aucune réception enregistrée. Après un apéro, cliquez sur « Enregistrer dans l\'historique » dans « Ma réception ».</p>'}`;
 }
 
 // ---------- Fiche recette ----------
@@ -1196,7 +1505,7 @@ function openSheet(id){
       <div class="facts"><span>${r.t} min</span><span class="num">≈ ${kcalUnit(r)} kcal / ${unitWord(r,1)}</span><span class="pill ${WHEN[r.w][1]}">${WHEN[r.w][0]}</span>${r.four?`<span class="pill">Four ${r.four.temp} °C</span>`:""}${has(r,"v")?'<span class="pill">Végétarien</span>':""}${has(r,"c")?'<span class="pill">Sans cuisson</span>':""}</div>
       ${conf(r).length?`<div class="warnbox">Attention, contient : ${esc(conflictText(conf(r)))}</div>`:""}${serveNote(r)?`<div class="servedbox">${esc(serveNote(r))}</div>`:""}${served(r).length?`<div class="servedbox">${esc(servedText(served(r)))}</div>`:""}
       <div class="prow"><span>${inSel?"Prévu pour votre apéro":"Quantité de la recette"} : <b class="num">${n}</b> ${unitWord(r,n)}</span>
-        <button type="button" class="btn ${inSel?"":"primary"}" data-toggle="${id}">${inSel?"✓ Dans mon apéro · retirer":"+ Ajouter à mon apéro"}</button></div>
+        <span class="row"><button type="button" class="cookb" data-cook="${id}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button><button type="button" class="btn ${inSel?"":"primary"}" data-toggle="${id}">${inSel?"✓ Prévu · retirer":"+ Ajouter à ma réception"}</button></span></div>
       <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings">${r.ing.map(([i,q])=>`<li><span class="num">${fmt(q*f,I[i].u)}</span><span>${esc(I[i].n)}</span></li>`).join("")}</ul></div>
         <div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li><span>${esc(s)}</span></li>`).join("")}</ol></div></div>
     </div></article>`;
@@ -1218,10 +1527,11 @@ function toggle(id){
   save();renderAll();if(cur)openSheet(cur);
 }
 document.addEventListener("click",e=>{
+  const ck=e.target.closest("[data-cook]");if(ck){const r=RB[ck.dataset.cook],pl=plan(),n=(r.id in P.sel)?pl.qty[r.id]:r.y,f=n/r.y;COOK.open({title:r.n,sub:CATS[r.cat].n+" · "+n+" "+unitWord(r,n),steps:r.st,ings:r.ing.map(([i,q])=>({q:fmt(q*f,I[i].u),name:I[i].n}))});return}
   if(e.target.closest("[data-close]")||e.target===ov){closeSheet();return}
   const tg=e.target.closest("[data-toggle]");if(tg){toggle(tg.dataset.toggle);return}
   if(!ov.hidden)return;
-  if(e.target.closest("[data-compose]")){compose();renderAll();toast("Apéro composé : "+Object.keys(P.sel).length+" recettes");if(location.hash!=="#mon-apero")location.hash="mon-apero";return}
+  if(e.target.closest("[data-compose]")){compose();renderAll();toast("Menu composé : "+Object.keys(P.sel).length+" recettes");if(location.hash!=="#mon-apero")location.hash="mon-apero";return}
   const g=e.target.closest("[data-g]");if(g){P.g=Math.max(2,Math.min(60,P.g+ +g.dataset.g));save();renderAll();return}
   const f=e.target.closest("[data-f]");if(f){P.f=f.dataset.f;save();renderAll();return}
   const c=e.target.closest("[data-cat]");if(c){cat=c.dataset.cat;renderCats();renderGrid();return}
