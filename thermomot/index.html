@@ -122,20 +122,6 @@ aside{display:grid;gap:18px}
 .near div span:last-child{font-family:var(--f-mono);color:var(--muted);font-size:12px}
 .loading{max-width:1080px;margin:40px auto;font-family:var(--f-mono);color:var(--muted)}
 .sync{font-size:12px;color:var(--muted)}
-.right{display:grid;gap:8px;justify-items:end}
-@media (max-width:600px){.right{justify-items:start}}
-.player{font-size:15px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
-.link{background:none;border:none;padding:2px 0;color:var(--accent);text-decoration:underline;cursor:pointer;font-size:15px}
-.overlay{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 45%,transparent);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px));z-index:20}
-.overlay[hidden]{display:none!important}
-.auth{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(380px,100%);display:grid;gap:6px}
-.auth label{font-size:13px;color:var(--muted);margin-top:6px}
-.auth input{border:2px solid var(--ink);background:var(--bg);border-radius:9px;padding:9px 12px;font-size:17px;min-width:0}
-.tabs{display:flex;gap:4px;background:var(--sunk);border-radius:9px;padding:3px;margin-bottom:6px}
-.tabs button{flex:1;border:none;background:transparent;padding:8px;border-radius:7px;cursor:pointer;font-weight:700;color:var(--muted)}
-.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink)}
-.auth .note{font-size:13px;color:var(--muted);margin:4px 0 0}
-.authmsg{font-size:14px;color:var(--accent);margin:0;min-height:1.2em}
 .backlink{max-width:1080px;margin:28px auto 0;font-size:13px;color:var(--muted)}
 .backlink a{color:inherit}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -148,34 +134,13 @@ aside{display:grid;gap:18px}
     <h1>Thermo<span>mot</span></h1>
     <div class="tag">Trouvez le mot secret à la température de vos propositions. Un mot par jour, et tous les jours d'avant.</div>
   </div>
-  <div class="right">
-  <div class="player"><span class="eyebrow">Joueur</span> <b id="who">Invité</b>
-    <button class="link" id="loginbtn" type="button" hidden>Se connecter</button>
-    <button class="link" id="logoutbtn" type="button" hidden>Se déconnecter</button></div>
   <div class="datebar">
     <button class="btn" id="prev" type="button" aria-label="Jour précédent">◀</button>
     <div class="datelabel" id="datelabel">—</div>
     <button class="btn" id="next" type="button" aria-label="Jour suivant">▶</button>
     <button class="btn ghost" id="today" type="button">Aujourd'hui</button>
   </div>
-  </div>
 </header>
-
-<div class="overlay" id="authpanel" hidden>
-  <form class="auth" id="authform" autocomplete="on">
-    <div class="tabs" role="tablist">
-      <button type="button" role="tab" id="tablogin" aria-selected="true">Connexion</button>
-      <button type="button" role="tab" id="tabsignup" aria-selected="false">Créer un compte</button>
-    </div>
-    <label for="apseudo">Pseudo</label>
-    <input id="apseudo" name="username" autocomplete="username" autocapitalize="none" spellcheck="false">
-    <label for="apass">Mot de passe</label>
-    <input id="apass" name="password" type="password" autocomplete="current-password">
-    <p class="note" id="authnote"></p>
-    <p class="authmsg" id="authmsg" role="alert"></p>
-    <div class="actions"><button class="btn primary" id="authgo" type="submit">Se connecter</button><button class="btn ghost" id="authcancel" type="button">Annuler</button></div>
-  </form>
-</div>
 
 <div class="loading" id="loading">Chargement du dictionnaire… <span id="lp">0 %</span></div>
 
@@ -252,8 +217,6 @@ aside{display:grid;gap:18px}
 
 <p class="backlink"><a href="../index.html">GAMB-IT</a> · <a href="../confidentialite.html">Confidentialité</a></p>
 
-<script src="config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (function(){
 "use strict";
@@ -305,99 +268,13 @@ function resolve(raw){
   return {unknown:w};
 }
 
-// ---------- storage & comptes ----------
-const CFG=window.THERMOMOT_CONFIG||{};
-const LSB='thermomot.v1.';
-let profile='guest', pseudo=null, sb=null, uid=null;
-let store=readLocal('guest');
-function readLocal(p){try{return JSON.parse(localStorage.getItem(LSB+p)||'{}')||{}}catch(e){return {}}}
-function saveLocal(){try{localStorage.setItem(LSB+profile,JSON.stringify(store))}catch(e){}}
-const pending={}, chains={};
-function better(a,b){ if(!a) return b; if(!b) return a;
-  const done=x=>x.solved||x.gaveUp?1:0;
-  if(done(a)!==done(b)) return done(a)>done(b)?a:b;
-  return (a.g||[]).length>=(b.g||[]).length?a:b; }
-function persist(date){
-  saveLocal();
-  if(!uid) return;
-  const who=uid;
-  clearTimeout(pending[date]);
-  pending[date]=setTimeout(()=>{
-    if(uid!==who||!store[date]||!(store[date].g||[]).length) return;
-    const row={user_id:who,day:date,data:store[date],updated_at:new Date().toISOString()};
-    chains[date]=(chains[date]||Promise.resolve()).then(()=>sb.from('games').upsert(row)).then(r=>{
-      if(r&&r.error) throw r.error; setSync('Parties enregistrées sur ton compte.');
-    }).catch(()=>setSync('Enregistrement en ligne impossible pour le moment. Tes parties restent sur cet appareil.'));
-  },600);
-}
+// ---------- storage ----------
+const LS='thermomot.v1.guest';
+let store={};
+try{store=JSON.parse(localStorage.getItem(LS)||'{}')||{}}catch(e){store={}}
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(store))}catch(e){}}
+function persist(){ saveLocal() }
 function setSync(t){$('sync').textContent=t}
-const emailOf=p=>p+'@joueurs.gamb-it-apps.fr';
-function showPlayer(){
-  $('who').textContent=pseudo||'Invité';
-  $('loginbtn').hidden=!!pseudo||!sb; $('logoutbtn').hidden=!pseudo;
-  if(!pseudo) setSync(sb?'Mode invité : tes parties restent sur cet appareil. Connecte-toi pour les retrouver partout.':'Parties enregistrées sur cet appareil.');
-}
-async function useAccount(user,importGuest){
-  uid=user.id; pseudo=(user.user_metadata&&user.user_metadata.pseudo)||user.email.split('@')[0];
-  profile='u_'+uid; store=readLocal(profile);
-  if(importGuest){ const g=readLocal('guest'); Object.keys(g).forEach(k=>store[k]=better(store[k],g[k])); try{localStorage.removeItem(LSB+'guest')}catch(e){} }
-  showPlayer(); setSync('Chargement de tes parties…'); renderAll();
-  const {data,error}=await sb.from('games').select('day,data');
-  if(uid!==user.id) return;
-  if(error){ setSync('Impossible de récupérer tes parties en ligne pour le moment.'); return }
-  const remoteDays=new Set();
-  (data||[]).forEach(r=>{ remoteDays.add(r.day); store[r.day]=better(store[r.day],r.data) });
-  saveLocal();
-  Object.keys(store).forEach(k=>{ if(!remoteDays.has(k)&&store[k]&&store[k].g&&store[k].g.length) persist(k) });
-  setSync('Parties enregistrées sur ton compte.');
-  if(cur) go(cur);
-}
-function useGuest(){ uid=null; pseudo=null; profile='guest'; store=readLocal('guest'); showPlayer(); if(cur) go(cur) }
-async function connect(){
-  if(!CFG.supabaseUrl||!CFG.supabaseAnonKey||!window.supabase){ showPlayer(); return }
-  try{
-    sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
-    const {data}=await sb.auth.getSession();
-    if(data&&data.session) await useAccount(data.session.user,false); else showPlayer();
-  }catch(e){ sb=null; showPlayer() }
-}
-// --- panneau connexion ---
-let mode='login';
-function openAuth(m){ mode=m||'login'; $('authmsg').textContent=''; $('authpanel').hidden=false; setMode(mode); $('apseudo').focus() }
-function closeAuth(){ $('authpanel').hidden=true; $('apass').value='' }
-function setMode(m){ mode=m;
-  $('tablogin').setAttribute('aria-selected',m==='login'); $('tabsignup').setAttribute('aria-selected',m==='signup');
-  $('authgo').textContent=m==='login'?'Se connecter':'Créer mon compte';
-  $('apass').autocomplete=m==='login'?'current-password':'new-password';
-  const gs=readLocal('guest'), n=Object.keys(gs).filter(k=>gs[k]&&gs[k].g&&gs[k].g.length).length;
-  $('authnote').textContent=m==='signup'?(n?(n>1?`Les ${n} parties jouées en invité sur cet appareil seront ajoutées à ce compte.`:'La partie jouée en invité sur cet appareil sera ajoutée à ce compte.'):'Pas besoin d\'adresse e-mail : un pseudo et un mot de passe suffisent.'):'';
-}
-async function submitAuth(e){
-  e.preventDefault(); if(!sb) return;
-  const p=$('apseudo').value.trim().toLowerCase(), pw=$('apass').value;
-  const am=t=>{$('authmsg').textContent=t};
-  if(!/^[a-z0-9_-]{3,20}$/.test(p)) return am('Le pseudo doit faire 3 à 20 caractères : lettres sans accent, chiffres, - ou _.');
-  if(pw.length<6) return am('Le mot de passe doit faire au moins 6 caractères.');
-  $('authgo').disabled=true; am(mode==='login'?'Connexion…':'Création du compte…');
-  try{
-    let r;
-    if(mode==='signup'){
-      r=await sb.auth.signUp({email:emailOf(p),password:pw,options:{data:{pseudo:p}}});
-      if(!r.error&&!r.data.session) r=await sb.auth.signInWithPassword({email:emailOf(p),password:pw});
-    } else r=await sb.auth.signInWithPassword({email:emailOf(p),password:pw});
-    if(r.error){
-      const m=(r.error.message||'').toLowerCase();
-      if(m.includes('already')) am('Ce pseudo est déjà pris. Choisis-en un autre ou connecte-toi.');
-      else if(m.includes('invalid login')) am('Pseudo ou mot de passe incorrect.');
-      else if(m.includes('not confirmed')) am('Le compte attend une confirmation par e-mail. Il faut désactiver « Confirm email » dans Supabase.');
-      else am('Ça n\'a pas marché : '+r.error.message);
-      return;
-    }
-    closeAuth(); await useAccount(r.data.user,mode==='signup');
-  }catch(err){ am('Connexion au serveur impossible. Vérifie ta connexion internet.') }
-  finally{ $('authgo').disabled=false }
-}
-async function logout(){ try{ await sb.auth.signOut() }catch(e){} useGuest() }
 
 // ---------- state ----------
 let cur=null, P=null, viewMonth=null, lastIdx=null;
@@ -543,14 +420,6 @@ $('prev').onclick=()=>go(addDays(cur,-1));
 $('next').onclick=()=>go(addDays(cur,1));
 $('today').onclick=()=>go(todayStr());
 $('hintbtn').onclick=hint;
-$('loginbtn').onclick=()=>openAuth('login');
-$('logoutbtn').onclick=logout;
-$('tablogin').onclick=()=>setMode('login');
-$('tabsignup').onclick=()=>setMode('signup');
-$('authcancel').onclick=closeAuth;
-$('authform').addEventListener('submit',submitAuth);
-$('authpanel').addEventListener('click',e=>{if(e.target===$('authpanel'))closeAuth()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('authpanel').hidden)closeAuth()});
 $('giveup').onclick=()=>{$('confirm').hidden=false};
 $('giveno').onclick=()=>{$('confirm').hidden=true};
 $('giveyes').onclick=giveUp;
@@ -586,7 +455,7 @@ async function boot(){
   Q=new Int8Array(vecs); NORM=new Float32Array(VOCAB.length);
   for(let i=0;i<VOCAB.length;i++){let s=0;for(let d=0;d<DIM;d++){const v=Q[i*DIM+d];s+=v*v}NORM[i]=Math.sqrt(s)||1}
   $('loading').hidden=true; $('app').hidden=false;
-  await connect();
+  setSync('Parties enregistrées sur cet appareil.');
   renderStats(); await go(start);
 }
 boot().catch(()=>{$('loading').textContent='Le dictionnaire n\'a pas pu être chargé. Rechargez la page.'});
