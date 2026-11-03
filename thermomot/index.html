@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Thermomot : trouvez le mot secret grâce à la température de vos propositions. Un mot par jour, et tous les jours d'avant.">
+<title>Thermomot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a weather-station instrument panel. Game column (thermometer readout + guess log) beside a calendar of past days. */
+:root{
+  --bg:#ECF0F2; --surface:#F8FAFB; --sunk:#E1E7EB; --ink:#13202A; --muted:#566673; --line:#C9D3DA;
+  --accent:#C23E1C; --accent-ink:#FFFFFF; --cold:#2F6FB8; --ok:#1E7A4F; --warn:#9A5B00;
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E141A; --surface:#161F27; --sunk:#1D2832; --ink:#E4ECF1; --muted:#8C9BA7; --line:#2B3843;
+  --accent:#FF7C52; --accent-ink:#1A0E09; --cold:#6FA8EB; --ok:#58C48E; --warn:#E3A44B; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0E141A; --surface:#161F27; --sunk:#1D2832; --ink:#E4ECF1; --muted:#8C9BA7; --line:#2B3843;
+  --accent:#FF7C52; --accent-ink:#1A0E09; --cold:#6FA8EB; --ok:#58C48E; --warn:#E3A44B; color-scheme:dark }
+*{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}}
+header.top{max-width:1080px;margin:0 auto 18px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;justify-content:space-between}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(40px,7vw,60px);line-height:.9;margin:0;letter-spacing:.01em;text-transform:uppercase}
+h1 span{color:var(--accent)}
+.tag{color:var(--muted);font-size:14px;margin-top:6px}
+.datebar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+button,input{font:inherit;color:inherit}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:40px}
+.btn:hover{border-color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:default;border-color:var(--line)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn.ghost{background:transparent}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.datelabel{font-family:var(--f-mono);font-size:15px;padding:8px 10px;min-width:12ch;text-align:center;font-variant-numeric:tabular-nums}
+.datelabel b{font-family:var(--f-body)}
+
+/* readout */
+.readout{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;display:grid;gap:14px}
+.readout-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+.eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.big{font-family:var(--f-display);font-weight:800;font-size:56px;line-height:.95;font-variant-numeric:tabular-nums}
+.big small{font-size:24px;color:var(--muted);font-weight:600}
+.meta{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--f-mono);font-size:14px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+.thermo{position:relative;height:14px;border-radius:7px;background:var(--sunk);overflow:hidden}
+.thermo i{position:absolute;inset:0 auto 0 0;width:0;border-radius:7px;background:linear-gradient(90deg,#3f7fd0,#58a6c9 25%,#e3b23c 70%,#e2552a);transition:width .4s ease}
+.scale{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+
+form.guess{display:flex;gap:8px;margin-top:16px}
+form.guess input{flex:1;min-width:0;border:2px solid var(--ink);background:var(--surface);border-radius:10px;padding:10px 14px;font-size:18px}
+form.guess input:disabled{border-color:var(--line);opacity:.6}
+.msg{min-height:24px;margin:8px 2px 0;font-size:15px;color:var(--muted)}
+.msg.err{color:var(--accent)}
+.msg.good{color:var(--ok)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--sunk);padding:8px 10px;border-radius:8px;font-size:14px}
+
+/* win */
+.win{margin-top:16px;border:2px solid var(--ok);border-radius:12px;padding:14px 16px;background:var(--surface)}
+.win.lost{border-color:var(--warn)}
+.win h2{font-family:var(--f-display);font-weight:800;font-size:34px;margin:2px 0 4px;text-transform:uppercase;letter-spacing:.02em}
+
+/* log */
+.log{margin-top:18px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:400;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.n{font-family:var(--f-mono);color:var(--muted);width:3.5em;font-size:13px}
+td.w{font-weight:700;word-break:break-word}
+td.w .from{font-weight:400;color:var(--muted);font-size:13px}
+td.w .hint{font-weight:400;color:var(--warn);font-size:12px;margin-left:6px}
+td.t{font-family:var(--f-mono);text-align:right;width:6.5em}
+td.e{width:2em;text-align:center}
+td.p{width:38%;min-width:120px}
+tr.last td{background:var(--sunk)}
+tr.last td:first-child{border-radius:8px 0 0 8px} tr.last td:last-child{border-radius:0 8px 8px 0}
+tr.sep td{padding:4px;border:none}
+tr.flash td{animation:flash 1s ease}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 25%,transparent)}}
+.bar{display:flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.bar span{flex:1;height:8px;border-radius:4px;background:var(--sunk);overflow:hidden;display:block}
+.bar span i{display:block;height:100%;border-radius:4px}
+.empty{color:var(--muted);padding:18px 4px;font-size:15px}
+
+/* side */
+aside{display:grid;gap:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.panel h3{margin:0 0 10px;font-family:var(--f-display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.03em;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mnav{display:flex;gap:4px}
+.mnav .btn{min-height:32px;padding:4px 10px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .dow{font-size:11px;color:var(--muted);text-align:center;padding-bottom:2px}
+.day{aspect-ratio:1;max-width:100%;border:1px solid var(--line);border-radius:7px;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:13px;padding:0;line-height:1.1;position:relative}
+.day small{font-size:9px;color:var(--muted)}
+.day.solved{background:color-mix(in srgb,var(--ok) 22%,var(--surface));border-color:var(--ok)}
+.day.solved small{color:var(--ink)}
+.day.lost{background:color-mix(in srgb,var(--warn) 18%,var(--surface));border-color:var(--warn)}
+.day.started{border:1.5px dashed var(--accent)}
+.day.sel{outline:2px solid var(--ink);outline-offset:1px}
+.day.today::after{content:"";position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.day:disabled{opacity:.28;cursor:default}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:4px;border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--sunk);border-radius:8px;padding:8px 10px}
+.stat b{display:block;font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.help{font-size:14px;color:var(--muted);margin:0}
+.help p{margin:0 0 8px}
+.near{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 14px;margin-top:10px;font-size:14px}
+.near div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted var(--line);padding:2px 0}
+.near div span:last-child{font-family:var(--f-mono);color:var(--muted);font-size:12px}
+.loading{max-width:1080px;margin:40px auto;font-family:var(--f-mono);color:var(--muted)}
+.sync{font-size:12px;color:var(--muted)}
+.right{display:grid;gap:8px;justify-items:end}
+@media (max-width:600px){.right{justify-items:start}}
+.player{font-size:15px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.link{background:none;border:none;padding:2px 0;color:var(--accent);text-decoration:underline;cursor:pointer;font-size:15px}
+.overlay{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 45%,transparent);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px));z-index:20}
+.overlay[hidden]{display:none!important}
+.auth{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(380px,100%);display:grid;gap:6px}
+.auth label{font-size:13px;color:var(--muted);margin-top:6px}
+.auth input{border:2px solid var(--ink);background:var(--bg);border-radius:9px;padding:9px 12px;font-size:17px;min-width:0}
+.tabs{display:flex;gap:4px;background:var(--sunk);border-radius:9px;padding:3px;margin-bottom:6px}
+.tabs button{flex:1;border:none;background:transparent;padding:8px;border-radius:7px;cursor:pointer;font-weight:700;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink)}
+.auth .note{font-size:13px;color:var(--muted);margin:4px 0 0}
+.authmsg{font-size:14px;color:var(--accent);margin:0;min-height:1.2em}
+.backlink{max-width:1080px;margin:28px auto 0;font-size:13px;color:var(--muted)}
+.backlink a{color:inherit}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div>
+    <h1>Thermo<span>mot</span></h1>
+    <div class="tag">Trouvez le mot secret à la température de vos propositions. Un mot par jour, et tous les jours d'avant.</div>
+  </div>
+  <div class="right">
+  <div class="player"><span class="eyebrow">Joueur</span> <b id="who">Invité</b>
+    <button class="link" id="loginbtn" type="button" hidden>Se connecter</button>
+    <button class="link" id="logoutbtn" type="button" hidden>Se déconnecter</button></div>
+  <div class="datebar">
+    <button class="btn" id="prev" type="button" aria-label="Jour précédent">◀</button>
+    <div class="datelabel" id="datelabel">—</div>
+    <button class="btn" id="next" type="button" aria-label="Jour suivant">▶</button>
+    <button class="btn ghost" id="today" type="button">Aujourd'hui</button>
+  </div>
+  </div>
+</header>
+
+<div class="overlay" id="authpanel" hidden>
+  <form class="auth" id="authform" autocomplete="on">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tablogin" aria-selected="true">Connexion</button>
+      <button type="button" role="tab" id="tabsignup" aria-selected="false">Créer un compte</button>
+    </div>
+    <label for="apseudo">Pseudo</label>
+    <input id="apseudo" name="username" autocomplete="username" autocapitalize="none" spellcheck="false">
+    <label for="apass">Mot de passe</label>
+    <input id="apass" name="password" type="password" autocomplete="current-password">
+    <p class="note" id="authnote"></p>
+    <p class="authmsg" id="authmsg" role="alert"></p>
+    <div class="actions"><button class="btn primary" id="authgo" type="submit">Se connecter</button><button class="btn ghost" id="authcancel" type="button">Annuler</button></div>
+  </form>
+</div>
+
+<div class="loading" id="loading">Chargement du dictionnaire… <span id="lp">0 %</span></div>
+
+<div class="wrap" id="app" hidden>
+  <main style="min-width:0">
+    <section class="readout" aria-live="polite">
+      <div class="readout-top">
+        <div>
+          <div class="eyebrow">Meilleure température</div>
+          <div class="big" id="best">—<small> °C</small></div>
+        </div>
+        <div class="meta">
+          <span>Coups <b id="tries">0</b></span>
+          <span>Proximité <b id="bestrank">—</b></span>
+          <span>Indices <b id="hints">0</b></span>
+        </div>
+      </div>
+      <div>
+        <div class="thermo"><i id="thermo"></i></div>
+        <div class="scale"><span>−20</span><span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100 °C</span></div>
+      </div>
+    </section>
+
+    <form class="guess" id="form" autocomplete="off">
+      <input id="word" name="word" placeholder="Votre mot…" autocapitalize="none" spellcheck="false" aria-label="Votre proposition">
+      <button class="btn primary" id="send" type="submit">Envoyer</button>
+    </form>
+    <div class="msg" id="msg"></div>
+    <div class="actions" id="actions">
+      <button class="btn" id="hintbtn" type="button">Indice</button>
+      <button class="btn ghost" id="giveup" type="button">Abandonner</button>
+    </div>
+    <div class="confirm" id="confirm" hidden>
+      Révéler le mot du jour ? La partie sera comptée comme abandonnée.
+      <button class="btn" id="giveyes" type="button">Révéler</button>
+      <button class="btn ghost" id="giveno" type="button">Continuer</button>
+    </div>
+
+    <div id="win" hidden></div>
+
+    <div class="log">
+      <table>
+        <thead><tr><th>N°</th><th>Mot</th><th style="text-align:right">°C</th><th></th><th>Progression</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty" id="empty">Proposez un premier mot. Plus il est proche du sens du mot secret, plus il est chaud. Les 999 mots les plus proches reçoivent une note en ‰.</div>
+    </div>
+  </main>
+
+  <aside>
+    <section class="panel">
+      <h3><span id="mlabel">Mois</span><span class="mnav"><button class="btn" id="mprev" type="button" aria-label="Mois précédent">‹</button><button class="btn" id="mnext" type="button" aria-label="Mois suivant">›</button></span></h3>
+      <div class="cal" id="cal"></div>
+      <div class="legend"><span><i style="background:color-mix(in srgb,var(--ok) 22%,var(--surface));border-color:var(--ok)"></i>Trouvé (coups)</span><span><i style="border:1.5px dashed var(--accent)"></i>En cours</span><span><i style="background:color-mix(in srgb,var(--warn) 18%,var(--surface));border-color:var(--warn)"></i>Abandonné</span></div>
+    </section>
+    <section class="panel">
+      <h3>Bilan</h3>
+      <div class="stats">
+        <div class="stat"><b id="sSolved">0</b><span>mots trouvés</span></div>
+        <div class="stat"><b id="sAvg">—</b><span>coups en moyenne</span></div>
+        <div class="stat"><b id="sOpen">0</b><span>parties en cours</span></div>
+        <div class="stat"><b id="sLost">0</b><span>abandons</span></div>
+      </div>
+      <div class="sync" id="sync" style="margin-top:10px"></div>
+    </section>
+    <section class="panel help">
+      <h3>Règles</h3>
+      <p>La température mesure la proximité de sens entre votre mot et le mot secret, de −100 à 100 °C. Le mot secret vaut 100 °C.</p>
+      <p>Les 999 mots les plus proches affichent une note sur 1000 : 999 ‰ est le plus proche de tous.</p>
+      <p>Les mots fléchis sont ramenés à leur forme de base : « chevaux » devient « cheval ». Les accents oubliés sont rattrapés quand il n'y a pas d'ambiguïté.</p>
+    </section>
+  </aside>
+</div>
+
+<p class="backlink"><a href="../index.html">GAMB-IT</a> · <a href="../confidentialite.html">Confidentialité</a></p>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+(function(){
+"use strict";
+const DIM=128, REC=2+999*2+999*2;
+const START=[2025,1,1], END=[2027,12,31];
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const ymd=(y,m,d)=>`${y}-${pad(m)}-${pad(d)}`;
+const MONTHS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const DAYS=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
+function toDate(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function fromDate(dt){return ymd(dt.getFullYear(),dt.getMonth()+1,dt.getDate())}
+function addDays(s,n){const d=toDate(s);d.setDate(d.getDate()+n);return fromDate(d)}
+const FIRST=ymd(...START), LAST_DATA=ymd(...END);
+function todayStr(){const t=fromDate(new Date());return t>LAST_DATA?LAST_DATA:t}
+function maxDate(){return todayStr()}
+function valid(s){return /^\d{4}-\d{2}-\d{2}$/.test(s)&&s>=FIRST&&s<=maxDate()}
+
+// ---------- data ----------
+let VOCAB=[], IDX=new Map(), FORMS=new Map(), LOOSE=new Map(), Q=null, NORM=null;
+const strip=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/œ/g,'oe').replace(/æ/g,'ae');
+const months={};
+function unb64(t){const s=atob(t.trim());const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u.buffer}
+function loadMonth(ym){ if(!months[ym]) months[ym]=fetch('data/'+ym+'.b64.txt').then(r=>{if(!r.ok)throw new Error('mois');return r.text()}).then(unb64); return months[ym]; }
+const puzzles={};
+async function puzzle(date){
+  if(puzzles[date]) return puzzles[date];
+  const buf=await loadMonth(date.slice(0,7));
+  const day=Number(date.slice(8)), off=(day-1)*REC, dv=new DataView(buf);
+  const t=dv.getUint16(off,true), top=new Array(999), sc=new Array(999), rank=new Map();
+  for(let k=0;k<999;k++){top[k]=dv.getUint16(off+2+k*2,true);sc[k]=dv.getInt16(off+2+1998+k*2,true)/100;rank.set(top[k],k)}
+  return puzzles[date]={t,top,sc,rank,floor:sc[998]};
+}
+function score(p,i){
+  if(i===p.t) return {temp:100,per:1000};
+  if(p.rank.has(i)){const k=p.rank.get(i);return {temp:p.sc[k],per:999-k}}
+  let dot=0; const a=i*DIM,b=p.t*DIM; for(let d=0;d<DIM;d++) dot+=Q[a+d]*Q[b+d];
+  let temp=Math.round(dot/(NORM[i]*NORM[p.t])*10000)/100;
+  if(temp>=p.floor) temp=Math.round((p.floor-0.01)*100)/100;
+  return {temp,per:0};
+}
+function resolve(raw){
+  const w=raw.trim().toLowerCase().replace(/[’`]/g,"'").replace(/\s+/g,' ');
+  if(!w) return null;
+  if(IDX.has(w)) return {i:IDX.get(w)};
+  if(FORMS.has(w)) return {i:FORMS.get(w),from:w};
+  const l=LOOSE.get(strip(w));
+  if(l!==undefined&&l>=0) return {i:l,from:w};
+  return {unknown:w};
+}
+
+// ---------- storage & comptes ----------
+const CFG=window.THERMOMOT_CONFIG||{};
+const LSB='thermomot.v1.';
+let profile='guest', pseudo=null, sb=null, uid=null;
+let store=readLocal('guest');
+function readLocal(p){try{return JSON.parse(localStorage.getItem(LSB+p)||'{}')||{}}catch(e){return {}}}
+function saveLocal(){try{localStorage.setItem(LSB+profile,JSON.stringify(store))}catch(e){}}
+const pending={}, chains={};
+function better(a,b){ if(!a) return b; if(!b) return a;
+  const done=x=>x.solved||x.gaveUp?1:0;
+  if(done(a)!==done(b)) return done(a)>done(b)?a:b;
+  return (a.g||[]).length>=(b.g||[]).length?a:b; }
+function persist(date){
+  saveLocal();
+  if(!uid) return;
+  const who=uid;
+  clearTimeout(pending[date]);
+  pending[date]=setTimeout(()=>{
+    if(uid!==who||!store[date]||!(store[date].g||[]).length) return;
+    const row={user_id:who,day:date,data:store[date],updated_at:new Date().toISOString()};
+    chains[date]=(chains[date]||Promise.resolve()).then(()=>sb.from('games').upsert(row)).then(r=>{
+      if(r&&r.error) throw r.error; setSync('Parties enregistrées sur ton compte.');
+    }).catch(()=>setSync('Enregistrement en ligne impossible pour le moment. Tes parties restent sur cet appareil.'));
+  },600);
+}
+function setSync(t){$('sync').textContent=t}
+const emailOf=p=>p+'@joueurs.gamb-it-apps.fr';
+function showPlayer(){
+  $('who').textContent=pseudo||'Invité';
+  $('loginbtn').hidden=!!pseudo||!sb; $('logoutbtn').hidden=!pseudo;
+  if(!pseudo) setSync(sb?'Mode invité : tes parties restent sur cet appareil. Connecte-toi pour les retrouver partout.':'Parties enregistrées sur cet appareil.');
+}
+async function useAccount(user,importGuest){
+  uid=user.id; pseudo=(user.user_metadata&&user.user_metadata.pseudo)||user.email.split('@')[0];
+  profile='u_'+uid; store=readLocal(profile);
+  if(importGuest){ const g=readLocal('guest'); Object.keys(g).forEach(k=>store[k]=better(store[k],g[k])); try{localStorage.removeItem(LSB+'guest')}catch(e){} }
+  showPlayer(); setSync('Chargement de tes parties…'); renderAll();
+  const {data,error}=await sb.from('games').select('day,data');
+  if(uid!==user.id) return;
+  if(error){ setSync('Impossible de récupérer tes parties en ligne pour le moment.'); return }
+  const remoteDays=new Set();
+  (data||[]).forEach(r=>{ remoteDays.add(r.day); store[r.day]=better(store[r.day],r.data) });
+  saveLocal();
+  Object.keys(store).forEach(k=>{ if(!remoteDays.has(k)&&store[k]&&store[k].g&&store[k].g.length) persist(k) });
+  setSync('Parties enregistrées sur ton compte.');
+  if(cur) go(cur);
+}
+function useGuest(){ uid=null; pseudo=null; profile='guest'; store=readLocal('guest'); showPlayer(); if(cur) go(cur) }
+async function connect(){
+  if(!CFG.supabaseUrl||!CFG.supabaseAnonKey||!window.supabase){ showPlayer(); return }
+  try{
+    sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
+    const {data}=await sb.auth.getSession();
+    if(data&&data.session) await useAccount(data.session.user,false); else showPlayer();
+  }catch(e){ sb=null; showPlayer() }
+}
+// --- panneau connexion ---
+let mode='login';
+function openAuth(m){ mode=m||'login'; $('authmsg').textContent=''; $('authpanel').hidden=false; setMode(mode); $('apseudo').focus() }
+function closeAuth(){ $('authpanel').hidden=true; $('apass').value='' }
+function setMode(m){ mode=m;
+  $('tablogin').setAttribute('aria-selected',m==='login'); $('tabsignup').setAttribute('aria-selected',m==='signup');
+  $('authgo').textContent=m==='login'?'Se connecter':'Créer mon compte';
+  $('apass').autocomplete=m==='login'?'current-password':'new-password';
+  const gs=readLocal('guest'), n=Object.keys(gs).filter(k=>gs[k]&&gs[k].g&&gs[k].g.length).length;
+  $('authnote').textContent=m==='signup'?(n?(n>1?`Les ${n} parties jouées en invité sur cet appareil seront ajoutées à ce compte.`:'La partie jouée en invité sur cet appareil sera ajoutée à ce compte.'):'Pas besoin d\'adresse e-mail : un pseudo et un mot de passe suffisent.'):'';
+}
+async function submitAuth(e){
+  e.preventDefault(); if(!sb) return;
+  const p=$('apseudo').value.trim().toLowerCase(), pw=$('apass').value;
+  const am=t=>{$('authmsg').textContent=t};
+  if(!/^[a-z0-9_-]{3,20}$/.test(p)) return am('Le pseudo doit faire 3 à 20 caractères : lettres sans accent, chiffres, - ou _.');
+  if(pw.length<6) return am('Le mot de passe doit faire au moins 6 caractères.');
+  $('authgo').disabled=true; am(mode==='login'?'Connexion…':'Création du compte…');
+  try{
+    let r;
+    if(mode==='signup'){
+      r=await sb.auth.signUp({email:emailOf(p),password:pw,options:{data:{pseudo:p}}});
+      if(!r.error&&!r.data.session) r=await sb.auth.signInWithPassword({email:emailOf(p),password:pw});
+    } else r=await sb.auth.signInWithPassword({email:emailOf(p),password:pw});
+    if(r.error){
+      const m=(r.error.message||'').toLowerCase();
+      if(m.includes('already')) am('Ce pseudo est déjà pris. Choisis-en un autre ou connecte-toi.');
+      else if(m.includes('invalid login')) am('Pseudo ou mot de passe incorrect.');
+      else if(m.includes('not confirmed')) am('Le compte attend une confirmation par e-mail. Il faut désactiver « Confirm email » dans Supabase.');
+      else am('Ça n\'a pas marché : '+r.error.message);
+      return;
+    }
+    closeAuth(); await useAccount(r.data.user,mode==='signup');
+  }catch(err){ am('Connexion au serveur impossible. Vérifie ta connexion internet.') }
+  finally{ $('authgo').disabled=false }
+}
+async function logout(){ try{ await sb.auth.signOut() }catch(e){} useGuest() }
+
+// ---------- state ----------
+let cur=null, P=null, viewMonth=null, lastIdx=null;
+function st(){ return store[cur]||(store[cur]={g:[],h:0,solved:false,gaveUp:false}) }
+function guessed(){ return new Set(st().g.map(x=>x.i)) }
+
+async function go(date){
+  if(!valid(date)) date=todayStr();
+  cur=date; viewMonth=date.slice(0,7); lastIdx=null;
+  if(location.hash.slice(1)!==date){ try{history.replaceState(null,'','#'+date)}catch(e){} }
+  $('msg').textContent='';$('msg').className='msg';$('confirm').hidden=true;
+  renderHeader(); renderCal(); renderStats();
+  P=null; $('rows').innerHTML=''; $('word').disabled=true;
+  try{ P=await puzzle(date) }catch(e){ msg('Impossible de charger ce jour. Réessayez.', 'err'); return }
+  if(cur!==date) return;
+  renderGame();
+  if(!st().solved&&!st().gaveUp) $('word').focus({preventScroll:true});
+}
+
+function msg(t,cls){$('msg').textContent=t;$('msg').className='msg'+(cls?' '+cls:'')}
+
+function play(raw){
+  if(!P) return;
+  const s=st(); if(s.solved||s.gaveUp) return;
+  const r=resolve(raw);
+  if(!r) return;
+  if(r.unknown){ msg(`Je ne connais pas « ${r.unknown} ».`,'err'); return }
+  if(guessed().has(r.i)){ lastIdx=r.i; msg(`« ${VOCAB[r.i]} » a déjà été proposé.`); renderGame(true); return }
+  s.g.push({i:r.i,f:r.from&&r.from!==VOCAB[r.i]?r.from:undefined});
+  lastIdx=r.i;
+  if(r.i===P.t){ s.solved=true; s.solvedAt=Date.now(); msg('') }
+  else { msg(r.from&&r.from!==VOCAB[r.i]?`« ${r.from} » compté comme « ${VOCAB[r.i]} ».`:'') }
+  persist(cur); renderGame(true); renderCal(); renderStats();
+}
+
+function hint(){
+  if(!P) return; const s=st(); if(s.solved||s.gaveUp) return;
+  const g=guessed(); let best=0; s.g.forEach(x=>{const v=score(P,x.i).per; if(v>best&&v<1000) best=v});
+  let target=best<1?800:Math.min(999,Math.ceil((best+1000)/2));
+  let k=999-target, pick=-1;
+  for(let j=k;j>=0;j--){ if(!g.has(P.top[j])){pick=P.top[j];break} }
+  if(pick<0) for(let j=k;j<999;j++){ if(!g.has(P.top[j])){pick=P.top[j];break} }
+  if(pick<0) return;
+  s.h=(s.h||0)+1; s.g.push({i:pick,hint:1}); lastIdx=pick;
+  msg(`Indice : « ${VOCAB[pick]} ».`,'good');
+  persist(cur); renderGame(true); renderCal();
+}
+
+function giveUp(){ const s=st(); s.gaveUp=true; persist(cur); $('confirm').hidden=true; renderGame(); renderCal(); renderStats() }
+
+// ---------- render ----------
+function emoji(sc){ if(sc.per===1000)return'🥳'; if(sc.per>=999)return'😱'; if(sc.per>=990)return'🔥'; if(sc.per>=900)return'🥵'; if(sc.per>=1)return'😎'; if(sc.temp<0)return'🧊'; return'🥶' }
+function heat(per){ const h=210-(per/1000)*200; return `hsl(${h} 72% 50%)` }
+function fmt(t){ return t.toFixed(2).replace('.',',') }
+function renderHeader(){
+  const d=toDate(cur);
+  $('datelabel').innerHTML=`<b>${DAYS[d.getDay()]}</b> ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  $('prev').disabled=cur<=FIRST; $('next').disabled=cur>=maxDate(); $('today').disabled=cur===todayStr();
+}
+function rowHtml(x,n,sc,cls){
+  const w=VOCAB[x.i];
+  const bar=sc.per>0?`<div class="bar"><span><i style="width:${sc.per/10}%;background:${heat(sc.per)}"></i></span>${sc.per}‰</div>`:'';
+  return `<tr class="${cls||''}"><td class="n">${n}</td><td class="w">${w}${x.f?` <span class="from">(${x.f})</span>`:''}${x.hint?'<span class="hint">indice</span>':''}</td><td class="t">${fmt(sc.temp)}</td><td class="e">${emoji(sc)}</td><td class="p">${bar}</td></tr>`;
+}
+function renderGame(flash){
+  const s=st(), done=s.solved||s.gaveUp;
+  const items=s.g.map((x,n)=>({x,n:n+1,sc:score(P,x.i)}));
+  const sorted=items.slice().sort((a,b)=>b.sc.temp-a.sc.temp);
+  let html='';
+  const last=items.find(o=>o.x.i===lastIdx);
+  if(last&&!done){ html+=rowHtml(last.x,last.n,last.sc,'last'+(flash?' flash':''))+'<tr class="sep"><td colspan="5"></td></tr>' }
+  html+=sorted.map(o=>rowHtml(o.x,o.n,o.sc)).join('');
+  $('rows').innerHTML=html;
+  $('empty').hidden=items.length>0;
+  const best=sorted.find(o=>o.sc.per<1000)||null;
+  const top=s.solved?{temp:100,per:1000}:(best?best.sc:null);
+  $('best').innerHTML=(top?fmt(top.temp):'—')+'<small> °C</small>';
+  $('bestrank').textContent=top&&top.per?top.per+' ‰':'—';
+  $('tries').textContent=s.g.filter(x=>!x.hint).length;
+  $('hints').textContent=s.h||0;
+  $('thermo').style.width=top?Math.max(0,Math.min(100,(top.temp+20)/120*100))+'%':'0%';
+  $('word').disabled=done; $('send').disabled=done;
+  $('actions').hidden=done;
+  const win=$('win');
+  if(done){
+    const n=s.g.length;
+    win.className='win'+(s.solved?'':' lost'); win.hidden=false;
+    win.innerHTML=`<div class="eyebrow">${s.solved?'Trouvé':'Le mot était'}</div><h2>${VOCAB[P.t]}</h2>
+      <div>${s.solved?`Trouvé en ${n} coup${n>1?'s':''}${s.h?` dont ${s.h} indice${s.h>1?'s':''}`:''}.`:`Abandon après ${n} proposition${n>1?'s':''}.`}</div>
+      <div class="actions" style="margin-top:10px"><button class="btn" id="nearbtn" type="button">Voir les mots les plus proches</button>${prevUnplayed()?`<button class="btn primary" id="nextgame" type="button">Jouer un autre jour</button>`:''}</div>
+      <div id="near"></div>`;
+    $('nearbtn').onclick=()=>showNear(100);
+    const ng=$('nextgame'); if(ng) ng.onclick=()=>go(prevUnplayed());
+  } else { win.hidden=true; win.innerHTML='' }
+  if(done) msg('');
+}
+function showNear(n){
+  const g=guessed();
+  let h='<div class="near">';
+  for(let k=0;k<Math.min(n,999);k++){ const w=VOCAB[P.top[k]]; h+=`<div><span>${g.has(P.top[k])?'<b>'+w+'</b>':w}</span><span>${999-k}‰ · ${fmt(P.sc[k])}</span></div>` }
+  h+='</div>';
+  if(n<999) h+='<button class="btn ghost" id="moreNear" type="button" style="margin-top:8px">Afficher les 999</button>';
+  $('near').innerHTML=h; const m=$('moreNear'); if(m) m.onclick=()=>showNear(999);
+  $('nearbtn').hidden=true;
+}
+function prevUnplayed(){
+  let d=todayStr();
+  for(let k=0;k<1200&&d>=FIRST;k++){ const s=store[d]; if(d!==cur&&(!s||!(s.solved||s.gaveUp))) return d; d=addDays(d,-1) }
+  return null;
+}
+function renderCal(){
+  const [y,m]=viewMonth.split('-').map(Number);
+  $('mlabel').textContent=MONTHS[m-1]+' '+y;
+  const first=new Date(y,m-1,1), days=new Date(y,m,0).getDate();
+  let h=['L','M','M','J','V','S','D'].map(d=>`<div class="dow">${d}</div>`).join('');
+  const lead=(first.getDay()+6)%7; for(let k=0;k<lead;k++) h+='<div></div>';
+  const t=todayStr(), max=maxDate();
+  for(let d=1;d<=days;d++){
+    const s=ymd(y,m,d), g=store[s], ok=s>=FIRST&&s<=max;
+    let cls='day', sub='';
+    if(g&&g.solved){cls+=' solved';sub=g.g.length+''}
+    else if(g&&g.gaveUp){cls+=' lost';sub='×'}
+    else if(g&&g.g&&g.g.length){cls+=' started';sub=g.g.length+''}
+    if(s===cur) cls+=' sel'; if(s===t) cls+=' today';
+    const label=`${d} ${MONTHS[m-1]}${g&&g.solved?', trouvé en '+g.g.length+' coups':g&&g.gaveUp?', abandonné':g&&g.g&&g.g.length?', en cours':''}`;
+    h+=`<button type="button" class="${cls}" data-d="${s}" ${ok?'':'disabled'} aria-label="${label}">${d}${sub?`<small>${sub}</small>`:''}</button>`;
+  }
+  $('cal').innerHTML=h;
+  const ym=viewMonth;
+  $('mprev').disabled=ym<=FIRST.slice(0,7); $('mnext').disabled=ym>=max.slice(0,7);
+}
+function renderStats(){
+  let solved=0,lost=0,open=0,sum=0;
+  Object.values(store).forEach(g=>{ if(!g||!g.g) return; if(g.solved){solved++;sum+=g.g.length} else if(g.gaveUp) lost++; else if(g.g.length) open++ });
+  $('sSolved').textContent=solved; $('sLost').textContent=lost; $('sOpen').textContent=open;
+  $('sAvg').textContent=solved?(sum/solved).toFixed(1).replace('.',','):'—';
+}
+function renderAll(){ if(!cur) return; renderHeader(); renderCal(); renderStats(); if(P) renderGame() }
+
+// ---------- events ----------
+$('form').addEventListener('submit',e=>{e.preventDefault(); const v=$('word').value; $('word').value=''; play(v)});
+$('prev').onclick=()=>go(addDays(cur,-1));
+$('next').onclick=()=>go(addDays(cur,1));
+$('today').onclick=()=>go(todayStr());
+$('hintbtn').onclick=hint;
+$('loginbtn').onclick=()=>openAuth('login');
+$('logoutbtn').onclick=logout;
+$('tablogin').onclick=()=>setMode('login');
+$('tabsignup').onclick=()=>setMode('signup');
+$('authcancel').onclick=closeAuth;
+$('authform').addEventListener('submit',submitAuth);
+$('authpanel').addEventListener('click',e=>{if(e.target===$('authpanel'))closeAuth()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('authpanel').hidden)closeAuth()});
+$('giveup').onclick=()=>{$('confirm').hidden=false};
+$('giveno').onclick=()=>{$('confirm').hidden=true};
+$('giveyes').onclick=giveUp;
+$('mprev').onclick=()=>{const [y,m]=viewMonth.split('-').map(Number);const d=new Date(y,m-2,1);viewMonth=fromDate(d).slice(0,7);renderCal()};
+$('mnext').onclick=()=>{const [y,m]=viewMonth.split('-').map(Number);const d=new Date(y,m,1);viewMonth=fromDate(d).slice(0,7);renderCal()};
+$('cal').addEventListener('click',e=>{const b=e.target.closest('button.day'); if(b&&!b.disabled) go(b.dataset.d)});
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1); if(h!==cur&&valid(h)) go(h)});
+
+// ---------- boot ----------
+async function fetchProgress(url,onp){
+  const r=await fetch(url); if(!r.ok) throw new Error(url);
+  const total=Number(r.headers.get('content-length'))||0;
+  if(!r.body||!total){ const b=await r.arrayBuffer(); onp(1); return b }
+  const reader=r.body.getReader(), chunks=[]; let got=0;
+  for(;;){ const {done,value}=await reader.read(); if(done) break; chunks.push(value); got+=value.length; onp(Math.min(1,got/total)) }
+  const out=new Uint8Array(got); let o=0; for(const c of chunks){out.set(c,o);o+=c.length}
+  return out.buffer;
+}
+async function boot(){
+  const start=valid(location.hash.slice(1))?location.hash.slice(1):todayStr();
+  loadMonth(start.slice(0,7)).catch(()=>{});
+  let pv=0,pf=0;
+  const upd=()=>{$('lp').textContent=Math.round((pv*0.8+pf*0.2)*100)+' %'};
+  const [vocab,forms,vecs]=await Promise.all([
+    fetch('data/vocab.txt').then(r=>r.text()),
+    fetchProgress('data/forms.txt',p=>{pf=p;upd()}).then(b=>new TextDecoder().decode(b)),
+    fetchProgress('data/vecs.b64.txt',p=>{pv=p;upd()}).then(b=>unb64(new TextDecoder().decode(b)))
+  ]);
+  VOCAB=vocab.split('\n'); VOCAB.forEach((w,i)=>IDX.set(w,i));
+  forms.split('\n').forEach(l=>{const t=l.indexOf('\t'); if(t>0) FORMS.set(l.slice(0,t),Number(l.slice(t+1)))});
+  const addLoose=(k,i)=>{const s=strip(k); const v=LOOSE.get(s); if(v===undefined) LOOSE.set(s,i); else if(v!==i) LOOSE.set(s,-1)};
+  VOCAB.forEach((w,i)=>addLoose(w,i)); FORMS.forEach((i,w)=>addLoose(w,i));
+  Q=new Int8Array(vecs); NORM=new Float32Array(VOCAB.length);
+  for(let i=0;i<VOCAB.length;i++){let s=0;for(let d=0;d<DIM;d++){const v=Q[i*DIM+d];s+=v*v}NORM[i]=Math.sqrt(s)||1}
+  $('loading').hidden=true; $('app').hidden=false;
+  await connect();
+  renderStats(); await go(start);
+}
+boot().catch(()=>{$('loading').textContent='Le dictionnaire n\'a pas pu être chargé. Rechargez la page.'});
+})();
+</script>
+</body>
+</html>
