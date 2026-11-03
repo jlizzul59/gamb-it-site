@@ -10,35 +10,39 @@
 <style>
 /* Layout: a weather-station instrument panel. Game column (thermometer readout + guess log) beside a calendar of past days. */
 :root{
-  --bg:#ECF0F2; --surface:#F8FAFB; --sunk:#E1E7EB; --ink:#13202A; --muted:#566673; --line:#C9D3DA;
-  --accent:#C23E1C; --accent-ink:#FFFFFF; --cold:#2F6FB8; --ok:#1E7A4F; --warn:#9A5B00;
+  --bg:#F4F1FB; --surface:#FFFFFF; --sunk:#EDE8F8; --ink:#1E1736; --muted:#675F84; --line:#DDD5F0;
+  --accent:#F2512E; --accent-ink:#FFFFFF; --cold:#2C74E8; --ok:#0F9A63; --warn:#D97F00; --teal:#0E9C9C; --violet:#7B4FE0;
   --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --heat:hsl(215 85% 55%);
   --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#0E141A; --surface:#161F27; --sunk:#1D2832; --ink:#E4ECF1; --muted:#8C9BA7; --line:#2B3843;
-  --accent:#FF7C52; --accent-ink:#1A0E09; --cold:#6FA8EB; --ok:#58C48E; --warn:#E3A44B; color-scheme:dark }}
+  --bg:#140F27; --surface:#1D1736; --sunk:#271F46; --ink:#F2EEFC; --muted:#A49CC4; --line:#352C5A;
+  --accent:#FF7652; --accent-ink:#1B0B06; --cold:#6CA4FF; --ok:#3FD49B; --warn:#FFB548; --teal:#3DD3D1; --violet:#B194FF; color-scheme:dark }}
 :root[data-theme="dark"]{
-  --bg:#0E141A; --surface:#161F27; --sunk:#1D2832; --ink:#E4ECF1; --muted:#8C9BA7; --line:#2B3843;
-  --accent:#FF7C52; --accent-ink:#1A0E09; --cold:#6FA8EB; --ok:#58C48E; --warn:#E3A44B; color-scheme:dark }
+  --bg:#140F27; --surface:#1D1736; --sunk:#271F46; --ink:#F2EEFC; --muted:#A49CC4; --line:#352C5A;
+  --accent:#FF7652; --accent-ink:#1B0B06; --cold:#6CA4FF; --ok:#3FD49B; --warn:#FFB548; --teal:#3DD3D1; --violet:#B194FF; color-scheme:dark }
 *{box-sizing:border-box}
 html,body{margin:0}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;
+body{background:radial-gradient(900px 520px at 0% -10%,color-mix(in srgb,var(--cold) 16%,transparent),transparent 70%),radial-gradient(900px 600px at 100% 110%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 70%),var(--bg);background-attachment:fixed;min-height:100%;color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
 .wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}
 @media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}}
 header.top{max-width:1080px;margin:0 auto 18px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;justify-content:space-between}
 h1{font-family:var(--f-display);font-weight:800;font-size:clamp(40px,7vw,60px);line-height:.9;margin:0;letter-spacing:.01em;text-transform:uppercase}
+h1{color:var(--cold)}
 h1 span{color:var(--accent)}
 .tag{color:var(--muted);font-size:14px;margin-top:6px}
 .datebar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 button,input{font:inherit;color:inherit}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:40px}
+.btn{border:1px solid var(--line);background:var(--surface);box-shadow:0 1px 2px color-mix(in srgb,var(--violet) 12%,transparent);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:40px}
 .btn:hover{border-color:var(--ink)}
 .btn:disabled{opacity:.4;cursor:default;border-color:var(--line)}
-.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn.primary{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 70%,var(--warn)));color:var(--accent-ink);border-color:transparent;font-weight:700;box-shadow:0 3px 10px color-mix(in srgb,var(--accent) 35%,transparent)}
+#hintbtn{color:var(--teal);border-color:color-mix(in srgb,var(--teal) 45%,var(--line));font-weight:700}
+#hintbtn:hover{background:color-mix(in srgb,var(--teal) 10%,var(--surface))}
 .btn.ghost{background:transparent}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .datelabel{font-family:var(--f-mono);font-size:15px;padding:8px 10px;min-width:12ch;text-align:center;font-variant-numeric:tabular-nums;background:transparent;border:1px dashed transparent;border-radius:8px;cursor:pointer;min-height:40px}
@@ -46,10 +50,10 @@ button,input{font:inherit;color:inherit}
 .datelabel b{font-family:var(--f-body)}
 
 /* readout */
-.readout{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;display:grid;gap:14px}
+.readout{background:linear-gradient(135deg,color-mix(in srgb,var(--heat) 22%,var(--surface)),color-mix(in srgb,var(--heat) 6%,var(--surface)) 70%);border:1.5px solid color-mix(in srgb,var(--heat) 45%,var(--line));box-shadow:0 6px 22px color-mix(in srgb,var(--heat) 18%,transparent);transition:background .5s,border-color .5s;border-radius:14px;padding:18px 18px 16px;display:grid;gap:14px}
 .readout-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
 .eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-.big{font-family:var(--f-display);font-weight:800;font-size:56px;line-height:.95;font-variant-numeric:tabular-nums}
+.big{font-family:var(--f-display);font-weight:800;font-size:56px;line-height:.95;font-variant-numeric:tabular-nums;color:color-mix(in srgb,var(--heat) 72%,var(--ink));transition:color .5s}
 .big small{font-size:24px;color:var(--muted);font-weight:600}
 .meta{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--f-mono);font-size:14px;color:var(--muted)}
 .meta b{color:var(--ink);font-weight:600}
@@ -58,7 +62,8 @@ button,input{font:inherit;color:inherit}
 .scale{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
 
 form.guess{display:flex;gap:8px;margin-top:16px}
-form.guess input{flex:1;min-width:0;border:2px solid var(--ink);background:var(--surface);border-radius:10px;padding:10px 14px;font-size:18px}
+form.guess input{flex:1;min-width:0;border:2px solid var(--violet);background:var(--surface);border-radius:10px;padding:10px 14px;font-size:18px}
+form.guess input:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent)}
 form.guess input:disabled{border-color:var(--line);opacity:.6}
 .msg{min-height:24px;margin:8px 2px 0;font-size:15px;color:var(--muted)}
 .msg.err{color:var(--accent)}
@@ -67,8 +72,10 @@ form.guess input:disabled{border-color:var(--line);opacity:.6}
 .confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--sunk);padding:8px 10px;border-radius:8px;font-size:14px}
 
 /* win */
-.win{margin-top:16px;border:2px solid var(--ok);border-radius:12px;padding:14px 16px;background:var(--surface)}
-.win.lost{border-color:var(--warn)}
+.win{margin-top:16px;border:2px solid var(--ok);border-radius:14px;padding:14px 16px;background:linear-gradient(135deg,color-mix(in srgb,var(--ok) 20%,var(--surface)),color-mix(in srgb,var(--teal) 12%,var(--surface)))}
+.win h2{color:var(--ok)}
+.win.lost h2{color:var(--warn)}
+.win.lost{border-color:var(--warn);background:linear-gradient(135deg,color-mix(in srgb,var(--warn) 18%,var(--surface)),var(--surface))}
 .win h2{font-family:var(--f-display);font-weight:800;font-size:34px;margin:2px 0 4px;text-transform:uppercase;letter-spacing:.02em}
 
 /* log */
@@ -80,10 +87,10 @@ td.n{font-family:var(--f-mono);color:var(--muted);width:3.5em;font-size:13px}
 td.w{font-weight:700;word-break:break-word}
 td.w .from{font-weight:400;color:var(--muted);font-size:13px}
 td.w .hint{font-weight:400;color:var(--warn);font-size:12px;margin-left:6px}
-td.t{font-family:var(--f-mono);text-align:right;width:6.5em}
+td.t{font-family:var(--f-mono);text-align:right;width:6.5em;font-weight:600;color:color-mix(in srgb,var(--row-heat,var(--muted)) 70%,var(--ink))}
 td.e{width:2em;text-align:center}
 td.p{width:38%;min-width:120px}
-tr.last td{background:var(--sunk)}
+tr.last td{background:color-mix(in srgb,var(--row-heat,var(--violet)) 14%,var(--surface))}
 tr.last td:first-child{border-radius:8px 0 0 8px} tr.last td:last-child{border-radius:0 8px 8px 0}
 tr.sep td{padding:4px;border:none}
 tr.flash td{animation:flash 1s ease}
@@ -95,7 +102,8 @@ tr.flash td{animation:flash 1s ease}
 
 /* side */
 aside{display:grid;gap:18px}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 4px 18px color-mix(in srgb,var(--violet) 8%,transparent)}
+.panel h3{color:var(--violet)}
 .panel h3{margin:0 0 10px;font-family:var(--f-display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.03em;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .mnav{display:flex;gap:4px}
 .mnav .btn{min-height:32px;padding:4px 10px}
@@ -103,17 +111,20 @@ aside{display:grid;gap:18px}
 .cal .dow{font-size:11px;color:var(--muted);text-align:center;padding-bottom:2px}
 .day{aspect-ratio:1;max-width:100%;border:1px solid var(--line);border-radius:7px;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:13px;padding:0;line-height:1.1;position:relative}
 .day small{font-size:9px;color:var(--muted)}
-.day.solved{background:color-mix(in srgb,var(--ok) 22%,var(--surface));border-color:var(--ok)}
+.day:not(:disabled):hover{background:var(--sunk)}
+.day.solved{background:color-mix(in srgb,var(--ok) 30%,var(--surface));border-color:var(--ok);font-weight:600}
 .day.solved small{color:var(--ink)}
-.day.lost{background:color-mix(in srgb,var(--warn) 18%,var(--surface));border-color:var(--warn)}
-.day.started{border:1.5px dashed var(--accent)}
-.day.sel{outline:2px solid var(--ink);outline-offset:1px}
+.day.lost{background:color-mix(in srgb,var(--warn) 24%,var(--surface));border-color:var(--warn)}
+.day.started{border:1.5px dashed var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.day.sel{outline:2px solid var(--violet);outline-offset:1px}
 .day.today::after{content:"";position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
 .day:disabled{opacity:.28;cursor:default}
 .legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font-size:12px;color:var(--muted)}
 .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:4px;border:1px solid var(--line)}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat{background:var(--sunk);border-radius:8px;padding:8px 10px}
+.stat{--c:var(--violet);background:color-mix(in srgb,var(--c) 13%,var(--surface));border-radius:10px;padding:8px 10px}
+.stat b{color:color-mix(in srgb,var(--c) 80%,var(--ink))}
+.stat:nth-child(1){--c:var(--ok)}.stat:nth-child(2){--c:var(--violet)}.stat:nth-child(3){--c:var(--accent)}.stat:nth-child(4){--c:var(--warn)}
 .stat b{display:block;font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
 .stat span{font-size:12px;color:var(--muted)}
 .help{font-size:14px;color:var(--muted);margin:0}
@@ -125,7 +136,8 @@ aside{display:grid;gap:18px}
 .sync{font-size:12px;color:var(--muted)}
 .backlink{max-width:1080px;margin:28px auto 0;font-size:13px;color:var(--muted)}
 .backlink a{color:inherit}
-.entry{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 2px;margin-top:4px}
+.short{display:none}
+.entry{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding-block:12px 2px;margin-top:4px}
 #calpanel{scroll-margin-top:16px}
 @media (max-width:600px){
   body{padding-block:10px 40px}
@@ -136,6 +148,7 @@ aside{display:grid;gap:18px}
   .datebar .btn{padding:6px 10px}
   .datelabel{flex:1;min-width:0;font-size:14px;padding:6px 4px;border-color:var(--line);background:var(--surface)}
   .long{display:none}
+  .short{display:inline}
   .readout{padding:12px 14px;gap:10px}
   .readout-top{flex-wrap:nowrap;align-items:flex-end}
   .big{font-size:40px}
@@ -155,7 +168,7 @@ aside{display:grid;gap:18px}
   .log td.p .bar{margin-top:5px}
   .log td.w{overflow-wrap:anywhere}
   .log td.t{width:auto}
-  .log tr.last{background:var(--sunk);border-radius:8px;border-bottom:none}
+  .log tr.last{background:color-mix(in srgb,var(--row-heat,var(--violet)) 14%,var(--surface));border-radius:8px;border-bottom:none}
   .log tr.last td{background:transparent}
   .log tr.sep{display:block;padding:3px;border:none}
   aside{gap:14px}
@@ -179,7 +192,7 @@ aside{display:grid;gap:18px}
     <button class="btn" id="prev" type="button" aria-label="Jour précédent">◀</button>
     <button class="datelabel" id="datelabel" type="button" aria-label="Choisir une date dans le calendrier">—</button>
     <button class="btn" id="next" type="button" aria-label="Jour suivant">▶</button>
-    <button class="btn ghost" id="today" type="button">Auj.<span class="long">ourd'hui</span></button>
+    <button class="btn ghost" id="today" type="button">Auj<span class="long">ourd'hui</span><span class="short">.</span></button>
   </div>
 </header>
 
@@ -237,7 +250,7 @@ aside{display:grid;gap:18px}
     <section class="panel" id="calpanel">
       <h3><span id="mlabel">Mois</span><span class="mnav"><button class="btn" id="mprev" type="button" aria-label="Mois précédent">‹</button><button class="btn" id="mnext" type="button" aria-label="Mois suivant">›</button></span></h3>
       <div class="cal" id="cal"></div>
-      <div class="legend"><span><i style="background:color-mix(in srgb,var(--ok) 22%,var(--surface));border-color:var(--ok)"></i>Trouvé (coups)</span><span><i style="border:1.5px dashed var(--accent)"></i>En cours</span><span><i style="background:color-mix(in srgb,var(--warn) 18%,var(--surface));border-color:var(--warn)"></i>Abandonné</span></div>
+      <div class="legend"><span><i style="background:color-mix(in srgb,var(--ok) 30%,var(--surface));border-color:var(--ok)"></i>Trouvé (coups)</span><span><i style="border:1.5px dashed var(--accent)"></i>En cours</span><span><i style="background:color-mix(in srgb,var(--warn) 24%,var(--surface));border-color:var(--warn)"></i>Abandonné</span></div>
     </section>
     <section class="panel">
       <h3>Bilan</h3>
@@ -370,7 +383,8 @@ function giveUp(){ const s=st(); s.gaveUp=true; persist(cur); $('confirm').hidde
 
 // ---------- render ----------
 function emoji(sc){ if(sc.per===1000)return'🥳'; if(sc.per>=999)return'😱'; if(sc.per>=990)return'🔥'; if(sc.per>=900)return'🥵'; if(sc.per>=1)return'😎'; if(sc.temp<0)return'🧊'; return'🥶' }
-function heat(per){ const h=210-(per/1000)*200; return `hsl(${h} 72% 50%)` }
+function heat(per){ const h=210-(per/1000)*200; return `hsl(${h} 82% 52%)` }
+function heatOf(sc){ if(!sc) return 'hsl(215 85% 55%)'; if(sc.per>=1000) return 'hsl(150 70% 42%)'; if(sc.per>0) return heat(sc.per); return sc.temp<0?'hsl(220 85% 58%)':'hsl(205 80% 55%)' }
 function fmt(t){ return t.toFixed(2).replace('.',',') }
 function renderHeader(){
   const d=toDate(cur);
@@ -380,7 +394,7 @@ function renderHeader(){
 function rowHtml(x,n,sc,cls){
   const w=VOCAB[x.i];
   const bar=sc.per>0?`<div class="bar"><span><i style="width:${sc.per/10}%;background:${heat(sc.per)}"></i></span>${sc.per}‰</div>`:'';
-  return `<tr class="${cls||''}"><td class="n">${n}</td><td class="w">${w}${x.f?` <span class="from">(${x.f})</span>`:''}${x.hint?'<span class="hint">indice</span>':''}</td><td class="t">${fmt(sc.temp)}</td><td class="e">${emoji(sc)}</td><td class="p">${bar}</td></tr>`;
+  return `<tr class="${cls||''}" style="--row-heat:${heatOf(sc)}"><td class="n">${n}</td><td class="w">${w}${x.f?` <span class="from">(${x.f})</span>`:''}${x.hint?'<span class="hint">indice</span>':''}</td><td class="t">${fmt(sc.temp)}</td><td class="e">${emoji(sc)}</td><td class="p">${bar}</td></tr>`;
 }
 function renderGame(flash){
   const s=st(), done=s.solved||s.gaveUp;
@@ -398,6 +412,7 @@ function renderGame(flash){
   $('bestrank').textContent=top&&top.per?top.per+' ‰':'—';
   $('tries').textContent=s.g.filter(x=>!x.hint).length;
   $('hints').textContent=s.h||0;
+  document.querySelector('.readout').style.setProperty('--heat',heatOf(top));
   $('thermo').style.width=top?Math.max(0,Math.min(100,(top.temp+20)/120*100))+'%':'0%';
   $('word').disabled=done; $('send').disabled=done;
   $('actions').hidden=done;
