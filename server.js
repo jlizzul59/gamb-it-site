@@ -65,6 +65,7 @@ const SCHEMA = [
      version INT NOT NULL DEFAULT 0,
      updated_at TIMESTAMPTZ NOT NULL DEFAULT now())`,
   `CREATE INDEX IF NOT EXISTS menus_members_group ON menus_members(group_id)`,
+  `ALTER TABLE menus_members ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'adulte'`,
   `CREATE INDEX IF NOT EXISTS menus_sessions_user ON menus_sessions(user_id)`,
 ];
 async function migrate() {
@@ -134,6 +135,19 @@ function readBody(req) {
   });
 }
 
+const KID_KEYS = ["fav", "panier"];
+function childMerge(cur, inc, username) {
+  const out = JSON.parse(JSON.stringify(cur || {}));
+  KID_KEYS.forEach((k) => { if (inc[k] && typeof inc[k] === "object") out[k] = inc[k]; });
+  const cp = (cur && cur.propositions) || {}, ip = (inc && inc.propositions) || {};
+  const props = JSON.parse(JSON.stringify(cp));
+  const mine = (p) => p && typeof p === "object" && p.by === username && p.status === "attente";
+  // ses propositions en attente : ajout, modification, retrait
+  Object.keys(ip).forEach((id) => { if (mine(ip[id]) && (!cp[id] || mine(cp[id]))) props[id] = ip[id]; });
+  Object.keys(cp).forEach((id) => { if (mine(cp[id]) && !ip[id]) delete props[id]; });
+  out.propositions = props;
+  return out;
+}
 function checkData(data) {
   if (!data || typeof data !== "object" || Array.isArray(data)) throw new HttpError(400, "Données invalides.");
   const s = JSON.stringify(data);
@@ -168,7 +182,7 @@ async function auth(req) {
 // ---------- État complet d'un compte ----------
 async function groupOf(userId) {
   const r = await q(
-    `SELECT g.id, g.name, g.invite_code, g.data, g.version FROM menus_members m
+    `SELECT g.id, g.name, g.invite_code, g.data, g.version, m.role FROM menus_members m
      JOIN menus_groups g ON g.id = m.group_id WHERE m.user_id = $1`,
     [userId]
   );
@@ -182,16 +196,16 @@ async function stateOf(user) {
   let group = null, shared = null;
   if (g) {
     const mem = await q(
-      `SELECT u.name, u.username FROM menus_members m JOIN menus_users u ON u.id = m.user_id
+      `SELECT u.name, u.username, m.role FROM menus_members m JOIN menus_users u ON u.id = m.user_id
        WHERE m.group_id = $1 ORDER BY m.joined_at`,
       [g.id]
     );
-    group = { id: Number(g.id), name: g.name, code: g.invite_code, members: mem.rows.map((x) => ({ name: x.name, username: x.username })) };
+    group = { id: Number(g.id), name: g.name, code: g.invite_code, members: mem.rows.map((x) => ({ name: x.name, username: x.username, role: x.role })) };
     shared = { data: g.data || {}, version: Number(g.version) };
   }
   const p = pr.rows[0];
   return {
-    user: { username: user.username, name: user.name },
+    user: { username: user.username, name: user.name, role: g ? g.role : "adulte" },
     group,
     perso: p ? { data: p.data || {}, version: Number(p.version) } : { data: {}, version: 0 },
     shared,
@@ -265,9 +279,11 @@ const routes = {
 
   "PUT /shared": async (req, body) => {
     const user = await auth(req);
-    const s = checkData(body.data);
+    let s = checkData(body.data);
     const g = await groupOf(user.id);
     if (!g) throw new HttpError(409, "Vous ne faites partie d'aucun groupe.", { nogroup: true });
+    // Un enfant ne modifie que ses favoris, la liste de courses et ses propres propositions en attente
+    if (g.role === "enfant") s = checkData(childMerge(g.data || {}, body.data, user.username));
     const r = await q(
       `UPDATE menus_groups SET data = $1::jsonb, version = version + 1, updated_at = now()
        WHERE id = $2 AND version = $3 RETURNING version`,
@@ -310,11 +326,27 @@ const routes = {
     const r = await q(`SELECT id FROM menus_groups WHERE invite_code = $1`, [code]);
     if (!r.rows.length) throw new HttpError(404, "Ce code ne correspond à aucun groupe.");
     try {
-      await q(`INSERT INTO menus_members (user_id, group_id) VALUES ($1, $2)`, [user.id, r.rows[0].id]);
+      await q(`INSERT INTO menus_members (user_id, group_id, role) VALUES ($1, $2, $3)`, [user.id, r.rows[0].id, body.role === "enfant" ? "enfant" : "adulte"]);
     } catch (e) {
       if (e.code === "23505") throw new HttpError(409, "Quittez d'abord votre groupe actuel.");
       throw e;
     }
+    return stateOf(user);
+  },
+
+  "POST /groups/role": async (req, body) => {
+    const user = await auth(req);
+    const g = await groupOf(user.id);
+    if (!g) throw new HttpError(409, "Vous ne faites partie d'aucun groupe.");
+    if (g.role !== "adulte") throw new HttpError(403, "Seul un adulte peut changer les profils.");
+    const role = body.role === "enfant" ? "enfant" : "adulte";
+    const t = await q(`SELECT m.user_id, m.role FROM menus_members m JOIN menus_users u ON u.id = m.user_id WHERE m.group_id = $1 AND u.username_key = $2`, [g.id, String(body.username || "").toLowerCase()]);
+    if (!t.rows.length) throw new HttpError(404, "Ce membre n'est pas dans votre groupe.");
+    if (role === "enfant" && t.rows[0].role === "adulte") {
+      const n = await q(`SELECT count(*)::int AS n FROM menus_members WHERE group_id = $1 AND role = 'adulte'`, [g.id]);
+      if (n.rows[0].n <= 1) throw new HttpError(409, "Il faut garder au moins un adulte dans le groupe.");
+    }
+    await q(`UPDATE menus_members SET role = $1 WHERE user_id = $2`, [role, t.rows[0].user_id]);
     return stateOf(user);
   },
 
