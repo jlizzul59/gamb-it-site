@@ -407,6 +407,38 @@ html.ck-on,html.ck-on body{overflow:hidden}
   .ck-nav .ck-btn{flex:1;padding:14px 12px}
   .ck-tt b{font-size:15px}
 }
+/* Profils et propositions */
+.pbadge{display:inline-grid;place-items:center;min-width:18px;height:18px;border-radius:999px;background:var(--warm);color:#fff;font-size:11px;font-weight:800;padding:0 5px;margin-left:4px}
+.pbadge[hidden]{display:none}
+.kidban{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;background:var(--warm-soft);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:0 0 18px;font-size:14px}
+.kidban b{color:var(--warm)}
+.kidban span{flex:1;min-width:200px;color:var(--ink)}
+.kidban.adult{background:var(--accent-soft)}
+.kidban.adult b{color:var(--accent)}
+.plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.plist li{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:15px}
+.plist li>div:first-child{flex:1;min-width:240px}
+.plist q{display:block;margin-top:6px;color:var(--muted);font-style:italic;font-size:14px}
+.plist q::before{content:"« "}.plist q::after{content:" »"}
+.plist.done li{background:transparent}
+.pact{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px}
+.pf{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--muted)}
+.pf select,.pf textarea{font:inherit;font-size:15px;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.pst{font-size:13px;font-weight:800;border-radius:999px;padding:4px 10px}
+.pst.ok{background:var(--accent-soft);color:var(--accent)}
+.pst.no{background:var(--bad-soft);color:var(--bad)}
+.pst.wait{background:var(--warm-soft);color:var(--warm)}
+.phist{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:24px 0 10px}
+.pform{display:flex;flex-direction:column;gap:14px;padding:4px 24px 24px}
+.pform .row{display:flex;gap:8px;flex-wrap:wrap}
+.linkbtn{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--accent);text-decoration:underline;cursor:pointer}
+.kidmode [data-swap],.kidmode [data-skip],.kidmode [data-unskip],.kidmode select[data-mode],.kidmode .pm,.kidmode #regen,.kidmode #reset,.kidmode #restLunch,.kidmode [data-def]{display:none!important}
+.memrole{display:inline-flex;align-items:center;gap:6px}
+.memrole small{font-weight:600;opacity:.75}
+.rolebtn{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:2px 8px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.rolebtn:hover{color:var(--ink)}
+.accf select{font:inherit;font-size:16px;font-weight:400;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.kidprop input{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 10px;font:inherit;font-size:14px;min-width:180px}
 </style>
 
 <header class="top">
@@ -1502,7 +1534,7 @@ const CLOUD=(()=>{
   API=API.replace(/\/+$/,"");
   const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
   const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
-  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier"];
+  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions"];
   let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
   let hooks={apply(){},status(){}},busy=false,again=false,timer=null,status="idle",lastErr="",view="login",note="";
   const J=JSON.stringify,clone=o=>JSON.parse(J(o===undefined?null:o));
@@ -1525,14 +1557,14 @@ const CLOUD=(()=>{
   function local(){
     const P=read(LP)||{},A=read(LA)||{};
     const perso={};PERSO_KEYS.forEach(k=>{const v=k==="note"?A.note:P[k];if(v!==undefined)perso[k]=clone(v)});
-    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{}),panier:clone(read("menus.panier")||{})}};
+    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{}),panier:clone(read("menus.panier")||{}),propositions:clone(read("menus.propositions")||{})}};
   }
   function applyLocal(perso,shared){
     const P=read(LP)||{},A=read(LA)||{fav:{},note:{}};
     PERSO_KEYS.forEach(k=>{if(k==="note")A.note=perso.note||{};else if(perso[k]!==undefined)P[k]=perso[k];});
     P.weeks=shared.weeks||{};A.fav=shared.fav||{};
     write(LP,P);write(LA,A);
-    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});write("menus.panier",shared.panier||{});
+    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});write("menus.panier",shared.panier||{});write("menus.propositions",shared.propositions||{});
   }
   // Fusion à trois : on garde ce qui a changé ici depuis la dernière synchro, le reste vient du serveur
   function mergeMap(b,m,t){
@@ -1566,7 +1598,7 @@ const CLOUD=(()=>{
       const before=J(local());
       for(let i=0;i<4;i++){
         const st=await api("GET","/state");
-        acc.user=st.user;acc.group=st.group;
+        const pr0=acc.user&&acc.user.role;acc.user=st.user;acc.group=st.group;if(pr0!==(st.user&&st.user.role))setTimeout(()=>{try{hooks.apply()}catch(_){}},0);
         const L=local(),inGroup=!!st.group;
         // Personnel (sans groupe, il contient aussi le semainier et les favoris)
         const pLocal=inGroup?L.perso:Object.assign({},L.perso,L.shared);
@@ -1636,13 +1668,14 @@ const CLOUD=(()=>{
       ${msg}
       <section class="accsec"><h4>Groupe</h4>
       ${g?`<p>Vous êtes dans le groupe <b>${esc2(g.name)}</b>. Sont partagés entre ses membres : le semainier, les favoris, les intolérances du foyer, les invités et l'historique des réceptions. Vos notes et vos goûts restent personnels.</p>
-        <p class="members">${g.members.map(m=>`<span class="mem">${esc2(m.name)}</span>`).join("")}</p>
+        <p class="members">${g.members.map(m=>{const kid=m.role==="enfant",me=acc.user&&m.username===acc.user.username,adult=acc.user&&acc.user.role!=="enfant";return `<span class="mem memrole">${esc2(m.name)} <small>${kid?"Enfant":"Adulte"}</small>${adult?`<button type="button" class="rolebtn" data-accrole="${esc2(m.username)}|${kid?"adulte":"enfant"}" title="${me?"Votre profil":""}">→ ${kid?"Adulte":"Enfant"}</button>`:""}</span>`}).join("")}</p>
+        <p class="muted small">Profil Enfant : propose des plats et des changements, qu'un adulte valide et place dans la semaine. Seuls les adultes modifient le semainier.</p>
         <div class="code"><span>Code d'invitation</span><b class="num" id="accCode">${esc2(g.code)}</b><button class="btn sm" type="button" data-acc="copy">Copier</button></div>
         <p class="muted small">Pour inviter quelqu'un : il crée son compte, puis saisit ce code dans « Rejoindre un groupe ».</p>
         ${view==="leave"?`<div class="confirm"><p>Quitter le groupe ? Vous gardez une copie du semainier et des favoris actuels.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`:`<button class="btn" type="button" data-acc="view-leave">Quitter le groupe</button>`}`
       :`<p>Créez un groupe pour partager le semainier, les favoris, le foyer et les invités (avec votre conjoint, par exemple), ou rejoignez-en un avec son code.</p>
         <form class="accform inline" data-accform="create" novalidate>${field("accGroup","Nom du groupe","text",'placeholder="Famille Martin" maxlength="40"')}<button class="btn primary" type="submit">Créer le groupe</button></form>
-        <form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Rejoindre un groupe","text",'placeholder="Code à 6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<button class="btn" type="submit">Rejoindre</button></form>
+        <form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Rejoindre un groupe","text",'placeholder="Code à 6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<label class="accf"><span>Je suis</span><select id="accRole"><option value="adulte">Adulte</option><option value="enfant">Enfant</option></select></label><button class="btn" type="submit">Rejoindre</button></form>
         <p class="muted small">En rejoignant un groupe, son semainier remplace le vôtre ; vos favoris s'ajoutent aux siens.</p>`}
       </section>
       <section class="accsec"><h4>Mon compte</h4>
@@ -1670,6 +1703,7 @@ const CLOUD=(()=>{
       if(k==="logout"){act(async()=>{try{await api("POST","/auth/logout")}catch(_){}acc=null;keep();view="login";setStatus("idle")},"Vous êtes déconnecté. Vos données restent sur cet appareil.");return}
       if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave");acc.group=st.group;acc.base=null;acc.baseGid=null;keep();view="main";await sync()},"Vous avez quitté le groupe.");return}
     }
+    const ar=e.target.closest("[data-accrole]");if(ar){const [u,r]=ar.dataset.accrole.split("|");act(async()=>{const st=await api("POST","/groups/role",{username:u,role:r});acc.group=st.group;acc.user=st.user;keep();hooks.apply()},"Profil mis à jour.");return}
     const btn=e.target.closest("#accBtn");if(btn){note="";view=acc?"main":"login";open();}
   });
   document.addEventListener("submit",e=>{
@@ -1680,7 +1714,7 @@ const CLOUD=(()=>{
     if(kind==="login")act(async()=>{const r=await api("POST","/auth/login",{username:v("accUser").trim(),password:v("accPass")});startSession(r,false);await sync();hooks.apply();},"Connecté.");
     if(kind==="register")act(async()=>{const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass")});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
     if(kind==="create")act(async()=>{await sync();const L=local();const st=await api("POST","/groups",{name:v("accGroup"),data:L.shared});acc.group=st.group;acc.base=clone(L.shared);acc.baseGid=st.group.id;acc.sv=st.shared.version;keep();await sync();},"Groupe créé. Partagez le code ci-dessous.");
-    if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn")});acc.group=st.group;acc.base={weeks:clone(L.shared.weeks),fav:{}};acc.baseGid=st.group.id;keep();await sync();hooks.apply();},"Bienvenue dans le groupe.");
+    if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn"),role:v("accRole")||"adulte"});acc.user=st.user;acc.group=st.group;acc.base={weeks:clone(L.shared.weeks),fav:{}};acc.baseGid=st.group.id;keep();await sync();hooks.apply();},"Bienvenue dans le groupe.");
     if(kind==="password")act(async()=>{await api("POST","/account/password",{current:v("accCur"),next:v("accNew")});view="main";},"Mot de passe changé. Vos autres appareils devront se reconnecter.");
     if(kind==="delete")act(async()=>{await api("POST","/account/delete",{password:v("accDel")});acc=null;keep();view="login";setStatus("idle")},"Votre compte a été supprimé.");
   });
@@ -1815,6 +1849,17 @@ const COOK=(()=>{
   document.addEventListener("touchend",ev=>{if(!sx)return;const dx=ev.changedTouches[0].clientX-sx[0],dy=ev.changedTouches[0].clientY-sx[1];sx=null;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(dx<0&&i<R.steps.length)go(i+1);else if(dx>0)go(i-1)}},{passive:true});
   return {open,close,get active(){return !!(root&&!root.hidden)}};
 })();
+
+
+// ---------- Profils Adulte / Enfant et propositions des enfants ----------
+const PROPK="menus.propositions";
+const propsRead=()=>{try{return JSON.parse(localStorage.getItem(PROPK)||"null")||{}}catch(e){return {}}};
+const propsWrite=v=>{try{localStorage.setItem(PROPK,JSON.stringify(v))}catch(e){}try{CLOUD.changed()}catch(e){}};
+function meAcc(){try{return CLOUD.account}catch(e){return null}}
+const isKid=()=>{const a=meAcc();return !!(a&&a.group&&a.user&&a.user.role==="enfant")};
+const meUser=()=>{const a=meAcc();return a&&a.user?a.user.username:""};
+function propose(o){const all=propsRead(),id=newId(),a=meAcc();all[id]=Object.assign({by:meUser(),byName:a&&a.user?a.user.name:"",t:Date.now(),status:"attente"},o);propsWrite(all);return id}
+const pendingProps=()=>Object.entries(propsRead()).filter(([,p])=>p.status==="attente").sort((a,b)=>a[1].t-b[1].t);
 
 // ---------- Page recettes ----------
 const BASICS=new Set(["oignon","ail","citron","persil","citronvert","menthe"]);
@@ -2003,10 +2048,14 @@ function openRecipe(id){
         <div><h4>Préparation</h4><ol class="steps" id="steps"></ol></div></div>
       <div class="bcnote"><b>En batch cooking :</b> ${bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc.j)}</div>
       <div class="addcart"><button type="button" class="cookb" data-cook="${r.id}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button>${cartBtn(r.id,true)}</div>
-      <div class="addmenu"><strong>Mettre au menu de la semaine ${wk+1}</strong>
+      ${isKid()?`<div class="addmenu kidprop"><strong>Proposer ce plat aux adultes</strong>
+        <select id="addDay" aria-label="Jour"><option value="">Peu importe le jour</option>${DAYS.map((d,i)=>`<option value="${i}">${d}</option>`).join("")}</select>
+        <select id="addWhen" aria-label="Repas"><option>Soir</option><option>Midi</option></select>
+        <input id="propMsg" maxlength="200" placeholder="Un petit mot ? (facultatif)" aria-label="Un petit mot">
+        <button type="button" class="btn" data-propose>Proposer</button><a href="index.html#propositions">Mes propositions</a></div>`:`<div class="addmenu"><strong>Mettre au menu de la semaine ${wk+1}</strong>
         <select id="addDay" aria-label="Jour">${DAYS.map((d,i)=>`<option value="${i}">${d}</option>`).join("")}</select>
         <select id="addWhen" aria-label="Repas"><option>Soir</option><option>Midi</option></select>
-        <button type="button" class="btn" data-add>Ajouter</button><a href="index.html">Ouvrir le semainier</a></div>
+        <button type="button" class="btn" data-add>Ajouter</button><a href="index.html">Ouvrir le semainier</a></div>`}
     </div></article>`;
   ov.hidden=false;fillIngs();ART.hydrate(ov);
   try{ov.querySelector("[data-close]").focus({preventScroll:true})}catch(e){}
@@ -2024,6 +2073,8 @@ let tT;function toast(m){const t=document.getElementById("toast");t.textContent=
 document.addEventListener("click",e=>{
   // la fermeture passe en premier
   if(e.target.closest("[data-close]")||e.target===ov){closeModal();return}
+  if(e.target.closest("[data-propose]")){const d=document.getElementById("addDay").value,w=document.getElementById("addWhen").value,S0=planner(),wk=(S0&&S0.cur)||0;
+    propose({type:"plat",recipe:current,week:wk,slot:d===""?null:d+(w==="Midi"?"m":"s"),msg:(document.getElementById("propMsg").value||"").trim().slice(0,200)});toast("Proposition envoyée aux adultes");return}
   if(e.target.closest("[data-add]")){const d=+document.getElementById("addDay").value,w=document.getElementById("addWhen").value;const wk=addToMenu(current,d,w);toast(wk===null?"Impossible d'enregistrer dans ce navigateur":RB[current].n+" ajouté : "+DAYS[d].toLowerCase()+" "+w.toLowerCase());return}
   const sb=e.target.closest("[data-s]");if(sb){servings=Math.max(1,Math.min(12,servings+ +sb.dataset.s));save();fillIngs();return}
   const fv=e.target.closest("[data-fav]");if(fv){const id=fv.dataset.fav;toggleFav(id);refreshAvis();toast(isFav(id)?RB[id].n+" ajouté aux favoris":"Retiré des favoris");return}

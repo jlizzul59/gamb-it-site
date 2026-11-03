@@ -435,6 +435,37 @@ html.ck-on,html.ck-on body{overflow:hidden}
   .ck-tt b{font-size:15px}
 }
 .rcook{margin:12px 0 4px}
+/* Profils et propositions */
+.pbadge{display:inline-grid;place-items:center;min-width:18px;height:18px;border-radius:999px;background:var(--warm);color:#fff;font-size:11px;font-weight:800;padding:0 5px;margin-left:4px}
+.pbadge[hidden]{display:none}
+.kidban{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;background:var(--warm-soft);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:0 0 18px;font-size:14px}
+.kidban b{color:var(--warm)}
+.kidban span{flex:1;min-width:200px;color:var(--ink)}
+.kidban.adult{background:var(--accent-soft)}
+.kidban.adult b{color:var(--accent)}
+.plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.plist li{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:15px}
+.plist li>div:first-child{flex:1;min-width:240px}
+.plist q{display:block;margin-top:6px;color:var(--muted);font-style:italic;font-size:14px}
+.plist q::before{content:"« "}.plist q::after{content:" »"}
+.plist.done li{background:transparent}
+.pact{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px}
+.pf{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--muted)}
+.pf select,.pf textarea{font:inherit;font-size:15px;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.pst{font-size:13px;font-weight:800;border-radius:999px;padding:4px 10px}
+.pst.ok{background:var(--accent-soft);color:var(--accent)}
+.pst.no{background:var(--bad-soft);color:var(--bad)}
+.pst.wait{background:var(--warm-soft);color:var(--warm)}
+.phist{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:24px 0 10px}
+.pform{display:flex;flex-direction:column;gap:14px;padding:4px 24px 24px}
+.pform .row{display:flex;gap:8px;flex-wrap:wrap}
+.linkbtn{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--accent);text-decoration:underline;cursor:pointer}
+.kidmode [data-swap],.kidmode [data-skip],.kidmode [data-unskip],.kidmode select[data-mode],.kidmode .pm,.kidmode #regen,.kidmode #reset,.kidmode #restLunch,.kidmode [data-def]{display:none!important}
+.memrole{display:inline-flex;align-items:center;gap:6px}
+.memrole small{font-weight:600;opacity:.75}
+.rolebtn{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:2px 8px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.rolebtn:hover{color:var(--ink)}
+.accf select{font:inherit;font-size:16px;font-weight:400;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
 </style>
 
 <header class="top">
@@ -450,6 +481,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
       <a href="#recettes">Recettes de la semaine</a>
       <a href="#courses">Courses</a>
       <a href="#gouts">Mes goûts</a>
+      <a href="#propositions">Propositions<span class="pbadge" id="propBadge" hidden></span></a>
       <span class="tabsep" aria-hidden="true"></span>
       <a href="recettes.html" class="ext">Catalogue des recettes</a>
       <a href="recevoir.html" class="ext">On reçoit</a>
@@ -459,6 +491,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 
 <main class="wrap">
   <section class="view" id="v-semaine">
+    <div id="propBanner"></div>
     <div class="lede">
       <div>
         <h2>Les menus de la semaine, pour toute la famille</h2>
@@ -503,6 +536,8 @@ html.ck-on,html.ck-on body{overflow:hidden}
     <div class="shophead"><div><h2 style="font-size:30px">Les recettes de la semaine</h2><p>Quantités calculées pour le nombre de personnes de chaque repas.</p></div></div>
     <div class="reclist" id="reclist"></div>
   </section>
+
+  <section class="view" id="v-propositions" hidden><div id="propbox"></div></section>
 
   <section class="view" id="v-courses" hidden>
     <div class="shophead">
@@ -1567,7 +1602,7 @@ const CLOUD=(()=>{
   API=API.replace(/\/+$/,"");
   const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
   const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
-  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier"];
+  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions"];
   let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
   let hooks={apply(){},status(){}},busy=false,again=false,timer=null,status="idle",lastErr="",view="login",note="";
   const J=JSON.stringify,clone=o=>JSON.parse(J(o===undefined?null:o));
@@ -1590,14 +1625,14 @@ const CLOUD=(()=>{
   function local(){
     const P=read(LP)||{},A=read(LA)||{};
     const perso={};PERSO_KEYS.forEach(k=>{const v=k==="note"?A.note:P[k];if(v!==undefined)perso[k]=clone(v)});
-    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{}),panier:clone(read("menus.panier")||{})}};
+    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{}),panier:clone(read("menus.panier")||{}),propositions:clone(read("menus.propositions")||{})}};
   }
   function applyLocal(perso,shared){
     const P=read(LP)||{},A=read(LA)||{fav:{},note:{}};
     PERSO_KEYS.forEach(k=>{if(k==="note")A.note=perso.note||{};else if(perso[k]!==undefined)P[k]=perso[k];});
     P.weeks=shared.weeks||{};A.fav=shared.fav||{};
     write(LP,P);write(LA,A);
-    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});write("menus.panier",shared.panier||{});
+    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});write("menus.panier",shared.panier||{});write("menus.propositions",shared.propositions||{});
   }
   // Fusion à trois : on garde ce qui a changé ici depuis la dernière synchro, le reste vient du serveur
   function mergeMap(b,m,t){
@@ -1631,7 +1666,7 @@ const CLOUD=(()=>{
       const before=J(local());
       for(let i=0;i<4;i++){
         const st=await api("GET","/state");
-        acc.user=st.user;acc.group=st.group;
+        const pr0=acc.user&&acc.user.role;acc.user=st.user;acc.group=st.group;if(pr0!==(st.user&&st.user.role))setTimeout(()=>{try{hooks.apply()}catch(_){}},0);
         const L=local(),inGroup=!!st.group;
         // Personnel (sans groupe, il contient aussi le semainier et les favoris)
         const pLocal=inGroup?L.perso:Object.assign({},L.perso,L.shared);
@@ -1701,13 +1736,14 @@ const CLOUD=(()=>{
       ${msg}
       <section class="accsec"><h4>Groupe</h4>
       ${g?`<p>Vous êtes dans le groupe <b>${esc2(g.name)}</b>. Sont partagés entre ses membres : le semainier, les favoris, les intolérances du foyer, les invités et l'historique des réceptions. Vos notes et vos goûts restent personnels.</p>
-        <p class="members">${g.members.map(m=>`<span class="mem">${esc2(m.name)}</span>`).join("")}</p>
+        <p class="members">${g.members.map(m=>{const kid=m.role==="enfant",me=acc.user&&m.username===acc.user.username,adult=acc.user&&acc.user.role!=="enfant";return `<span class="mem memrole">${esc2(m.name)} <small>${kid?"Enfant":"Adulte"}</small>${adult?`<button type="button" class="rolebtn" data-accrole="${esc2(m.username)}|${kid?"adulte":"enfant"}" title="${me?"Votre profil":""}">→ ${kid?"Adulte":"Enfant"}</button>`:""}</span>`}).join("")}</p>
+        <p class="muted small">Profil Enfant : propose des plats et des changements, qu'un adulte valide et place dans la semaine. Seuls les adultes modifient le semainier.</p>
         <div class="code"><span>Code d'invitation</span><b class="num" id="accCode">${esc2(g.code)}</b><button class="btn sm" type="button" data-acc="copy">Copier</button></div>
         <p class="muted small">Pour inviter quelqu'un : il crée son compte, puis saisit ce code dans « Rejoindre un groupe ».</p>
         ${view==="leave"?`<div class="confirm"><p>Quitter le groupe ? Vous gardez une copie du semainier et des favoris actuels.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`:`<button class="btn" type="button" data-acc="view-leave">Quitter le groupe</button>`}`
       :`<p>Créez un groupe pour partager le semainier, les favoris, le foyer et les invités (avec votre conjoint, par exemple), ou rejoignez-en un avec son code.</p>
         <form class="accform inline" data-accform="create" novalidate>${field("accGroup","Nom du groupe","text",'placeholder="Famille Martin" maxlength="40"')}<button class="btn primary" type="submit">Créer le groupe</button></form>
-        <form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Rejoindre un groupe","text",'placeholder="Code à 6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<button class="btn" type="submit">Rejoindre</button></form>
+        <form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Rejoindre un groupe","text",'placeholder="Code à 6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<label class="accf"><span>Je suis</span><select id="accRole"><option value="adulte">Adulte</option><option value="enfant">Enfant</option></select></label><button class="btn" type="submit">Rejoindre</button></form>
         <p class="muted small">En rejoignant un groupe, son semainier remplace le vôtre ; vos favoris s'ajoutent aux siens.</p>`}
       </section>
       <section class="accsec"><h4>Mon compte</h4>
@@ -1735,6 +1771,7 @@ const CLOUD=(()=>{
       if(k==="logout"){act(async()=>{try{await api("POST","/auth/logout")}catch(_){}acc=null;keep();view="login";setStatus("idle")},"Vous êtes déconnecté. Vos données restent sur cet appareil.");return}
       if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave");acc.group=st.group;acc.base=null;acc.baseGid=null;keep();view="main";await sync()},"Vous avez quitté le groupe.");return}
     }
+    const ar=e.target.closest("[data-accrole]");if(ar){const [u,r]=ar.dataset.accrole.split("|");act(async()=>{const st=await api("POST","/groups/role",{username:u,role:r});acc.group=st.group;acc.user=st.user;keep();hooks.apply()},"Profil mis à jour.");return}
     const btn=e.target.closest("#accBtn");if(btn){note="";view=acc?"main":"login";open();}
   });
   document.addEventListener("submit",e=>{
@@ -1745,7 +1782,7 @@ const CLOUD=(()=>{
     if(kind==="login")act(async()=>{const r=await api("POST","/auth/login",{username:v("accUser").trim(),password:v("accPass")});startSession(r,false);await sync();hooks.apply();},"Connecté.");
     if(kind==="register")act(async()=>{const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass")});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
     if(kind==="create")act(async()=>{await sync();const L=local();const st=await api("POST","/groups",{name:v("accGroup"),data:L.shared});acc.group=st.group;acc.base=clone(L.shared);acc.baseGid=st.group.id;acc.sv=st.shared.version;keep();await sync();},"Groupe créé. Partagez le code ci-dessous.");
-    if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn")});acc.group=st.group;acc.base={weeks:clone(L.shared.weeks),fav:{}};acc.baseGid=st.group.id;keep();await sync();hooks.apply();},"Bienvenue dans le groupe.");
+    if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn"),role:v("accRole")||"adulte"});acc.user=st.user;acc.group=st.group;acc.base={weeks:clone(L.shared.weeks),fav:{}};acc.baseGid=st.group.id;keep();await sync();hooks.apply();},"Bienvenue dans le groupe.");
     if(kind==="password")act(async()=>{await api("POST","/account/password",{current:v("accCur"),next:v("accNew")});view="main";},"Mot de passe changé. Vos autres appareils devront se reconnecter.");
     if(kind==="delete")act(async()=>{await api("POST","/account/delete",{password:v("accDel")});acc=null;keep();view="login";setStatus("idle")},"Votre compte a été supprimé.");
   });
@@ -1880,6 +1917,17 @@ const COOK=(()=>{
   document.addEventListener("touchend",ev=>{if(!sx)return;const dx=ev.changedTouches[0].clientX-sx[0],dy=ev.changedTouches[0].clientY-sx[1];sx=null;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(dx<0&&i<R.steps.length)go(i+1);else if(dx>0)go(i-1)}},{passive:true});
   return {open,close,get active(){return !!(root&&!root.hidden)}};
 })();
+
+
+// ---------- Profils Adulte / Enfant et propositions des enfants ----------
+const PROPK="menus.propositions";
+const propsRead=()=>{try{return JSON.parse(localStorage.getItem(PROPK)||"null")||{}}catch(e){return {}}};
+const propsWrite=v=>{try{localStorage.setItem(PROPK,JSON.stringify(v))}catch(e){}try{CLOUD.changed()}catch(e){}};
+function meAcc(){try{return CLOUD.account}catch(e){return null}}
+const isKid=()=>{const a=meAcc();return !!(a&&a.group&&a.user&&a.user.role==="enfant")};
+const meUser=()=>{const a=meAcc();return a&&a.user?a.user.username:""};
+function propose(o){const all=propsRead(),id=newId(),a=meAcc();all[id]=Object.assign({by:meUser(),byName:a&&a.user?a.user.name:"",t:Date.now(),status:"attente"},o);propsWrite(all);return id}
+const pendingProps=()=>Object.entries(propsRead()).filter(([,p])=>p.status==="attente").sort((a,b)=>a[1].t-b[1].t);
 
 // ---------- Semaines ----------
 const DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
@@ -2190,7 +2238,7 @@ function renderDefaults(){
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));if(catKey)renderCatList("m",catKey);renderWeek()}
 function renderFoyer(){const el=document.getElementById("foyer");if(el)el.innerHTML=peopleEditor("foyer",{empty:"Personne n'est encore indiqué. Ajoutez par exemple chaque membre de la famille.",addLabel:"+ Ajouter un membre du foyer"})}
 DIETUI.onChange=(k,soft)=>{if(k!=="foyer")return;const before=JSON.stringify(W.plan);loadFoy();build("keep");const n=Object.keys(W.plan).filter(x=>JSON.parse(before)[x]!==W.plan[x]).length;if(soft){renderWeek();return}renderAll();if(n)toast(n+" repas remplacé"+(n>1?"s":"")+" pour respecter le foyer")};
-function renderAll(){loadFoy();renderFoyer();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs()}
+function renderAll(){loadFoy();renderFoyer();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps()}
 
 // ---------- Interactions ----------
 let toastT;
@@ -2251,7 +2299,81 @@ document.getElementById("copyList").addEventListener("click",()=>{
   try{navigator.clipboard.writeText(txt).then(done,fallback)}catch(err){fallback()}
 });
 
-const VIEWS=["semaine","batch","gouts","recettes","courses"];
+// ---------- Propositions : écran du semainier ----------
+const KIDBLOCK="[data-swap],[data-skip],[data-unskip],[data-pers],[data-def],#regen,#reset,#restLunch,[data-padd],[data-pdel],[data-pdiet],[data-pref],#clearPrefs";
+const KIDMSG="Profil Enfant : propose plutôt un plat, un adulte validera.";
+document.addEventListener("click",e=>{if(isKid()&&e.target.closest(KIDBLOCK)&&!e.target.closest(".ck")){e.preventDefault();e.stopImmediatePropagation();toast(KIDMSG)}},true);
+document.addEventListener("change",e=>{if(isKid()&&e.target.closest("[data-mode],[data-pname],[data-pnote]")){e.stopImmediatePropagation();toast(KIDMSG);renderAll()}},true);
+function slotOptions(w,sel,withAny){
+  const wk=S.weeks[w],plan=wk&&wk.plan||{};
+  return (withAny?`<option value="">Peu importe</option>`:"")+SLOTS.map(s=>{const r=RB[plan[s.key]];return `<option value="${s.key}" ${sel===s.key?"selected":""}>${DAYS[s.day]} ${s.when.toLowerCase()}${r?" — "+esc(shortName(r)):""}</option>`}).join("");
+}
+function openPropCatalog(){
+  catKey="__prop";
+  ov.innerHTML=`<article class="rcard catcard"><button class="close" type="button" data-close>Fermer</button>
+    <div class="rhead"><small>Semaine ${S.cur+1} · à valider par un adulte</small><h3>Proposer un plat</h3></div>${catalogShell("m","__prop")}</article>`;
+  ov.hidden=false;renderCatList("m","__prop");
+  const q=document.getElementById("catq-m");try{q.focus({preventScroll:true})}catch(e){}
+}
+function openPropForm(id,slot){
+  const r=RB[id];if(!r)return;const cur=slot&&RB[W.plan[slot]];
+  ov.innerHTML=`<article class="rcard propcard"><button class="close" type="button" data-close>Fermer</button>
+    <div class="rhead"><small>Proposition pour la semaine ${S.cur+1}</small><h3>${esc(r.n)}</h3></div>
+    <div class="pform">
+      ${slot?`<p>À la place de <b>${cur?esc(cur.n):"rien"}</b>, ${esc(slotLabel(SK[slot]))}.</p><input type="hidden" id="propSlot" value="${slot}">`
+        :`<label class="pf"><span>Pour quel repas ?</span><select id="propSlot">${slotOptions(S.cur,"",true)}</select></label>`}
+      <label class="pf"><span>Un petit mot pour convaincre ? (facultatif)</span><textarea id="propMsg" maxlength="200" rows="2" placeholder="J'adore ça et on n'en a pas mangé depuis longtemps !"></textarea></label>
+      <div class="row"><button type="button" class="btn primary" data-propsend="${id}">Envoyer aux adultes</button><button type="button" class="btn" data-close>Annuler</button></div>
+    </div></article>`;
+  ov.hidden=false;
+}
+const statusHTML=p=>p.status==="ok"?`<span class="pst ok">✓ Validé${p.assigned&&SK[p.assigned.key]?" : "+esc(slotLabel(SK[p.assigned.key]))+", semaine "+(p.assigned.w+1):""}</span>`
+  :p.status==="non"?`<span class="pst no">Refusé${p.reason?" : "+esc(p.reason):""}</span>`:`<span class="pst wait">En attente</span>`;
+function propLine(p){const r=RB[p.recipe];if(!r)return "";const repl=p.slot&&S.weeks[p.week]&&RB[S.weeks[p.week].plan[p.slot]];
+  return `<b>${esc(p.byName||p.by||"Un enfant")}</b> propose <button type="button" class="linkbtn" data-propview="${p.recipe}">${esc(r.n)}</button>${p.slot&&SK[p.slot]?` ${p.type==="modif"?"à la place de "+(repl?"<i>"+esc(shortName(repl))+"</i>, ":""):"pour "}${esc(slotLabel(SK[p.slot]))} (semaine ${(p.week||0)+1})`:""}`}
+function renderProps(){
+  const el=document.getElementById("propbox");if(!el)return;
+  const all=Object.entries(propsRead()).sort((a,b)=>b[1].t-a[1].t),pend=all.filter(([,p])=>p.status==="attente"),kid=isKid(),me=meUser();
+  const badge=document.getElementById("propBadge");if(badge){const n=kid?all.filter(([,p])=>p.by===me&&p.status==="attente").length:pend.length;badge.textContent=n?n:"";badge.hidden=!n}
+  document.body.classList.toggle("kidmode",kid);kidLabels();
+  const ban=document.getElementById("propBanner");
+  if(ban){ban.innerHTML=kid?`<div class="kidban"><b>Profil Enfant</b><span>Tu peux proposer des plats ou un changement de repas : un adulte validera et choisira le jour.</span><button type="button" class="btn sm primary" data-propnew>+ Proposer un plat</button></div>`
+    :pend.length?`<div class="kidban adult"><b>${pend.length} proposition${pend.length>1?"s":""} à valider</b><span>${pend.slice(0,3).map(([,p])=>esc((p.byName||"Un enfant")+" : "+(RB[p.recipe]?shortName(RB[p.recipe]):""))).join(" · ")}</span><a class="btn sm primary" href="#propositions">Voir et valider</a></div>`:"";}
+  if(kid){
+    const mine=all.filter(([,p])=>p.by===me);
+    el.innerHTML=`<div class="shophead"><div><h2>Mes propositions</h2><p>Choisis un plat dans le catalogue, dis pour quel repas, et envoie-le aux adultes. Tu verras ici s'il est validé.</p></div><div class="toolbar"><button type="button" class="btn primary" data-propnew>+ Proposer un plat</button></div></div>
+      ${mine.length?`<ul class="plist">${mine.map(([id,p])=>`<li><div>${propLine(p)}${p.msg?`<q>${esc(p.msg)}</q>`:""}</div><div class="pact">${statusHTML(p)}${p.status==="attente"?`<button type="button" class="btn sm ghost" data-propdel="${id}">Annuler</button>`:""}</div></li>`).join("")}</ul>`:`<p class="muted">Aucune proposition pour l'instant. Tu peux aussi toucher « Proposer un autre plat » sur un repas de la semaine.</p>`}`;
+    return;
+  }
+  const done=all.filter(([,p])=>p.status!=="attente").slice(0,12);
+  el.innerHTML=`<div class="shophead"><div><h2>Propositions des enfants</h2><p>Les enfants proposent, vous validez : choisissez le repas, le plat est mis au menu automatiquement.</p></div></div>
+    ${pend.length?`<ul class="plist">${pend.map(([id,p])=>{const w=p.week!=null&&S.weeks[p.week]?p.week:S.cur;
+      return `<li><div>${propLine(p)}${p.msg?`<q>${esc(p.msg)}</q>`:""}</div>
+        <div class="pact"><label class="pf"><span>Mettre au menu (semaine ${w+1})</span><select id="pa-${id}">${slotOptions(w,p.slot||"",false)}</select></label>
+          <button type="button" class="btn primary sm" data-propok="${id}" data-w="${w}">Valider</button><button type="button" class="btn sm ghost" data-propno="${id}">Refuser</button></div></li>`}).join("")}</ul>`
+      :`<p class="muted">Aucune proposition en attente.${Object.keys(propsRead()).length?"":" Pour que les enfants puissent proposer, passez leur profil en « Enfant » dans Mon compte, rubrique Groupe."}</p>`}
+    ${done.length?`<h3 class="phist">Déjà traitées</h3><ul class="plist done">${done.map(([id,p])=>`<li><div>${propLine(p)}</div><div class="pact">${statusHTML(p)}</div></li>`).join("")}</ul>`:""}`;
+}
+document.addEventListener("click",e=>{
+  if(e.target.closest("[data-propnew]")){openPropCatalog();return}
+  const pv=e.target.closest("[data-propview]");if(pv){openRecipeById(pv.dataset.propview);return}
+  const ps=e.target.closest("[data-propsend]");if(ps){const slot=(document.getElementById("propSlot")||{}).value||"";const msg=((document.getElementById("propMsg")||{}).value||"").trim().slice(0,200);
+    propose({type:slot&&W.plan[slot]?"modif":"plat",recipe:ps.dataset.propsend,week:S.cur,slot:slot||null,msg});closeModal();renderProps();toast("Proposition envoyée aux adultes");return}
+  const pd=e.target.closest("[data-propdel]");if(pd){const all=propsRead();delete all[pd.dataset.propdel];propsWrite(all);renderProps();return}
+  const ok=e.target.closest("[data-propok]");if(ok){const id=ok.dataset.propok,all=propsRead(),p=all[id];if(!p)return;const w=+ok.dataset.w,key=document.getElementById("pa-"+id).value;
+    useWeek(w);W.plan[key]=p.recipe;W.pin[key]=1;delete W.mode[key];build("keep");save();
+    p.status="ok";p.assigned={w,key};p.decidedBy=meUser();p.decidedAt=Date.now();propsWrite(all);renderAll();toast(RB[p.recipe].n+" au menu : "+slotLabel(SK[key]));return}
+  const no=e.target.closest("[data-propno]");if(no){const id=no.dataset.propno,all=propsRead(),p=all[id];if(!p)return;const reason=(prompt("Une raison pour "+(p.byName||"l'enfant")+" ? (facultatif)")||"").trim().slice(0,140);
+    p.status="non";p.reason=reason;p.decidedBy=meUser();p.decidedAt=Date.now();propsWrite(all);renderProps();toast("Proposition refusée");return}
+});
+function openRecipeById(id){const r=RB[id];if(!r)return;
+  ov.innerHTML=`<article class="rcard"><button class="close" type="button" data-close>Fermer ×</button><div class="rhead"><small>${esc(r.pays)} · ${r.t} min · ≈ ${kcal(r)} kcal</small><h3>${esc(r.n)}</h3></div>
+    <div class="rbody"><div><h4>Pour 1 personne</h4><ul class="ings">${r.ing.map(([i,q])=>`<li><span class="num">${fmt(q,I[i].u,false)}</span><span>${esc(I[i].n)}</span></li>`).join("")}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div></div></article>`;
+  ov.hidden=false}
+document.addEventListener("click",e=>{const ch=e.target.closest("[data-choose]");if(ch&&(catKey==="__prop"||isKid())){e.stopImmediatePropagation();const k=catKey==="__prop"?null:catKey;openPropForm(ch.dataset.choose,k)}},true);
+function kidLabels(){if(!isKid())return;document.querySelectorAll(".week [data-pick]").forEach(b=>b.textContent="Proposer un autre plat")}
+
+const VIEWS=["semaine","batch","gouts","recettes","courses","propositions"];
 function route(){
   const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"semaine";
   VIEWS.forEach(x=>document.getElementById("v-"+x).hidden=x!==v);
