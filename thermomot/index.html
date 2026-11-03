@@ -41,7 +41,8 @@ button,input{font:inherit;color:inherit}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 .btn.ghost{background:transparent}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.datelabel{font-family:var(--f-mono);font-size:15px;padding:8px 10px;min-width:12ch;text-align:center;font-variant-numeric:tabular-nums}
+.datelabel{font-family:var(--f-mono);font-size:15px;padding:8px 10px;min-width:12ch;text-align:center;font-variant-numeric:tabular-nums;background:transparent;border:1px dashed transparent;border-radius:8px;cursor:pointer;min-height:40px}
+.datelabel:hover{border-color:var(--line)}
 .datelabel b{font-family:var(--f-body)}
 
 /* readout */
@@ -124,6 +125,46 @@ aside{display:grid;gap:18px}
 .sync{font-size:12px;color:var(--muted)}
 .backlink{max-width:1080px;margin:28px auto 0;font-size:13px;color:var(--muted)}
 .backlink a{color:inherit}
+.entry{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 2px;margin-top:4px}
+#calpanel{scroll-margin-top:16px}
+@media (max-width:600px){
+  body{padding-block:10px 40px}
+  header.top{gap:8px;margin-bottom:12px;align-items:center}
+  h1{font-size:34px}
+  .tag{display:none}
+  .datebar{width:100%;flex-wrap:nowrap;gap:4px}
+  .datebar .btn{padding:6px 10px}
+  .datelabel{flex:1;min-width:0;font-size:14px;padding:6px 4px;border-color:var(--line);background:var(--surface)}
+  .long{display:none}
+  .readout{padding:12px 14px;gap:10px}
+  .readout-top{flex-wrap:nowrap;align-items:flex-end}
+  .big{font-size:40px}
+  .big small{font-size:18px}
+  .meta{flex-direction:column;gap:2px;font-size:13px;text-align:right}
+  form.guess input{font-size:17px;padding:9px 12px}
+  .entry{padding-block:8px 0}
+  .msg{min-height:20px;margin-top:6px;font-size:14px}
+  .actions .btn{min-height:36px;padding:6px 12px;font-size:15px}
+  .log{overflow-x:visible;margin-top:10px}
+  .log thead{display:none}
+  .log table,.log tbody{display:block}
+  .log tr{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto 1.7em;align-items:center;column-gap:6px;border-bottom:1px solid var(--line);padding:7px 4px}
+  .log td{border:none;padding:0;width:auto;min-width:0}
+  .log td.p{grid-column:2/-1;min-width:0}
+  .log td.p:empty{display:none}
+  .log td.p .bar{margin-top:5px}
+  .log td.w{overflow-wrap:anywhere}
+  .log td.t{width:auto}
+  .log tr.last{background:var(--sunk);border-radius:8px;border-bottom:none}
+  .log tr.last td{background:transparent}
+  .log tr.sep{display:block;padding:3px;border:none}
+  aside{gap:14px}
+  .stats .stat b{font-size:24px}
+  .meta span{white-space:nowrap}
+  .readout .eyebrow{font-size:11px;letter-spacing:.04em}
+  .log tr.flash td{animation:none}
+  .log tr.flash{animation:flash 1s ease}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -136,9 +177,9 @@ aside{display:grid;gap:18px}
   </div>
   <div class="datebar">
     <button class="btn" id="prev" type="button" aria-label="Jour précédent">◀</button>
-    <div class="datelabel" id="datelabel">—</div>
+    <button class="datelabel" id="datelabel" type="button" aria-label="Choisir une date dans le calendrier">—</button>
     <button class="btn" id="next" type="button" aria-label="Jour suivant">▶</button>
-    <button class="btn ghost" id="today" type="button">Aujourd'hui</button>
+    <button class="btn ghost" id="today" type="button">Auj.<span class="long">ourd'hui</span></button>
   </div>
 </header>
 
@@ -164,11 +205,13 @@ aside{display:grid;gap:18px}
       </div>
     </section>
 
+    <div class="entry">
     <form class="guess" id="form" autocomplete="off">
-      <input id="word" name="word" placeholder="Votre mot…" autocapitalize="none" spellcheck="false" aria-label="Votre proposition">
+      <input id="word" name="word" placeholder="Votre mot…" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="send" aria-label="Votre proposition">
       <button class="btn primary" id="send" type="submit">Envoyer</button>
     </form>
     <div class="msg" id="msg"></div>
+    </div>
     <div class="actions" id="actions">
       <button class="btn" id="hintbtn" type="button">Indice</button>
       <button class="btn ghost" id="giveup" type="button">Abandonner</button>
@@ -191,7 +234,7 @@ aside{display:grid;gap:18px}
   </main>
 
   <aside>
-    <section class="panel">
+    <section class="panel" id="calpanel">
       <h3><span id="mlabel">Mois</span><span class="mnav"><button class="btn" id="mprev" type="button" aria-label="Mois précédent">‹</button><button class="btn" id="mnext" type="button" aria-label="Mois suivant">›</button></span></h3>
       <div class="cal" id="cal"></div>
       <div class="legend"><span><i style="background:color-mix(in srgb,var(--ok) 22%,var(--surface));border-color:var(--ok)"></i>Trouvé (coups)</span><span><i style="border:1.5px dashed var(--accent)"></i>En cours</span><span><i style="background:color-mix(in srgb,var(--warn) 18%,var(--surface));border-color:var(--warn)"></i>Abandonné</span></div>
@@ -291,7 +334,7 @@ async function go(date){
   try{ P=await puzzle(date) }catch(e){ msg('Impossible de charger ce jour. Réessayez.', 'err'); return }
   if(cur!==date) return;
   renderGame();
-  if(!st().solved&&!st().gaveUp) $('word').focus({preventScroll:true});
+  if(!st().solved&&!st().gaveUp&&!matchMedia('(pointer:coarse)').matches) $('word').focus({preventScroll:true});
 }
 
 function msg(t,cls){$('msg').textContent=t;$('msg').className='msg'+(cls?' '+cls:'')}
@@ -419,13 +462,14 @@ $('form').addEventListener('submit',e=>{e.preventDefault(); const v=$('word').va
 $('prev').onclick=()=>go(addDays(cur,-1));
 $('next').onclick=()=>go(addDays(cur,1));
 $('today').onclick=()=>go(todayStr());
+$('datelabel').onclick=()=>{ viewMonth=cur.slice(0,7); renderCal(); $('calpanel').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}) };
 $('hintbtn').onclick=hint;
 $('giveup').onclick=()=>{$('confirm').hidden=false};
 $('giveno').onclick=()=>{$('confirm').hidden=true};
 $('giveyes').onclick=giveUp;
 $('mprev').onclick=()=>{const [y,m]=viewMonth.split('-').map(Number);const d=new Date(y,m-2,1);viewMonth=fromDate(d).slice(0,7);renderCal()};
 $('mnext').onclick=()=>{const [y,m]=viewMonth.split('-').map(Number);const d=new Date(y,m,1);viewMonth=fromDate(d).slice(0,7);renderCal()};
-$('cal').addEventListener('click',e=>{const b=e.target.closest('button.day'); if(b&&!b.disabled) go(b.dataset.d)});
+$('cal').addEventListener('click',e=>{const b=e.target.closest('button.day'); if(!b||b.disabled) return; go(b.dataset.d); if(matchMedia('(max-width:860px)').matches) window.scrollTo({top:0,behavior:'smooth'})});
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1); if(h!==cur&&valid(h)) go(h)});
 
 // ---------- boot ----------
