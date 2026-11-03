@@ -475,6 +475,12 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .xadd:hover{border-color:var(--accent);background:var(--accent-soft)}
 .kidmode .xadd,.kidmode .xdel,.kidmode [data-xpers]{display:none!important}
 .tag.simple{background:var(--accent-soft);color:var(--accent)}
+.mixbox{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--accent-soft);border-radius:12px;padding:12px 14px;margin:0 0 14px;font-size:14px}
+.mixbox>b{color:var(--accent)}
+.mixrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.mixrow>span{font-weight:800;color:var(--accent)}
+.mixbox select{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface);color:var(--ink);max-width:100%}
+.mixname{flex-basis:100%;font-size:13px;color:var(--muted)}
 </style>
 
 <header class="top">
@@ -1473,6 +1479,65 @@ for(const id in QUAL){if(RB[id])Object.assign(RB[id],QUAL[id])}
 QNEW.forEach(o=>{const r=Object.assign({},o);delete r.j;if(RB[r.id])Object.assign(RB[r.id],r);else{R.push(r);RB[r.id]=r}BC[r.id]={t:[],j:o.j}});
 Object.assign(BC,QBC);
 const SIMPLE=new Set(["ssoupecourgette","ssoupecarotte","ssoupepoireau","ssoupetomate","ssoupebrocoli","ssoupepois","ssoupepotiron","ssoupechampi","ssoupevermicelle","scordonbleu","spoissonpane","ssteakfrites","spoulethv","spouletcreme","spatesbeurre","spatesthon","spatestomate","sjambonpuree","sknackis","somelette","soeufscoque","soeufsdurs","stomatesfarcies","sgratincourgette","sraviolis","srizpoulet","ssteakcarottes","spoireauxvinaigrette","squichesimple","spurrecabillaud","spatesbolo","sgratinpdt","steakpuree","ksteakhache","kjambonpuree","kcotesporc","saucissepuree","coquillettes","croques","kcroquemadame","komelettejambon","ksoupelegumes","kchoufleursoupe","kcourgettesoupe","kpoiscasses","kwrapjambon","ksaladepates","ksaladeriz","galettes","kcrepessalees","kpetitspoissoupe","ktomatesoupe"]);R.forEach(r=>{if(SIMPLE.has(r.id))r.simple=1});
+// ---------- Assiette toute simple : viande ou poisson + accompagnement + légume ----------
+const MIXP={
+ steak:["Steak haché","boeuf",[["boeuf",120]],"Cuire le steak haché 2 à 3 min de chaque côté dans une poêle chaude. Saler, poivrer.",8],
+ poulet:["Escalope de poulet","poulet",[["poulet",130],["huile",0.25]],"Cuire l'escalope de poulet 5 min de chaque côté dans l'huile, à feu moyen. Saler, poivrer.",12],
+ dinde:["Escalope de dinde","dinde",[["dinde",130],["huile",0.25]],"Cuire l'escalope de dinde 4 min de chaque côté dans l'huile. Saler, poivrer.",10],
+ porc:["Côte de porc","cotesporc",[["cotesporc",150],["huile",0.25]],"Cuire la côte de porc 5 min de chaque côté dans l'huile. Saler, poivrer.",12],
+ saucisse:["Saucisses","saucisse",[["toulouse",110]],"Piquer les saucisses et les cuire 15 min à la poêle à feu moyen en les retournant.",15],
+ knacki:["Saucisses knacki","saucisse",[["fumee",100]],"Réchauffer les saucisses 5 min dans l'eau frémissante, sans faire bouillir.",5],
+ jambon:["Jambon","jambon",[["jambon",80]],"Servir le jambon froid, ou le réchauffer 2 min à la poêle.",2],
+ cordon:["Cordon bleu","dinde",[["cordonbleu",1],["huile",0.25]],"Dorer le cordon bleu 5 min de chaque côté dans l'huile, à feu moyen.",10],
+ pane:["Poisson pané","colin",[["poissonpane",2],["huile",0.25]],"Dorer le poisson pané 4 min de chaque côté dans l'huile (ou au four selon le paquet).",10],
+ cabillaud:["Filet de cabillaud","cabillaud",[["cabillaud",150],["beurre",5],["citron",0.25]],"Cuire le cabillaud 4 min de chaque côté à la poêle dans le beurre. Arroser de citron.",10],
+ saumon:["Pavé de saumon","saumon",[["saumon",120]],"Cuire le saumon 4 min côté peau puis 2 min de l'autre côté dans une poêle chaude. Saler.",8],
+ oeufs:["Œufs au plat","oeuf",[["oeuf",2],["beurre",5]],"Cuire les œufs au plat dans le beurre 3 min, jusqu'à ce que le blanc soit pris.",4]
+};
+const MIXS={
+ pates:["pâtes",[["pates",80],["beurre",5]],"Cuire les pâtes dans une grande eau salée, les égoutter et ajouter le beurre.",12,1],
+ coquillettes:["coquillettes",[["macaroni",80],["beurre",5]],"Cuire les coquillettes dans l'eau salée, les égoutter et ajouter le beurre.",10,1],
+ riz:["riz",[["riz",60]],"Cuire le riz dans l'eau salée selon le paquet.",12,0],
+ puree:["purée",[["pdt",200],["lait",50],["beurre",8]],"Cuire les pommes de terre épluchées 20 min à l'eau salée, puis les écraser avec le lait chaud et le beurre.",25,1],
+ frites:["frites",[["frites",200]],"Cuire les frites au four selon le paquet (environ 25 min à 220 °C).",25,1],
+ vapeur:["pommes vapeur",[["pdt",200]],"Cuire les pommes de terre 20 min à la vapeur ou à l'eau salée.",20,1],
+ sautees:["pommes de terre sautées",[["pdt",200],["huile",0.5]],"Couper les pommes de terre en dés et les faire dorer 20 min à la poêle avec l'huile. Saler.",25,1],
+ semoule:["semoule",[["semoule",60],["beurre",5]],"Verser le même volume d'eau bouillante salée sur la semoule, couvrir 5 min, ajouter le beurre et égrainer.",5,0],
+ lentilles:["lentilles",[["lentillesvertes",60]],"Cuire les lentilles 20 à 25 min dans l'eau non salée, saler à la fin.",25,1],
+ aucun:["",[],"",0,0]
+};
+const MIXV={
+ ppc:["petits pois carottes",[["petitspoiscarottes",200],["beurre",5]],"Réchauffer les petits pois carottes 5 min avec un peu d'eau, ajouter le beurre.",8],
+ hv:["haricots verts",[["haricotsverts",150],["beurre",5]],"Cuire les haricots verts 8 min à l'eau bouillante salée, ajouter le beurre.",10],
+ carottes:["carottes",[["carotte",150],["beurre",5]],"Cuire les carottes en rondelles 15 min avec un fond d'eau et le beurre, à couvert.",15],
+ brocoli:["brocoli",[["brocoli",150]],"Cuire le brocoli en petits bouquets 6 min à la vapeur ou à l'eau salée.",8],
+ epinards:["épinards à la crème",[["epinards",150],["creme",15]],"Faire tomber les épinards 3 min à la poêle, ajouter la crème. Saler.",5],
+ courgettes:["courgettes poêlées",[["courgette",200],["huile",0.25]],"Faire revenir les courgettes en rondelles 8 min dans l'huile. Saler.",10],
+ choufleur:["chou-fleur",[["choufleur",200],["beurre",5]],"Cuire le chou-fleur en bouquets 10 min à l'eau salée, ajouter le beurre.",12],
+ salade:["salade verte",[["salade",60],["huile",0.25],["vinaigre",0.15]],"Assaisonner la salade d'une vinaigrette (huile, vinaigre, sel).",3],
+ aucun:["",[],"",0]
+};
+function makeMix(id){
+  const [p,s,v]=String(id).slice(4).split(".");const P=MIXP[p],Sx=MIXS[s]||MIXS.aucun,V=MIXV[v]||MIXV.aucun;if(!P)return undefined;
+  const parts=[Sx[0],V[0]].filter(Boolean),ing={};
+  [P[2],Sx[1],V[1]].forEach(l=>l.forEach(([i,q])=>{ing[i]=(ing[i]||0)+q}));
+  const st=[Sx[2],V[2],P[3]].filter(Boolean);if(st.length<2)st.push("Servir aussitôt.");
+  return {id,n:P[0]+(parts.length?", "+parts.join(" et "):""),for:["l2","fam"],p:P[1],t:Math.max(P[4],Sx[3],V[3])+5,ing:Object.entries(ing),st,reg:"France",pays:"France",simple:1,mix:1};
+}
+// les assiettes se créent à la demande, quand on les lit (semainier, favoris, liste de courses…)
+[[RB,id=>makeMix(id)],[BC,id=>makeMix(id)?{t:[],j:"Cuire et servir."}:undefined]].forEach(([obj,mk])=>{
+  Object.setPrototypeOf(obj,new Proxy({},{
+    get(t,k,recv){if(typeof k==="string"&&k.startsWith("mix:")){const v=mk(k);if(v)Object.defineProperty(recv,k,{value:v,writable:true,enumerable:false,configurable:true});return v}return undefined},
+    has(t,k){return typeof k==="string"&&k.startsWith("mix:")&&!!makeMix(k)}
+  }));
+});
+const mixSel=(pre,ids)=>{const o=(m,k,lab)=>`<select id="${pre}-${k}" data-mixsel="${pre}" aria-label="${lab}">${Object.entries(m).map(([key,x])=>`<option value="${key}">${key==="aucun"?"— sans —":x[0].charAt(0).toUpperCase()+x[0].slice(1)}</option>`).join("")}</select>`;
+  return `<div class="mixbox"><b>Assiette toute simple</b><span class="mixrow">${o(MIXP,"p","Viande, poisson ou œufs")}<span>+</span>${o(MIXS,"s","Accompagnement")}<span>+</span>${o(MIXV,"v","Légume")}</span>${ids}</div>`};
+const mixIdOf=pre=>{const g=k=>(document.getElementById(pre+"-"+k)||{}).value;return "mix:"+g("p")+"."+g("s")+"."+g("v")};
+document.addEventListener("change",e=>{const s=e.target.closest("[data-mixsel]");if(!s)return;const pre=s.dataset.mixsel,id=mixIdOf(pre);document.querySelectorAll(`[data-mixgo="${pre}"]`).forEach(b=>{if(b.hasAttribute("data-choose"))b.dataset.choose=id;if(b.hasAttribute("data-r"))b.dataset.r=id});const nm=document.getElementById(pre+"-name");if(nm)nm.textContent=RB[id].n});
+// quelques assiettes visibles dans le catalogue
+["mix:jambon.pates.aucun","mix:steak.aucun.ppc","mix:dinde.aucun.ppc","mix:poulet.riz.ppc","mix:steak.coquillettes.aucun","mix:pane.puree.aucun","mix:oeufs.frites.salade","mix:poulet.pates.aucun","mix:saumon.riz.brocoli","mix:porc.vapeur.hv","mix:steak.puree.ppc","mix:knacki.aucun.ppc"].forEach(id=>{const r=RB[id];if(r&&!R.includes(r)){R.push(r);if(typeof SIMPLE!=="undefined")SIMPLE.add(id)}});
+
 const SOUP_RX=/velout|soupe|potage|bouillon|ramen|phở|laksa|harira|bortsch|minestrone|gaspacho|chorba|garbure|pistou|caldo|lohikeitto|chowder|tom kha|soto ayam|sopa|zurek|kartoffelsuppe|pozole|ajiaco|sancocho|tortellini en brodo/i;
 // ---------- Doublons fusionnés : chaque recette retirée renvoie vers sa jumelle ----------
 const ALIAS={"saladepates": "patespesto", "periafr": "piripiri", "piripiricrev": "currycrevettes", "fishcurry": "moqueca", "kpoulettikka": "tikka", "butterchicken": "tikka", "ksaumongrille": "teriyaki", "kpizzareine": "pizza", "calzone": "pizza", "gratinpates": "coquillettes", "kmacaroni": "coquillettes", "ksaumonepinards": "patessaumon", "kcannelloni": "lasagnesveg", "parmentiercolin": "brandade", "kcroque": "croques", "mongolian": "boeufbrocoli", "rumsteck": "ksteakfrites", "kpouletroticlassique": "pouletroti", "carbonara": "kcarbo", "kcarbocreme": "kcarbo", "karrabbiata": "ktomatebasilic", "paella": "kpaellaclassique", "kcesarclassique": "cesar", "kchili": "chili", "kriscantonais": "rizcantonais", "edamamebowl": "bowlsaumon", "kgaletteoeuf": "galettes", "couscous": "kcouscousclassique", "mijote": "boeufcarottes", "bolo": "kbolo", "kratatouilleriz": "ratatouille", "kmoulescreme": "moulesfrites", "escondidinho": "khachisclassique", "hachis": "khachisclassique", "kravioli": "ravioliepinards", "kgnocchisgratin": "gnocchis", "kquichesaumon": "quiche", "blanquette": "kblanquette", "kpouletchampi": "dinde", "kescalopecreme": "dinde", "ksoupechou": "kpaysanne", "kpoireauxpdt": "velouteporeaux", "kpotironclassique": "veloute", "pumpkinsoup": "veloute", "cultivateur": "ksoupelegumes", "kminestroneclassique": "minestrone", "chickennoodle": "kpoulettsoupe", "pancit": "miegoreng", "chowmein": "miegoreng", "kwokpoulet": "udon", "fijicurry": "fishcurry", "kokoda": "moqueca", "shishtaouk": "souvlaki", "pitas": "shawarma", "shopska": "grecque", "adana": "keftas", "lahmacun": "pide", "carnitas": "pastor", "kfajitasclassique": "fajitas", "ksaucissepuree": "saucissepuree", "kpouletpane": "nuggets", "kpoissonpane": "poissonpane", "kcordonbleu": "cordonbleu", "kmilanaise": "schnitzel", "arrozpollo": "jollof", "jambalaya": "kpaellaclassique", "chaufa": "nasigoreng", "kimchirice": "rizcantonais", "kraclette": "tartiflette", "kgratindauphinois": "dauphinois", "bigos": "choucroute", "irishstew": "navarin", "daube": "kbourguignon", "kvealmarengo": "kosso", "klapin": "cacciatora", "huli": "pouletananas", "colombo": "cari", "kpoulettcurry": "curryvert", "tabouleboulgour": "ktaboulefr", "chevrechaud": "kchevrechaud", "kcrevettesriz": "crevettesail", "klieuprovencale": "colinvierge", "polpette": "kboulettes", "boulettes": "kboulettes", "kthon": "spaghettithon", "kpesto": "patespesto", "kjambonpates": "tagliatelles", "lasagnes": "klasagnesbolo", "cajou": "kungpao"};
@@ -2143,6 +2208,7 @@ function catMatches(r){
 function catalogShell(sfx,key){
   return `<div class="catbar"><input type="search" id="catq-${sfx}" data-catq="${sfx}" placeholder="Rechercher un plat ou un ingrédient" value="${esc(catQ)}" autocomplete="off">
     <div class="seg" role="group" aria-label="Filtrer les recettes" id="catf-${sfx}"></div></div>
+    ${key?mixSel("mix"+sfx,`<span class="mixname" id="mix${sfx}-name">${esc(RB["mix:steak.pates.ppc"].n)}</span><button class="btn primary sm" type="button" data-mixgo="mix${sfx}" data-choose="mix:steak.pates.ppc">Choisir</button>`):""}
     <div class="catlist" id="catlist-${sfx}"></div>`;
 }
 function renderCatList(sfx,key){
