@@ -66,6 +66,11 @@ const SCHEMA = [
      updated_at TIMESTAMPTZ NOT NULL DEFAULT now())`,
   `CREATE INDEX IF NOT EXISTS menus_members_group ON menus_members(group_id)`,
   `ALTER TABLE menus_members ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'adulte'`,
+  // plusieurs groupes par personne : la clé devient (personne, groupe), et chaque compte a un groupe actif
+  `CREATE UNIQUE INDEX IF NOT EXISTS menus_members_ug ON menus_members(user_id, group_id)`,
+  `ALTER TABLE menus_members DROP CONSTRAINT IF EXISTS menus_members_pkey`,
+  `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS active_group INT`,
+  `ALTER TABLE menus_groups ADD COLUMN IF NOT EXISTS icon TEXT NOT NULL DEFAULT ''`,
   `CREATE INDEX IF NOT EXISTS menus_sessions_user ON menus_sessions(user_id)`,
 ];
 async function migrate() {
@@ -180,18 +185,36 @@ async function auth(req) {
 }
 
 // ---------- État complet d'un compte ----------
+// groupe actif du compte (ou, à défaut, le premier rejoint)
 async function groupOf(userId) {
   const r = await q(
-    `SELECT g.id, g.name, g.invite_code, g.data, g.version, m.role FROM menus_members m
-     JOIN menus_groups g ON g.id = m.group_id WHERE m.user_id = $1`,
+    `SELECT g.id, g.name, g.icon, g.invite_code, g.data, g.version, m.role FROM menus_members m
+     JOIN menus_groups g ON g.id = m.group_id JOIN menus_users u ON u.id = m.user_id
+     WHERE m.user_id = $1 ORDER BY (g.id = u.active_group) DESC, m.joined_at LIMIT 1`,
     [userId]
   );
   return r.rows[0] || null;
 }
+async function groupsList(userId) {
+  const r = await q(
+    `SELECT g.id, g.name, g.icon, m.role, g.updated_at,
+       (SELECT count(*)::int FROM menus_members x WHERE x.group_id = g.id) AS n,
+       (SELECT string_agg(u.name, ', ' ORDER BY x.joined_at) FROM menus_members x JOIN menus_users u ON u.id = x.user_id WHERE x.group_id = g.id) AS names
+     FROM menus_members m JOIN menus_groups g ON g.id = m.group_id WHERE m.user_id = $1 ORDER BY m.joined_at`,
+    [userId]
+  );
+  return r.rows.map((x) => ({ id: Number(x.id), name: x.name, icon: x.icon || "", role: x.role, n: x.n, names: x.names || "", updated: x.updated_at }));
+}
+async function memberGroup(userId, gid) {
+  const r = await q(`SELECT g.id, g.name, m.role FROM menus_members m JOIN menus_groups g ON g.id = m.group_id WHERE m.user_id = $1 AND g.id = $2`, [userId, parseInt(gid, 10) || 0]);
+  if (!r.rows.length) throw new HttpError(404, "Vous ne faites pas partie de ce groupe.");
+  return r.rows[0];
+}
 async function stateOf(user) {
-  const [pr, g] = await Promise.all([
+  const [pr, g, groups] = await Promise.all([
     q(`SELECT data, version FROM menus_user_data WHERE user_id = $1`, [user.id]),
     groupOf(user.id),
+    groupsList(user.id),
   ]);
   let group = null, shared = null;
   if (g) {
@@ -200,13 +223,14 @@ async function stateOf(user) {
        WHERE m.group_id = $1 ORDER BY m.joined_at`,
       [g.id]
     );
-    group = { id: Number(g.id), name: g.name, code: g.invite_code, members: mem.rows.map((x) => ({ name: x.name, username: x.username, role: x.role })) };
+    group = { id: Number(g.id), name: g.name, icon: g.icon || "", code: g.invite_code, members: mem.rows.map((x) => ({ name: x.name, username: x.username, role: x.role })) };
     shared = { data: g.data || {}, version: Number(g.version) };
   }
   const p = pr.rows[0];
   return {
     user: { username: user.username, name: user.name, role: g ? g.role : "adulte" },
     group,
+    groups,
     perso: p ? { data: p.data || {}, version: Number(p.version) } : { data: {}, version: 0 },
     shared,
   };
@@ -283,6 +307,7 @@ const routes = {
     const g = await groupOf(user.id);
     if (!g) throw new HttpError(409, "Vous ne faites partie d'aucun groupe.", { nogroup: true });
     // Un enfant ne modifie que ses favoris, la liste de courses et ses propres propositions en attente
+    if (body.gid != null && Number(body.gid) !== Number(g.id)) throw new HttpError(409, "Vous avez changé de groupe entre-temps.", { conflict: true, shared: { data: g.data || {}, version: Number(g.version) } });
     if (g.role === "enfant") s = checkData(childMerge(g.data || {}, body.data, user.username));
     const r = await q(
       `UPDATE menus_groups SET data = $1::jsonb, version = version + 1, updated_at = now()
@@ -302,12 +327,13 @@ const routes = {
     const s = checkData(body.data || {});
     for (let attempt = 0; attempt < 5; attempt++) {
       try {
-        await q(
+        const ins = await q(
           `WITH g AS (
-             INSERT INTO menus_groups (name, invite_code, data, version) VALUES ($1, $2, $3::jsonb, 1) RETURNING id)
-           INSERT INTO menus_members (user_id, group_id) SELECT $4, id FROM g`,
-          [name, inviteCode(), s, user.id]
+             INSERT INTO menus_groups (name, invite_code, data, version, icon) VALUES ($1, $2, $3::jsonb, 1, $5) RETURNING id)
+           INSERT INTO menus_members (user_id, group_id) SELECT $4, id FROM g RETURNING group_id`,
+          [name, inviteCode(), s, user.id, cleanName(body.icon, 8)]
         );
+        await q(`UPDATE menus_users SET active_group = $1 WHERE id = $2`, [ins.rows[0].group_id, user.id]);
         return stateOf(user);
       } catch (e) {
         const which = String(e.constraint || "") + " " + String(e.message || "");
@@ -316,7 +342,7 @@ const routes = {
         throw e;
       }
     }
-    throw new HttpError(409, "Quittez d'abord votre groupe actuel.");
+    throw new HttpError(500, "Impossible de créer le groupe, réessayez.");
   },
 
   "POST /groups/join": async (req, body) => {
@@ -328,9 +354,10 @@ const routes = {
     try {
       await q(`INSERT INTO menus_members (user_id, group_id, role) VALUES ($1, $2, $3)`, [user.id, r.rows[0].id, body.role === "enfant" ? "enfant" : "adulte"]);
     } catch (e) {
-      if (e.code === "23505") throw new HttpError(409, "Quittez d'abord votre groupe actuel.");
+      if (e.code === "23505") throw new HttpError(409, "Vous faites déjà partie de ce groupe.");
       throw e;
     }
+    await q(`UPDATE menus_users SET active_group = $1 WHERE id = $2`, [r.rows[0].id, user.id]);
     return stateOf(user);
   },
 
@@ -346,18 +373,28 @@ const routes = {
       const n = await q(`SELECT count(*)::int AS n FROM menus_members WHERE group_id = $1 AND role = 'adulte'`, [g.id]);
       if (n.rows[0].n <= 1) throw new HttpError(409, "Il faut garder au moins un adulte dans le groupe.");
     }
-    await q(`UPDATE menus_members SET role = $1 WHERE user_id = $2`, [role, t.rows[0].user_id]);
+    await q(`UPDATE menus_members SET role = $1 WHERE user_id = $2 AND group_id = $3`, [role, t.rows[0].user_id, g.id]);
     return stateOf(user);
   },
 
-  "POST /groups/leave": async (req) => {
+  "POST /groups/switch": async (req, body) => {
     const user = await auth(req);
+    const g = await memberGroup(user.id, body.id);
+    await q(`UPDATE menus_users SET active_group = $1 WHERE id = $2`, [g.id, user.id]);
+    return stateOf(user);
+  },
+
+  "POST /groups/leave": async (req, body) => {
+    const user = await auth(req);
+    const g = body.id != null ? await memberGroup(user.id, body.id) : await groupOf(user.id);
+    if (!g) return stateOf(user);
     await q(
-      `WITH d AS (DELETE FROM menus_members WHERE user_id = $1 RETURNING group_id)
+      `WITH d AS (DELETE FROM menus_members WHERE user_id = $1 AND group_id = $2 RETURNING group_id)
        DELETE FROM menus_groups g WHERE g.id IN (SELECT group_id FROM d)
          AND NOT EXISTS (SELECT 1 FROM menus_members m WHERE m.group_id = g.id AND m.user_id <> $1)`,
-      [user.id]
+      [user.id, g.id]
     );
+    await q(`UPDATE menus_users SET active_group = NULL WHERE id = $1 AND active_group = $2`, [user.id, g.id]);
     return stateOf(user);
   },
 
@@ -365,7 +402,10 @@ const routes = {
     const user = await auth(req);
     const name = cleanName(body.name, 40);
     if (!name) throw new HttpError(400, "Indiquez un nom de groupe.");
-    await q(`UPDATE menus_groups SET name = $1 WHERE id = (SELECT group_id FROM menus_members WHERE user_id = $2)`, [name, user.id]);
+    const g = body.id != null ? await memberGroup(user.id, body.id) : await groupOf(user.id);
+    if (!g) throw new HttpError(409, "Vous ne faites partie d'aucun groupe.");
+    if (g.role !== "adulte") throw new HttpError(403, "Seul un adulte peut renommer le groupe.");
+    await q(`UPDATE menus_groups SET name = $1, icon = COALESCE(NULLIF($3, ''), icon) WHERE id = $2`, [name, g.id, cleanName(body.icon, 8)]);
     return stateOf(user);
   },
 
@@ -388,7 +428,7 @@ const routes = {
     if (!checkPassword(String(body.password || ""), r.rows[0].pass_hash)) throw new HttpError(401, "Mot de passe incorrect.");
     await q(
       `WITH g AS (
-         DELETE FROM menus_groups g WHERE g.id = (SELECT group_id FROM menus_members WHERE user_id = $1)
+         DELETE FROM menus_groups g WHERE g.id IN (SELECT group_id FROM menus_members WHERE user_id = $1)
            AND NOT EXISTS (SELECT 1 FROM menus_members m WHERE m.group_id = g.id AND m.user_id <> $1) RETURNING id)
        DELETE FROM menus_users WHERE id = $1`,
       [user.id]
