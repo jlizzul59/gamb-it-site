@@ -466,6 +466,17 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .rolebtn{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:2px 8px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
 .rolebtn:hover{color:var(--ink)}
 .accf select{font:inherit;font-size:16px;font-weight:400;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.glist{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.gl{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
+.gl.on{border-color:var(--accent);background:var(--accent-soft)}
+.gl .gic{font-size:20px;width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:var(--surface)}
+.gl .gtx{flex:1;min-width:0;display:flex;flex-direction:column}
+.gl .gtx small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gl .gact{font-size:11px;font-weight:800;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:3px 8px}
+.gdetail{border-top:1px solid var(--line);margin-top:10px;padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.gdetail h5,.accform h5{margin:0;font-size:15px}
+.accbtn .gnm{font-weight:600;opacity:.75}
+@media (max-width:720px){.accbtn .gnm{display:none}}
 .xrec{border-top:1px dashed var(--line);padding-top:6px;display:flex;flex-direction:column;gap:4px}
 .meal .name.xn{font-size:14px}
 .xn .plus{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:800;margin-right:2px}
@@ -528,6 +539,24 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .bansearch input{width:100%;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--bg);color:var(--ink)}
 .bansug{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .nolim{font-size:18px}
+.rrow{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(110px,1.1fr) 84px;align-items:center;gap:8px 12px;padding:9px 0;border-bottom:1px dotted var(--line);font-size:14px}
+.rrow.off .rlab{color:var(--muted)}
+.rlab small{color:var(--muted)}
+.rval{font-size:13px;color:var(--muted);text-align:right;white-space:nowrap}
+.rval b{font-size:17px;color:var(--accent)}
+.sw{position:relative;display:inline-block;width:38px;height:22px;cursor:pointer}
+.sw input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.swt{position:absolute;inset:0;border-radius:999px;background:var(--line);transition:background .15s}
+.swt::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+.sw input:checked+.swt{background:var(--accent)}
+.sw input:checked+.swt::after{transform:translateX(16px)}
+.sw input:focus-visible+.swt{outline:2px solid var(--accent);outline-offset:2px}
+.gauge2{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:999px;background:linear-gradient(to right,var(--accent) var(--p,0%),var(--line) var(--p,0%));cursor:pointer}
+.gauge2:disabled{opacity:.35;cursor:default}
+.gauge2::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--surface);border:3px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.gauge2::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--surface);border:3px solid var(--accent)}
+@media (max-width:520px){.rrow{grid-template-columns:auto minmax(0,1fr) 70px}.rrow .gauge2{grid-column:1/-1;order:9}}
+@media (min-width:1000px){.cfggrid>.cfgcard:first-child{grid-column:span 2}}
 .glist{display:flex;flex-direction:column;gap:6px;margin:8px 0}
 .gl{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
 .gl.on{border-color:var(--accent);background:var(--accent-soft)}
@@ -2585,15 +2614,19 @@ const THEMES={
  four:["🔥","Tout au four",r=>/sur plaque|au four|gratin/i.test(r.n)]
 };
 const RULES=[
- ["fish","min","🐟","Poisson",r=>isFish(r),"au moins",0,5],
- ["fishmax","max","🐟","Poisson",r=>isFish(r),"au plus",0,14],
- ["vege","min","🥦","Végétarien",r=>isVege(r),"au moins",0,7],
- ["redmax","max","🥩","Viande rouge",r=>isRed(r),"au plus",0,14],
- ["soup","min","🥣","Soupe le soir",r=>isSoup(r),"au moins",0,7],
- ["simple","min","🍳","Tout simple en semaine",r=>!!r.simple,"au moins",0,10],
- ["fav","min","♥","Favoris",r=>isFav(r.id),"au moins",0,7]
+ ["fish","min","🐟","Poisson",r=>isFish(r),"au moins",1,7],
+ ["fishmax","max","🐟","Poisson",r=>isFish(r),"au plus",0,7],
+ ["vege","min","🥦","Végétarien",r=>isVege(r),"au moins",1,7],
+ ["redmax","max","🥩","Viande rouge",r=>isRed(r),"au plus",0,7],
+ ["soup","min","🥣","Soupe le soir",r=>isSoup(r),"au moins",1,7],
+ ["simple","min","🍳","Tout simple en semaine",r=>!!r.simple,"au moins",1,10],
+ ["fav","min","♥","Favoris",r=>isFav(r.id),"au moins",1,7]
 ];
 const isWeekday=s=>s.day<5;
+const RULE=k=>RULES.find(x=>x[0]===k);
+// une règle peut être activée ou non ; sans réglage explicite, elle est active si sa valeur a un sens
+function ruleOn(C,k){const R0=RULE(k);if(C.on&&k in C.on)return !!C.on[k];const v=C.q[k];return R0[1]==="min"?(v||0)>0:(v!=null&&v<=R0[7])}
+function ruleVal(C,k){const R0=RULE(k);if(!ruleOn(C,k))return R0[1]==="min"?0:Infinity;return Math.max(R0[6],Math.min(R0[7],C.q[k]??(R0[1]==="min"?R0[6]:R0[7])))}
 function slotOkFor(rule,s){return rule==="soup"?s.when==="Soir":rule==="simple"?isWeekday(s):true}
 function themeAt(key){const t=Object.values(CFG().themes).find(x=>(x.d+x.w)===key);return t&&THEMES[t.t]?t:null}
 function cfgScore(r,slot,C,ever){
@@ -2633,12 +2666,12 @@ function buildCfg(mode){
 function quotaCount(plan,rule){const R0=RULES.find(x=>x[0]===rule);return SLOTS.filter(s=>W.mode[s.key]!=="skip"&&srcKey(s.key)===s.key&&plan[s.key]&&RB[plan[s.key]]&&slotOkFor(rule,s)&&R0[4](RB[plan[s.key]])).length}
 function repairQuotas(plan,used,locked,rand,avoid,C,ever){
   const order=["redmax","fishmax","fish","vege","soup","simple","fav"];
-  const maxOk=r=>RULES.filter(x=>x[1]==="max").every(x=>!x[4](r)||quotaCount(plan,x[0])<(C.q[x[0]]??x[7]));
+  const maxOk=r=>RULES.filter(x=>x[1]==="max").every(x=>!x[4](r)||quotaCount(plan,x[0])<ruleVal(C,x[0]));
   const active=()=>SLOTS.filter(s=>W.mode[s.key]!=="skip"&&srcKey(s.key)===s.key&&plan[s.key]&&RB[plan[s.key]]);
   const done=[];
-  const guarded=s=>done.some(rule=>{const R1=RULES.find(x=>x[0]===rule);return R1[1]==="min"&&slotOkFor(rule,s)&&R1[4](RB[plan[s.key]])&&quotaCount(plan,rule)<=(C.q[rule]||0)});
+  const guarded=s=>done.some(rule=>{const R1=RULES.find(x=>x[0]===rule);return R1[1]==="min"&&slotOkFor(rule,s)&&R1[4](RB[plan[s.key]])&&quotaCount(plan,rule)<=ruleVal(C,rule)});
   order.forEach(rule=>{done.push(rule);
-    const R0=RULES.find(x=>x[0]===rule),target=C.q[rule]||0,pred=R0[4];
+    const R0=RULES.find(x=>x[0]===rule),target=ruleVal(C,rule),pred=R0[4];if(!ruleOn(C,rule))return;
     if(R0[1]==="max"){
       let guard=0;
       while(quotaCount(plan,rule)>target&&guard++<14){
@@ -2660,7 +2693,7 @@ function repairQuotas(plan,used,locked,rand,avoid,C,ever){
 // Bilan de la semaine affiché au-dessus du semainier
 function renderRules(){
   const el=document.getElementById("rulesbar");if(!el)return;const C=CFG();
-  const chips=RULES.filter(([k,t,,,,,,mx])=>t==="max"?(C.q[k]??mx)<mx:(C.q[k]||0)>0).map(([k,t,ic,lab])=>{const n=quotaCount(W.plan,k),v=C.q[k]??0,ok=t==="max"?n<=v:n>=v;
+  const chips=RULES.filter(([k])=>ruleOn(C,k)).map(([k,t,ic,lab])=>{const n=quotaCount(W.plan,k),v=ruleVal(C,k),ok=t==="max"?n<=v:n>=v;
     return `<span class="rchip ${ok?"ok":"ko"}" title="${esc(lab)} : ${t==="max"?"au plus":"au moins"} ${v} par semaine"><span aria-hidden="true">${ic}</span> ${esc(lab)} <b class="num">${n}${t==="max"?" / "+v+" max":" / "+v}</b></span>`});
   const th=Object.values(C.themes).filter(x=>THEMES[x.t]).map(x=>{const r=RB[W.plan[x.d+x.w]],ok=r&&THEMES[x.t][2](r);return `<span class="rchip ${ok?"ok":"ko"}"><span aria-hidden="true">${THEMES[x.t][0]}</span> ${DAYS[x.d]} ${x.w==="m"?"midi":"soir"} : ${esc(THEMES[x.t][1])}</span>`});
   el.innerHTML=chips.length||th.length?`<div class="rulesbar"><span class="rl">Nos règles</span>${chips.concat(th).join("")}<a href="#groupe" class="rlink">Modifier</a></div>`:"";
@@ -2695,8 +2728,12 @@ function renderCfg(){
     <div class="presets"><span class="muted">Partir d'un modèle :</span>${Object.entries(PRESETS).map(([k,p])=>`<button type="button" class="btn sm" data-preset="${k}" title="${esc(p.d)}">${p.i} ${esc(p.n)}</button>`).join("")}</div></div>
   <div class="cfggrid">
     <section class="cfgcard"><h3>⚖️ Notre rythme de la semaine</h3>
-      ${RULES.map(([k,t,ic,lab,,word,min,max])=>`<div class="cfgrow"><span><span aria-hidden="true">${ic}</span> ${esc(lab)} <small class="muted">${word}</small></span>${t==="max"&&(C.q[k]??max)>=max?`<span class="pstep"><button type="button" class="pm" data-cfgq="${k}" data-d="-${max-7}" aria-label="Fixer un maximum">−</button><b class="num nolim">∞</b><button type="button" class="pm" disabled>+</button></span>`:step(k,C.q[k]??0,min,max)}<small class="muted">${t==="max"?"fois max":"fois"}</small></div>`).join("")}
-      <p class="muted small">∞ = pas de limite. Viande rouge : bœuf, agneau, veau. « Tout simple » ne compte que du lundi au vendredi, la soupe que le soir.</p></section>
+      ${RULES.map(([k,t,ic,lab,,word,min,max])=>{const on=ruleOn(C,k),v=Math.max(min,Math.min(max,C.q[k]??(t==="min"?min:2)));return `<div class="rrow ${on?"":"off"}">
+        <label class="sw" title="${on?"Désactiver":"Activer"} cette règle"><input type="checkbox" data-ruleon="${k}" ${on?"checked":""} aria-label="${esc(lab)} ${word} : activer la règle"><span class="swt" aria-hidden="true"></span></label>
+        <span class="rlab"><span aria-hidden="true">${ic}</span> ${esc(lab)} <small>${word}</small></span>
+        <input type="range" class="gauge2" min="${min}" max="${max}" step="1" value="${v}" data-rule="${k}" ${on?"":"disabled"} style="--p:${v/max*100}%" aria-label="${esc(lab)} ${word}, fois par semaine">
+        <output class="rval" id="rv-${k}">${on?`${t==="max"?"max ":"min "}<b class="num">${v}</b> fois`:"désactivée"}</output></div>`}).join("")}
+      <p class="muted small">Cochez une règle pour l'activer, puis réglez la jauge (nombre de fois par semaine). Viande rouge : bœuf, agneau, veau. « Tout simple » ne compte que du lundi au vendredi, la soupe que le soir.</p></section>
     <section class="cfgcard"><h3>📅 Nos rendez-vous</h3><p class="muted small">Un repas qui revient chaque semaine : la soirée pizza du vendredi, le poisson du mardi…</p>
       <ul class="thlist">${ths.map(([id,x])=>`<li><span class="thic" aria-hidden="true">${THEMES[x.t][0]}</span><b>${DAYS[x.d]} ${x.w==="m"?"midi":"soir"}</b><span>${esc(THEMES[x.t][1])}</span><button type="button" class="xdel" data-thdel="${id}" aria-label="Retirer">×</button></li>`).join("")||'<li class="muted">Aucun rendez-vous pour l\'instant.</li>'}</ul>
       <div class="thadd"><select id="thD">${DAYS.map((d,i)=>`<option value="${i}" ${i===4?"selected":""}>${d}</option>`).join("")}</select><select id="thW"><option value="s">soir</option><option value="m">midi</option></select><select id="thT">${Object.entries(THEMES).map(([k,t])=>`<option value="${k}">${t[0]} ${t[1]}</option>`).join("")}</select><button type="button" class="btn sm primary" data-thadd>Ajouter</button></div></section>
@@ -2721,7 +2758,7 @@ const PRESETS={
 };
 document.addEventListener("click",e=>{
   const t=e.target;
-  const isCfg=t.closest("[data-cfgq],[data-thadd],[data-thdel],[data-banpick],[data-banrm],[data-preset],[data-cfgapply]");
+  const isCfg=t.closest("[data-thadd],[data-thdel],[data-banpick],[data-banrm],[data-preset],[data-cfgapply]");
   if(!isCfg)return;
   if(isKid()){e.preventDefault();e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");return}
   const C=CFG();
@@ -2730,10 +2767,17 @@ document.addEventListener("click",e=>{
   const td=t.closest("[data-thdel]");if(td){delete C.themes[td.dataset.thdel];cfgWrite(C);renderCfg();renderRules();return}
   const bp=t.closest("[data-banpick]");if(bp){const id=bp.dataset.banpick;C.ban[id]=1;cfgWrite(C);banQ="";renderCfg();toast(I[id].n+" : plus jamais proposé");try{document.getElementById("banQ").focus()}catch(_){}return}
   const br=t.closest("[data-banrm]");if(br){delete C.ban[br.dataset.banrm];cfgWrite(C);renderCfg();return}
-  const pr=t.closest("[data-preset]");if(pr){const P=PRESETS[pr.dataset.preset];const n=Object.assign(C,JSON.parse(JSON.stringify(P.c)));if(!P.c.themes)n.themes=C.themes;cfgWrite(n);renderCfg();renderRules();toast("Modèle « "+P.n+" » appliqué. Recomposez la semaine pour en profiter.");return}
+  const pr=t.closest("[data-preset]");if(pr){const P=PRESETS[pr.dataset.preset];const n=Object.assign(C,JSON.parse(JSON.stringify(P.c)));delete n.on;if(!P.c.themes)n.themes=C.themes;cfgWrite(n);renderCfg();renderRules();toast("Modèle « "+P.n+" » appliqué. Recomposez la semaine pour en profiter.");return}
   if(t.closest("[data-cfgapply]")){const before=JSON.stringify(W.plan);build("cfg");renderAll();const a=JSON.parse(before);const n=Object.keys(W.plan).filter(k=>a[k]!==W.plan[k]).length;toast(n?n+" repas recomposé"+(n>1?"s":"")+" selon vos règles":"Votre semaine respecte déjà vos règles");location.hash="semaine";return}
 },true);
+document.addEventListener("input",e=>{const g=e.target.closest("[data-rule]");if(!g)return;const R0=RULE(g.dataset.rule),v=+g.value;g.style.setProperty("--p",v/R0[7]*100+"%");const o=document.getElementById("rv-"+g.dataset.rule);if(o)o.innerHTML=`${R0[1]==="max"?"max ":"min "}<b class="num">${v}</b> fois`});
 document.addEventListener("change",e=>{
+  const rg=e.target.closest("[data-rule],[data-ruleon]");
+  if(rg){if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");renderCfg();return}
+    const C=CFG();C.on=C.on||{};
+    if(rg.dataset.ruleon){const k=rg.dataset.ruleon,R0=RULE(k);C.on[k]=rg.checked?1:0;if(rg.checked&&(C.q[k]==null||C.q[k]<R0[6]||C.q[k]>R0[7]))C.q[k]=R0[1]==="min"?R0[6]:2;toast((rg.checked?"Règle activée : ":"Règle désactivée : ")+R0[3]+" "+R0[5])}
+    else{const k=rg.dataset.rule;C.q[k]=+rg.value;C.on[k]=1}
+    cfgWrite(C);renderCfg();renderRules();return}
   const s=e.target.closest("[data-cfgsel],[data-cfgtog]");if(!s)return;
   if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");renderCfg();return}
   const C=CFG();if(s.dataset.cfgsel)C[s.dataset.cfgsel]=+s.value;else C[s.dataset.cfgtog]=s.checked?1:0;cfgWrite(C);renderRules();
