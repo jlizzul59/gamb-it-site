@@ -571,6 +571,14 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .dual .ticks i{font-style:normal;width:0;display:flex;justify-content:center}
 @media (max-width:520px){.rrow{grid-template-columns:auto minmax(0,1fr) 92px}.rrow .dual{grid-column:1/-1;order:9}}
 .dual.minfront [data-rmin]{z-index:2}
+/* règle désactivée : toute la ligne s'éteint */
+.rrow.off .rlab,.rrow.off .dual{opacity:.4}
+.rrow.off .rlab{text-decoration:line-through;text-decoration-color:var(--muted)}
+.rrow.off .dual::before{background:var(--line)!important;opacity:1}
+.rrow.off .dual input::-webkit-slider-thumb{border-color:var(--muted);background:var(--bg);box-shadow:none}
+.rrow.off .dual input::-moz-range-thumb{border-color:var(--muted);background:var(--bg)}
+.rrow.off .dual .ticks{opacity:.6}
+.rrow.off .rval{font-style:italic;color:var(--muted)}
 .glist{display:flex;flex-direction:column;gap:6px;margin:8px 0}
 .gl{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
 .gl.on{border-color:var(--accent);background:var(--accent-soft)}
@@ -1644,6 +1652,10 @@ document.addEventListener("change",e=>{const s=e.target.closest("[data-mixsel]")
 // quelques assiettes visibles dans le catalogue
 ["mix:jambon.pates.aucun","mix:steak.aucun.ppc","mix:dinde.aucun.ppc","mix:poulet.riz.ppc","mix:steak.coquillettes.aucun","mix:pane.puree.aucun","mix:oeufs.frites.salade","mix:poulet.pates.aucun","mix:saumon.riz.brocoli","mix:porc.vapeur.hv","mix:steak.puree.ppc","mix:knacki.aucun.ppc"].forEach(id=>{const r=RB[id];if(r&&!R.includes(r)){R.push(r);if(typeof SIMPLE!=="undefined")SIMPLE.add(id)}});
 
+// Manger chaud ou froid
+const COLD_RX=/^salade(?! de chèvre chaud)|taboul|niçoise|poke|ceviche|gaspacho|tartare|tahitienne|rouleaux de printemps|smørrebrød|^wraps (thon|de poulet grillé|de poulet buffalo|de poulet au curry|jambon|saumon|végétariens)|sandwich|causa|chirashi|tataki|vinaigrette|piémontaise|som tam|bò bún|bol houmous|bol baba|bowl quinoa|sabich|potjevleesch/i;
+const tempOf=r=>COLD_RX.test(r.n.split(",")[0])?"froid":"chaud";
+R.forEach(r=>{r.temp=tempOf(r)});
 const SOUP_RX=/velout|soupe|potage|bouillon|ramen|phở|laksa|harira|bortsch|minestrone|gaspacho|chorba|garbure|pistou|caldo|lohikeitto|chowder|tom kha|soto ayam|sopa|zurek|kartoffelsuppe|pozole|ajiaco|sancocho|tortellini en brodo/i;
 // ---------- Doublons fusionnés : chaque recette retirée renvoie vers sa jumelle ----------
 const ALIAS={"saladepates": "patespesto", "periafr": "piripiri", "piripiricrev": "currycrevettes", "fishcurry": "moqueca", "kpoulettikka": "tikka", "butterchicken": "tikka", "ksaumongrille": "teriyaki", "kpizzareine": "pizza", "calzone": "pizza", "gratinpates": "coquillettes", "kmacaroni": "coquillettes", "ksaumonepinards": "patessaumon", "kcannelloni": "lasagnesveg", "parmentiercolin": "brandade", "kcroque": "croques", "mongolian": "boeufbrocoli", "rumsteck": "ksteakfrites", "kpouletroticlassique": "pouletroti", "carbonara": "kcarbo", "kcarbocreme": "kcarbo", "karrabbiata": "ktomatebasilic", "paella": "kpaellaclassique", "kcesarclassique": "cesar", "kchili": "chili", "kriscantonais": "rizcantonais", "edamamebowl": "bowlsaumon", "kgaletteoeuf": "galettes", "couscous": "kcouscousclassique", "mijote": "boeufcarottes", "bolo": "kbolo", "kratatouilleriz": "ratatouille", "kmoulescreme": "moulesfrites", "escondidinho": "khachisclassique", "hachis": "khachisclassique", "kravioli": "ravioliepinards", "kgnocchisgratin": "gnocchis", "kquichesaumon": "quiche", "blanquette": "kblanquette", "kpouletchampi": "dinde", "kescalopecreme": "dinde", "ksoupechou": "kpaysanne", "kpoireauxpdt": "velouteporeaux", "kpotironclassique": "veloute", "pumpkinsoup": "veloute", "cultivateur": "ksoupelegumes", "kminestroneclassique": "minestrone", "chickennoodle": "kpoulettsoupe", "pancit": "miegoreng", "chowmein": "miegoreng", "kwokpoulet": "udon", "fijicurry": "fishcurry", "kokoda": "moqueca", "shishtaouk": "souvlaki", "pitas": "shawarma", "shopska": "grecque", "adana": "keftas", "lahmacun": "pide", "carnitas": "pastor", "kfajitasclassique": "fajitas", "ksaucissepuree": "saucissepuree", "kpouletpane": "nuggets", "kpoissonpane": "poissonpane", "kcordonbleu": "cordonbleu", "kmilanaise": "schnitzel", "arrozpollo": "jollof", "jambalaya": "kpaellaclassique", "chaufa": "nasigoreng", "kimchirice": "rizcantonais", "kraclette": "tartiflette", "kgratindauphinois": "dauphinois", "bigos": "choucroute", "irishstew": "navarin", "daube": "kbourguignon", "kvealmarengo": "kosso", "klapin": "cacciatora", "huli": "pouletananas", "colombo": "cari", "kpoulettcurry": "curryvert", "tabouleboulgour": "ktaboulefr", "chevrechaud": "kchevrechaud", "kcrevettesriz": "crevettesail", "klieuprovencale": "colinvierge", "polpette": "kboulettes", "boulettes": "kboulettes", "kthon": "spaghettithon", "kpesto": "patespesto", "kjambonpates": "tagliatelles", "lasagnes": "klasagnesbolo", "cajou": "kungpao"};
@@ -2322,11 +2334,11 @@ function renderRecipes(){const cs=cooks();const el=document.getElementById("recl
 
 // ---------- Catalogue ----------
 let catQ="",catF="all",catKey=null;
-const FILTERS=[["all","Tout"],["fav","♥ Favoris"],["top","Mes mieux notées"],["ok","Compatibles avec mes goûts"],["plaisir","Gourmand"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"],["simple","Tout simple"],["soupe","Soupes"]].concat(REGIONS.map(g=>["reg:"+g,g]));
+const FILTERS=[["all","Tout"],["fav","♥ Favoris"],["top","Mes mieux notées"],["ok","Compatibles avec mes goûts"],["plaisir","Gourmand"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"],["simple","Tout simple"],["soupe","Soupes"],["chaud","🔥 Chaud"],["froid","❄️ Froid"]].concat(REGIONS.map(g=>["reg:"+g,g]));
 function catMatches(r){
   if(catQ){const q=norm(catQ);if(!norm(r.n+" "+r.pays+" "+r.reg+" "+r.ing.map(([id])=>I[id].n).join(" ")).includes(q))return false}
   if(catF.startsWith("reg:"))return r.reg===catF.slice(4);
-  return catF==="all"||(catF==="fav"&&isFav(r.id))||(catF==="top"&&noteOf(r.id)>=4)||(catF==="ok"&&allowed(r))||(catF==="plaisir"&&r.tag==="plaisir")||(catF==="vege"&&isVege(r))||(catF==="poisson"&&isFish(r))||(catF==="viande"&&!isVege(r)&&!isFish(r))||(catF==="rapide"&&r.t<=25)||(catF==="simple"&&r.simple)||(catF==="soupe"&&SOUP_RX.test(r.n));
+  return catF==="all"||(catF==="fav"&&isFav(r.id))||(catF==="top"&&noteOf(r.id)>=4)||(catF==="ok"&&allowed(r))||(catF==="plaisir"&&r.tag==="plaisir")||(catF==="vege"&&isVege(r))||(catF==="poisson"&&isFish(r))||(catF==="viande"&&!isVege(r)&&!isFish(r))||(catF==="rapide"&&r.t<=25)||(catF==="simple"&&r.simple)||(catF==="soupe"&&SOUP_RX.test(r.n))||(catF==="chaud"&&(r.temp||tempOf(r))==="chaud")||(catF==="froid"&&(r.temp||tempOf(r))==="froid");
 }
 function catalogShell(sfx,key){
   return `<div class="catbar"><input type="search" id="catq-${sfx}" data-catq="${sfx}" placeholder="Rechercher un plat ou un ingrédient" value="${esc(catQ)}" autocomplete="off">
@@ -2634,13 +2646,14 @@ const CATS2=[
  {k:"red",ic:"🥩",lab:"Viande rouge",min:"redmin",max:"redmax",top:7,pred:r=>isRed(r),note:"bœuf, agneau, veau"},
  {k:"soup",ic:"🥣",lab:"Soupe le soir",min:"soup",max:"soupmax",top:7,pred:r=>isSoup(r)},
  {k:"simple",ic:"🍳",lab:"Tout simple en semaine",min:"simple",max:"simplemax",top:10,pred:r=>!!r.simple},
+ {k:"froid",ic:"❄️",lab:"Repas froid",min:"froid",max:"froidmax",top:7,pred:r=>(r.temp||tempOf(r))==="froid"},
  {k:"fav",ic:"♥",lab:"Favoris",min:"fav",max:"favmax",top:7,pred:r=>isFav(r.id)}
 ];
 const RULES=[];CATS2.forEach(c=>{RULES.push([c.min,"min",c.ic,c.lab,c.pred,"au moins",0,c.top,c.k]);RULES.push([c.max,"max",c.ic,c.lab,c.pred,"au plus",0,c.top,c.k])});
 const isWeekday=s=>s.day<5;
 const RULE=k=>RULES.find(x=>x[0]===k);
 const CAT=k=>CATS2.find(c=>c.k===k);
-function catOn(C,ck){const c=CAT(ck);if(C.on&&ck in C.on)return !!C.on[ck];
+function catOn(C,ck){const c=CAT(ck);if(C.cat&&ck in C.cat)return !!C.cat[ck];
   const mn=C.q[c.min]||0,mx=C.q[c.max];const legacy=C.on||{};
   if(c.min in legacy||c.max in legacy)return !!(legacy[c.min]||legacy[c.max]);
   return mn>0||(mx!=null&&mx<c.top)}
@@ -2792,7 +2805,7 @@ document.addEventListener("click",e=>{
   const td=t.closest("[data-thdel]");if(td){delete C.themes[td.dataset.thdel];cfgWrite(C);renderCfg();renderRules();return}
   const bp=t.closest("[data-banpick]");if(bp){const id=bp.dataset.banpick;C.ban[id]=1;cfgWrite(C);banQ="";renderCfg();toast(I[id].n+" : plus jamais proposé");try{document.getElementById("banQ").focus()}catch(_){}return}
   const br=t.closest("[data-banrm]");if(br){delete C.ban[br.dataset.banrm];cfgWrite(C);renderCfg();return}
-  const pr=t.closest("[data-preset]");if(pr){const P=PRESETS[pr.dataset.preset];const n=Object.assign(C,JSON.parse(JSON.stringify(P.c)));delete n.on;if(!P.c.themes)n.themes=C.themes;cfgWrite(n);renderCfg();renderRules();toast("Modèle « "+P.n+" » appliqué. Recomposez la semaine pour en profiter.");return}
+  const pr=t.closest("[data-preset]");if(pr){const P=PRESETS[pr.dataset.preset];const n=Object.assign(C,JSON.parse(JSON.stringify(P.c)));delete n.on;delete n.cat;if(!P.c.themes)n.themes=C.themes;cfgWrite(n);renderCfg();renderRules();toast("Modèle « "+P.n+" » appliqué. Recomposez la semaine pour en profiter.");return}
   if(t.closest("[data-cfgapply]")){const before=JSON.stringify(W.plan);build("cfg");renderAll();const a=JSON.parse(before);const n=Object.keys(W.plan).filter(k=>a[k]!==W.plan[k]).length;toast(n?n+" repas recomposé"+(n>1?"s":"")+" selon vos règles":"Votre semaine respecte déjà vos règles");location.hash="semaine";return}
 },true);
 document.addEventListener("input",e=>{const g=e.target.closest("[data-rmin],[data-rmax]");if(!g)return;const ck=g.dataset.rmin||g.dataset.rmax,c=CAT(ck),w=g.closest(".dual"),a=w.querySelector("[data-rmin]"),b=w.querySelector("[data-rmax]");
@@ -2801,11 +2814,11 @@ document.addEventListener("input",e=>{const g=e.target.closest("[data-rmin],[dat
 document.addEventListener("change",e=>{
   const rg=e.target.closest("[data-rmin],[data-rmax],[data-ruleon]");
   if(rg){if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");renderCfg();return}
-    const C=CFG();C.on=C.on||{};
-    if(rg.dataset.ruleon){const c=CAT(rg.dataset.ruleon);C.on[c.k]=rg.checked?1:0;delete C.on[c.min];delete C.on[c.max];
+    const C=CFG();C.cat=C.cat||{};
+    if(rg.dataset.ruleon){const c=CAT(rg.dataset.ruleon);C.cat[c.k]=rg.checked?1:0;
       if(rg.checked){const [mn,mx]=catRange(C,c.k);if(!mn&&mx>=c.top){if(c.k==="red")C.q[c.max]=3;else C.q[c.min]=1}}
       toast((rg.checked?"Règle activée : ":"Règle désactivée : ")+c.lab)}
-    else{const w=rg.closest(".dual"),ck=w.dataset.dual,c=CAT(ck);C.q[c.min]=+w.querySelector("[data-rmin]").value;C.q[c.max]=+w.querySelector("[data-rmax]").value;C.on[ck]=1}
+    else{const w=rg.closest(".dual"),ck=w.dataset.dual,c=CAT(ck);C.q[c.min]=+w.querySelector("[data-rmin]").value;C.q[c.max]=+w.querySelector("[data-rmax]").value;C.cat[ck]=1}
     cfgWrite(C);renderCfg();renderRules();return}
   const s=e.target.closest("[data-cfgsel],[data-cfgtog]");if(!s)return;
   if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");renderCfg();return}
