@@ -510,6 +510,35 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .cfgapply{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;background:var(--accent-soft);border-radius:16px;padding:16px 20px}
 .cfgapply>div{display:flex;flex-direction:column}
 .small{font-size:12.5px}
+.gzone{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-bottom:24px}
+.gzhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}
+.gzhead h2{font-size:26px;margin:0 0 4px}.gzhead p{margin:0;max-width:62ch}
+.gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.gcard{display:flex;align-items:center;gap:12px;text-align:left;border:1.5px solid var(--line);background:var(--bg);border-radius:14px;padding:12px 14px;font:inherit;color:var(--ink);cursor:pointer;transition:border-color .15s,transform .15s}
+.gcard:hover{border-color:var(--accent)}
+.gcard.on{border-color:var(--accent);background:var(--accent-soft);cursor:default}
+.gic{font-size:26px;width:44px;height:44px;display:grid;place-items:center;border-radius:12px;background:var(--surface);flex:0 0 auto}
+.gtx{flex:1;min-width:0;display:flex;flex-direction:column}
+.gtx small{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gact{font-size:11px;font-weight:800;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:3px 8px;white-space:nowrap}
+.ggo{font-size:12px;font-weight:800;color:var(--accent);white-space:nowrap}
+.gmeta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:14px;font-size:13px;color:var(--muted)}
+.gmeta .code{margin-left:auto}
+.gmeta .code b{color:var(--ink);letter-spacing:.1em}
+.bansearch input{width:100%;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--bg);color:var(--ink)}
+.bansug{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.nolim{font-size:18px}
+.glist{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.gl{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
+.gl.on{border-color:var(--accent);background:var(--accent-soft)}
+.gl .gic{font-size:20px;width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:var(--surface)}
+.gl .gtx{flex:1;min-width:0;display:flex;flex-direction:column}
+.gl .gtx small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gl .gact{font-size:11px;font-weight:800;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:3px 8px}
+.gdetail{border-top:1px solid var(--line);margin-top:10px;padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.gdetail h5,.accform h5{margin:0;font-size:15px}
+.accbtn .gnm{font-weight:600;opacity:.75}
+@media (max-width:720px){.accbtn .gnm{display:none}}
 </style>
 
 <header class="top">
@@ -525,7 +554,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
       <a href="#recettes">Recettes de la semaine</a>
       <a href="#courses">Courses</a>
       <a href="#gouts">Mes goûts</a>
-      <a href="#notre-foyer">Notre foyer</a>
+      <a href="#groupe">Groupe</a>
       <a href="#propositions">Propositions<span class="pbadge" id="propBadge" hidden></span></a>
       <span class="tabsep" aria-hidden="true"></span>
       <a href="recettes.html" class="ext">Catalogue des recettes</a>
@@ -560,7 +589,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
   </section>
 
   <section class="view" id="v-gouts" hidden>
-    <p class="muted" style="margin:0 0 18px">Les allergies, les aliments bannis et les règles de la semaine (poisson, végétarien, soirée pizza…) se règlent pour tout le foyer dans <a href="#notre-foyer">Notre foyer</a>. Ici, ce sont vos goûts personnels.</p>
+    <p class="muted" style="margin:0 0 18px">Les allergies, les aliments bannis et les règles de la semaine (poisson, végétarien, soirée pizza…) se règlent pour chaque groupe dans l'onglet <a href="#groupe">Groupe</a>. Ici, ce sont vos goûts personnels.</p>
     <div class="prefintro">
       <div>
         <h2>Ce que vous aimez, ce que vous évitez</h2>
@@ -580,7 +609,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
     <div class="reclist" id="reclist"></div>
   </section>
 
-  <section class="view" id="v-notre-foyer" hidden><div id="cfgbox"></div></section>
+  <section class="view" id="v-groupe" hidden><div id="cfgbox"></div></section>
 
   <section class="view" id="v-propositions" hidden><div id="propbox"></div></section>
 
@@ -1780,7 +1809,7 @@ const CLOUD=(()=>{
       const before=J(local());
       for(let i=0;i<4;i++){
         const st=await api("GET","/state");
-        const pr0=acc.user&&acc.user.role;acc.user=st.user;acc.group=st.group;if(pr0!==(st.user&&st.user.role))setTimeout(()=>{try{hooks.apply()}catch(_){}},0);
+        const pr0=acc.user&&acc.user.role;acc.user=st.user;acc.group=st.group;acc.groups=st.groups||[];if(pr0!==(st.user&&st.user.role))setTimeout(()=>{try{hooks.apply()}catch(_){}},0);
         const L=local(),inGroup=!!st.group;
         // Personnel (sans groupe, il contient aussi le semainier et les favoris)
         const pLocal=inGroup?L.perso:Object.assign({},L.perso,L.shared);
@@ -1803,7 +1832,7 @@ const CLOUD=(()=>{
         acc.lastP=J(pFinal);
         if(inGroup){
           if(J(sFinal)!==J(st.shared.data||{})){
-            try{const r=await api("PUT","/shared",{data:sFinal,version:st.shared.version});acc.sv=r.version;}
+            try{const r=await api("PUT","/shared",{data:sFinal,version:st.shared.version,gid:st.group.id});acc.sv=r.version;}
             catch(e){if(e.status===409&&e.body&&e.body.conflict){acc.base=acc.baseGid===st.group.id?acc.base:null;keep();continue}throw e}
           }else acc.sv=st.shared.version;
           acc.base=sFinal;acc.baseGid=st.group.id;
@@ -1848,17 +1877,22 @@ const CLOUD=(()=>{
       <p class="muted">Identifiant : <b>${esc2(acc.user?acc.user.username:"")}</b></p>
       <p class="accstatus" id="accStatus">${statusText()}</p>
       ${msg}
-      <section class="accsec"><h4>Groupe</h4>
-      ${g?`<p>Vous êtes dans le groupe <b>${esc2(g.name)}</b>. Sont partagés entre ses membres : le semainier, les favoris, les intolérances du foyer, les invités et l'historique des réceptions. Vos notes et vos goûts restent personnels.</p>
+      <section class="accsec"><h4>Mes groupes</h4>
+      <p class="muted small">Un groupe = un semainier, des favoris, des règles et des allergies partagés. Vous pouvez en avoir plusieurs : le couple, la famille, les week-ends entre amis… Vos notes et vos goûts restent personnels.</p>
+      ${(acc.groups||[]).length?`<div class="glist">${acc.groups.map(x=>`<div class="gl ${g&&x.id===g.id?"on":""}"><span class="gic">${esc2(x.icon||"👥")}</span><span class="gtx"><b>${esc2(x.name)}</b><small>${x.n} membre${x.n>1?"s":""} · ${esc2(x.names)}${x.role==="enfant"?" · vous : Enfant":""}</small></span>${g&&x.id===g.id?'<span class="gact">Actif</span>':`<button class="btn sm" type="button" data-accgroup="${x.id}">Utiliser</button>`}</div>`).join("")}</div>`:`<p>Vous n'êtes dans aucun groupe : votre semainier reste personnel.</p>`}
+      ${g?`<div class="gdetail"><h5>${esc2(g.icon||"👥")} ${esc2(g.name)} <small class="muted">· groupe actif</small></h5>
         <p class="members">${g.members.map(m=>{const kid=m.role==="enfant",me=acc.user&&m.username===acc.user.username,adult=acc.user&&acc.user.role!=="enfant";return `<span class="mem memrole">${esc2(m.name)} <small>${kid?"Enfant":"Adulte"}</small>${adult?`<button type="button" class="rolebtn" data-accrole="${esc2(m.username)}|${kid?"adulte":"enfant"}" title="${me?"Votre profil":""}">→ ${kid?"Adulte":"Enfant"}</button>`:""}</span>`}).join("")}</p>
-        <p class="muted small">Profil Enfant : propose des plats et des changements, qu'un adulte valide et place dans la semaine. Seuls les adultes modifient le semainier.</p>
+        <p class="muted small">Profil Enfant : propose des plats et des changements, qu'un adulte valide. Seuls les adultes modifient le semainier et les règles.</p>
         <div class="code"><span>Code d'invitation</span><b class="num" id="accCode">${esc2(g.code)}</b><button class="btn sm" type="button" data-acc="copy">Copier</button></div>
-        <p class="muted small">Pour inviter quelqu'un : il crée son compte, puis saisit ce code dans « Rejoindre un groupe ».</p>
-        ${view==="leave"?`<div class="confirm"><p>Quitter le groupe ? Vous gardez une copie du semainier et des favoris actuels.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`:`<button class="btn" type="button" data-acc="view-leave">Quitter le groupe</button>`}`
-      :`<p>Créez un groupe pour partager le semainier, les favoris, le foyer et les invités (avec votre conjoint, par exemple), ou rejoignez-en un avec son code.</p>
-        <form class="accform inline" data-accform="create" novalidate>${field("accGroup","Nom du groupe","text",'placeholder="Famille Martin" maxlength="40"')}<button class="btn primary" type="submit">Créer le groupe</button></form>
-        <form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Rejoindre un groupe","text",'placeholder="Code à 6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<label class="accf"><span>Je suis</span><select id="accRole"><option value="adulte">Adulte</option><option value="enfant">Enfant</option></select></label><button class="btn" type="submit">Rejoindre</button></form>
-        <p class="muted small">En rejoignant un groupe, son semainier remplace le vôtre ; vos favoris s'ajoutent aux siens.</p>`}
+        ${view==="rename"?`<form class="accform inline" data-accform="rename" novalidate>${field("accGName","Nom du groupe","text",`value="${esc2(g.name)}" maxlength="40"`)}<label class="accf"><span>Icône</span><select id="accGIcon">${GICONS2.map(i=>`<option ${i===(g.icon||"")?"selected":""}>${i}</option>`).join("")}</select></label><button class="btn primary" type="submit">Enregistrer</button><button class="btn" type="button" data-acc="view-main">Annuler</button></form>`
+        :view==="leave"?`<div class="confirm"><p>Quitter « ${esc2(g.name)} » ? Vous gardez vos autres groupes.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`
+        :`<div class="row">${acc.user&&acc.user.role!=="enfant"?'<button class="btn sm" type="button" data-acc="view-rename">Renommer</button>':""}<button class="btn sm" type="button" data-acc="view-leave">Quitter ce groupe</button></div>`}</div>`:""}
+      ${view==="newgroup"?`<form class="accform" data-accform="create" novalidate><h5>Nouveau groupe</h5>${field("accGroup","Nom du groupe","text",'placeholder="En amoureux, Famille, Les copains du ski…" maxlength="40"')}
+          <label class="accf"><span>Icône</span><select id="accIcon">${GICONS2.map(i=>`<option>${i}</option>`).join("")}</select></label>
+          <label class="accf"><span>Pour commencer</span><select id="accStart"><option value="vide">Un semainier tout neuf</option>${g?`<option value="copie">Une copie de « ${esc2(g.name)} »</option>`:'<option value="copie">Une copie de mon semainier actuel</option>'}</select></label>
+          <div class="row"><button class="btn primary" type="submit">Créer le groupe</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
+      :view==="joingroup"?`<form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Code du groupe","text",'placeholder="6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<label class="accf"><span>Je suis</span><select id="accRole"><option value="adulte">Adulte</option><option value="enfant">Enfant</option></select></label><button class="btn primary" type="submit">Rejoindre</button><button class="btn" type="button" data-acc="view-main">Annuler</button></form>`
+      :`<div class="row"><button class="btn primary sm" type="button" data-acc="view-newgroup">+ Créer un groupe</button><button class="btn sm" type="button" data-acc="view-joingroup">Rejoindre avec un code</button></div>`}
       </section>
       <section class="accsec"><h4>Mon compte</h4>
       ${view==="password"?`<form class="accform" data-accform="password" novalidate>${field("accCur","Mot de passe actuel","password",'autocomplete="current-password"')}${field("accNew","Nouveau mot de passe (8 caractères minimum)","password",'autocomplete="new-password"')}<div class="row"><button class="btn primary" type="submit">Changer le mot de passe</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
@@ -1870,6 +1904,8 @@ const CLOUD=(()=>{
     note="";try{await fn();note=okMsg||"";}catch(e){note="!"+e.message}
     renderPanel();
   }
+  const GICONS2=["👥","🏠","❤️","👨‍👩‍👧‍👦","🍽️","🥂","🎉","👵","🏖️","⛷️","⚽","🌿"];
+  function switchGroup(id){if(!acc)return;const target=(acc.groups||[]).find(x=>x.id===id);act(async()=>{await sync();const st=await api("POST","/groups/switch",{id});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();await sync();hooks.apply();paintBtn();try{toast("Groupe actif : "+(target?target.name:""))}catch(_){} },"Groupe actif : "+(target?target.name:""))}
   function startSession(r,fresh){
     acc={token:r.token,user:r.state.user,group:r.state.group,lastP:null,base:null,baseGid:null};
     if(fresh===false){/* connexion : le compte remplace l'appareil */}
@@ -1883,8 +1919,9 @@ const CLOUD=(()=>{
       if(k.startsWith("view-")){view=k.slice(5);note="";renderPanel();const f=document.querySelector("#accBody input");if(f)try{f.focus()}catch(_){};return}
       if(k==="copy"){const c=(acc&&acc.group&&acc.group.code)||"";const done=()=>{note="Code copié : "+c;renderPanel()};try{navigator.clipboard.writeText(c).then(done,()=>{note="Code : "+c;renderPanel()})}catch(_){note="Code : "+c;renderPanel()};return}
       if(k==="logout"){act(async()=>{try{await api("POST","/auth/logout")}catch(_){}acc=null;keep();view="login";setStatus("idle")},"Vous êtes déconnecté. Vos données restent sur cet appareil.");return}
-      if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave");acc.group=st.group;acc.base=null;acc.baseGid=null;keep();view="main";await sync()},"Vous avez quitté le groupe.");return}
+      if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave",{id:acc.group&&acc.group.id});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply()},"Vous avez quitté le groupe.");return}
     }
+    const ag=e.target.closest("[data-accgroup]");if(ag){switchGroup(+ag.dataset.accgroup);return}
     const ar=e.target.closest("[data-accrole]");if(ar){const [u,r]=ar.dataset.accrole.split("|");act(async()=>{const st=await api("POST","/groups/role",{username:u,role:r});acc.group=st.group;acc.user=st.user;keep();hooks.apply()},"Profil mis à jour.");return}
     const btn=e.target.closest("#accBtn");if(btn){note="";view=acc?"main":"login";open();}
   });
@@ -1895,8 +1932,9 @@ const CLOUD=(()=>{
     const kind=f.dataset.accform;
     if(kind==="login")act(async()=>{const r=await api("POST","/auth/login",{username:v("accUser").trim(),password:v("accPass")});startSession(r,false);await sync();hooks.apply();},"Connecté.");
     if(kind==="register")act(async()=>{const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass")});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
-    if(kind==="create")act(async()=>{await sync();const L=local();const st=await api("POST","/groups",{name:v("accGroup"),data:L.shared});acc.group=st.group;acc.base=clone(L.shared);acc.baseGid=st.group.id;acc.sv=st.shared.version;keep();await sync();},"Groupe créé. Partagez le code ci-dessous.");
-    if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn"),role:v("accRole")||"adulte"});acc.user=st.user;acc.group=st.group;acc.base={weeks:clone(L.shared.weeks),fav:{}};acc.baseGid=st.group.id;keep();await sync();hooks.apply();},"Bienvenue dans le groupe.");
+    if(kind==="create")act(async()=>{await sync();const L=local();const st=await api("POST","/groups",{name:v("accGroup"),icon:v("accIcon"),data:v("accStart")==="copie"?L.shared:{}});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply();},"Groupe créé et activé. Partagez le code ci-dessous pour inviter.");
+    if(kind==="rename")act(async()=>{const st=await api("POST","/groups/rename",{id:acc.group.id,name:v("accGName"),icon:v("accGIcon")});acc.group=st.group;acc.groups=st.groups;keep();view="main";paintBtn();hooks.apply()},"Groupe renommé.");
+    if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn"),role:v("accRole")||"adulte"});acc.user=st.user;acc.group=st.group;acc.groups=st.groups;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply();},"Bienvenue dans le groupe : c'est maintenant votre groupe actif.");
     if(kind==="password")act(async()=>{await api("POST","/account/password",{current:v("accCur"),next:v("accNew")});view="main";},"Mot de passe changé. Vos autres appareils devront se reconnecter.");
     if(kind==="delete")act(async()=>{await api("POST","/account/delete",{password:v("accDel")});acc=null;keep();view="login";setStatus("idle")},"Votre compte a été supprimé.");
   });
@@ -1905,7 +1943,7 @@ const CLOUD=(()=>{
     if(!enabled){b.hidden=true;return}
     b.hidden=false;
     const n=acc&&acc.user?acc.user.name:"";
-    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.3-7 8.5-7s7.7 2.4 8.5 7z"/></svg></span><span class="nm">Connexion</span>`;
+    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}${acc.group?`<small class="gnm"> · ${esc2(acc.group.icon||"👥")} ${esc2(acc.group.name)}</small>`:""}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.3-7 8.5-7s7.7 2.4 8.5 7z"/></svg></span><span class="nm">Connexion</span>`;
     b.setAttribute("aria-label",acc?"Mon compte ("+n+")":"Se connecter ou créer un compte");
   }
   // Synchro régulière pour voir les changements des autres membres du groupe
@@ -1917,6 +1955,7 @@ const CLOUD=(()=>{
     init(h){hooks=Object.assign(hooks,h||{});paintBtn();if(acc)sync();},
     changed(){schedule()},
     get account(){return acc},
+    switchGroup,
   };
 })();
 
@@ -2044,7 +2083,7 @@ function propose(o){const all=propsRead(),id=newId(),a=meAcc();all[id]=Object.as
 const pendingProps=()=>Object.entries(propsRead()).filter(([,p])=>p.status==="attente").sort((a,b)=>a[1].t-b[1].t);
 // Réglages du foyer (partagés avec le groupe)
 const CFGK="menus.config";
-const CFG_DEF={q:{fish:1,vege:1,redmax:3,soup:0,simple:3,fav:0},neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
+const CFG_DEF={q:{fish:1,fishmax:14,vege:1,redmax:3,soup:0,simple:3,fav:0},neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
 function CFG(){let c={};try{c=JSON.parse(localStorage.getItem(CFGK)||"null")||{}}catch(e){}return Object.assign({},CFG_DEF,c,{q:Object.assign({},CFG_DEF.q,c.q||{}),ban:c.ban||{},themes:c.themes||{}})}
 function cfgWrite(c){try{localStorage.setItem(CFGK,JSON.stringify(c))}catch(e){}try{CLOUD.changed()}catch(e){}}
 const cfgBanned=r=>{const b=CFG().ban;return r.ing.some(([id])=>b[id])};
@@ -2547,6 +2586,7 @@ const THEMES={
 };
 const RULES=[
  ["fish","min","🐟","Poisson",r=>isFish(r),"au moins",0,5],
+ ["fishmax","max","🐟","Poisson",r=>isFish(r),"au plus",0,14],
  ["vege","min","🥦","Végétarien",r=>isVege(r),"au moins",0,7],
  ["redmax","max","🥩","Viande rouge",r=>isRed(r),"au plus",0,14],
  ["soup","min","🥣","Soupe le soir",r=>isSoup(r),"au moins",0,7],
@@ -2592,7 +2632,8 @@ function buildCfg(mode){
 }
 function quotaCount(plan,rule){const R0=RULES.find(x=>x[0]===rule);return SLOTS.filter(s=>W.mode[s.key]!=="skip"&&srcKey(s.key)===s.key&&plan[s.key]&&RB[plan[s.key]]&&slotOkFor(rule,s)&&R0[4](RB[plan[s.key]])).length}
 function repairQuotas(plan,used,locked,rand,avoid,C,ever){
-  const order=["redmax","fish","vege","soup","simple","fav"];
+  const order=["redmax","fishmax","fish","vege","soup","simple","fav"];
+  const maxOk=r=>RULES.filter(x=>x[1]==="max").every(x=>!x[4](r)||quotaCount(plan,x[0])<(C.q[x[0]]??x[7]));
   const active=()=>SLOTS.filter(s=>W.mode[s.key]!=="skip"&&srcKey(s.key)===s.key&&plan[s.key]&&RB[plan[s.key]]);
   const done=[];
   const guarded=s=>done.some(rule=>{const R1=RULES.find(x=>x[0]===rule);return R1[1]==="min"&&slotOkFor(rule,s)&&R1[4](RB[plan[s.key]])&&quotaCount(plan,rule)<=(C.q[rule]||0)});
@@ -2602,14 +2643,14 @@ function repairQuotas(plan,used,locked,rand,avoid,C,ever){
       let guard=0;
       while(quotaCount(plan,rule)>target&&guard++<14){
         const s=active().filter(s=>!locked.has(s.key)&&pred(RB[plan[s.key]])&&!guarded(s)).sort(()=>Math.random()-.5)[0];if(!s)break;
-        used.delete(plan[s.key]);const id=pickC(s,used,plan,rand,avoid,r=>!pred(r),C,ever);if(!id){used.add(plan[s.key]);break}
+        used.delete(plan[s.key]);const id=pickC(s,used,plan,rand,avoid,r=>!pred(r)&&maxOk(r),C,ever);if(!id){used.add(plan[s.key]);break}
         plan[s.key]=id;used.add(id);locked.add(s.key);
       }
     }else if(target>0){
       let guard=0;
       while(quotaCount(plan,rule)<target&&guard++<14){
         const s=active().filter(s=>!locked.has(s.key)&&slotOkFor(rule,s)&&!pred(RB[plan[s.key]])&&!guarded(s)).sort(()=>Math.random()-.5)[0];if(!s)break;
-        used.delete(plan[s.key]);const id=pickC(s,used,plan,rand,avoid,r=>pred(r)&&(rule==="redmax"||!(C.q.redmax!=null&&isRed(r)&&quotaCount(plan,"redmax")>=C.q.redmax)),C,ever);
+        used.delete(plan[s.key]);const id=pickC(s,used,plan,rand,avoid,r=>pred(r)&&maxOk(r),C,ever);
         if(!id){used.add(plan[s.key]);locked.add(s.key);continue}
         plan[s.key]=id;used.add(id);locked.add(s.key);
       }
@@ -2619,25 +2660,43 @@ function repairQuotas(plan,used,locked,rand,avoid,C,ever){
 // Bilan de la semaine affiché au-dessus du semainier
 function renderRules(){
   const el=document.getElementById("rulesbar");if(!el)return;const C=CFG();
-  const chips=RULES.filter(([k,t])=>t==="max"||(C.q[k]||0)>0).map(([k,t,ic,lab])=>{const n=quotaCount(W.plan,k),v=C.q[k]||0,ok=t==="max"?n<=v:n>=v;
+  const chips=RULES.filter(([k,t,,,,,,mx])=>t==="max"?(C.q[k]??mx)<mx:(C.q[k]||0)>0).map(([k,t,ic,lab])=>{const n=quotaCount(W.plan,k),v=C.q[k]??0,ok=t==="max"?n<=v:n>=v;
     return `<span class="rchip ${ok?"ok":"ko"}" title="${esc(lab)} : ${t==="max"?"au plus":"au moins"} ${v} par semaine"><span aria-hidden="true">${ic}</span> ${esc(lab)} <b class="num">${n}${t==="max"?" / "+v+" max":" / "+v}</b></span>`});
   const th=Object.values(C.themes).filter(x=>THEMES[x.t]).map(x=>{const r=RB[W.plan[x.d+x.w]],ok=r&&THEMES[x.t][2](r);return `<span class="rchip ${ok?"ok":"ko"}"><span aria-hidden="true">${THEMES[x.t][0]}</span> ${DAYS[x.d]} ${x.w==="m"?"midi":"soir"} : ${esc(THEMES[x.t][1])}</span>`});
-  el.innerHTML=chips.length||th.length?`<div class="rulesbar"><span class="rl">Nos règles</span>${chips.concat(th).join("")}<a href="#notre-foyer" class="rlink">Modifier</a></div>`:"";
+  el.innerHTML=chips.length||th.length?`<div class="rulesbar"><span class="rl">Nos règles</span>${chips.concat(th).join("")}<a href="#groupe" class="rlink">Modifier</a></div>`:"";
 }
-// Page « Notre foyer »
+// Page « Groupe »
+let banQ="";
+function banSuggest(){const C=CFG(),q=norm(banQ.trim());if(!q)return '<span class="muted small">Tapez quelques lettres, puis touchez l\'aliment à bannir.</span>';
+  const res=Object.entries(I).filter(([id,x])=>!C.ban[id]&&norm(x.n).includes(q)).sort((a,b)=>norm(a[1].n).indexOf(q)-norm(b[1].n).indexOf(q)||a[1].n.localeCompare(b[1].n,"fr")).slice(0,12);
+  return res.length?res.map(([id,x])=>`<button type="button" class="chip" data-banpick="${id}">+ ${esc(x.n)}</button>`).join(""):'<span class="muted small">Aucun aliment ne correspond.</span>'}
+document.addEventListener("input",e=>{const q=e.target.closest("[data-banq]");if(q){banQ=q.value;const s=document.getElementById("banSug");if(s)s.innerHTML=banSuggest()}});
+const GICONS=["🏠","❤️","👨‍👩‍👧‍👦","🍽️","🥂","🎉","👵","🏖️","⚽","🌿"];
+const gName=()=>{const a=meAcc();return a&&a.group?a.group.name:""};
+const gIcon=g=>g&&g.icon?g.icon:"👥";
+function groupsHTML(){
+  const a=meAcc();
+  if(!a||!a.user)return `<section class="gzone"><div class="gzhead"><div><h2>Groupes</h2><p class="muted">Créez un compte pour avoir plusieurs groupes : un pour le couple, un pour la famille à 4, un pour les week-ends avec les amis… Chacun a son semainier, ses favoris et ses règles.</p></div><button type="button" class="btn primary" data-acc="open">Créer un compte ou se connecter</button></div></section>`;
+  const gs=a.groups||[],cur=a.group&&a.group.id;
+  return `<section class="gzone"><div class="gzhead"><div><h2>Mes groupes</h2><p class="muted">Chaque groupe a son propre semainier, ses favoris, ses règles et ses allergies. Passez de l'un à l'autre en un clic.</p></div><div class="row"><button type="button" class="btn sm" data-acc="view-newgroup">+ Créer un groupe</button><button type="button" class="btn sm" data-acc="view-joingroup">Rejoindre avec un code</button></div></div>
+    <div class="gcards">${gs.map(g=>`<button type="button" class="gcard ${g.id===cur?"on":""}" ${g.id===cur?'aria-current="true"':`data-gswitch="${g.id}"`}><span class="gic">${esc(gIcon(g))}</span><span class="gtx"><b>${esc(g.name)}</b><small>${g.n} membre${g.n>1?"s":""} · ${esc(g.names)}</small><small>${g.role==="enfant"?"Profil Enfant":"Adulte"}</small></span>${g.id===cur?'<span class="gact">Groupe actif</span>':'<span class="ggo">Utiliser →</span>'}</button>`).join("")||'<p class="muted">Vous n\'êtes dans aucun groupe : votre semainier reste personnel.</p>'}</div>
+    ${a.group?`<div class="gmeta"><span>Membres de « ${esc(a.group.name)} » :</span> ${(a.group.members||[]).map(m=>`<span class="mem">${esc(m.name)} <small>${m.role==="enfant"?"Enfant":"Adulte"}</small></span>`).join("")}<span class="code">Code d'invitation <b class="num">${esc(a.group.code)}</b></span><button type="button" class="btn sm" data-acc="open">Gérer le groupe</button></div>`:""}</section>`;
+}
+document.addEventListener("click",e=>{const g=e.target.closest("[data-gswitch]");if(g){CLOUD.switchGroup(+g.dataset.gswitch)}});
 function renderCfg(){
   const el=document.getElementById("cfgbox");if(!el)return;const C=CFG(),kid=isKid();
   const step=(k,v,min,max)=>`<span class="pstep"><button type="button" class="pm" data-cfgq="${k}" data-d="-1" ${v<=min?"disabled":""} aria-label="Moins">−</button><b class="num">${v}</b><button type="button" class="pm" data-cfgq="${k}" data-d="1" ${v>=max?"disabled":""} aria-label="Plus">+</button></span>`;
   const bans=Object.keys(C.ban).filter(id=>I[id]);
   const banOpts=Object.entries(I).filter(([id,x])=>x.c&&!C.ban[id]).sort((a,b)=>a[1].n.localeCompare(b[1].n,"fr"));
   const ths=Object.entries(C.themes).filter(([,x])=>THEMES[x.t]).sort((a,b)=>(a[1].d+a[1].w).localeCompare(b[1].d+b[1].w));
-  el.innerHTML=`${kid?'<div class="kidban"><b>Profil Enfant</b><span>Tu peux consulter les règles du foyer ; seuls les adultes peuvent les changer.</span></div>':""}
-  <div class="cfghead"><div><h2>Notre foyer</h2><p>Les règles de la maison, partagées avec tout le groupe. Le semainier les respecte quand il compose une semaine.</p></div>
+  el.innerHTML=`${kid?'<div class="kidban"><b>Profil Enfant</b><span>Tu peux consulter les règles du groupe ; seuls les adultes peuvent les changer.</span></div>':""}
+  ${groupsHTML()}
+  <div class="cfghead"><div><h2>Les règles ${gName()?"de « "+esc(gName())+" »":"de la maison"}</h2><p>Propres à ce groupe : chaque groupe a son semainier, ses favoris et ses règles. Le semainier les respecte quand il compose une semaine.</p></div>
     <div class="presets"><span class="muted">Partir d'un modèle :</span>${Object.entries(PRESETS).map(([k,p])=>`<button type="button" class="btn sm" data-preset="${k}" title="${esc(p.d)}">${p.i} ${esc(p.n)}</button>`).join("")}</div></div>
   <div class="cfggrid">
     <section class="cfgcard"><h3>⚖️ Notre rythme de la semaine</h3>
-      ${RULES.map(([k,t,ic,lab,,word,min,max])=>`<div class="cfgrow"><span><span aria-hidden="true">${ic}</span> ${esc(lab)} <small class="muted">${word}</small></span>${step(k,C.q[k]||0,min,max)}<small class="muted">${k==="redmax"?"fois max":"fois"}</small></div>`).join("")}
-      <p class="muted small">Viande rouge : bœuf, agneau, veau. « Tout simple » ne compte que du lundi au vendredi, la soupe que le soir.</p></section>
+      ${RULES.map(([k,t,ic,lab,,word,min,max])=>`<div class="cfgrow"><span><span aria-hidden="true">${ic}</span> ${esc(lab)} <small class="muted">${word}</small></span>${t==="max"&&(C.q[k]??max)>=max?`<span class="pstep"><button type="button" class="pm" data-cfgq="${k}" data-d="-${max-7}" aria-label="Fixer un maximum">−</button><b class="num nolim">∞</b><button type="button" class="pm" disabled>+</button></span>`:step(k,C.q[k]??0,min,max)}<small class="muted">${t==="max"?"fois max":"fois"}</small></div>`).join("")}
+      <p class="muted small">∞ = pas de limite. Viande rouge : bœuf, agneau, veau. « Tout simple » ne compte que du lundi au vendredi, la soupe que le soir.</p></section>
     <section class="cfgcard"><h3>📅 Nos rendez-vous</h3><p class="muted small">Un repas qui revient chaque semaine : la soirée pizza du vendredi, le poisson du mardi…</p>
       <ul class="thlist">${ths.map(([id,x])=>`<li><span class="thic" aria-hidden="true">${THEMES[x.t][0]}</span><b>${DAYS[x.d]} ${x.w==="m"?"midi":"soir"}</b><span>${esc(THEMES[x.t][1])}</span><button type="button" class="xdel" data-thdel="${id}" aria-label="Retirer">×</button></li>`).join("")||'<li class="muted">Aucun rendez-vous pour l\'instant.</li>'}</ul>
       <div class="thadd"><select id="thD">${DAYS.map((d,i)=>`<option value="${i}" ${i===4?"selected":""}>${d}</option>`).join("")}</select><select id="thW"><option value="s">soir</option><option value="m">midi</option></select><select id="thT">${Object.entries(THEMES).map(([k,t])=>`<option value="${k}">${t[0]} ${t[1]}</option>`).join("")}</select><button type="button" class="btn sm primary" data-thadd>Ajouter</button></div></section>
@@ -2646,10 +2705,10 @@ function renderCfg(){
       <label class="cfgtog"><input type="checkbox" data-cfgtog="light" ${C.light?"checked":""}><span><b>Dîners plutôt légers</b><small class="muted">Privilégie les plats de moins de 600 kcal par portion le soir.</small></span></label>
       <label class="cfgtog"><input type="checkbox" data-cfgtog="neu" ${C.neu?"checked":""}><span><b>Une touche de nouveauté</b><small class="muted">Glisse des plats jamais faits dans vos semaines.</small></span></label>
       <div class="cfgrow"><span>Pas le même plat avant</span><select data-cfgsel="norepeat">${[1,2,3,4,6].map(v=>`<option value="${v}" ${C.norepeat==v?"selected":""}>${v} semaine${v>1?"s":""}</option>`).join("")}</select></div></section>
-    <section class="cfgcard"><h3>🚫 Jamais à la maison</h3><p class="muted small">Ce que personne ne mange chez vous : les recettes qui en contiennent ne sont plus proposées, pour tout le groupe. (Les goûts de chacun restent dans « Mes goûts ».)</p>
+    <section class="cfgcard"><h3>🚫 Jamais au menu</h3><p class="muted small">Ce que personne ne mange dans ce groupe : les recettes qui en contiennent ne sont plus proposées. (Les goûts de chacun restent dans « Mes goûts ».)</p>
       <div class="banchips">${bans.map(id=>`<button type="button" class="chip no" data-banrm="${id}" aria-label="Retirer ${esc(I[id].n)}">${esc(I[id].n)} ×</button>`).join("")||'<span class="muted small">Rien pour l\'instant.</span>'}</div>
-      <div class="thadd"><select id="banSel"><option value="">Choisir un aliment…</option>${banOpts.map(([id,x])=>`<option value="${id}">${esc(x.n)}</option>`).join("")}</select><button type="button" class="btn sm" data-banadd>Ajouter</button></div></section>
-    <section class="cfgcard wide"><h3>🩺 Allergies, intolérances et régimes</h3><p class="muted small">Chaque membre du foyer et ce qu'il doit éviter : les recettes à risque sont écartées et signalées partout (semainier, catalogue, réceptions).</p><div id="foyer"></div></section>
+      <div class="bansearch"><input type="search" id="banQ" data-banq placeholder="Rechercher un aliment : champignons, poivron, coriandre…" autocomplete="off" value="${esc(banQ)}"><div class="bansug" id="banSug">${banSuggest()}</div></div></section>
+    <section class="cfgcard wide"><h3>🩺 Allergies, intolérances et régimes</h3><p class="muted small">Chaque personne qui mange avec ce groupe et ce qu'elle doit éviter : les recettes à risque sont écartées et signalées partout (semainier, catalogue, réceptions).</p><div id="foyer"></div></section>
   </div>
   <div class="cfgapply"><div><b>Appliquer à la semaine ${S.cur+1}</b><span class="muted">Recompose les repas non choisis à la main pour respecter vos règles.</span></div><button type="button" class="btn primary" data-cfgapply>Recomposer la semaine</button></div>`;
   renderFoyer();
@@ -2662,25 +2721,25 @@ const PRESETS={
 };
 document.addEventListener("click",e=>{
   const t=e.target;
-  const isCfg=t.closest("[data-cfgq],[data-thadd],[data-thdel],[data-banadd],[data-banrm],[data-preset],[data-cfgapply]");
+  const isCfg=t.closest("[data-cfgq],[data-thadd],[data-thdel],[data-banpick],[data-banrm],[data-preset],[data-cfgapply]");
   if(!isCfg)return;
-  if(isKid()){e.preventDefault();e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du foyer.");return}
+  if(isKid()){e.preventDefault();e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");return}
   const C=CFG();
-  const q=t.closest("[data-cfgq]");if(q){const k=q.dataset.cfgq,R0=RULES.find(x=>x[0]===k);C.q[k]=Math.max(R0[6],Math.min(R0[7],(C.q[k]||0)+ +q.dataset.d));cfgWrite(C);renderCfg();renderRules();return}
+  const q=t.closest("[data-cfgq]");if(q){const k=q.dataset.cfgq,R0=RULES.find(x=>x[0]===k);C.q[k]=Math.max(R0[6],Math.min(R0[7],(C.q[k]??(R0[1]==="max"?R0[7]:0))+ +q.dataset.d));if(R0[1]==="max"&&C.q[k]>7)C.q[k]=R0[7];cfgWrite(C);renderCfg();renderRules();return}
   if(t.closest("[data-thadd]")){const d=+document.getElementById("thD").value,w=document.getElementById("thW").value,tt=document.getElementById("thT").value;Object.keys(C.themes).forEach(k=>{if(C.themes[k].d===d&&C.themes[k].w===w)delete C.themes[k]});C.themes[newId()]={d,w,t:tt};cfgWrite(C);renderCfg();renderRules();toast(THEMES[tt][1]+" chaque "+DAYS[d].toLowerCase()+" "+(w==="m"?"midi":"soir"));return}
   const td=t.closest("[data-thdel]");if(td){delete C.themes[td.dataset.thdel];cfgWrite(C);renderCfg();renderRules();return}
-  if(t.closest("[data-banadd]")){const id=document.getElementById("banSel").value;if(!id)return;C.ban[id]=1;cfgWrite(C);renderCfg();toast(I[id].n+" : plus jamais proposé");return}
+  const bp=t.closest("[data-banpick]");if(bp){const id=bp.dataset.banpick;C.ban[id]=1;cfgWrite(C);banQ="";renderCfg();toast(I[id].n+" : plus jamais proposé");try{document.getElementById("banQ").focus()}catch(_){}return}
   const br=t.closest("[data-banrm]");if(br){delete C.ban[br.dataset.banrm];cfgWrite(C);renderCfg();return}
   const pr=t.closest("[data-preset]");if(pr){const P=PRESETS[pr.dataset.preset];const n=Object.assign(C,JSON.parse(JSON.stringify(P.c)));if(!P.c.themes)n.themes=C.themes;cfgWrite(n);renderCfg();renderRules();toast("Modèle « "+P.n+" » appliqué. Recomposez la semaine pour en profiter.");return}
   if(t.closest("[data-cfgapply]")){const before=JSON.stringify(W.plan);build("cfg");renderAll();const a=JSON.parse(before);const n=Object.keys(W.plan).filter(k=>a[k]!==W.plan[k]).length;toast(n?n+" repas recomposé"+(n>1?"s":"")+" selon vos règles":"Votre semaine respecte déjà vos règles");location.hash="semaine";return}
 },true);
 document.addEventListener("change",e=>{
   const s=e.target.closest("[data-cfgsel],[data-cfgtog]");if(!s)return;
-  if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du foyer.");renderCfg();return}
+  if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");renderCfg();return}
   const C=CFG();if(s.dataset.cfgsel)C[s.dataset.cfgsel]=+s.value;else C[s.dataset.cfgtog]=s.checked?1:0;cfgWrite(C);renderRules();
 });
 
-const VIEWS=["notre-foyer","semaine","batch","gouts","recettes","courses","propositions"];
+const VIEWS=["groupe","semaine","batch","gouts","recettes","courses","propositions"];
 function route(){
   const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"semaine";
   VIEWS.forEach(x=>document.getElementById("v-"+x).hidden=x!==v);

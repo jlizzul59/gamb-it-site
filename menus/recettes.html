@@ -438,6 +438,17 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .rolebtn{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:2px 8px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
 .rolebtn:hover{color:var(--ink)}
 .accf select{font:inherit;font-size:16px;font-weight:400;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.glist{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.gl{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
+.gl.on{border-color:var(--accent);background:var(--accent-soft)}
+.gl .gic{font-size:20px;width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:var(--surface)}
+.gl .gtx{flex:1;min-width:0;display:flex;flex-direction:column}
+.gl .gtx small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gl .gact{font-size:11px;font-weight:800;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:3px 8px}
+.gdetail{border-top:1px solid var(--line);margin-top:10px;padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.gdetail h5,.accform h5{margin:0;font-size:15px}
+.accbtn .gnm{font-weight:600;opacity:.75}
+@media (max-width:720px){.accbtn .gnm{display:none}}
 .mixbox{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--accent-soft);border-radius:12px;padding:12px 14px;margin:0 0 14px;font-size:14px}
 .mixbox>b{color:var(--accent)}
 .mixrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
@@ -1674,7 +1685,7 @@ const CLOUD=(()=>{
       const before=J(local());
       for(let i=0;i<4;i++){
         const st=await api("GET","/state");
-        const pr0=acc.user&&acc.user.role;acc.user=st.user;acc.group=st.group;if(pr0!==(st.user&&st.user.role))setTimeout(()=>{try{hooks.apply()}catch(_){}},0);
+        const pr0=acc.user&&acc.user.role;acc.user=st.user;acc.group=st.group;acc.groups=st.groups||[];if(pr0!==(st.user&&st.user.role))setTimeout(()=>{try{hooks.apply()}catch(_){}},0);
         const L=local(),inGroup=!!st.group;
         // Personnel (sans groupe, il contient aussi le semainier et les favoris)
         const pLocal=inGroup?L.perso:Object.assign({},L.perso,L.shared);
@@ -1697,7 +1708,7 @@ const CLOUD=(()=>{
         acc.lastP=J(pFinal);
         if(inGroup){
           if(J(sFinal)!==J(st.shared.data||{})){
-            try{const r=await api("PUT","/shared",{data:sFinal,version:st.shared.version});acc.sv=r.version;}
+            try{const r=await api("PUT","/shared",{data:sFinal,version:st.shared.version,gid:st.group.id});acc.sv=r.version;}
             catch(e){if(e.status===409&&e.body&&e.body.conflict){acc.base=acc.baseGid===st.group.id?acc.base:null;keep();continue}throw e}
           }else acc.sv=st.shared.version;
           acc.base=sFinal;acc.baseGid=st.group.id;
@@ -1742,17 +1753,22 @@ const CLOUD=(()=>{
       <p class="muted">Identifiant : <b>${esc2(acc.user?acc.user.username:"")}</b></p>
       <p class="accstatus" id="accStatus">${statusText()}</p>
       ${msg}
-      <section class="accsec"><h4>Groupe</h4>
-      ${g?`<p>Vous êtes dans le groupe <b>${esc2(g.name)}</b>. Sont partagés entre ses membres : le semainier, les favoris, les intolérances du foyer, les invités et l'historique des réceptions. Vos notes et vos goûts restent personnels.</p>
+      <section class="accsec"><h4>Mes groupes</h4>
+      <p class="muted small">Un groupe = un semainier, des favoris, des règles et des allergies partagés. Vous pouvez en avoir plusieurs : le couple, la famille, les week-ends entre amis… Vos notes et vos goûts restent personnels.</p>
+      ${(acc.groups||[]).length?`<div class="glist">${acc.groups.map(x=>`<div class="gl ${g&&x.id===g.id?"on":""}"><span class="gic">${esc2(x.icon||"👥")}</span><span class="gtx"><b>${esc2(x.name)}</b><small>${x.n} membre${x.n>1?"s":""} · ${esc2(x.names)}${x.role==="enfant"?" · vous : Enfant":""}</small></span>${g&&x.id===g.id?'<span class="gact">Actif</span>':`<button class="btn sm" type="button" data-accgroup="${x.id}">Utiliser</button>`}</div>`).join("")}</div>`:`<p>Vous n'êtes dans aucun groupe : votre semainier reste personnel.</p>`}
+      ${g?`<div class="gdetail"><h5>${esc2(g.icon||"👥")} ${esc2(g.name)} <small class="muted">· groupe actif</small></h5>
         <p class="members">${g.members.map(m=>{const kid=m.role==="enfant",me=acc.user&&m.username===acc.user.username,adult=acc.user&&acc.user.role!=="enfant";return `<span class="mem memrole">${esc2(m.name)} <small>${kid?"Enfant":"Adulte"}</small>${adult?`<button type="button" class="rolebtn" data-accrole="${esc2(m.username)}|${kid?"adulte":"enfant"}" title="${me?"Votre profil":""}">→ ${kid?"Adulte":"Enfant"}</button>`:""}</span>`}).join("")}</p>
-        <p class="muted small">Profil Enfant : propose des plats et des changements, qu'un adulte valide et place dans la semaine. Seuls les adultes modifient le semainier.</p>
+        <p class="muted small">Profil Enfant : propose des plats et des changements, qu'un adulte valide. Seuls les adultes modifient le semainier et les règles.</p>
         <div class="code"><span>Code d'invitation</span><b class="num" id="accCode">${esc2(g.code)}</b><button class="btn sm" type="button" data-acc="copy">Copier</button></div>
-        <p class="muted small">Pour inviter quelqu'un : il crée son compte, puis saisit ce code dans « Rejoindre un groupe ».</p>
-        ${view==="leave"?`<div class="confirm"><p>Quitter le groupe ? Vous gardez une copie du semainier et des favoris actuels.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`:`<button class="btn" type="button" data-acc="view-leave">Quitter le groupe</button>`}`
-      :`<p>Créez un groupe pour partager le semainier, les favoris, le foyer et les invités (avec votre conjoint, par exemple), ou rejoignez-en un avec son code.</p>
-        <form class="accform inline" data-accform="create" novalidate>${field("accGroup","Nom du groupe","text",'placeholder="Famille Martin" maxlength="40"')}<button class="btn primary" type="submit">Créer le groupe</button></form>
-        <form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Rejoindre un groupe","text",'placeholder="Code à 6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<label class="accf"><span>Je suis</span><select id="accRole"><option value="adulte">Adulte</option><option value="enfant">Enfant</option></select></label><button class="btn" type="submit">Rejoindre</button></form>
-        <p class="muted small">En rejoignant un groupe, son semainier remplace le vôtre ; vos favoris s'ajoutent aux siens.</p>`}
+        ${view==="rename"?`<form class="accform inline" data-accform="rename" novalidate>${field("accGName","Nom du groupe","text",`value="${esc2(g.name)}" maxlength="40"`)}<label class="accf"><span>Icône</span><select id="accGIcon">${GICONS2.map(i=>`<option ${i===(g.icon||"")?"selected":""}>${i}</option>`).join("")}</select></label><button class="btn primary" type="submit">Enregistrer</button><button class="btn" type="button" data-acc="view-main">Annuler</button></form>`
+        :view==="leave"?`<div class="confirm"><p>Quitter « ${esc2(g.name)} » ? Vous gardez vos autres groupes.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`
+        :`<div class="row">${acc.user&&acc.user.role!=="enfant"?'<button class="btn sm" type="button" data-acc="view-rename">Renommer</button>':""}<button class="btn sm" type="button" data-acc="view-leave">Quitter ce groupe</button></div>`}</div>`:""}
+      ${view==="newgroup"?`<form class="accform" data-accform="create" novalidate><h5>Nouveau groupe</h5>${field("accGroup","Nom du groupe","text",'placeholder="En amoureux, Famille, Les copains du ski…" maxlength="40"')}
+          <label class="accf"><span>Icône</span><select id="accIcon">${GICONS2.map(i=>`<option>${i}</option>`).join("")}</select></label>
+          <label class="accf"><span>Pour commencer</span><select id="accStart"><option value="vide">Un semainier tout neuf</option>${g?`<option value="copie">Une copie de « ${esc2(g.name)} »</option>`:'<option value="copie">Une copie de mon semainier actuel</option>'}</select></label>
+          <div class="row"><button class="btn primary" type="submit">Créer le groupe</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
+      :view==="joingroup"?`<form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Code du groupe","text",'placeholder="6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<label class="accf"><span>Je suis</span><select id="accRole"><option value="adulte">Adulte</option><option value="enfant">Enfant</option></select></label><button class="btn primary" type="submit">Rejoindre</button><button class="btn" type="button" data-acc="view-main">Annuler</button></form>`
+      :`<div class="row"><button class="btn primary sm" type="button" data-acc="view-newgroup">+ Créer un groupe</button><button class="btn sm" type="button" data-acc="view-joingroup">Rejoindre avec un code</button></div>`}
       </section>
       <section class="accsec"><h4>Mon compte</h4>
       ${view==="password"?`<form class="accform" data-accform="password" novalidate>${field("accCur","Mot de passe actuel","password",'autocomplete="current-password"')}${field("accNew","Nouveau mot de passe (8 caractères minimum)","password",'autocomplete="new-password"')}<div class="row"><button class="btn primary" type="submit">Changer le mot de passe</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
@@ -1764,6 +1780,8 @@ const CLOUD=(()=>{
     note="";try{await fn();note=okMsg||"";}catch(e){note="!"+e.message}
     renderPanel();
   }
+  const GICONS2=["👥","🏠","❤️","👨‍👩‍👧‍👦","🍽️","🥂","🎉","👵","🏖️","⛷️","⚽","🌿"];
+  function switchGroup(id){if(!acc)return;const target=(acc.groups||[]).find(x=>x.id===id);act(async()=>{await sync();const st=await api("POST","/groups/switch",{id});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();await sync();hooks.apply();paintBtn();try{toast("Groupe actif : "+(target?target.name:""))}catch(_){} },"Groupe actif : "+(target?target.name:""))}
   function startSession(r,fresh){
     acc={token:r.token,user:r.state.user,group:r.state.group,lastP:null,base:null,baseGid:null};
     if(fresh===false){/* connexion : le compte remplace l'appareil */}
@@ -1777,8 +1795,9 @@ const CLOUD=(()=>{
       if(k.startsWith("view-")){view=k.slice(5);note="";renderPanel();const f=document.querySelector("#accBody input");if(f)try{f.focus()}catch(_){};return}
       if(k==="copy"){const c=(acc&&acc.group&&acc.group.code)||"";const done=()=>{note="Code copié : "+c;renderPanel()};try{navigator.clipboard.writeText(c).then(done,()=>{note="Code : "+c;renderPanel()})}catch(_){note="Code : "+c;renderPanel()};return}
       if(k==="logout"){act(async()=>{try{await api("POST","/auth/logout")}catch(_){}acc=null;keep();view="login";setStatus("idle")},"Vous êtes déconnecté. Vos données restent sur cet appareil.");return}
-      if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave");acc.group=st.group;acc.base=null;acc.baseGid=null;keep();view="main";await sync()},"Vous avez quitté le groupe.");return}
+      if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave",{id:acc.group&&acc.group.id});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply()},"Vous avez quitté le groupe.");return}
     }
+    const ag=e.target.closest("[data-accgroup]");if(ag){switchGroup(+ag.dataset.accgroup);return}
     const ar=e.target.closest("[data-accrole]");if(ar){const [u,r]=ar.dataset.accrole.split("|");act(async()=>{const st=await api("POST","/groups/role",{username:u,role:r});acc.group=st.group;acc.user=st.user;keep();hooks.apply()},"Profil mis à jour.");return}
     const btn=e.target.closest("#accBtn");if(btn){note="";view=acc?"main":"login";open();}
   });
@@ -1789,8 +1808,9 @@ const CLOUD=(()=>{
     const kind=f.dataset.accform;
     if(kind==="login")act(async()=>{const r=await api("POST","/auth/login",{username:v("accUser").trim(),password:v("accPass")});startSession(r,false);await sync();hooks.apply();},"Connecté.");
     if(kind==="register")act(async()=>{const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass")});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
-    if(kind==="create")act(async()=>{await sync();const L=local();const st=await api("POST","/groups",{name:v("accGroup"),data:L.shared});acc.group=st.group;acc.base=clone(L.shared);acc.baseGid=st.group.id;acc.sv=st.shared.version;keep();await sync();},"Groupe créé. Partagez le code ci-dessous.");
-    if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn"),role:v("accRole")||"adulte"});acc.user=st.user;acc.group=st.group;acc.base={weeks:clone(L.shared.weeks),fav:{}};acc.baseGid=st.group.id;keep();await sync();hooks.apply();},"Bienvenue dans le groupe.");
+    if(kind==="create")act(async()=>{await sync();const L=local();const st=await api("POST","/groups",{name:v("accGroup"),icon:v("accIcon"),data:v("accStart")==="copie"?L.shared:{}});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply();},"Groupe créé et activé. Partagez le code ci-dessous pour inviter.");
+    if(kind==="rename")act(async()=>{const st=await api("POST","/groups/rename",{id:acc.group.id,name:v("accGName"),icon:v("accGIcon")});acc.group=st.group;acc.groups=st.groups;keep();view="main";paintBtn();hooks.apply()},"Groupe renommé.");
+    if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn"),role:v("accRole")||"adulte"});acc.user=st.user;acc.group=st.group;acc.groups=st.groups;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply();},"Bienvenue dans le groupe : c'est maintenant votre groupe actif.");
     if(kind==="password")act(async()=>{await api("POST","/account/password",{current:v("accCur"),next:v("accNew")});view="main";},"Mot de passe changé. Vos autres appareils devront se reconnecter.");
     if(kind==="delete")act(async()=>{await api("POST","/account/delete",{password:v("accDel")});acc=null;keep();view="login";setStatus("idle")},"Votre compte a été supprimé.");
   });
@@ -1799,7 +1819,7 @@ const CLOUD=(()=>{
     if(!enabled){b.hidden=true;return}
     b.hidden=false;
     const n=acc&&acc.user?acc.user.name:"";
-    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.3-7 8.5-7s7.7 2.4 8.5 7z"/></svg></span><span class="nm">Connexion</span>`;
+    b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}${acc.group?`<small class="gnm"> · ${esc2(acc.group.icon||"👥")} ${esc2(acc.group.name)}</small>`:""}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.3-7 8.5-7s7.7 2.4 8.5 7z"/></svg></span><span class="nm">Connexion</span>`;
     b.setAttribute("aria-label",acc?"Mon compte ("+n+")":"Se connecter ou créer un compte");
   }
   // Synchro régulière pour voir les changements des autres membres du groupe
@@ -1811,6 +1831,7 @@ const CLOUD=(()=>{
     init(h){hooks=Object.assign(hooks,h||{});paintBtn();if(acc)sync();},
     changed(){schedule()},
     get account(){return acc},
+    switchGroup,
   };
 })();
 
@@ -1938,7 +1959,7 @@ function propose(o){const all=propsRead(),id=newId(),a=meAcc();all[id]=Object.as
 const pendingProps=()=>Object.entries(propsRead()).filter(([,p])=>p.status==="attente").sort((a,b)=>a[1].t-b[1].t);
 // Réglages du foyer (partagés avec le groupe)
 const CFGK="menus.config";
-const CFG_DEF={q:{fish:1,vege:1,redmax:3,soup:0,simple:3,fav:0},neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
+const CFG_DEF={q:{fish:1,fishmax:14,vege:1,redmax:3,soup:0,simple:3,fav:0},neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
 function CFG(){let c={};try{c=JSON.parse(localStorage.getItem(CFGK)||"null")||{}}catch(e){}return Object.assign({},CFG_DEF,c,{q:Object.assign({},CFG_DEF.q,c.q||{}),ban:c.ban||{},themes:c.themes||{}})}
 function cfgWrite(c){try{localStorage.setItem(CFGK,JSON.stringify(c))}catch(e){}try{CLOUD.changed()}catch(e){}}
 const cfgBanned=r=>{const b=CFG().ban;return r.ing.some(([id])=>b[id])};
