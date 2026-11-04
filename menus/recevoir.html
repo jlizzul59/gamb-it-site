@@ -1087,7 +1087,7 @@ const CLOUD=(()=>{
     if(a){
       const k=a.dataset.acc;
       if(k==="open"){note="";view=acc?"main":"login";open();return}
-      if(k.startsWith("view-")){view=k.slice(5);note="";renderPanel();const f=document.querySelector("#accBody input");if(f)try{f.focus()}catch(_){};return}
+      if(k.startsWith("view-")){view=k.slice(5);note="";if(!document.getElementById("accBody"))open();else renderPanel();const f=document.querySelector("#accBody input");if(f)try{f.focus()}catch(_){};return}
       if(k==="copy"){const c=(acc&&acc.group&&acc.group.code)||"";const done=()=>{note="Code copié : "+c;renderPanel()};try{navigator.clipboard.writeText(c).then(done,()=>{note="Code : "+c;renderPanel()})}catch(_){note="Code : "+c;renderPanel()};return}
       if(k==="logout"){act(async()=>{try{await api("POST","/auth/logout")}catch(_){}acc=null;keep();view="login";setStatus("idle")},"Vous êtes déconnecté. Vos données restent sur cet appareil.");return}
       if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave",{id:acc.group&&acc.group.id});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply()},"Vous avez quitté le groupe.");return}
