@@ -477,6 +477,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .gdetail h5,.accform h5{margin:0;font-size:15px}
 .accbtn .gnm{font-weight:600;opacity:.75}
 @media (max-width:720px){.accbtn .gnm{display:none}}
+.tag.chaud{border:1px solid #E9B48A;color:#B85A14;background:#FBEFE4}.tag.froid{border:1px solid #9CC3DA;color:#2C6E91;background:#E7F2F8}
 .xrec{border-top:1px dashed var(--line);padding-top:6px;display:flex;flex-direction:column;gap:4px}
 .meal .name.xn{font-size:14px}
 .xn .plus{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:800;margin-right:2px}
@@ -579,6 +580,13 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .rrow.off .dual input::-moz-range-thumb{border-color:var(--muted);background:var(--bg)}
 .rrow.off .dual .ticks{opacity:.6}
 .rrow.off .rval{font-style:italic;color:var(--muted)}
+.eqfill{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px}
+.eqfill label{display:flex;flex-direction:column;gap:3px;font-weight:600}
+.eqfill select,.eqgrid select{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--ink);min-width:0;width:100%}
+.eqgrid{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:6px 10px;align-items:center;max-width:720px}
+.eqgrid>b{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.eqgrid>b.eqd{text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)}
+.eqgrid select.set{border-color:var(--accent);background:var(--accent-soft)}
 .glist{display:flex;flex-direction:column;gap:6px;margin:8px 0}
 .gl{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
 .gl.on{border-color:var(--accent);background:var(--accent-soft)}
@@ -590,6 +598,14 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .gdetail h5,.accform h5{margin:0;font-size:15px}
 .accbtn .gnm{font-weight:600;opacity:.75}
 @media (max-width:720px){.accbtn .gnm{display:none}}
+.meal .meta{flex-wrap:wrap;justify-content:flex-start}
+.meal .meta .num{white-space:nowrap;margin-right:auto}
+.meal .meta .tag{font-size:10.5px;padding:1px 6px}
+.tag.chaud{border-color:#E9B48A;color:#B85A14;background:#FBEFE4}
+.tag.froid{border-color:#9CC3DA;color:#2C6E91;background:#E7F2F8}
+.restfor{font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:3px 7px}
+.meal{overflow:hidden}
+.meal .name{overflow-wrap:anywhere}
 </style>
 
 <header class="top">
@@ -627,7 +643,6 @@ html.ck-on,html.ck-on body{overflow:hidden}
     </div>
     <div class="toolbar">
       <button class="btn primary" id="regen" type="button">Nouvelle semaine au hasard</button>
-      <button class="btn" id="restLunch" type="button">Midis en semaine = restes de la veille</button>
       <button class="btn" id="reset" type="button">Revenir au menu proposé</button>
     </div>
     <div class="defaults" id="defaults"></div>
@@ -1983,7 +1998,8 @@ const CLOUD=(()=>{
   document.addEventListener("submit",e=>{
     const f=e.target.closest("form[data-accform]");if(!f)return;
     e.preventDefault();
-    const v=id=>{const el=document.getElementById(id);return el?el.value:""};
+    const snap={};f.querySelectorAll("input,select,textarea").forEach(el=>{if(el.id)snap[el.id]=el.value});
+    const v=id=>id in snap?snap[id]:((document.getElementById(id)||{}).value||"");
     const kind=f.dataset.accform;
     if(kind==="login")act(async()=>{const r=await api("POST","/auth/login",{username:v("accUser").trim(),password:v("accPass")});startSession(r,false);await sync();hooks.apply();},"Connecté.");
     if(kind==="register")act(async()=>{const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass")});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
@@ -2177,7 +2193,7 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}cloudC
 let W;
 function useWeek(w){
   S.cur=Math.max(0,Math.min(MAXW-1,w));
-  if(!S.weeks[S.cur]){S.weeks[S.cur]={plan:{},mode:{},pin:{},checked:{},shopSess:1};W=S.weeks[S.cur];build(S.cur===0?"default":"seed")}
+  if(!S.weeks[S.cur]){S.weeks[S.cur]={plan:{},mode:{},pin:{},checked:{},shopSess:1};W=S.weeks[S.cur];try{const E=CFG().eaters||{};Object.keys(E).forEach(k=>{if(E[k]&&E[k].skip)W.mode[k]="skip"})}catch(_){}build(S.cur===0?"default":"seed")}
   W=S.weeks[S.cur];W.pin=W.pin||{};W.mode=W.mode||{};W.checked=W.checked||{};W.plan=W.plan||{};if(SLOTS.some(s=>W.plan[s.key]===undefined))build("keep");
 }
 
@@ -2243,7 +2259,7 @@ function cooks(){
   return out;
 }
 const WH=sl=>sl.when==="Midi"?"midi":"soir";
-const PN=sl=>(W&&W.pers&&W.pers[sl.key])||S.def[WH(sl)];
+const PN=sl=>(W&&W.pers&&W.pers[sl.key])||slotDefault(sl);
 const persOf=c=>c.n!=null?c.n:c.eat.reduce((a,e)=>a+PN(e),0);
 function qtyBase(c,id,q){return c.n!=null?q*c.n:c.eat.reduce((a,e)=>a+q*PN(e),0)}
 function optQty(c,id){const o=optionsFor(c.r).find(x=>x[0]===id);if(!o)return 0;return c.n!=null?c.n*o[1]:c.eat.reduce((a,e)=>a+PN(e)*o[1],0)}
@@ -2268,7 +2284,7 @@ function fmt(q,u,shop){
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 const shortName=r=>r.n.split(",")[0];
-const tagHTML=r=>(r.simple?'<span class="tag simple">Tout simple</span>':"")+(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"");
+const tagHTML=r=>((r.temp||tempOf(r))==="froid"?'<span class="tag froid" title="Se mange froid">❄️ Froid</span>':'<span class="tag chaud" title="Se mange chaud">🔥 Chaud</span>')+(r.simple?'<span class="tag simple">Tout simple</span>':"")+(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"");
 const dateOf=i=>dayDate(S.cur,i).toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
 
 // ---------- En-tête semaine ----------
@@ -2293,7 +2309,7 @@ function renderWeek(){
       let body;
       if(mode==="skip")body=`<span class="off">Repas supprimé</span><button class="restore" type="button" data-unskip="${sl.key}">Rétablir</button>`;
       else if(!r)body=`<span class="empty">Aucune recette compatible</span>`;
-      else body=`${isRest?'<span class="restlab">Restes de '+slotLabel(SK[src])+'</span>':""}<button class="name" type="button" data-open="${src}">${esc(r.n)}${isFav(r.id)?' <span class="favdot" aria-label="Favori">♥</span>':""}</button>`;
+      else body=`${isRest?'<span class="restlab">Restes de '+slotLabel(SK[src])+'</span>':""}<button class="name" type="button" data-open="${src}">${esc(r.n)}${isFav(r.id)?' <span class="favdot" aria-label="Favori">♥</span>':""}</button>`+(!isRest?(()=>{const rs=SLOTS.filter(s=>s.key!==sl.key&&W.mode[s.key]==="rest"&&srcKey(s.key)===sl.key);return rs.length?`<span class="restfor">♻️ Faire plus : restes pour ${rs.map(s=>esc(slotLabel(s))).join(", ")} (${(n=>"+"+n+" portion"+(n>1?"s":""))(rs.reduce((t,s)=>t+ +PN(s),0))})</span>`:""})():"");
       return `<div class="meal ${mode==="skip"?"is-off":""} ${isRest?"is-rest":""}">
         <div class="when"><span>${sl.when}</span><span class="wr">${mode!=="skip"?`<button class="del" type="button" data-skip="${sl.key}" aria-label="Supprimer le repas du ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" title="Supprimer ce repas">×</button>`:""}</span></div>
         ${body}
@@ -2452,7 +2468,7 @@ function renderDefaults(){
   document.getElementById("defaults").innerHTML=`<strong>Nombre de personnes</strong>
     <span class="dset">Midi ${st("midi",S.def.midi)}</span>
     <span class="dset">Soir ${st("soir",S.def.soir)}</span>
-    <span class="muted" style="font-size:13px">Pour un repas différent, utilisez − et + directement sur le repas.</span>`;
+    <span class="muted" style="font-size:13px">C'est le nombre de personnes par défaut. Pour un jour précis (lundi midi à deux, le soir à quatre…), réglez-le une fois pour toutes dans <a href="#groupe">Groupe → Qui mange quand ?</a>, ou ajustez un repas avec − et + sur sa carte.</span>`;
 }
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));if(catKey)renderCatList("m",catKey);renderWeek()}
 function renderFoyer(){const el=document.getElementById("foyer");if(el)el.innerHTML=peopleEditor("foyer",{empty:"Personne n'est encore indiqué. Ajoutez par exemple chaque membre de la famille.",addLabel:"+ Ajouter un membre du foyer"})}
@@ -2504,7 +2520,7 @@ document.getElementById("prevW").addEventListener("click",()=>goWeek(S.cur-1));
 document.getElementById("nextW").addEventListener("click",()=>goWeek(S.cur+1));
 document.getElementById("regen").addEventListener("click",()=>{W.pin={};build("random");renderAll();toast("Nouvelle semaine générée")});
 document.getElementById("reset").addEventListener("click",()=>{W.mode={};W.pin={};build(S.cur===0?"default":"seed");renderAll();toast("Menu proposé rétabli")});
-document.getElementById("restLunch").addEventListener("click",()=>{
+(()=>{
   ["1m","3m","4m"].forEach(k=>{if(W.mode[k]!=="skip")W.mode[k]="rest"});build("keep");renderAll();toast("Midis de mardi, jeudi et vendredi en restes de la veille");
 });
 document.getElementById("clearPrefs").addEventListener("click",()=>{S.prefs={};build("keep");renderAll()});
@@ -2783,6 +2799,7 @@ function renderCfg(){
     <section class="cfgcard"><h3>🚫 Jamais au menu</h3><p class="muted small">Ce que personne ne mange dans ce groupe : les recettes qui en contiennent ne sont plus proposées. (Les goûts de chacun restent dans « Mes goûts ».)</p>
       <div class="banchips">${bans.map(id=>`<button type="button" class="chip no" data-banrm="${id}" aria-label="Retirer ${esc(I[id].n)}">${esc(I[id].n)} ×</button>`).join("")||'<span class="muted small">Rien pour l\'instant.</span>'}</div>
       <div class="bansearch"><input type="search" id="banQ" data-banq placeholder="Rechercher un aliment : champignons, poivron, coriandre…" autocomplete="off" value="${esc(banQ)}"><div class="bansug" id="banSug">${banSuggest()}</div></div></section>
+    ${eatersHTML()}
     <section class="cfgcard wide"><h3>🩺 Allergies, intolérances et régimes</h3><p class="muted small">Chaque personne qui mange avec ce groupe et ce qu'elle doit éviter : les recettes à risque sont écartées et signalées partout (semainier, catalogue, réceptions).</p><div id="foyer"></div></section>
   </div>
   <div class="cfgapply"><div><b>Appliquer à la semaine ${S.cur+1}</b><span class="muted">Recompose les repas non choisis à la main pour respecter vos règles.</span></div><button type="button" class="btn primary" data-cfgapply>Recomposer la semaine</button></div>`;
@@ -2823,6 +2840,36 @@ document.addEventListener("change",e=>{
   const s=e.target.closest("[data-cfgsel],[data-cfgtog]");if(!s)return;
   if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");renderCfg();return}
   const C=CFG();if(s.dataset.cfgsel)C[s.dataset.cfgsel]=+s.value;else C[s.dataset.cfgtog]=s.checked?1:0;cfgWrite(C);renderRules();
+});
+
+// ---------- Qui mange quand ? (convives par défaut, repas par repas) ----------
+function eaterOf(key){const e=(CFG().eaters||{})[key];return e&&typeof e==="object"?e:null}
+function slotDefault(sl){const e=eaterOf(sl.key);if(e&&e.n>0){if(e.g){const a=meAcc(),g=a&&(a.groups||[]).find(x=>x.id===e.g);if(g)return Math.max(1,+g.n||1)}return +e.n}return S.def[WH(sl)]}
+function eaterLabel(e){if(!e)return "";if(e.skip)return "Pas de repas";if(e.g){const a=meAcc(),g=a&&(a.groups||[]).find(x=>x.id===e.g);return (g?(g.icon||"👥")+" "+g.name:"Groupe")+" · "+slotN(e)}return e.n+" pers."}
+const slotN=e=>{if(e.g){const a=meAcc(),g=a&&(a.groups||[]).find(x=>x.id===e.g);if(g)return g.n}return e.n};
+function eaterOptions(key,cur){
+  const a=meAcc(),gs=(a&&a.groups)||[],v=cur?(cur.skip?"skip":cur.g?"g:"+cur.g:"n:"+cur.n):"";
+  const opt=(val,lab)=>`<option value="${val}" ${val===v?"selected":""}>${lab}</option>`;
+  return opt("","Par défaut")+(gs.length?`<optgroup label="Un groupe">${gs.map(g=>opt("g:"+g.id,`${esc(g.icon||"👥")} ${esc(g.name)} (${g.n})`)).join("")}</optgroup>`:"")+`<optgroup label="Un nombre de personnes">${[1,2,3,4,5,6,7,8,10,12].map(n=>opt("n:"+n,n+" personne"+(n>1?"s":""))).join("")}</optgroup>`+opt("skip","Pas de repas");
+}
+function parseEater(val){if(!val)return null;if(val==="skip")return {skip:1,n:0};const [t,x]=val.split(":");if(t==="g"){const a=meAcc(),g=a&&(a.groups||[]).find(y=>y.id===+x);return {g:+x,n:g?g.n:2}}return {n:+x}}
+function eatersHTML(){
+  const C=CFG(),E=C.eaters||{};
+  return `<section class="cfgcard wide"><h3>🍽️ Qui mange quand ?</h3><p class="muted small">Pour chaque repas de la semaine type : à combien on mange, ou avec quel groupe (par exemple le lundi midi à deux, le soir à quatre). Les quantités et la liste de courses suivent. Sur une carte du semainier, − et + ne changent que ce repas-là.</p>
+    <div class="eqfill"><span class="muted small">Remplir d'un coup :</span>
+      <label>Midis du lundi au vendredi <select data-eqfill="wm">${eaterOptions("",null)}</select></label>
+      <label>Soirs de la semaine <select data-eqfill="ws">${eaterOptions("",null)}</select></label>
+      <label>Week-end <select data-eqfill="we">${eaterOptions("",null)}</select></label></div>
+    <div class="eqgrid"><span></span><b>Midi</b><b>Soir</b>${DAYS.map((d,i)=>`<b class="eqd">${d}</b>${["m","s"].map(w=>`<select data-eater="${i}${w}" class="${E[i+w]?"set":""}" aria-label="${d} ${w==="m"?"midi":"soir"}">${eaterOptions(i+w,E[i+w])}</select>`).join("")}`).join("")}</div>
+    <p class="muted small">« Pas de repas » : le repas est retiré des nouvelles semaines (vous pouvez toujours le rétablir sur la carte).</p></section>`;
+}
+document.addEventListener("change",e=>{
+  const s=e.target.closest("[data-eater],[data-eqfill]");if(!s)return;
+  if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");renderCfg();return}
+  const C=CFG();C.eaters=C.eaters||{};const val=parseEater(s.value);
+  const keys=s.dataset.eater?[s.dataset.eater]:s.dataset.eqfill==="wm"?["0m","1m","2m","3m","4m"]:s.dataset.eqfill==="ws"?["0s","1s","2s","3s","4s"]:["5m","5s","6m","6s"];
+  keys.forEach(k=>{if(val)C.eaters[k]=val;else delete C.eaters[k];if(val&&val.skip)W.mode[k]="skip";else if(W.mode[k]==="skip"&&!(val&&val.skip)&&s.dataset.eater)delete W.mode[k]});
+  cfgWrite(C);save();build("keep");renderAll();toast(s.dataset.eqfill?"Semaine type mise à jour":"Repas mis à jour : "+(val?eaterLabel(val):"par défaut"));
 });
 
 const VIEWS=["groupe","semaine","batch","gouts","recettes","courses","propositions"];

@@ -415,6 +415,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .gdetail h5,.accform h5{margin:0;font-size:15px}
 .accbtn .gnm{font-weight:600;opacity:.75}
 @media (max-width:720px){.accbtn .gnm{display:none}}
+.tag.chaud{border:1px solid #E9B48A;color:#B85A14;background:#FBEFE4}.tag.froid{border:1px solid #9CC3DA;color:#2C6E91;background:#E7F2F8}
 .mixbox{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--accent-soft);border-radius:12px;padding:12px 14px;margin:0 0 14px;font-size:14px}
 .mixbox>b{color:var(--accent)}
 .mixrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
@@ -1099,7 +1100,8 @@ const CLOUD=(()=>{
   document.addEventListener("submit",e=>{
     const f=e.target.closest("form[data-accform]");if(!f)return;
     e.preventDefault();
-    const v=id=>{const el=document.getElementById(id);return el?el.value:""};
+    const snap={};f.querySelectorAll("input,select,textarea").forEach(el=>{if(el.id)snap[el.id]=el.value});
+    const v=id=>id in snap?snap[id]:((document.getElementById(id)||{}).value||"");
     const kind=f.dataset.accform;
     if(kind==="login")act(async()=>{const r=await api("POST","/auth/login",{username:v("accUser").trim(),password:v("accPass")});startSession(r,false);await sync();hooks.apply();},"Connecté.");
     if(kind==="register")act(async()=>{const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass")});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
