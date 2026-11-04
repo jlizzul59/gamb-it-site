@@ -1610,7 +1610,7 @@ const CLOUD=(()=>{
   API=API.replace(/\/+$/,"");
   const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
   const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
-  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions"];
+  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions","config"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions","config"];
   let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
   let hooks={apply(){},status(){}},busy=false,again=false,timer=null,status="idle",lastErr="",view="login",note="";
   const J=JSON.stringify,clone=o=>JSON.parse(J(o===undefined?null:o));
@@ -1633,14 +1633,14 @@ const CLOUD=(()=>{
   function local(){
     const P=read(LP)||{},A=read(LA)||{};
     const perso={};PERSO_KEYS.forEach(k=>{const v=k==="note"?A.note:P[k];if(v!==undefined)perso[k]=clone(v)});
-    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{}),panier:clone(read("menus.panier")||{}),propositions:clone(read("menus.propositions")||{})}};
+    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{}),panier:clone(read("menus.panier")||{}),propositions:clone(read("menus.propositions")||{}),config:clone(read("menus.config")||{})}};
   }
   function applyLocal(perso,shared){
     const P=read(LP)||{},A=read(LA)||{fav:{},note:{}};
     PERSO_KEYS.forEach(k=>{if(k==="note")A.note=perso.note||{};else if(perso[k]!==undefined)P[k]=perso[k];});
     P.weeks=shared.weeks||{};A.fav=shared.fav||{};
     write(LP,P);write(LA,A);
-    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});write("menus.panier",shared.panier||{});write("menus.propositions",shared.propositions||{});
+    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});write("menus.panier",shared.panier||{});write("menus.propositions",shared.propositions||{});write("menus.config",shared.config||{});
   }
   // Fusion à trois : on garde ce qui a changé ici depuis la dernière synchro, le reste vient du serveur
   function mergeMap(b,m,t){
@@ -1936,6 +1936,12 @@ const isKid=()=>{const a=meAcc();return !!(a&&a.group&&a.user&&a.user.role==="en
 const meUser=()=>{const a=meAcc();return a&&a.user?a.user.username:""};
 function propose(o){const all=propsRead(),id=newId(),a=meAcc();all[id]=Object.assign({by:meUser(),byName:a&&a.user?a.user.name:"",t:Date.now(),status:"attente"},o);propsWrite(all);return id}
 const pendingProps=()=>Object.entries(propsRead()).filter(([,p])=>p.status==="attente").sort((a,b)=>a[1].t-b[1].t);
+// Réglages du foyer (partagés avec le groupe)
+const CFGK="menus.config";
+const CFG_DEF={q:{fish:1,vege:1,redmax:3,soup:0,simple:3,fav:0},neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
+function CFG(){let c={};try{c=JSON.parse(localStorage.getItem(CFGK)||"null")||{}}catch(e){}return Object.assign({},CFG_DEF,c,{q:Object.assign({},CFG_DEF.q,c.q||{}),ban:c.ban||{},themes:c.themes||{}})}
+function cfgWrite(c){try{localStorage.setItem(CFGK,JSON.stringify(c))}catch(e){}try{CLOUD.changed()}catch(e){}}
+const cfgBanned=r=>{const b=CFG().ban;return r.ing.some(([id])=>b[id])};
 
 // ---------- Page recettes ----------
 const BASICS=new Set(["oignon","ail","citron","persil","citronvert","menthe"]);
@@ -1963,7 +1969,7 @@ function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,
 
 let FOY=[];function loadFoy(){FOY=Object.values(dread("foyer")).filter(p=>(p.r||[]).length)}loadFoy();
 const foyConf=r=>conflicts(r,I,FOY);
-const QUICK=[["foyer","Compatible avec le foyer",r=>!foyConf(r).length],["fav","♥ Favoris",r=>isFav(r.id)],["top","Mes notes ≥ 4",r=>noteOf(r.id)>=4],["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["simple","Tout simple",r=>r.simple],["soupe","Soupes",r=>SOUP_RX.test(r.n)],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
+const QUICK=[["foyer","Compatible avec le foyer",r=>!foyConf(r).length&&!cfgBanned(r)],["fav","♥ Favoris",r=>isFav(r.id)],["top","Mes notes ≥ 4",r=>noteOf(r.id)>=4],["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["simple","Tout simple",r=>r.simple],["soupe","Soupes",r=>SOUP_RX.test(r.n)],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
 const has=(r,id)=>r.ing.some(([x])=>x===id);
 function matches(r,ignoreRegion){
   if(!ignoreRegion&&region&&r.reg!==region)return false;

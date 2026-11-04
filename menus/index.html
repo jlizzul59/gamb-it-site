@@ -481,6 +481,35 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .mixrow>span{font-weight:800;color:var(--accent)}
 .mixbox select{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface);color:var(--ink);max-width:100%}
 .mixname{flex-basis:100%;font-size:13px;color:var(--muted)}
+.rulesbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:0 0 14px;font-size:13px}
+.rulesbar .rl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.rchip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 10px;border:1px solid var(--line);background:var(--surface);font-weight:600}
+.rchip.ok{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.rchip.ko{border-color:var(--warm);color:var(--warm);background:var(--warm-soft)}
+.rlink{font-weight:700;color:var(--accent);margin-left:4px}
+.cfghead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px 24px;margin-bottom:18px}
+.cfghead h2{font-size:30px;margin:0 0 4px}
+.cfghead p{margin:0;color:var(--muted);max-width:60ch}
+.presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.cfggrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.cfgcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.cfgcard.wide{grid-column:1/-1}
+.cfgcard h3{margin:0;font-size:18px}
+.cfgrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dotted var(--line);font-size:14px}
+.cfgrow>span:first-child{flex:1}
+.cfgrow select,.thadd select{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--ink)}
+.cfgtog{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px dotted var(--line);cursor:pointer;font-size:14px}
+.cfgtog input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent)}
+.cfgtog span{display:flex;flex-direction:column}
+.thlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.thlist li{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:10px;padding:8px 10px;font-size:14px}
+.thlist li span:nth-child(3){flex:1}
+.thic{font-size:18px}
+.thadd{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.banchips{display:flex;flex-wrap:wrap;gap:6px}
+.cfgapply{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;background:var(--accent-soft);border-radius:16px;padding:16px 20px}
+.cfgapply>div{display:flex;flex-direction:column}
+.small{font-size:12.5px}
 </style>
 
 <header class="top">
@@ -496,6 +525,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
       <a href="#recettes">Recettes de la semaine</a>
       <a href="#courses">Courses</a>
       <a href="#gouts">Mes goûts</a>
+      <a href="#notre-foyer">Notre foyer</a>
       <a href="#propositions">Propositions<span class="pbadge" id="propBadge" hidden></span></a>
       <span class="tabsep" aria-hidden="true"></span>
       <a href="recettes.html" class="ext">Catalogue des recettes</a>
@@ -507,6 +537,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 <main class="wrap">
   <section class="view" id="v-semaine">
     <div id="propBanner"></div>
+    <div id="rulesbar"></div>
     <div class="lede">
       <div>
         <h2>Les menus de la semaine, pour toute la famille</h2>
@@ -529,10 +560,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
   </section>
 
   <section class="view" id="v-gouts" hidden>
-    <div class="foyerbox">
-      <div><h2>Le foyer : intolérances et régimes</h2><p>Ajoutez les personnes qui mangent à la maison et ce qu'elles doivent éviter. Les recettes concernées ne sont plus proposées dans le semainier, et un avertissement s'affiche si vous en choisissez une. Si vous êtes dans un groupe, le foyer est partagé.</p></div>
-      <div id="foyer"></div>
-    </div>
+    <p class="muted" style="margin:0 0 18px">Les allergies, les aliments bannis et les règles de la semaine (poisson, végétarien, soirée pizza…) se règlent pour tout le foyer dans <a href="#notre-foyer">Notre foyer</a>. Ici, ce sont vos goûts personnels.</p>
     <div class="prefintro">
       <div>
         <h2>Ce que vous aimez, ce que vous évitez</h2>
@@ -551,6 +579,8 @@ html.ck-on,html.ck-on body{overflow:hidden}
     <div class="shophead"><div><h2 style="font-size:30px">Les recettes de la semaine</h2><p>Quantités calculées pour le nombre de personnes de chaque repas.</p></div></div>
     <div class="reclist" id="reclist"></div>
   </section>
+
+  <section class="view" id="v-notre-foyer" hidden><div id="cfgbox"></div></section>
 
   <section class="view" id="v-propositions" hidden><div id="propbox"></div></section>
 
@@ -1686,7 +1716,7 @@ const CLOUD=(()=>{
   API=API.replace(/\/+$/,"");
   const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
   const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
-  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions"];
+  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions","config"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions","config"];
   let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
   let hooks={apply(){},status(){}},busy=false,again=false,timer=null,status="idle",lastErr="",view="login",note="";
   const J=JSON.stringify,clone=o=>JSON.parse(J(o===undefined?null:o));
@@ -1709,14 +1739,14 @@ const CLOUD=(()=>{
   function local(){
     const P=read(LP)||{},A=read(LA)||{};
     const perso={};PERSO_KEYS.forEach(k=>{const v=k==="note"?A.note:P[k];if(v!==undefined)perso[k]=clone(v)});
-    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{}),panier:clone(read("menus.panier")||{}),propositions:clone(read("menus.propositions")||{})}};
+    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{}),panier:clone(read("menus.panier")||{}),propositions:clone(read("menus.propositions")||{}),config:clone(read("menus.config")||{})}};
   }
   function applyLocal(perso,shared){
     const P=read(LP)||{},A=read(LA)||{fav:{},note:{}};
     PERSO_KEYS.forEach(k=>{if(k==="note")A.note=perso.note||{};else if(perso[k]!==undefined)P[k]=perso[k];});
     P.weeks=shared.weeks||{};A.fav=shared.fav||{};
     write(LP,P);write(LA,A);
-    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});write("menus.panier",shared.panier||{});write("menus.propositions",shared.propositions||{});
+    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});write("menus.panier",shared.panier||{});write("menus.propositions",shared.propositions||{});write("menus.config",shared.config||{});
   }
   // Fusion à trois : on garde ce qui a changé ici depuis la dernière synchro, le reste vient du serveur
   function mergeMap(b,m,t){
@@ -2012,6 +2042,12 @@ const isKid=()=>{const a=meAcc();return !!(a&&a.group&&a.user&&a.user.role==="en
 const meUser=()=>{const a=meAcc();return a&&a.user?a.user.username:""};
 function propose(o){const all=propsRead(),id=newId(),a=meAcc();all[id]=Object.assign({by:meUser(),byName:a&&a.user?a.user.name:"",t:Date.now(),status:"attente"},o);propsWrite(all);return id}
 const pendingProps=()=>Object.entries(propsRead()).filter(([,p])=>p.status==="attente").sort((a,b)=>a[1].t-b[1].t);
+// Réglages du foyer (partagés avec le groupe)
+const CFGK="menus.config";
+const CFG_DEF={q:{fish:1,vege:1,redmax:3,soup:0,simple:3,fav:0},neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
+function CFG(){let c={};try{c=JSON.parse(localStorage.getItem(CFGK)||"null")||{}}catch(e){}return Object.assign({},CFG_DEF,c,{q:Object.assign({},CFG_DEF.q,c.q||{}),ban:c.ban||{},themes:c.themes||{}})}
+function cfgWrite(c){try{localStorage.setItem(CFGK,JSON.stringify(c))}catch(e){}try{CLOUD.changed()}catch(e){}}
+const cfgBanned=r=>{const b=CFG().ban;return r.ing.some(([id])=>b[id])};
 
 // ---------- Semaines ----------
 const DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
@@ -2055,7 +2091,7 @@ function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.i
 const kcal=r=>Math.round(r.ing.reduce((a,[id,q])=>a+q*I[id].k,0));
 let FOY=[];function loadFoy(){FOY=Object.values(dread("foyer")).filter(p=>(p.r||[]).length)}
 const foyConf=r=>conflicts(r,I,FOY);
-const allowed=r=>r.ing.every(([id])=>S.prefs[id]!==-1)&&!foyConf(r).length;
+const allowed=r=>r.ing.every(([id])=>S.prefs[id]!==-1)&&!foyConf(r).length&&!cfgBanned(r);
 const likes=r=>r.ing.filter(([id])=>S.prefs[id]===1).length;
 const isVege=r=>!r.ing.some(([id])=>I[id].c==="Viandes"||I[id].c==="Poissons & crevettes");
 const isFish=r=>r.ing.some(([id])=>I[id].c==="Poissons & crevettes");
@@ -2082,7 +2118,8 @@ function pick(slot,used,plan,exclude,rand,avoid){
   c=c.map(r=>[r,likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?2.5:0)+(isFav(r.id)?2:0)+(noteOf(r.id)?(noteOf(r.id)-3)*1.2:0)-(noteOf(r.id)===1?6:0)+(r.simple&&slot.day<5?(CLASSIC.has(r.id)?0.2:0.9):0)+(CLASSIC.has(r.id)?1:0)]).sort((a,b)=>b[1]-a[1]);
   return c[0][0].id;
 }
-function build(mode){ // keep | default | seed | random
+function build(mode){return buildCfg(mode)}
+function buildOld(mode){ // keep | default | seed | random
   const plan={},used=new Set();
   const rand=mode==="seed"?rng(1000+S.cur):mode==="random"?Math.random:null;
   const prev=S.weeks[S.cur-1];
@@ -2326,7 +2363,7 @@ function renderDefaults(){
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));if(catKey)renderCatList("m",catKey);renderWeek()}
 function renderFoyer(){const el=document.getElementById("foyer");if(el)el.innerHTML=peopleEditor("foyer",{empty:"Personne n'est encore indiqué. Ajoutez par exemple chaque membre de la famille.",addLabel:"+ Ajouter un membre du foyer"})}
 DIETUI.onChange=(k,soft)=>{if(k!=="foyer")return;const before=JSON.stringify(W.plan);loadFoy();build("keep");const n=Object.keys(W.plan).filter(x=>JSON.parse(before)[x]!==W.plan[x]).length;if(soft){renderWeek();return}renderAll();if(n)toast(n+" repas remplacé"+(n>1?"s":"")+" pour respecter le foyer")};
-function renderAll(){loadFoy();renderFoyer();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps()}
+function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules()}
 
 // ---------- Interactions ----------
 let toastT;
@@ -2487,7 +2524,163 @@ document.addEventListener("click",e=>{
   const xd=e.target.closest("[data-xdel]");if(xd){const [k,j]=xd.dataset.xdel.split("|"),a=W.extra[k]||[];const r=a[+j];a.splice(+j,1);if(!a.length)delete W.extra[k];save();renderAll();toast((r&&RB[r.id]?shortName(RB[r.id]):"Recette")+" retirée du repas");return}
 });
 
-const VIEWS=["semaine","batch","gouts","recettes","courses","propositions"];
+// ---------- Notre foyer : règles de la semaine ----------
+const REDIDS=new Set(["boeuf","rumsteck","paleron","agneau","veau","rotiboeuf"]);
+const isRed=r=>r.ing.some(([i])=>REDIDS.has(i));
+const isSoup=r=>SOUP_RX.test(r.n);
+const PASTA=new Set(["pates","spaghetti","penne","tagl","macaroni","lasagne","ravioli","gnocchis"]);
+const THEMES={
+ pizza:["🍕","Soirée pizza",r=>/pizza|flammekueche|pide|khachapuri|pissaladi/i.test(r.n)],
+ burger:["🍔","Burger & hot-dog",r=>/burger|hot-dog|sloppy/i.test(r.n)],
+ crepes:["🥞","Crêpes & galettes",r=>/crêpe|galette/i.test(r.n)],
+ soupe:["🥣","Soupe",isSoup],
+ poisson:["🐟","Poisson",r=>isFish(r)],
+ vege:["🥦","Végétarien",r=>isVege(r)],
+ pates:["🍝","Pâtes",r=>r.ing.some(([i])=>PASTA.has(i))],
+ simple:["🍳","Tout simple",r=>!!r.simple],
+ gourmand:["😋","Gourmand",r=>r.tag==="plaisir"],
+ monde:["🌍","Tour du monde",r=>!!r.reg&&r.reg!=="France"],
+ asie:["🥢","Asiatique",r=>r.reg==="Asie"],
+ mexique:["🌮","Mexicain",r=>r.pays==="Mexique"],
+ wrap:["🌯","Wraps & sandwichs",r=>/wrap|sandwich|banh|burrito|tacos|quesadilla|croque/i.test(r.n)],
+ four:["🔥","Tout au four",r=>/sur plaque|au four|gratin/i.test(r.n)]
+};
+const RULES=[
+ ["fish","min","🐟","Poisson",r=>isFish(r),"au moins",0,5],
+ ["vege","min","🥦","Végétarien",r=>isVege(r),"au moins",0,7],
+ ["redmax","max","🥩","Viande rouge",r=>isRed(r),"au plus",0,14],
+ ["soup","min","🥣","Soupe le soir",r=>isSoup(r),"au moins",0,7],
+ ["simple","min","🍳","Tout simple en semaine",r=>!!r.simple,"au moins",0,10],
+ ["fav","min","♥","Favoris",r=>isFav(r.id),"au moins",0,7]
+];
+const isWeekday=s=>s.day<5;
+function slotOkFor(rule,s){return rule==="soup"?s.when==="Soir":rule==="simple"?isWeekday(s):true}
+function themeAt(key){const t=Object.values(CFG().themes).find(x=>(x.d+x.w)===key);return t&&THEMES[t.t]?t:null}
+function cfgScore(r,slot,C,ever){
+  let s=0;
+  if(C.tmax&&isWeekday(slot)&&slot.when==="Soir"&&r.t>C.tmax)s-=4;
+  if(C.light&&slot.when==="Soir"&&kcal(r)>600)s-=2.5;
+  if(C.neu&&!ever.has(r.id))s+=0.6;
+  return s;
+}
+function pickC(slot,used,plan,rand,avoid,pred,C,ever){
+  let c=R.filter(r=>fits(r,slot,used,plan)&&(!pred||pred(r)));
+  if(!c.length&&pred)c=R.filter(r=>allowed(r)&&!used.has(r.id)&&pred(r));
+  if(!c.length)return null;
+  return c.map(r=>[r,likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?3:0)+(isFav(r.id)?2:0)+(noteOf(r.id)?(noteOf(r.id)-3)*1.2:0)-(noteOf(r.id)===1?6:0)+(CLASSIC.has(r.id)?1:0)+(r.simple&&slot.day<5?(CLASSIC.has(r.id)?0.2:0.9):0)+cfgScore(r,slot,C,ever)]).sort((a,b)=>b[1]-a[1])[0][0].id;
+}
+function buildCfg(mode){
+  const C=CFG(),plan={},used=new Set();
+  const rand=mode==="seed"?rng(1000+S.cur):(mode==="random"||mode==="cfg")?Math.random:null;
+  const avoid=new Set();for(let k=1;k<=Math.max(1,C.norepeat||1);k++){const pw=S.weeks[S.cur-k];if(pw&&pw.plan)Object.values(pw.plan).forEach(x=>x&&avoid.add(x))}
+  const ever=new Set();Object.entries(S.weeks).forEach(([w,x])=>{if(+w!==S.cur&&x.plan)Object.values(x.plan).forEach(v=>v&&ever.add(v))});
+  const keepish=mode==="keep"||mode==="cfg";
+  const locked=new Set();
+  for(const sl of SLOTS){
+    if(srcKey(sl.key)!==sl.key){plan[sl.key]=W.plan[sl.key]||null;continue}
+    let cur=keepish?W.plan[sl.key]:mode==="default"?DEFAULT[sl.key]:null;
+    const pinned=keepish&&W.pin[sl.key]&&RB[cur];
+    const th=mode!=="keep"?themeAt(sl.key):null;
+    if(pinned)locked.add(sl.key);
+    else if(th){const p=THEMES[th.t][2];if(!(cur&&RB[cur]&&p(RB[cur])&&fits(RB[cur],sl,used,plan)))cur=pickC(sl,used,plan,rand,avoid,p,C,ever)||cur;locked.add(sl.key)}
+    const soft=r=>mode==="keep"||!r||!((C.tmax&&isWeekday(sl)&&sl.when==="Soir"&&r.t>C.tmax)||(C.light&&sl.when==="Soir"&&kcal(r)>600));
+    if(!pinned&&!th&&!(cur&&RB[cur]&&fits(RB[cur],sl,used,plan)&&soft(RB[cur])))cur=pickC(sl,used,plan,rand,avoid,null,C,ever);
+    plan[sl.key]=cur;if(cur)used.add(cur);
+  }
+  if(mode!=="keep")repairQuotas(plan,used,locked,rand,avoid,C,ever);
+  W.plan=plan;save();
+}
+function quotaCount(plan,rule){const R0=RULES.find(x=>x[0]===rule);return SLOTS.filter(s=>W.mode[s.key]!=="skip"&&srcKey(s.key)===s.key&&plan[s.key]&&RB[plan[s.key]]&&slotOkFor(rule,s)&&R0[4](RB[plan[s.key]])).length}
+function repairQuotas(plan,used,locked,rand,avoid,C,ever){
+  const order=["redmax","fish","vege","soup","simple","fav"];
+  const active=()=>SLOTS.filter(s=>W.mode[s.key]!=="skip"&&srcKey(s.key)===s.key&&plan[s.key]&&RB[plan[s.key]]);
+  const done=[];
+  const guarded=s=>done.some(rule=>{const R1=RULES.find(x=>x[0]===rule);return R1[1]==="min"&&slotOkFor(rule,s)&&R1[4](RB[plan[s.key]])&&quotaCount(plan,rule)<=(C.q[rule]||0)});
+  order.forEach(rule=>{done.push(rule);
+    const R0=RULES.find(x=>x[0]===rule),target=C.q[rule]||0,pred=R0[4];
+    if(R0[1]==="max"){
+      let guard=0;
+      while(quotaCount(plan,rule)>target&&guard++<14){
+        const s=active().filter(s=>!locked.has(s.key)&&pred(RB[plan[s.key]])&&!guarded(s)).sort(()=>Math.random()-.5)[0];if(!s)break;
+        used.delete(plan[s.key]);const id=pickC(s,used,plan,rand,avoid,r=>!pred(r),C,ever);if(!id){used.add(plan[s.key]);break}
+        plan[s.key]=id;used.add(id);locked.add(s.key);
+      }
+    }else if(target>0){
+      let guard=0;
+      while(quotaCount(plan,rule)<target&&guard++<14){
+        const s=active().filter(s=>!locked.has(s.key)&&slotOkFor(rule,s)&&!pred(RB[plan[s.key]])&&!guarded(s)).sort(()=>Math.random()-.5)[0];if(!s)break;
+        used.delete(plan[s.key]);const id=pickC(s,used,plan,rand,avoid,r=>pred(r)&&(rule==="redmax"||!(C.q.redmax!=null&&isRed(r)&&quotaCount(plan,"redmax")>=C.q.redmax)),C,ever);
+        if(!id){used.add(plan[s.key]);locked.add(s.key);continue}
+        plan[s.key]=id;used.add(id);locked.add(s.key);
+      }
+    }
+  });
+}
+// Bilan de la semaine affiché au-dessus du semainier
+function renderRules(){
+  const el=document.getElementById("rulesbar");if(!el)return;const C=CFG();
+  const chips=RULES.filter(([k,t])=>t==="max"||(C.q[k]||0)>0).map(([k,t,ic,lab])=>{const n=quotaCount(W.plan,k),v=C.q[k]||0,ok=t==="max"?n<=v:n>=v;
+    return `<span class="rchip ${ok?"ok":"ko"}" title="${esc(lab)} : ${t==="max"?"au plus":"au moins"} ${v} par semaine"><span aria-hidden="true">${ic}</span> ${esc(lab)} <b class="num">${n}${t==="max"?" / "+v+" max":" / "+v}</b></span>`});
+  const th=Object.values(C.themes).filter(x=>THEMES[x.t]).map(x=>{const r=RB[W.plan[x.d+x.w]],ok=r&&THEMES[x.t][2](r);return `<span class="rchip ${ok?"ok":"ko"}"><span aria-hidden="true">${THEMES[x.t][0]}</span> ${DAYS[x.d]} ${x.w==="m"?"midi":"soir"} : ${esc(THEMES[x.t][1])}</span>`});
+  el.innerHTML=chips.length||th.length?`<div class="rulesbar"><span class="rl">Nos règles</span>${chips.concat(th).join("")}<a href="#notre-foyer" class="rlink">Modifier</a></div>`:"";
+}
+// Page « Notre foyer »
+function renderCfg(){
+  const el=document.getElementById("cfgbox");if(!el)return;const C=CFG(),kid=isKid();
+  const step=(k,v,min,max)=>`<span class="pstep"><button type="button" class="pm" data-cfgq="${k}" data-d="-1" ${v<=min?"disabled":""} aria-label="Moins">−</button><b class="num">${v}</b><button type="button" class="pm" data-cfgq="${k}" data-d="1" ${v>=max?"disabled":""} aria-label="Plus">+</button></span>`;
+  const bans=Object.keys(C.ban).filter(id=>I[id]);
+  const banOpts=Object.entries(I).filter(([id,x])=>x.c&&!C.ban[id]).sort((a,b)=>a[1].n.localeCompare(b[1].n,"fr"));
+  const ths=Object.entries(C.themes).filter(([,x])=>THEMES[x.t]).sort((a,b)=>(a[1].d+a[1].w).localeCompare(b[1].d+b[1].w));
+  el.innerHTML=`${kid?'<div class="kidban"><b>Profil Enfant</b><span>Tu peux consulter les règles du foyer ; seuls les adultes peuvent les changer.</span></div>':""}
+  <div class="cfghead"><div><h2>Notre foyer</h2><p>Les règles de la maison, partagées avec tout le groupe. Le semainier les respecte quand il compose une semaine.</p></div>
+    <div class="presets"><span class="muted">Partir d'un modèle :</span>${Object.entries(PRESETS).map(([k,p])=>`<button type="button" class="btn sm" data-preset="${k}" title="${esc(p.d)}">${p.i} ${esc(p.n)}</button>`).join("")}</div></div>
+  <div class="cfggrid">
+    <section class="cfgcard"><h3>⚖️ Notre rythme de la semaine</h3>
+      ${RULES.map(([k,t,ic,lab,,word,min,max])=>`<div class="cfgrow"><span><span aria-hidden="true">${ic}</span> ${esc(lab)} <small class="muted">${word}</small></span>${step(k,C.q[k]||0,min,max)}<small class="muted">${k==="redmax"?"fois max":"fois"}</small></div>`).join("")}
+      <p class="muted small">Viande rouge : bœuf, agneau, veau. « Tout simple » ne compte que du lundi au vendredi, la soupe que le soir.</p></section>
+    <section class="cfgcard"><h3>📅 Nos rendez-vous</h3><p class="muted small">Un repas qui revient chaque semaine : la soirée pizza du vendredi, le poisson du mardi…</p>
+      <ul class="thlist">${ths.map(([id,x])=>`<li><span class="thic" aria-hidden="true">${THEMES[x.t][0]}</span><b>${DAYS[x.d]} ${x.w==="m"?"midi":"soir"}</b><span>${esc(THEMES[x.t][1])}</span><button type="button" class="xdel" data-thdel="${id}" aria-label="Retirer">×</button></li>`).join("")||'<li class="muted">Aucun rendez-vous pour l\'instant.</li>'}</ul>
+      <div class="thadd"><select id="thD">${DAYS.map((d,i)=>`<option value="${i}" ${i===4?"selected":""}>${d}</option>`).join("")}</select><select id="thW"><option value="s">soir</option><option value="m">midi</option></select><select id="thT">${Object.entries(THEMES).map(([k,t])=>`<option value="${k}">${t[0]} ${t[1]}</option>`).join("")}</select><button type="button" class="btn sm primary" data-thadd>Ajouter</button></div></section>
+    <section class="cfgcard"><h3>⏱️ Le soir en semaine</h3>
+      <div class="cfgrow"><span>Temps de préparation maximum</span><select data-cfgsel="tmax">${[[0,"Pas de limite"],[20,"20 min"],[30,"30 min"],[45,"45 min"],[60,"1 h"]].map(([v,l])=>`<option value="${v}" ${C.tmax==v?"selected":""}>${l}</option>`).join("")}</select></div>
+      <label class="cfgtog"><input type="checkbox" data-cfgtog="light" ${C.light?"checked":""}><span><b>Dîners plutôt légers</b><small class="muted">Privilégie les plats de moins de 600 kcal par portion le soir.</small></span></label>
+      <label class="cfgtog"><input type="checkbox" data-cfgtog="neu" ${C.neu?"checked":""}><span><b>Une touche de nouveauté</b><small class="muted">Glisse des plats jamais faits dans vos semaines.</small></span></label>
+      <div class="cfgrow"><span>Pas le même plat avant</span><select data-cfgsel="norepeat">${[1,2,3,4,6].map(v=>`<option value="${v}" ${C.norepeat==v?"selected":""}>${v} semaine${v>1?"s":""}</option>`).join("")}</select></div></section>
+    <section class="cfgcard"><h3>🚫 Jamais à la maison</h3><p class="muted small">Ce que personne ne mange chez vous : les recettes qui en contiennent ne sont plus proposées, pour tout le groupe. (Les goûts de chacun restent dans « Mes goûts ».)</p>
+      <div class="banchips">${bans.map(id=>`<button type="button" class="chip no" data-banrm="${id}" aria-label="Retirer ${esc(I[id].n)}">${esc(I[id].n)} ×</button>`).join("")||'<span class="muted small">Rien pour l\'instant.</span>'}</div>
+      <div class="thadd"><select id="banSel"><option value="">Choisir un aliment…</option>${banOpts.map(([id,x])=>`<option value="${id}">${esc(x.n)}</option>`).join("")}</select><button type="button" class="btn sm" data-banadd>Ajouter</button></div></section>
+    <section class="cfgcard wide"><h3>🩺 Allergies, intolérances et régimes</h3><p class="muted small">Chaque membre du foyer et ce qu'il doit éviter : les recettes à risque sont écartées et signalées partout (semainier, catalogue, réceptions).</p><div id="foyer"></div></section>
+  </div>
+  <div class="cfgapply"><div><b>Appliquer à la semaine ${S.cur+1}</b><span class="muted">Recompose les repas non choisis à la main pour respecter vos règles.</span></div><button type="button" class="btn primary" data-cfgapply>Recomposer la semaine</button></div>`;
+  renderFoyer();
+}
+const PRESETS={
+ equilibre:{i:"⚖️",n:"Équilibré",d:"Poisson 2 fois, végétarien 2 fois, viande rouge 2 fois maximum, dîners légers.",c:{q:{fish:2,vege:2,redmax:2,soup:1,simple:2,fav:0},light:1,tmax:45,neu:1,norepeat:2}},
+ express:{i:"⚡",n:"Semaine express",d:"Beaucoup de plats tout simples, 30 minutes maximum le soir.",c:{q:{fish:1,vege:1,redmax:3,soup:0,simple:6,fav:1},light:0,tmax:30,neu:0,norepeat:2}},
+ ados:{i:"😋",n:"Ados gourmands",d:"Des favoris, une soirée pizza le vendredi, un poisson quand même.",c:{q:{fish:1,vege:0,redmax:4,soup:0,simple:3,fav:2},light:0,tmax:45,neu:1,norepeat:2,themes:{p1:{d:4,w:"s",t:"pizza"}}}},
+ hiver:{i:"❄️",n:"Cocooning d'hiver",d:"Des soupes le soir, des plats au four, un gratin.",c:{q:{fish:1,vege:1,redmax:3,soup:3,simple:2,fav:0},light:0,tmax:0,neu:1,norepeat:2,themes:{h1:{d:6,w:"m",t:"four"}}}}
+};
+document.addEventListener("click",e=>{
+  const t=e.target;
+  const isCfg=t.closest("[data-cfgq],[data-thadd],[data-thdel],[data-banadd],[data-banrm],[data-preset],[data-cfgapply]");
+  if(!isCfg)return;
+  if(isKid()){e.preventDefault();e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du foyer.");return}
+  const C=CFG();
+  const q=t.closest("[data-cfgq]");if(q){const k=q.dataset.cfgq,R0=RULES.find(x=>x[0]===k);C.q[k]=Math.max(R0[6],Math.min(R0[7],(C.q[k]||0)+ +q.dataset.d));cfgWrite(C);renderCfg();renderRules();return}
+  if(t.closest("[data-thadd]")){const d=+document.getElementById("thD").value,w=document.getElementById("thW").value,tt=document.getElementById("thT").value;Object.keys(C.themes).forEach(k=>{if(C.themes[k].d===d&&C.themes[k].w===w)delete C.themes[k]});C.themes[newId()]={d,w,t:tt};cfgWrite(C);renderCfg();renderRules();toast(THEMES[tt][1]+" chaque "+DAYS[d].toLowerCase()+" "+(w==="m"?"midi":"soir"));return}
+  const td=t.closest("[data-thdel]");if(td){delete C.themes[td.dataset.thdel];cfgWrite(C);renderCfg();renderRules();return}
+  if(t.closest("[data-banadd]")){const id=document.getElementById("banSel").value;if(!id)return;C.ban[id]=1;cfgWrite(C);renderCfg();toast(I[id].n+" : plus jamais proposé");return}
+  const br=t.closest("[data-banrm]");if(br){delete C.ban[br.dataset.banrm];cfgWrite(C);renderCfg();return}
+  const pr=t.closest("[data-preset]");if(pr){const P=PRESETS[pr.dataset.preset];const n=Object.assign(C,JSON.parse(JSON.stringify(P.c)));if(!P.c.themes)n.themes=C.themes;cfgWrite(n);renderCfg();renderRules();toast("Modèle « "+P.n+" » appliqué. Recomposez la semaine pour en profiter.");return}
+  if(t.closest("[data-cfgapply]")){const before=JSON.stringify(W.plan);build("cfg");renderAll();const a=JSON.parse(before);const n=Object.keys(W.plan).filter(k=>a[k]!==W.plan[k]).length;toast(n?n+" repas recomposé"+(n>1?"s":"")+" selon vos règles":"Votre semaine respecte déjà vos règles");location.hash="semaine";return}
+},true);
+document.addEventListener("change",e=>{
+  const s=e.target.closest("[data-cfgsel],[data-cfgtog]");if(!s)return;
+  if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du foyer.");renderCfg();return}
+  const C=CFG();if(s.dataset.cfgsel)C[s.dataset.cfgsel]=+s.value;else C[s.dataset.cfgtog]=s.checked?1:0;cfgWrite(C);renderRules();
+});
+
+const VIEWS=["notre-foyer","semaine","batch","gouts","recettes","courses","propositions"];
 function route(){
   const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"semaine";
   VIEWS.forEach(x=>document.getElementById("v-"+x).hidden=x!==v);
