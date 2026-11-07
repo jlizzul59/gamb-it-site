@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.tsel{display:flex;gap:4px}
+.tsel button{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:8px;padding:4px 6px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.tsel button[aria-pressed="true"][data-temp$="chaud"]{background:#FBEFE4;border-color:#E9B48A;color:#B85A14}
+.tsel button[aria-pressed="true"][data-temp$="froid"]{background:#E7F2F8;border-color:#9CC3DA;color:#2C6E91}
+</style>
 <title>Semainier en famille</title>
 <meta name="description" content="Les menus de la semaine pour toute la famille : des recettes du monde entier, le batch cooking et la liste de courses.">
 <meta property="og:type" content="website">
@@ -460,7 +464,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .pform{display:flex;flex-direction:column;gap:14px;padding:4px 24px 24px}
 .pform .row{display:flex;gap:8px;flex-wrap:wrap}
 .linkbtn{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--accent);text-decoration:underline;cursor:pointer}
-.kidmode [data-swap],.kidmode [data-skip],.kidmode [data-unskip],.kidmode select[data-mode],.kidmode .pm,.kidmode #regen,.kidmode #reset,.kidmode #restLunch,.kidmode [data-def]{display:none!important}
+.kidmode .tsel,.kidmode [data-swap],.kidmode [data-skip],.kidmode [data-unskip],.kidmode select[data-mode],.kidmode .pm,.kidmode #regen,.kidmode #reset,.kidmode #restLunch,.kidmode [data-def]{display:none!important}
 .memrole{display:inline-flex;align-items:center;gap:6px}
 .memrole small{font-weight:600;opacity:.75}
 .rolebtn{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:2px 8px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
@@ -2220,6 +2224,7 @@ const noSoupMidi=()=>{const n=Date.now();if(n-_nsm.t>300){_nsm={t:n,v:!!CFG().no
 function fits(r,slot,used,plan){
   if(!r||!allowed(r)||!r.for.includes(slot.kind)||used.has(r.id))return false;
   if(slot.when==="Midi"&&noSoupMidi()&&SOUP_RX.test(r.n))return false;
+  const wt=W&&W.temp&&W.temp[slot.key];if(wt&&(r.temp||tempOf(r))!==wt)return false;
   const other=plan[slot.day+(slot.when==="Midi"?"s":"m")];
   if(other&&RB[other]&&RB[other].p===r.p&&r.p!=="vege")return false;
   return true;
@@ -2324,7 +2329,7 @@ function renderWeek(){
           <option value="rest" ${mode==="rest"?"selected":""} ${restOK?"":"disabled"}>Restes du repas d'avant</option>
           <option value="skip" ${mode==="skip"?"selected":""}>Supprimé</option>
         </select></div>
-        ${mode!=="skip"&&!isRest?`<div class="acts"><button class="swap" type="button" data-pick="${sl.key}">Catalogue</button><button class="swap" type="button" data-swap="${sl.key}">Au hasard</button></div><button class="xadd" type="button" data-xadd="${sl.key}">+ Ajouter une recette</button>`:""}</div>`;
+        ${mode!=="skip"&&!isRest?`<div class="acts"><button class="swap" type="button" data-pick="${sl.key}">Catalogue</button><button class="swap" type="button" data-swap="${sl.key}">Au hasard</button></div><div class="tsel" role="group" aria-label="Manger chaud ou froid"><button type="button" data-temp="${sl.key}|chaud" aria-pressed="${(W.temp||{})[sl.key]==="chaud"}" title="Un plat chaud pour ce repas">🔥 Chaud</button><button type="button" data-temp="${sl.key}|froid" aria-pressed="${(W.temp||{})[sl.key]==="froid"}" title="Un plat froid pour ce repas">❄️ Froid</button></div><button class="xadd" type="button" data-xadd="${sl.key}">+ Ajouter une recette</button>`:""}</div>`;
     }).join("");
     return `<div class="day ${dayOff?"day-off":""}"><div class="dayhead"><b>${d}</b><small>${dateOf(i)}</small></div>${meals}${tot?`<div class="daytotal">Midi + soir : <span class="num">≈ ${tot} kcal</span></div>`:""}</div>`;
   }).join("");
@@ -2493,6 +2498,8 @@ document.addEventListener("click",e=>{
   if(!ov.hidden&&(e.target===ov||e.target.closest("[data-close]"))){closeModal();return}
   const o=e.target.closest("[data-open]");if(o)return openRecipe(o.dataset.open);
   const pk=e.target.closest("[data-pick]");if(pk)return openCatalog(pk.dataset.pick);
+  const tp=e.target.closest("[data-temp]");if(tp){const [k,t]=tp.dataset.temp.split("|");W.temp=W.temp||{};const on=W.temp[k]!==t;if(on)W.temp[k]=t;else delete W.temp[k];
+    const r=RB[W.plan[k]];if(on&&r&&(r.temp||tempOf(r))!==t){delete W.pin[k];return swap(k)}save();renderAll();toast(on?(t==="chaud"?"🔥 Ce repas sera chaud":"❄️ Ce repas sera froid")+" : « Au hasard » en tient compte":"Chaud ou froid : peu importe");return}
   const s=e.target.closest("[data-swap]");if(s)return swap(s.dataset.swap);
   const ch=e.target.closest("[data-choose]");
   if(ch&&catKey){const id=ch.dataset.choose,k=catKey;W.plan[k]=id;W.pin[k]=1;delete W.mode[k];build("keep");closeModal();renderAll();toast(RB[id].n+" au menu de "+slotLabel(SK[k]));return}
@@ -2538,7 +2545,7 @@ document.getElementById("copyList").addEventListener("click",()=>{
 });
 
 // ---------- Propositions : écran du semainier ----------
-const KIDBLOCK="[data-swap],[data-skip],[data-unskip],[data-pers],[data-def],#regen,#reset,#restLunch,[data-padd],[data-pdel],[data-pdiet],[data-pref],#clearPrefs";
+const KIDBLOCK="[data-temp],[data-swap],[data-skip],[data-unskip],[data-pers],[data-def],#regen,#reset,#restLunch,[data-padd],[data-pdel],[data-pdiet],[data-pref],#clearPrefs";
 const KIDMSG="Profil Enfant : propose plutôt un plat, un adulte validera.";
 document.addEventListener("click",e=>{if(isKid()&&e.target.closest(KIDBLOCK)&&!e.target.closest(".ck")){e.preventDefault();e.stopImmediatePropagation();toast(KIDMSG)}},true);
 document.addEventListener("change",e=>{if(isKid()&&e.target.closest("[data-mode],[data-pname],[data-pnote]")){e.stopImmediatePropagation();toast(KIDMSG);renderAll()}},true);
