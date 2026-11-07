@@ -2154,7 +2154,7 @@ function propose(o){const all=propsRead(),id=newId(),a=meAcc();all[id]=Object.as
 const pendingProps=()=>Object.entries(propsRead()).filter(([,p])=>p.status==="attente").sort((a,b)=>a[1].t-b[1].t);
 // Réglages du foyer (partagés avec le groupe)
 const CFGK="menus.config";
-const CFG_DEF={q:{fish:1,fishmax:14,vege:1,redmax:3,soup:0,simple:3,fav:0},neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
+const CFG_DEF={q:{fish:1,fishmax:14,vege:1,redmax:3,soup:0,simple:3,fav:0},nosouplunch:1,neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
 function CFG(){let c={};try{c=JSON.parse(localStorage.getItem(CFGK)||"null")||{}}catch(e){}return Object.assign({},CFG_DEF,c,{q:Object.assign({},CFG_DEF.q,c.q||{}),ban:c.ban||{},themes:c.themes||{}})}
 function cfgWrite(c){try{localStorage.setItem(CFGK,JSON.stringify(c))}catch(e){}try{CLOUD.changed()}catch(e){}}
 const cfgBanned=r=>{const b=CFG().ban;return r.ing.some(([id])=>b[id])};
@@ -2215,8 +2215,11 @@ function srcKey(key){
 }
 const recipeAt=key=>{const k=srcKey(key);return k?RB[W.plan[k]]:null};
 
+let _nsm={t:0,v:0};
+const noSoupMidi=()=>{const n=Date.now();if(n-_nsm.t>300){_nsm={t:n,v:!!CFG().nosouplunch}}return _nsm.v};
 function fits(r,slot,used,plan){
   if(!r||!allowed(r)||!r.for.includes(slot.kind)||used.has(r.id))return false;
+  if(slot.when==="Midi"&&noSoupMidi()&&SOUP_RX.test(r.n))return false;
   const other=plan[slot.day+(slot.when==="Midi"?"s":"m")];
   if(other&&RB[other]&&RB[other].p===r.p&&r.p!=="vege")return false;
   return true;
@@ -2787,6 +2790,7 @@ function renderCfg(){
           <input type="range" min="0" max="${c.top}" step="1" value="${mx}" data-rmax="${c.k}" ${on?"":"disabled"} aria-label="${esc(c.lab)} : maximum par semaine">
           <span class="ticks" aria-hidden="true">${Array.from({length:c.top+1},(_,n)=>`<i>${n===c.top?n+"+":n}</i>`).join("")}</span></span>
         <output class="rval" id="rv-${c.k}">${on?rangeTxt(mn,mx,c.top):"désactivée"}</output></div>`}).join("")}
+      <label class="cfgtog"><input type="checkbox" data-cfgtog="nosouplunch" ${C.nosouplunch?"checked":""}><span><b>🥣 Pas de soupe ni de velouté le midi</b><small class="muted">Les soupes et veloutés ne sont proposés que le soir. Vous pouvez toujours en choisir un à la main pour un midi.</small></span></label>
       <p class="muted small">Activez une règle, puis glissez les deux poignées : le minimum et le maximum de fois par semaine (tout à droite = pas de maximum). Viande rouge : bœuf, agneau, veau. « Tout simple » ne compte que du lundi au vendredi, la soupe que le soir.</p></section>
     <section class="cfgcard"><h3>📅 Nos rendez-vous</h3><p class="muted small">Un repas qui revient chaque semaine : la soirée pizza du vendredi, le poisson du mardi…</p>
       <ul class="thlist">${ths.map(([id,x])=>`<li><span class="thic" aria-hidden="true">${THEMES[x.t][0]}</span><b>${DAYS[x.d]} ${x.w==="m"?"midi":"soir"}</b><span>${esc(THEMES[x.t][1])}</span><button type="button" class="xdel" data-thdel="${id}" aria-label="Retirer">×</button></li>`).join("")||'<li class="muted">Aucun rendez-vous pour l\'instant.</li>'}</ul>
@@ -2839,7 +2843,9 @@ document.addEventListener("change",e=>{
     cfgWrite(C);renderCfg();renderRules();return}
   const s=e.target.closest("[data-cfgsel],[data-cfgtog]");if(!s)return;
   if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");renderCfg();return}
-  const C=CFG();if(s.dataset.cfgsel)C[s.dataset.cfgsel]=+s.value;else C[s.dataset.cfgtog]=s.checked?1:0;cfgWrite(C);renderRules();
+  const C=CFG();if(s.dataset.cfgsel)C[s.dataset.cfgsel]=+s.value;else C[s.dataset.cfgtog]=s.checked?1:0;cfgWrite(C);_nsm.t=0;
+  if(s.dataset.cfgtog==="nosouplunch"&&s.checked){let n=0;SLOTS.forEach(sl=>{const r=RB[W.plan[sl.key]];if(sl.when==="Midi"&&r&&SOUP_RX.test(r.n)&&!W.pin[sl.key]&&W.mode[sl.key]!=="skip"&&srcKey(sl.key)===sl.key){W.plan[sl.key]=null;n++}});if(n){build("keep");save();renderAll()}toast(n?n+" soupe"+(n>1?"s":"")+" du midi remplacée"+(n>1?"s":"")+" cette semaine":"Plus de soupe le midi dans les prochaines semaines")}
+  renderRules();
 });
 
 // ---------- Qui mange quand ? (convives par défaut, repas par repas) ----------
