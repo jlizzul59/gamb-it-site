@@ -72,9 +72,17 @@ const SCHEMA = [
   `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS active_group INT`,
   `ALTER TABLE menus_groups ADD COLUMN IF NOT EXISTS icon TEXT NOT NULL DEFAULT ''`,
   `CREATE INDEX IF NOT EXISTS menus_sessions_user ON menus_sessions(user_id)`,
+  // administrateur du groupe : le créateur, puis ceux qu'il nomme
+  `ALTER TABLE menus_members ADD COLUMN IF NOT EXISTS admin BOOLEAN NOT NULL DEFAULT false`,
 ];
+// Un groupe sans administrateur reçoit comme administrateur son plus ancien membre adulte (le créateur).
+const FIX_ADMINS = `UPDATE menus_members m SET admin = true
+  WHERE m.ctid = (SELECT x.ctid FROM menus_members x WHERE x.group_id = m.group_id
+                  ORDER BY (x.role = 'adulte') DESC, x.joined_at, x.user_id LIMIT 1)
+    AND NOT EXISTS (SELECT 1 FROM menus_members y WHERE y.group_id = m.group_id AND y.admin)`;
 async function migrate() {
   for (const s of SCHEMA) await q(s);
+  await q(FIX_ADMINS);
   await q(`CREATE TABLE IF NOT EXISTS menus_migrations (name TEXT PRIMARY KEY, report JSONB, done_at TIMESTAMPTZ NOT NULL DEFAULT now())`);
   try { await refDelfouine(); } catch (e) { console.error("Reprise du semainier :", e.message); }
 }
@@ -247,10 +255,11 @@ async function auth(req) {
 }
 
 // ---------- État complet d'un compte ----------
+const isAdm = (row) => row && (row.admin === true || row.admin === "t" || row.admin === "true");
 // groupe actif du compte (ou, à défaut, le premier rejoint)
 async function groupOf(userId) {
   const r = await q(
-    `SELECT g.id, g.name, g.icon, g.invite_code, g.data, g.version, m.role FROM menus_members m
+    `SELECT g.id, g.name, g.icon, g.invite_code, g.data, g.version, m.role, m.admin FROM menus_members m
      JOIN menus_groups g ON g.id = m.group_id JOIN menus_users u ON u.id = m.user_id
      WHERE m.user_id = $1 ORDER BY (g.id = u.active_group) DESC, m.joined_at LIMIT 1`,
     [userId]
@@ -259,16 +268,16 @@ async function groupOf(userId) {
 }
 async function groupsList(userId) {
   const r = await q(
-    `SELECT g.id, g.name, g.icon, m.role, g.updated_at,
+    `SELECT g.id, g.name, g.icon, m.role, m.admin, g.updated_at,
        (SELECT count(*)::int FROM menus_members x WHERE x.group_id = g.id) AS n,
        (SELECT string_agg(u.name, ', ' ORDER BY x.joined_at) FROM menus_members x JOIN menus_users u ON u.id = x.user_id WHERE x.group_id = g.id) AS names
      FROM menus_members m JOIN menus_groups g ON g.id = m.group_id WHERE m.user_id = $1 ORDER BY m.joined_at`,
     [userId]
   );
-  return r.rows.map((x) => ({ id: Number(x.id), name: x.name, icon: x.icon || "", role: x.role, n: x.n, names: x.names || "", updated: x.updated_at }));
+  return r.rows.map((x) => ({ id: Number(x.id), name: x.name, icon: x.icon || "", role: x.role, admin: x.admin === true || x.admin === "t", n: x.n, names: x.names || "", updated: x.updated_at }));
 }
 async function memberGroup(userId, gid) {
-  const r = await q(`SELECT g.id, g.name, m.role FROM menus_members m JOIN menus_groups g ON g.id = m.group_id WHERE m.user_id = $1 AND g.id = $2`, [userId, parseInt(gid, 10) || 0]);
+  const r = await q(`SELECT g.id, g.name, m.role, m.admin FROM menus_members m JOIN menus_groups g ON g.id = m.group_id WHERE m.user_id = $1 AND g.id = $2`, [userId, parseInt(gid, 10) || 0]);
   if (!r.rows.length) throw new HttpError(404, "Vous ne faites pas partie de ce groupe.");
   return r.rows[0];
 }
@@ -281,16 +290,16 @@ async function stateOf(user) {
   let group = null, shared = null;
   if (g) {
     const mem = await q(
-      `SELECT u.name, u.username, m.role FROM menus_members m JOIN menus_users u ON u.id = m.user_id
+      `SELECT u.name, u.username, m.role, m.admin FROM menus_members m JOIN menus_users u ON u.id = m.user_id
        WHERE m.group_id = $1 ORDER BY m.joined_at`,
       [g.id]
     );
-    group = { id: Number(g.id), name: g.name, icon: g.icon || "", code: g.invite_code, members: mem.rows.map((x) => ({ name: x.name, username: x.username, role: x.role })) };
+    group = { id: Number(g.id), name: g.name, icon: g.icon || "", code: g.invite_code, members: mem.rows.map((x) => ({ name: x.name, username: x.username, role: x.role, admin: isAdm(x) })) };
     shared = { data: g.data || {}, version: Number(g.version) };
   }
   const p = pr.rows[0];
   return {
-    user: { username: user.username, name: user.name, role: g ? g.role : "adulte" },
+    user: { username: user.username, name: user.name, role: g ? g.role : "adulte", admin: g ? isAdm(g) : false },
     group,
     groups,
     perso: p ? { data: p.data || {}, version: Number(p.version) } : { data: {}, version: 0 },
@@ -392,7 +401,7 @@ const routes = {
         const ins = await q(
           `WITH g AS (
              INSERT INTO menus_groups (name, invite_code, data, version, icon) VALUES ($1, $2, $3::jsonb, 1, $5) RETURNING id)
-           INSERT INTO menus_members (user_id, group_id) SELECT $4, id FROM g RETURNING group_id`,
+           INSERT INTO menus_members (user_id, group_id, admin) SELECT $4, id, true FROM g RETURNING group_id`,
           [name, inviteCode(), s, user.id, cleanName(body.icon, 8)]
         );
         await q(`UPDATE menus_users SET active_group = $1 WHERE id = $2`, [ins.rows[0].group_id, user.id]);
@@ -427,15 +436,33 @@ const routes = {
     const user = await auth(req);
     const g = await groupOf(user.id);
     if (!g) throw new HttpError(409, "Vous ne faites partie d'aucun groupe.");
-    if (g.role !== "adulte") throw new HttpError(403, "Seul un adulte peut changer les profils.");
+    if (!isAdm(g)) throw new HttpError(403, "Seul un administrateur du groupe peut changer les profils.");
     const role = body.role === "enfant" ? "enfant" : "adulte";
-    const t = await q(`SELECT m.user_id, m.role FROM menus_members m JOIN menus_users u ON u.id = m.user_id WHERE m.group_id = $1 AND u.username_key = $2`, [g.id, String(body.username || "").toLowerCase()]);
+    const t = await q(`SELECT m.user_id, m.role, m.admin FROM menus_members m JOIN menus_users u ON u.id = m.user_id WHERE m.group_id = $1 AND u.username_key = $2`, [g.id, String(body.username || "").toLowerCase()]);
     if (!t.rows.length) throw new HttpError(404, "Ce membre n'est pas dans votre groupe.");
     if (role === "enfant" && t.rows[0].role === "adulte") {
       const n = await q(`SELECT count(*)::int AS n FROM menus_members WHERE group_id = $1 AND role = 'adulte'`, [g.id]);
       if (n.rows[0].n <= 1) throw new HttpError(409, "Il faut garder au moins un adulte dans le groupe.");
     }
+    if (role === "enfant" && isAdm(t.rows[0])) throw new HttpError(409, "Retirez d'abord le rôle d'administrateur : un enfant ne peut pas administrer le groupe.");
     await q(`UPDATE menus_members SET role = $1 WHERE user_id = $2 AND group_id = $3`, [role, t.rows[0].user_id, g.id]);
+    return stateOf(user);
+  },
+
+  "POST /groups/admin": async (req, body) => {
+    const user = await auth(req);
+    const g = await groupOf(user.id);
+    if (!g) throw new HttpError(409, "Vous ne faites partie d'aucun groupe.");
+    if (!isAdm(g)) throw new HttpError(403, "Seul un administrateur peut nommer d'autres administrateurs.");
+    const on = body.admin === true;
+    const t = await q(`SELECT m.user_id, m.role, m.admin FROM menus_members m JOIN menus_users u ON u.id = m.user_id WHERE m.group_id = $1 AND u.username_key = $2`, [g.id, String(body.username || "").toLowerCase()]);
+    if (!t.rows.length) throw new HttpError(404, "Ce membre n'est pas dans votre groupe.");
+    if (on && t.rows[0].role === "enfant") throw new HttpError(409, "Passez d'abord ce membre en Adulte : un enfant ne peut pas administrer le groupe.");
+    if (!on && isAdm(t.rows[0])) {
+      const n = await q(`SELECT count(*)::int AS n FROM menus_members WHERE group_id = $1 AND admin`, [g.id]);
+      if (Number(n.rows[0].n) <= 1) throw new HttpError(409, "Il faut garder au moins un administrateur dans le groupe.");
+    }
+    await q(`UPDATE menus_members SET admin = $1 WHERE user_id = $2 AND group_id = $3`, [on, t.rows[0].user_id, g.id]);
     return stateOf(user);
   },
 
@@ -457,6 +484,7 @@ const routes = {
       [user.id, g.id]
     );
     await q(`UPDATE menus_users SET active_group = NULL WHERE id = $1 AND active_group = $2`, [user.id, g.id]);
+    await q(FIX_ADMINS);
     return stateOf(user);
   },
 
@@ -466,7 +494,7 @@ const routes = {
     if (!name) throw new HttpError(400, "Indiquez un nom de groupe.");
     const g = body.id != null ? await memberGroup(user.id, body.id) : await groupOf(user.id);
     if (!g) throw new HttpError(409, "Vous ne faites partie d'aucun groupe.");
-    if (g.role !== "adulte") throw new HttpError(403, "Seul un adulte peut renommer le groupe.");
+    if (!isAdm(g)) throw new HttpError(403, "Seul un administrateur peut renommer le groupe.");
     await q(`UPDATE menus_groups SET name = $1, icon = COALESCE(NULLIF($3, ''), icon) WHERE id = $2`, [name, g.id, cleanName(body.icon, 8)]);
     return stateOf(user);
   },
@@ -495,6 +523,7 @@ const routes = {
        DELETE FROM menus_users WHERE id = $1`,
       [user.id]
     );
+    await q(FIX_ADMINS);
     return { ok: true };
   },
 };
