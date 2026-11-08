@@ -609,6 +609,14 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .tag.froid{border-color:#9CC3DA;color:#2C6E91;background:#E7F2F8}
 .restfor{font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:3px 7px}
 .meal{overflow:hidden}
+.mlist{list-style:none;margin:8px 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.mrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 10px;border:1px solid var(--line,#e5e0d5);border-radius:12px;background:var(--card,#fff)}
+.mname{font-weight:600;flex:1 1 120px}
+.mbadges{display:inline-flex;gap:4px}
+.mb{font-size:11px;padding:2px 8px;border-radius:999px;background:#f0ede6;color:#5b5648}
+.mb.adm{background:#fbefd0;color:#8a5a00;font-weight:600}.mb.kid{background:#e7f2f8;color:#2c6e91}
+.mact{display:inline-flex;gap:4px;flex-wrap:wrap}
+.mact .rolebtn[disabled]{opacity:.4;cursor:not-allowed}
 .seasonrow{align-items:center;gap:12px}.seasonrow>span{display:flex;flex-direction:column;gap:2px}.seasonrow small{font-size:12px;line-height:1.4}
 .wvalid{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;border-radius:14px;border:1px solid var(--line,#e5e0d5);background:var(--card,#fff)}
 .wvalid.ok{border-color:#9cc9a4;background:#eef7ef}
@@ -1697,6 +1705,19 @@ function seasonOf(r,m){const k=r.id+"|"+m;if(_ssc[k])return _ssc[k];
   const ids=[...new Set((r.ing||[]).map(([id])=>id).filter(id=>SEASON[id]))],out=ids.filter(id=>!inSeason(id,m));
   return _ssc[k]={s:!ids.length?"neutre":out.length?"hors":"saison",out,ids}}
 const seasonNow=m=>Object.keys(SEASON).filter(id=>inSeason(id,m)&&I[id]).map(id=>I[id].n.replace(/\s*\(.*?\)/,""));
+// ---------- Féculents : famille principale d'un plat ----------
+const STARCH={pates:"pates",macaroni:"pates",spaghetti:"pates",penne:"pates",tagl:"pates",ravioli:"pates",lasagne:"pates",gnocchis:"pates",nouilles:"pates",nouillesriz:"pates",udonn:"pates",ramenn:"pates",
+  riz:"riz",rizsushi:"riz",rizrond:"riz",rizjasmin:"riz",
+  pdt:"pdt",patatedouce:"pdt",frites:"pdt",plantain:"pdt",
+  semoule:"grain",boulgour:"grain",quinoa:"grain",polenta:"grain",farinemais:"grain",
+  painburger:"pain",painmie:"pain",painscampagne:"pain",baguette:"pain",pita:"pain",tortillas:"pain",tortillasmais:"pain",patepizza:"pain",crepes:"pain",galette:"pain",patebrisee:"pain",patefeuil:"pain"};
+const STARCH_LAB={pates:"pâtes",riz:"riz",pdt:"pommes de terre",grain:"semoule et céréales",pain:"pain, pâte ou galette"};
+const _stc={};
+function starchOf(r){if(!r)return null;if(r.id in _stc)return _stc[r.id];const t={};
+  (r.ing||[]).forEach(([id,q])=>{const f=STARCH[id];if(f)t[f]=(t[f]||0)+(+q||1)});
+  const best=Object.entries(t).sort((a,b)=>b[1]-a[1])[0];return _stc[r.id]=best?best[0]:null}
+let _stv={t:0,v:1};
+const starchVar=()=>{const n=Date.now();if(n-_stv.t>300){_stv={t:n,v:CFG().starch!==0}}return _stv.v};
 const seasonOutTxt=(r,m)=>seasonOf(r,m).out.map(id=>I[id].n.replace(/\s*\(.*?\)/,"").toLowerCase()).join(", ");
 
 R.forEach(r=>{r.temp=tempOf(r)});
@@ -2005,12 +2026,12 @@ const CLOUD=(()=>{
       <p class="muted small">Un groupe = un semainier, des favoris, des règles et des allergies partagés. Vous pouvez en avoir plusieurs : le couple, la famille, les week-ends entre amis… Vos notes et vos goûts restent personnels.</p>
       ${(acc.groups||[]).length?`<div class="glist">${acc.groups.map(x=>`<div class="gl ${g&&x.id===g.id?"on":""}"><span class="gic">${esc2(x.icon||"👥")}</span><span class="gtx"><b>${esc2(x.name)}</b><small>${x.n} membre${x.n>1?"s":""} · ${esc2(x.names)}${x.role==="enfant"?" · vous : Enfant":""}</small></span>${g&&x.id===g.id?'<span class="gact">Actif</span>':`<button class="btn sm" type="button" data-accgroup="${x.id}">Utiliser</button>`}</div>`).join("")}</div>`:`<p>Vous n'êtes dans aucun groupe : votre semainier reste personnel.</p>`}
       ${g?`<div class="gdetail"><h5>${esc2(g.icon||"👥")} ${esc2(g.name)} <small class="muted">· groupe actif</small></h5>
-        <p class="members">${g.members.map(m=>{const kid=m.role==="enfant",me=acc.user&&m.username===acc.user.username,adult=acc.user&&acc.user.role!=="enfant";return `<span class="mem memrole">${esc2(m.name)} <small>${kid?"Enfant":"Adulte"}</small>${adult?`<button type="button" class="rolebtn" data-accrole="${esc2(m.username)}|${kid?"adulte":"enfant"}" title="${me?"Votre profil":""}">→ ${kid?"Adulte":"Enfant"}</button>`:""}</span>`}).join("")}</p>
-        <p class="muted small">Profil Enfant : propose des plats et des changements, qu'un adulte valide. Seuls les adultes modifient le semainier et les règles.</p>
+        <ul class="mlist">${g.members.map(m=>{const kid=m.role==="enfant",me=acc.user&&m.username===acc.user.username,adm=!!(acc.user&&acc.user.admin);return `<li class="mrow"><span class="mname">${esc2(m.name)}${me?' <small class="muted">(vous)</small>':""}</span><span class="mbadges"><span class="mb ${m.admin?"adm":"mbr"}">${m.admin?"👑 Admin":"Membre"}</span><span class="mb ${kid?"kid":"adu"}">${kid?"Enfant":"Adulte"}</span></span>${adm?`<span class="mact"><button type="button" class="rolebtn" data-accrole="${esc2(m.username)}|${kid?"adulte":"enfant"}" ${m.admin&&!kid?'disabled title="Un administrateur est toujours adulte"':""}>→ ${kid?"Adulte":"Enfant"}</button><button type="button" class="rolebtn" data-accadmin="${esc2(m.username)}|${m.admin?"0":"1"}" ${kid&&!m.admin?'disabled title="Un enfant ne peut pas être administrateur"':""}>${m.admin?"Retirer admin":"→ Admin"}</button></span>`:""}</li>`}).join("")}</ul>
+        <p class="muted small">${acc.user&&acc.user.admin?"Vous êtes administrateur : vous gérez les profils (adulte ou enfant), nommez d'autres administrateurs et renommez le groupe.":"L'administrateur du groupe gère les profils et le nom du groupe."} Les adultes modifient et valident le semainier ; les enfants proposent des plats, qu'un adulte valide.</p>
         <div class="code"><span>Code d'invitation</span><b class="num" id="accCode">${esc2(g.code)}</b><button class="btn sm" type="button" data-acc="copy">Copier</button></div>
         ${view==="rename"?`<form class="accform inline" data-accform="rename" novalidate>${field("accGName","Nom du groupe","text",`value="${esc2(g.name)}" maxlength="40"`)}<label class="accf"><span>Icône</span><select id="accGIcon">${GICONS2.map(i=>`<option ${i===(g.icon||"")?"selected":""}>${i}</option>`).join("")}</select></label><button class="btn primary" type="submit">Enregistrer</button><button class="btn" type="button" data-acc="view-main">Annuler</button></form>`
         :view==="leave"?`<div class="confirm"><p>Quitter « ${esc2(g.name)} » ? Vous gardez vos autres groupes.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`
-        :`<div class="row">${acc.user&&acc.user.role!=="enfant"?'<button class="btn sm" type="button" data-acc="view-rename">Renommer</button>':""}<button class="btn sm" type="button" data-acc="view-leave">Quitter ce groupe</button></div>`}</div>`:""}
+        :`<div class="row">${acc.user&&acc.user.admin?'<button class="btn sm" type="button" data-acc="view-rename">Renommer</button>':""}<button class="btn sm" type="button" data-acc="view-leave">Quitter ce groupe</button></div>`}</div>`:""}
       ${view==="newgroup"?`<form class="accform" data-accform="create" novalidate><h5>Nouveau groupe</h5>${field("accGroup","Nom du groupe","text",'placeholder="En amoureux, Famille, Les copains du ski…" maxlength="40"')}
           <label class="accf"><span>Icône</span><select id="accIcon">${GICONS2.map(i=>`<option>${i}</option>`).join("")}</select></label>
           <label class="accf"><span>Pour commencer</span><select id="accStart"><option value="vide">Un semainier tout neuf</option>${g?`<option value="copie">Une copie de « ${esc2(g.name)} »</option>`:'<option value="copie">Une copie de mon semainier actuel</option>'}</select></label>
@@ -2046,6 +2067,7 @@ const CLOUD=(()=>{
       if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave",{id:acc.group&&acc.group.id});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply()},"Vous avez quitté le groupe.");return}
     }
     const ag=e.target.closest("[data-accgroup]");if(ag){switchGroup(+ag.dataset.accgroup);return}
+    const aa=e.target.closest("[data-accadmin]");if(aa){const [u,v]=aa.dataset.accadmin.split("|");act(async()=>{const st=await api("POST","/groups/admin",{username:u,admin:v==="1"});acc.group=st.group;acc.user=st.user;acc.groups=st.groups;keep();hooks.apply()},v==="1"?"Nouvel administrateur nommé.":"Rôle d'administrateur retiré.");return}
     const ar=e.target.closest("[data-accrole]");if(ar){const [u,r]=ar.dataset.accrole.split("|");act(async()=>{const st=await api("POST","/groups/role",{username:u,role:r});acc.group=st.group;acc.user=st.user;keep();hooks.apply()},"Profil mis à jour.");return}
     const btn=e.target.closest("#accBtn");if(btn){note="";view=acc?"main":"login";open();}
   });
@@ -2209,7 +2231,7 @@ function propose(o){const all=propsRead(),id=newId(),a=meAcc();all[id]=Object.as
 const pendingProps=()=>Object.entries(propsRead()).filter(([,p])=>p.status==="attente").sort((a,b)=>a[1].t-b[1].t);
 // Réglages du foyer (partagés avec le groupe)
 const CFGK="menus.config";
-const CFG_DEF={q:{fish:1,fishmax:14,vege:1,redmax:3,soup:0,simple:3,fav:0},nosouplunch:1,saison:1,neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
+const CFG_DEF={q:{fish:1,fishmax:14,vege:1,redmax:3,soup:0,simple:3,fav:0},nosouplunch:1,saison:1,starch:1,neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
 function CFG(){let c={};try{c=JSON.parse(localStorage.getItem(CFGK)||"null")||{}}catch(e){}return Object.assign({},CFG_DEF,c,{q:Object.assign({},CFG_DEF.q,c.q||{}),ban:c.ban||{},themes:c.themes||{}})}
 function cfgWrite(c){try{localStorage.setItem(CFGK,JSON.stringify(c))}catch(e){}try{CLOUD.changed()}catch(e){}}
 const cfgBanned=r=>{const b=CFG().ban;return r.ing.some(([id])=>b[id])};
@@ -2282,6 +2304,7 @@ function fits(r,slot,used,plan){
   const wt=W&&W.temp&&W.temp[slot.key];if(wt&&(r.temp||tempOf(r))!==wt)return false;
   const other=plan[slot.day+(slot.when==="Midi"?"s":"m")];
   if(other&&RB[other]&&RB[other].p===r.p&&r.p!=="vege")return false;
+  if(other&&RB[other]&&starchVar()){const f=starchOf(r);if(f&&f===starchOf(RB[other]))return false}
   return true;
 }
 function pick(slot,used,plan,exclude,rand,avoid){
@@ -2805,7 +2828,9 @@ function pickC(slot,used,plan,rand,avoid,pred,C,ever){
   let c=R.filter(r=>fits(r,slot,used,plan)&&(!pred||pred(r)));
   if(!c.length&&pred)c=R.filter(r=>allowed(r)&&!used.has(r.id)&&pred(r));
   if(!c.length)return null;
-  return c.map(r=>[r,likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?3:0)+(isFav(r.id)?2:0)+(noteOf(r.id)?(noteOf(r.id)-3)*1.2:0)-(noteOf(r.id)===1?6:0)+(CLASSIC.has(r.id)?1:0)+(r.simple&&slot.day<5?(CLASSIC.has(r.id)?0.2:0.9):0)+cfgScore(r,slot,C,ever)]).sort((a,b)=>b[1]-a[1])[0][0].id;
+  const stc={};if(starchVar())Object.entries(plan||{}).forEach(([k,id])=>{if(k!==slot.key&&id&&RB[id]){const f=starchOf(RB[id])||"-";stc[f]=(stc[f]||0)+1}});
+  const stPen=r=>{const f=starchOf(r)||"-",c=stc[f]||0;if(f==="-")return c>3?-0.6*(c-3):0;return c<1?0.3:-1.2*c*(f==="pates"?1.4:1)+(c===1?0.9:0)};
+  return c.map(r=>[r,stPen(r)+likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?3:0)+(isFav(r.id)?2:0)+(noteOf(r.id)?(noteOf(r.id)-3)*1.2:0)-(noteOf(r.id)===1?6:0)+(CLASSIC.has(r.id)?1:0)+(r.simple&&slot.day<5?(CLASSIC.has(r.id)?0.2:0.9):0)+cfgScore(r,slot,C,ever)]).sort((a,b)=>b[1]-a[1])[0][0].id;
 }
 function buildCfg(mode){
   const C=CFG(),plan={},used=new Set();
@@ -2880,7 +2905,7 @@ function groupsHTML(){
   const gs=a.groups||[],cur=a.group&&a.group.id;
   return `<section class="gzone"><div class="gzhead"><div><h2>Mes groupes</h2><p class="muted">Chaque groupe a son propre semainier, ses favoris, ses règles et ses allergies. Passez de l'un à l'autre en un clic.</p></div><div class="row"><button type="button" class="btn sm" data-acc="view-newgroup">+ Créer un groupe</button><button type="button" class="btn sm" data-acc="view-joingroup">Rejoindre avec un code</button></div></div>
     <div class="gcards">${gs.map(g=>`<button type="button" class="gcard ${g.id===cur?"on":""}" ${g.id===cur?'aria-current="true"':`data-gswitch="${g.id}"`}><span class="gic">${esc(gIcon(g))}</span><span class="gtx"><b>${esc(g.name)}</b><small>${g.n} membre${g.n>1?"s":""} · ${esc(g.names)}</small><small>${g.role==="enfant"?"Profil Enfant":"Adulte"}</small></span>${g.id===cur?'<span class="gact">Groupe actif</span>':'<span class="ggo">Utiliser →</span>'}</button>`).join("")||'<p class="muted">Vous n\'êtes dans aucun groupe : votre semainier reste personnel.</p>'}</div>
-    ${a.group?`<div class="gmeta"><span>Membres de « ${esc(a.group.name)} » :</span> ${(a.group.members||[]).map(m=>`<span class="mem">${esc(m.name)} <small>${m.role==="enfant"?"Enfant":"Adulte"}</small></span>`).join("")}<span class="code">Code d'invitation <b class="num">${esc(a.group.code)}</b></span><button type="button" class="btn sm" data-acc="open">Gérer le groupe</button></div>`:""}</section>`;
+    ${a.group?`<div class="gmeta"><span>Membres de « ${esc(a.group.name)} » :</span> ${(a.group.members||[]).map(m=>`<span class="mem">${esc(m.name)} <small>${m.admin?"👑 Admin · ":""}${m.role==="enfant"?"Enfant":"Adulte"}</small></span>`).join("")}<span class="code">Code d'invitation <b class="num">${esc(a.group.code)}</b></span><button type="button" class="btn sm" data-acc="open">Gérer le groupe</button></div>`:""}</section>`;
 }
 document.addEventListener("click",e=>{const g=e.target.closest("[data-gswitch]");if(g){CLOUD.switchGroup(+g.dataset.gswitch)}});
 function renderCfg(){
@@ -2903,6 +2928,7 @@ function renderCfg(){
           <input type="range" min="0" max="${c.top}" step="1" value="${mx}" data-rmax="${c.k}" ${on?"":"disabled"} aria-label="${esc(c.lab)} : maximum par semaine">
           <span class="ticks" aria-hidden="true">${Array.from({length:c.top+1},(_,n)=>`<i>${n===c.top?n+"+":n}</i>`).join("")}</span></span>
         <output class="rval" id="rv-${c.k}">${on?rangeTxt(mn,mx,c.top):"désactivée"}</output></div>`}).join("")}
+      <label class="cfgtog"><input type="checkbox" data-cfgtog="starch" ${C.starch!==0?"checked":""}><span><b>🍝 Féculents variés</b><small class="muted">Jamais le même féculent midi et soir (pas de pâtes deux fois dans la journée), et on alterne pâtes, riz, pommes de terre, semoule et pain sur la semaine.</small></span></label>
       <label class="cfgtog"><input type="checkbox" data-cfgtog="nosouplunch" ${C.nosouplunch?"checked":""}><span><b>🥣 Pas de soupe ni de velouté le midi</b><small class="muted">Les soupes et veloutés ne sont proposés que le soir. Vous pouvez toujours en choisir un à la main pour un midi.</small></span></label>
       <div class="cfgrow seasonrow"><span><b>🌱 Légumes et fruits de saison</b><small class="muted">En ${MOIS[MONTH()-1]} : ${esc(seasonNow(MONTH()).join(", ").toLowerCase())}.</small></span><select data-cfgsel="saison" aria-label="Légumes et fruits de saison">${[[0,"Peu importe"],[1,"Les privilégier"],[2,"Uniquement de saison"]].map(([v,l])=>`<option value="${v}" ${(+C.saison||0)===v?"selected":""}>${l}</option>`).join("")}</select></div>
       <p class="muted small">Activez une règle, puis glissez les deux poignées : le minimum et le maximum de fois par semaine (tout à droite = pas de maximum). Viande rouge : bœuf, agneau, veau. « Tout simple » ne compte que du lundi au vendredi, la soupe que le soir.</p></section>
@@ -2957,7 +2983,9 @@ document.addEventListener("change",e=>{
     cfgWrite(C);renderCfg();renderRules();return}
   const s=e.target.closest("[data-cfgsel],[data-cfgtog]");if(!s)return;
   if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");renderCfg();return}
-  const C=CFG();if(s.dataset.cfgsel)C[s.dataset.cfgsel]=+s.value;else C[s.dataset.cfgtog]=s.checked?1:0;cfgWrite(C);_nsm.t=0;_sso.t=0;
+  const C=CFG();if(s.dataset.cfgsel)C[s.dataset.cfgsel]=+s.value;else C[s.dataset.cfgtog]=s.checked?1:0;cfgWrite(C);_nsm.t=0;_sso.t=0;_stv.t=0;
+  if(s.dataset.cfgtog==="starch"){let n=0;if(s.checked){DAYS.forEach((_,i)=>{const a=SK[i+"m"],b=SK[i+"s"],ra=RB[W.plan[a.key]],rb=RB[W.plan[b.key]];if(ra&&rb&&starchOf(ra)&&starchOf(ra)===starchOf(rb)&&W.mode[b.key]!=="rest"){const t=!W.pin[b.key]&&W.mode[b.key]!=="skip"?b:(!W.pin[a.key]&&W.mode[a.key]!=="skip"?a:null);if(t){W.plan[t.key]=null;n++}}});if(n){build("keep");save()}}
+    renderAll();toast(s.checked?(n?n+" repas changé"+(n>1?"s":"")+" pour varier les féculents":"Féculents variés"):"Les féculents ne sont plus surveillés");return}
   if(s.dataset.cfgsel==="saison"){let n=0;if(+s.value===2){SLOTS.forEach(sl=>{const r=RB[W.plan[sl.key]];if(r&&seasonOf(r,MONTH()).s==="hors"&&!W.pin[sl.key]&&W.mode[sl.key]!=="skip"&&srcKey(sl.key)===sl.key){W.plan[sl.key]=null;n++}});if(n){build("keep");save()}}
     renderAll();toast(+s.value===2?(n?n+" plat"+(n>1?"s":"")+" hors saison remplacé"+(n>1?"s":"")+" cette semaine":"Uniquement des plats de saison"):+s.value===1?"Les plats de saison seront privilégiés":"La saison n'est plus prise en compte");return}
   if(s.dataset.cfgtog==="nosouplunch"&&s.checked){let n=0;SLOTS.forEach(sl=>{const r=RB[W.plan[sl.key]];if(sl.when==="Midi"&&r&&SOUP_RX.test(r.n)&&!W.pin[sl.key]&&W.mode[sl.key]!=="skip"&&srcKey(sl.key)===sl.key){W.plan[sl.key]=null;n++}});if(n){build("keep");save();renderAll()}toast(n?n+" soupe"+(n>1?"s":"")+" du midi remplacée"+(n>1?"s":"")+" cette semaine":"Plus de soupe le midi dans les prochaines semaines")}
