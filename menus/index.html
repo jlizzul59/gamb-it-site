@@ -481,7 +481,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .gdetail h5,.accform h5{margin:0;font-size:15px}
 .accbtn .gnm{font-weight:600;opacity:.75}
 @media (max-width:720px){.accbtn .gnm{display:none}}
-.tag.chaud{border:1px solid #E9B48A;color:#B85A14;background:#FBEFE4}.tag.froid{border:1px solid #9CC3DA;color:#2C6E91;background:#E7F2F8}
+.tag.chaud{border:1px solid #E9B48A;color:#B85A14;background:#FBEFE4}.tag.saison{border:1px solid #A9CF8E;color:#3F7A1F;background:#EEF6E6}.seasonnote{font-size:12.5px;color:#7A5A16;background:#FBF3DF;border-radius:10px;padding:6px 10px;margin-top:8px}.tag.froid{border:1px solid #9CC3DA;color:#2C6E91;background:#E7F2F8}
 .xrec{border-top:1px dashed var(--line);padding-top:6px;display:flex;flex-direction:column;gap:4px}
 .meal .name.xn{font-size:14px}
 .xn .plus{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:800;margin-right:2px}
@@ -609,6 +609,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .tag.froid{border-color:#9CC3DA;color:#2C6E91;background:#E7F2F8}
 .restfor{font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:3px 7px}
 .meal{overflow:hidden}
+.seasonrow{align-items:center;gap:12px}.seasonrow>span{display:flex;flex-direction:column;gap:2px}.seasonrow small{font-size:12px;line-height:1.4}
 .wvalid{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;border-radius:14px;border:1px solid var(--line,#e5e0d5);background:var(--card,#fff)}
 .wvalid.ok{border-color:#9cc9a4;background:#eef7ef}
 .wvalid.warn{border-color:#e6c27a;background:#fdf6e7}
@@ -1684,6 +1685,20 @@ document.addEventListener("change",e=>{const s=e.target.closest("[data-mixsel]")
 // Manger chaud ou froid
 const COLD_RX=/^salade(?! de chèvre chaud)|taboul|niçoise|poke|ceviche|gaspacho|tartare|tahitienne|rouleaux de printemps|smørrebrød|^wraps (thon|de poulet grillé|de poulet buffalo|de poulet au curry|jambon|saumon|végétariens)|sandwich|causa|chirashi|tataki|vinaigrette|piémontaise|som tam|bò bún|bol houmous|bol baba|bowl quinoa|sabich|potjevleesch/i;
 const tempOf=r=>COLD_RX.test(r.n.split(",")[0])?"froid":"chaud";
+// ---------- Légumes et fruits de saison (France) ----------
+// Mois de début et de fin (une plage peut chevaucher la fin d'année). Les légumes en conserve,
+// surgelés ou disponibles toute l'année (carottes, champignons, salade…) ne comptent pas.
+const SEASON={courgette:[6,9],tomate:[6,9],tomcerise:[6,9],aubergine:[6,9],poivron:[7,10],concombre:[5,9],haricotsverts:[6,9],fenouil:[6,10],radis:[4,7],roquette:[4,10],celeri:[6,11],brocoli:[6,11],epinards:[[3,6],[9,11]],choufleur:[9,4],poireau:[9,4],potiron:[9,1],chou:[10,3],chourouge:[10,3],endive:[10,4],betterave:[9,3],navet:[10,3],panais:[10,3],cresson:[10,4],pakchoi:[9,12],choucroute:[10,3],pomme:[9,4],orange:[12,4]};
+const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const inRange=(m,[a,b])=>a<=b?m>=a&&m<=b:m>=a||m<=b;
+const inSeason=(id,m)=>{const s=SEASON[id];if(!s)return true;return (Array.isArray(s[0])?s:[s]).some(x=>inRange(m,x))};
+const _ssc={};
+function seasonOf(r,m){const k=r.id+"|"+m;if(_ssc[k])return _ssc[k];
+  const ids=[...new Set((r.ing||[]).map(([id])=>id).filter(id=>SEASON[id]))],out=ids.filter(id=>!inSeason(id,m));
+  return _ssc[k]={s:!ids.length?"neutre":out.length?"hors":"saison",out,ids}}
+const seasonNow=m=>Object.keys(SEASON).filter(id=>inSeason(id,m)&&I[id]).map(id=>I[id].n.replace(/\s*\(.*?\)/,""));
+const seasonOutTxt=(r,m)=>seasonOf(r,m).out.map(id=>I[id].n.replace(/\s*\(.*?\)/,"").toLowerCase()).join(", ");
+
 R.forEach(r=>{r.temp=tempOf(r)});
 const SOUP_RX=/velout|soupe|potage|bouillon|ramen|phở|laksa|harira|bortsch|minestrone|gaspacho|chorba|garbure|pistou|caldo|lohikeitto|chowder|tom kha|soto ayam|sopa|zurek|kartoffelsuppe|pozole|ajiaco|sancocho|tortellini en brodo/i;
 // ---------- Doublons fusionnés : chaque recette retirée renvoie vers sa jumelle ----------
@@ -2194,7 +2209,7 @@ function propose(o){const all=propsRead(),id=newId(),a=meAcc();all[id]=Object.as
 const pendingProps=()=>Object.entries(propsRead()).filter(([,p])=>p.status==="attente").sort((a,b)=>a[1].t-b[1].t);
 // Réglages du foyer (partagés avec le groupe)
 const CFGK="menus.config";
-const CFG_DEF={q:{fish:1,fishmax:14,vege:1,redmax:3,soup:0,simple:3,fav:0},nosouplunch:1,neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
+const CFG_DEF={q:{fish:1,fishmax:14,vege:1,redmax:3,soup:0,simple:3,fav:0},nosouplunch:1,saison:1,neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
 function CFG(){let c={};try{c=JSON.parse(localStorage.getItem(CFGK)||"null")||{}}catch(e){}return Object.assign({},CFG_DEF,c,{q:Object.assign({},CFG_DEF.q,c.q||{}),ban:c.ban||{},themes:c.themes||{}})}
 function cfgWrite(c){try{localStorage.setItem(CFGK,JSON.stringify(c))}catch(e){}try{CLOUD.changed()}catch(e){}}
 const cfgBanned=r=>{const b=CFG().ban;return r.ing.some(([id])=>b[id])};
@@ -2257,10 +2272,13 @@ function srcKey(key){
 const recipeAt=key=>{const k=srcKey(key);return k?RB[W.plan[k]]:null};
 
 let _nsm={t:0,v:0};
+let _sso={t:0,v:0};
+const seasonMode=()=>{const n=Date.now();if(n-_sso.t>300){_sso={t:n,v:+(CFG().saison||0)}}return _sso.v};
 const noSoupMidi=()=>{const n=Date.now();if(n-_nsm.t>300){_nsm={t:n,v:!!CFG().nosouplunch}}return _nsm.v};
 function fits(r,slot,used,plan){
   if(!r||!allowed(r)||!r.for.includes(slot.kind)||used.has(r.id))return false;
   if(slot.when==="Midi"&&noSoupMidi()&&SOUP_RX.test(r.n))return false;
+  if(seasonMode()===2&&seasonOf(r,MONTH()).s==="hors")return false;
   const wt=W&&W.temp&&W.temp[slot.key];if(wt&&(r.temp||tempOf(r))!==wt)return false;
   const other=plan[slot.day+(slot.when==="Midi"?"s":"m")];
   if(other&&RB[other]&&RB[other].p===r.p&&r.p!=="vege")return false;
@@ -2329,7 +2347,8 @@ function fmt(q,u,shop){
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 const shortName=r=>r.n.split(",")[0];
-const tagHTML=r=>((r.temp||tempOf(r))==="froid"?'<span class="tag froid" title="Se mange froid">❄️ Froid</span>':'<span class="tag chaud" title="Se mange chaud">🔥 Chaud</span>')+(r.simple?'<span class="tag simple">Tout simple</span>':"")+(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"");
+const MONTH=()=>dayDate(S.cur||0,3).getMonth()+1;
+const tagHTML=r=>(seasonOf(r,MONTH()).s==="saison"?'<span class="tag saison" title="Légumes ou fruits de saison">🌱 De saison</span>':"")+((r.temp||tempOf(r))==="froid"?'<span class="tag froid" title="Se mange froid">❄️ Froid</span>':'<span class="tag chaud" title="Se mange chaud">🔥 Chaud</span>')+(r.simple?'<span class="tag simple">Tout simple</span>':"")+(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"");
 const dateOf=i=>dayDate(S.cur,i).toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
 
 // ---------- En-tête semaine ----------
@@ -2430,7 +2449,7 @@ function recipeHTML(c,modal){
   const bt=BC[r.id].t;
   return `<article class="rcard">${modal?'<button class="close" type="button" data-close>Fermer ×</button>':""}
     <div class="rhead"><small>${DAYS[c.sl.day]} ${dateOf(c.sl.day)} · ${c.sl.when}${extra.length?" + restes "+extra.map(slotLabel).join(", "):""}</small><h3>${esc(r.n)}</h3>
-    <div class="rfacts"><span>${esc(r.pays)}</span><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion</span>${tagHTML(r)}</div>
+    <div class="rfacts"><span>${esc(r.pays)}</span><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion</span>${tagHTML(r)}</div>${seasonOf(r,MONTH()).s==="hors"?`<p class="seasonnote">Hors saison en ${MOIS[MONTH()-1]} : ${esc(seasonOutTxt(r,MONTH()))}.</p>`:""}
     <div class="avis" data-avis="${r.id}">${avisInner(r.id)}</div>
     ${foyConf(r).length?`<div class="warnbox" style="margin-top:10px">Attention, contient : ${esc(conflictText(foyConf(r)))}</div>`:""}
     <div class="rpers">${c.xi!=null?`<span>Portions</span><span class="pstep"><button type="button" class="pm" data-xpers="${c.sl.key}|${c.xi}" data-d="-1" aria-label="Une portion de moins" ${c.n<=1?"disabled":""}>−</button><b class="num">${c.n}</b><button type="button" class="pm" data-xpers="${c.sl.key}|${c.xi}" data-d="1" aria-label="Une portion de plus" ${c.n>=12?"disabled":""}>+</button></span><span class="muted">En plus du plat principal</span>`:`<span>Personnes</span><span class="pstep"><button type="button" class="pm" data-pers="${c.sl.key}" data-d="-1" aria-label="Une personne de moins" ${PN(c.sl)<=1?"disabled":""}>−</button><b class="num ${W.pers&&W.pers[c.sl.key]?"custom":""}">${PN(c.sl)}</b><button type="button" class="pm" data-pers="${c.sl.key}" data-d="1" aria-label="Une personne de plus" ${PN(c.sl)>=12?"disabled":""}>+</button></span>`}${extra.length?`<span class="muted">+ ${extra.reduce((a,e)=>a+PN(e),0)} pour les restes · ${pers} portions au total</span>`:""}</div></div>
@@ -2443,11 +2462,11 @@ function renderRecipes(){const cs=cooks();const el=document.getElementById("recl
 
 // ---------- Catalogue ----------
 let catQ="",catF="all",catKey=null;
-const FILTERS=[["all","Tout"],["fav","♥ Favoris"],["top","Mes mieux notées"],["ok","Compatibles avec mes goûts"],["plaisir","Gourmand"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"],["simple","Tout simple"],["soupe","Soupes"],["chaud","🔥 Chaud"],["froid","❄️ Froid"]].concat(REGIONS.map(g=>["reg:"+g,g]));
+const FILTERS=[["all","Tout"],["fav","♥ Favoris"],["top","Mes mieux notées"],["ok","Compatibles avec mes goûts"],["plaisir","Gourmand"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"],["simple","Tout simple"],["soupe","Soupes"],["saison","🌱 De saison"],["chaud","🔥 Chaud"],["froid","❄️ Froid"]].concat(REGIONS.map(g=>["reg:"+g,g]));
 function catMatches(r){
   if(catQ){const q=norm(catQ);if(!norm(r.n+" "+r.pays+" "+r.reg+" "+r.ing.map(([id])=>I[id].n).join(" ")).includes(q))return false}
   if(catF.startsWith("reg:"))return r.reg===catF.slice(4);
-  return catF==="all"||(catF==="fav"&&isFav(r.id))||(catF==="top"&&noteOf(r.id)>=4)||(catF==="ok"&&allowed(r))||(catF==="plaisir"&&r.tag==="plaisir")||(catF==="vege"&&isVege(r))||(catF==="poisson"&&isFish(r))||(catF==="viande"&&!isVege(r)&&!isFish(r))||(catF==="rapide"&&r.t<=25)||(catF==="simple"&&r.simple)||(catF==="soupe"&&SOUP_RX.test(r.n))||(catF==="chaud"&&(r.temp||tempOf(r))==="chaud")||(catF==="froid"&&(r.temp||tempOf(r))==="froid");
+  return catF==="all"||(catF==="fav"&&isFav(r.id))||(catF==="top"&&noteOf(r.id)>=4)||(catF==="ok"&&allowed(r))||(catF==="plaisir"&&r.tag==="plaisir")||(catF==="vege"&&isVege(r))||(catF==="poisson"&&isFish(r))||(catF==="viande"&&!isVege(r)&&!isFish(r))||(catF==="rapide"&&r.t<=25)||(catF==="simple"&&r.simple)||(catF==="soupe"&&SOUP_RX.test(r.n))||(catF==="chaud"&&(r.temp||tempOf(r))==="chaud")||(catF==="froid"&&(r.temp||tempOf(r))==="froid")||(catF==="saison"&&seasonOf(r,MONTH()).s==="saison");
 }
 function catalogShell(sfx,key){
   return `<div class="catbar"><input type="search" id="catq-${sfx}" data-catq="${sfx}" placeholder="Rechercher un plat ou un ingrédient" value="${esc(catQ)}" autocomplete="off">
@@ -2779,6 +2798,7 @@ function cfgScore(r,slot,C,ever){
   if(C.tmax&&isWeekday(slot)&&slot.when==="Soir"&&r.t>C.tmax)s-=4;
   if(C.light&&slot.when==="Soir"&&kcal(r)>600)s-=2.5;
   if(C.neu&&!ever.has(r.id))s+=0.6;
+  if(C.saison){const ss=seasonOf(r,MONTH()).s;if(ss==="saison")s+=1.2;else if(ss==="hors")s-=2.5}
   return s;
 }
 function pickC(slot,used,plan,rand,avoid,pred,C,ever){
@@ -2884,6 +2904,7 @@ function renderCfg(){
           <span class="ticks" aria-hidden="true">${Array.from({length:c.top+1},(_,n)=>`<i>${n===c.top?n+"+":n}</i>`).join("")}</span></span>
         <output class="rval" id="rv-${c.k}">${on?rangeTxt(mn,mx,c.top):"désactivée"}</output></div>`}).join("")}
       <label class="cfgtog"><input type="checkbox" data-cfgtog="nosouplunch" ${C.nosouplunch?"checked":""}><span><b>🥣 Pas de soupe ni de velouté le midi</b><small class="muted">Les soupes et veloutés ne sont proposés que le soir. Vous pouvez toujours en choisir un à la main pour un midi.</small></span></label>
+      <div class="cfgrow seasonrow"><span><b>🌱 Légumes et fruits de saison</b><small class="muted">En ${MOIS[MONTH()-1]} : ${esc(seasonNow(MONTH()).join(", ").toLowerCase())}.</small></span><select data-cfgsel="saison" aria-label="Légumes et fruits de saison">${[[0,"Peu importe"],[1,"Les privilégier"],[2,"Uniquement de saison"]].map(([v,l])=>`<option value="${v}" ${(+C.saison||0)===v?"selected":""}>${l}</option>`).join("")}</select></div>
       <p class="muted small">Activez une règle, puis glissez les deux poignées : le minimum et le maximum de fois par semaine (tout à droite = pas de maximum). Viande rouge : bœuf, agneau, veau. « Tout simple » ne compte que du lundi au vendredi, la soupe que le soir.</p></section>
     <section class="cfgcard"><h3>📅 Nos rendez-vous</h3><p class="muted small">Un repas qui revient chaque semaine : la soirée pizza du vendredi, le poisson du mardi…</p>
       <ul class="thlist">${ths.map(([id,x])=>`<li><span class="thic" aria-hidden="true">${THEMES[x.t][0]}</span><b>${DAYS[x.d]} ${x.w==="m"?"midi":"soir"}</b><span>${esc(THEMES[x.t][1])}</span><button type="button" class="xdel" data-thdel="${id}" aria-label="Retirer">×</button></li>`).join("")||'<li class="muted">Aucun rendez-vous pour l\'instant.</li>'}</ul>
@@ -2936,7 +2957,9 @@ document.addEventListener("change",e=>{
     cfgWrite(C);renderCfg();renderRules();return}
   const s=e.target.closest("[data-cfgsel],[data-cfgtog]");if(!s)return;
   if(isKid()){e.stopImmediatePropagation();toast("Seuls les adultes peuvent changer les règles du groupe.");renderCfg();return}
-  const C=CFG();if(s.dataset.cfgsel)C[s.dataset.cfgsel]=+s.value;else C[s.dataset.cfgtog]=s.checked?1:0;cfgWrite(C);_nsm.t=0;
+  const C=CFG();if(s.dataset.cfgsel)C[s.dataset.cfgsel]=+s.value;else C[s.dataset.cfgtog]=s.checked?1:0;cfgWrite(C);_nsm.t=0;_sso.t=0;
+  if(s.dataset.cfgsel==="saison"){let n=0;if(+s.value===2){SLOTS.forEach(sl=>{const r=RB[W.plan[sl.key]];if(r&&seasonOf(r,MONTH()).s==="hors"&&!W.pin[sl.key]&&W.mode[sl.key]!=="skip"&&srcKey(sl.key)===sl.key){W.plan[sl.key]=null;n++}});if(n){build("keep");save()}}
+    renderAll();toast(+s.value===2?(n?n+" plat"+(n>1?"s":"")+" hors saison remplacé"+(n>1?"s":"")+" cette semaine":"Uniquement des plats de saison"):+s.value===1?"Les plats de saison seront privilégiés":"La saison n'est plus prise en compte");return}
   if(s.dataset.cfgtog==="nosouplunch"&&s.checked){let n=0;SLOTS.forEach(sl=>{const r=RB[W.plan[sl.key]];if(sl.when==="Midi"&&r&&SOUP_RX.test(r.n)&&!W.pin[sl.key]&&W.mode[sl.key]!=="skip"&&srcKey(sl.key)===sl.key){W.plan[sl.key]=null;n++}});if(n){build("keep");save();renderAll()}toast(n?n+" soupe"+(n>1?"s":"")+" du midi remplacée"+(n>1?"s":"")+" cette semaine":"Plus de soupe le midi dans les prochaines semaines")}
   renderRules();
 });
