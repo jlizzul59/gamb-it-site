@@ -75,6 +75,68 @@ const SCHEMA = [
 ];
 async function migrate() {
   for (const s of SCHEMA) await q(s);
+  await q(`CREATE TABLE IF NOT EXISTS menus_migrations (name TEXT PRIMARY KEY, report JSONB, done_at TIMESTAMPTZ NOT NULL DEFAULT now())`);
+  try { await refDelfouine(); } catch (e) { console.error("Reprise du semainier :", e.message); }
+}
+
+// Reprise ponctuelle (8 nov. 2026) : le semainier de delfouine devient celui du groupe « Famille Lizzul »
+// pour la semaine en cours et la suivante, et les adultes de la famille y sont rattachés.
+async function refDelfouine() {
+  const NAME = "ref-delfouine-2026-11-08";
+  if ((await q(`SELECT 1 FROM menus_migrations WHERE name = $1`, [NAME])).rows.length) return;
+  const rep = {};
+  const obj = (v) => { if (typeof v === "string") { try { return JSON.parse(v); } catch (e) { return null; } } return v; };
+  const done = async () => { await q(`INSERT INTO menus_migrations (name, report) VALUES ($1, $2::jsonb) ON CONFLICT DO NOTHING`, [NAME, JSON.stringify(rep)]); console.log("Reprise du semainier :", JSON.stringify(rep)); };
+  const d = (await q(`SELECT id, name, active_group FROM menus_users WHERE username_key = 'delfouine'`)).rows[0];
+  if (!d) { rep.skip = "compte delfouine introuvable"; return done(); }
+  const did = Number(d.id);
+  const gs = (await q(
+    `SELECT g.id, g.name, g.updated_at, EXISTS (SELECT 1 FROM menus_members m WHERE m.group_id = g.id AND m.user_id = $1) AS hers
+     FROM menus_groups g WHERE lower(g.name) LIKE '%famille%' AND lower(g.name) LIKE '%lizzul%'
+     ORDER BY hers DESC, g.updated_at DESC`, [did])).rows;
+  if (!gs.length) { rep.skip = "groupe Famille Lizzul introuvable"; return done(); }
+  const target = Number(gs[0].id);
+  rep.target = target;
+  // delfouine dans le groupe, en adulte
+  await q(`INSERT INTO menus_members (user_id, group_id, role) VALUES ($1, $2, 'adulte') ON CONFLICT DO NOTHING`, [did, target]);
+  await q(`UPDATE menus_members SET role = 'adulte' WHERE user_id = $1 AND group_id = $2`, [did, target]);
+  // où a-t-elle fait son semainier ? dans son groupe actif, sinon dans ses données personnelles
+  // groupe effectivement utilisé avant la reprise (groupe actif, sinon le premier rejoint)
+  const eff = await groupOf(did);
+  const active = eff ? Number(eff.id) : null;
+  let src = null;
+  if (active && active !== target) {
+    const r = (await q(`SELECT data->'weeks' AS w FROM menus_groups WHERE id = $1`, [active])).rows[0];
+    if (r && obj(r.w)) { src = obj(r.w); rep.from = "group:" + active; }
+  }
+  if (!src && !active) {
+    const r = (await q(`SELECT data->'weeks' AS w FROM menus_user_data WHERE user_id = $1`, [did])).rows[0];
+    if (r && obj(r.w)) { src = obj(r.w); rep.from = "perso"; }
+  }
+  if (src) {
+    const g = (await q(`SELECT data FROM menus_groups WHERE id = $1`, [target])).rows[0];
+    const data = obj(g.data) || {};
+    data.weeks = data.weeks || {};
+    rep.copied = [];
+    ["0", "1"].forEach((w) => {
+      if (src[w] && src[w].plan && Object.keys(src[w].plan).length) {
+        data.weeks[w] = Object.assign({}, src[w], { edit: { by: d.name, at: Date.now() } });
+        rep.copied.push(w);
+      }
+    });
+    if (rep.copied.length) await q(`UPDATE menus_groups SET data = $1::jsonb, version = version + 1, updated_at = now() WHERE id = $2`, [JSON.stringify(data), target]);
+  } else rep.from = active === target ? "déjà dans le groupe" : "aucun semainier trouvé";
+  // le groupe devient le groupe actif de delfouine et des autres adultes de ses groupes
+  const adults = (await q(
+    `SELECT DISTINCT m.user_id FROM menus_members m WHERE m.role = 'adulte' AND m.group_id IN (SELECT group_id FROM menus_members WHERE user_id = $1)`, [did])).rows.map((r) => Number(r.user_id));
+  const julien = (await q(`SELECT id FROM menus_users WHERE lower(name) LIKE 'julien%' OR username_key LIKE 'julien%'`)).rows.map((r) => Number(r.id));
+  if (julien.length === 1 && !adults.includes(julien[0])) adults.push(julien[0]);
+  rep.adults = adults.length;
+  for (const uid of adults) {
+    await q(`INSERT INTO menus_members (user_id, group_id, role) VALUES ($1, $2, 'adulte') ON CONFLICT DO NOTHING`, [uid, target]);
+    await q(`UPDATE menus_users SET active_group = $1 WHERE id = $2`, [target, uid]);
+  }
+  return done();
 }
 
 // ---------- Outils ----------
@@ -236,67 +298,9 @@ async function stateOf(user) {
   };
 }
 
-// ---------- Maintenance (protégée par une clé dont seul le hachage est ici) ----------
-const ADMIN_HASH = "b07e97e09dff390f0ff6caecce4b6c229c7a21c56d4983fc23f56406febf517e";
-function adminCheck(req) {
-  const k = new URL(req.url, "http://x").searchParams.get("k") || "";
-  const a = Buffer.from(sha256(k)), b = Buffer.from(ADMIN_HASH);
-  if (!k || !crypto.timingSafeEqual(a, b)) throw new HttpError(404, "Adresse inconnue.");
-  return new URL(req.url, "http://x").searchParams;
-}
-function weekSummary(weeks) {
-  const out = {};
-  Object.entries(weeks || {}).forEach(([w, x]) => {
-    if (!x || typeof x !== "object") return;
-    const plan = x.plan || {};
-    out[w] = { slots: Object.keys(plan).length, pins: Object.keys(x.pin || {}).length, extra: Object.keys(x.extra || {}).length,
-      plan: Object.fromEntries(Object.entries(plan).slice(0, 14)) };
-  });
-  return out;
-}
-
 // ---------- Routes ----------
 const routes = {
   "GET /health": async () => ({ ok: true }),
-
-  "GET /admin/diag": async (req) => {
-    adminCheck(req);
-    const users = (await q(`SELECT u.id, u.username, u.name, u.active_group, d.data->'weeks' AS weeks, d.updated_at FROM menus_users u LEFT JOIN menus_user_data d ON d.user_id = u.id ORDER BY u.id`)).rows;
-    const groups = (await q(`SELECT id, name, version, updated_at, data->'weeks' AS weeks FROM menus_groups ORDER BY id`)).rows;
-    const mem = (await q(`SELECT m.group_id, u.username, m.role FROM menus_members m JOIN menus_users u ON u.id = m.user_id ORDER BY m.joined_at`)).rows;
-    return {
-      users: users.map((u) => ({ id: u.id, username: u.username, name: u.name, active_group: u.active_group, perso_updated: u.updated_at, perso_weeks: weekSummary(u.weeks) })),
-      groups: groups.map((g) => ({ id: g.id, name: g.name, version: g.version, updated: g.updated_at,
-        members: mem.filter((m) => String(m.group_id) === String(g.id)).map((m) => m.username + ":" + m.role), weeks: weekSummary(g.weeks) })),
-    };
-  },
-
-  // Copie des semaines d'une source (groupe ou données perso d'un compte) vers un groupe.
-  "GET /admin/copyweeks": async (req) => {
-    const p = adminCheck(req);
-    const to = parseInt(p.get("to"), 10), weeks = String(p.get("weeks") || "").split(",").filter((s) => /^\d+$/.test(s));
-    const from = String(p.get("from") || "");
-    let src;
-    if (/^group:\d+$/.test(from)) src = (await q(`SELECT data->'weeks' AS w FROM menus_groups WHERE id = $1`, [+from.slice(6)])).rows[0];
-    else if (/^perso:\d+$/.test(from)) src = (await q(`SELECT data->'weeks' AS w FROM menus_user_data WHERE user_id = $1`, [+from.slice(6)])).rows[0];
-    if (!src || !src.w) throw new HttpError(404, "Source vide.");
-    const g = (await q(`SELECT data FROM menus_groups WHERE id = $1`, [to])).rows[0];
-    if (!g) throw new HttpError(404, "Groupe inconnu.");
-    const data = g.data || {};
-    data.weeks = data.weeks || {};
-    const done = [];
-    weeks.forEach((w) => { if (src.w[w]) { data.weeks[w] = src.w[w]; done.push(w); } });
-    if (p.get("dry") !== "0") return { dry: true, would_copy: done, preview: weekSummary(Object.fromEntries(done.map((w) => [w, src.w[w]]))) };
-    await q(`UPDATE menus_groups SET data = $1::jsonb, version = version + 1, updated_at = now() WHERE id = $2`, [JSON.stringify(data), to]);
-    return { copied: done };
-  },
-
-  "GET /admin/active": async (req) => {
-    const p = adminCheck(req);
-    await memberGroup(parseInt(p.get("user"), 10), p.get("group"));
-    await q(`UPDATE menus_users SET active_group = $1 WHERE id = $2`, [parseInt(p.get("group"), 10), parseInt(p.get("user"), 10)]);
-    return { ok: true };
-  },
 
   "POST /auth/register": async (req, body) => {
     limit(req, "register", 10, 3600e3);
