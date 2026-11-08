@@ -2175,11 +2175,11 @@ function openRecipe(id){
       <div class="bcnote"><b>En batch cooking :</b> ${bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc.j)}</div>
       <div class="addcart"><button type="button" class="cookb" data-cook="${r.id}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button>${cartBtn(r.id,true)}</div>
       ${isKid()?`<div class="addmenu kidprop"><strong>Proposer ce plat aux adultes</strong>
-        <select id="addDay" aria-label="Jour"><option value="">Peu importe le jour</option>${DAYS.map((d,i)=>`<option value="${i}">${d}</option>`).join("")}</select>
+        <select id="addDay" aria-label="Jour"><option value="">Peu importe le jour</option>${[6,0,1,2,3,4,5].map(i=>`<option value="${i}">${DAYS[i]}</option>`).join("")}</select>
         <select id="addWhen" aria-label="Repas"><option>Soir</option><option>Midi</option></select>
         <input id="propMsg" maxlength="200" placeholder="Un petit mot ? (facultatif)" aria-label="Un petit mot">
         <button type="button" class="btn" data-propose>Proposer</button><a href="index.html#propositions">Mes propositions</a></div>`:`<div class="addmenu"><strong>Mettre au menu de la semaine ${wk+1}</strong>
-        <select id="addDay" aria-label="Jour">${DAYS.map((d,i)=>`<option value="${i}">${d}</option>`).join("")}</select>
+        <select id="addDay" aria-label="Jour">${[6,0,1,2,3,4,5].map(i=>`<option value="${i}">${DAYS[i]}</option>`).join("")}</select>
         <select id="addWhen" aria-label="Repas"><option>Soir</option><option>Midi</option></select>
         <select id="addHow" aria-label="Comment"><option value="replace">à la place du plat prévu</option><option value="add">en plus du plat prévu</option></select>
         <button type="button" class="btn" data-add>Ajouter</button><a href="index.html">Ouvrir le semainier</a></div>`}

@@ -2239,8 +2239,12 @@ const cfgBanned=r=>{const b=CFG().ban;return r.ing.some(([id])=>b[id])};
 // ---------- Semaines ----------
 const DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const START=new Date(2026,10,2), MAXW=12;
+// La semaine va du dimanche au samedi. Les jours gardent leur numéro (0 = lundi … 6 = dimanche),
+// mais le dimanche est affiché en premier et tombe la veille du lundi.
+const ORDER=[6,0,1,2,3,4,5];
+const POS=d=>d===6?-1:d;
 const SLOTS=[];
-DAYS.forEach((d,i)=>{
+ORDER.forEach(i=>{const d=DAYS[i];
   const fam=(i===2||i===5||i===6);
   SLOTS.push({key:i+"m",day:i,when:"Midi",kind:fam?"fam":"l2",pers:fam?4:2});
   SLOTS.push({key:i+"s",day:i,when:"Soir",kind:"fam",pers:4});
@@ -2250,11 +2254,11 @@ const DEFAULT={"0m":"buddha","0s":"tikka","1m":"cesar","1s":"hachis","2m":"nugge
 for(const k in DEFAULT)DEFAULT[k]=resolve(DEFAULT[k]);
 const remapWeeks=()=>Object.values(S.weeks||{}).forEach(w=>{for(const k in (w.plan||{}))if(w.plan[k])w.plan[k]=resolve(w.plan[k])});
 const SESSIONS=[
- {n:1,short:"dimanche",days:[0,1,2],ref:-1,cover:"lundi à mercredi"},
- {n:2,short:"mercredi",days:[3,4,5,6],ref:2,cover:"jeudi à dimanche",late:true}
+ {n:1,short:"dimanche",days:[6,0,1,2],ref:-1,cover:"dimanche à mercredi"},
+ {n:2,short:"mercredi",days:[3,4,5],ref:2,cover:"jeudi à samedi",late:true}
 ];
 const sessionOf=day=>SESSIONS.find(s=>s.days.includes(day));
-const dayDate=(w,i)=>{const d=new Date(START);d.setDate(d.getDate()+7*w+i);return d};
+const dayDate=(w,i)=>{const d=new Date(START);d.setDate(d.getDate()+7*w+POS(i));return d};
 const longDate=d=>{let s=d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});s=s.replace(/ 1 /," 1er ");return s[0].toUpperCase()+s.slice(1)};
 
 // ---------- État ----------
@@ -2266,6 +2270,19 @@ try{
   else{const old=localStorage.getItem("semainier.v2");if(old){const o=JSON.parse(old);S.prefs=o.prefs||{};S.kid=o.kid!==false;S.weeks[0]={plan:o.plan||{},mode:o.mode||{},pin:{},checked:o.checked||{},shopSess:o.shopSess||1}}}
 }catch(e){}
 if(!S.def||S.def.midi==null){const o=S.def||{};S.def={midi:o.l2||2,soir:o.fam||4}}if(S.optN==null)S.optN=2;remapWeeks();
+function migrateSunday(){
+  try{if(isKid())return false}catch(e){return false}
+  const C=CFG();if(C.sunday)return false;
+  const ws=S.weeks||{},F=["plan","mode","pin","extra","temp","ok","pers"];
+  const idx=Object.keys(ws).filter(k=>/^\d+$/.test(k)).map(Number).sort((a,b)=>b-a);
+  const wasValid={};idx.forEach(w=>{const x=ws[w];try{wasValid[w]=!!(x&&x.valid&&x.valid.sig===weekSig(x))}catch(e){}});
+  idx.forEach(w=>{const x=ws[w];if(!x)return;
+    ["6m","6s"].forEach(k=>{F.forEach(f=>{if(!x[f]||!(k in x[f]))return;
+      if(w+1<MAXW){const y=ws[w+1]=ws[w+1]||{plan:{},mode:{},pin:{},checked:{},shopSess:1};y[f]=y[f]||{};y[f][k]=x[f][k]}
+      delete x[f][k]})})});
+  idx.concat(idx.map(w=>w+1)).forEach(w=>{const x=ws[w];if(x&&x.valid){if(wasValid[w]||wasValid[w-1])x.valid.sig=weekSig(x)}});
+  C.sunday=1;cfgWrite(C);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}cloudChanged();return true;
+}
 function save(){try{trackEdit()}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}cloudChanged()}
 let W;
 function useWeek(w){
@@ -2351,7 +2368,7 @@ function qtyBase(c,id,q){return c.n!=null?q*c.n:c.eat.reduce((a,e)=>a+q*PN(e),0)
 function optQty(c,id){const o=optionsFor(c.r).find(x=>x[0]===id);if(!o)return 0;return c.n!=null?c.n*o[1]:c.eat.reduce((a,e)=>a+PN(e)*o[1],0)}
 function qtyCook(c,id,q){return qtyBase(c,id,q)}
 const slotLabel=s=>DAYS[s.day].toLowerCase()+" "+s.when.toLowerCase();
-const frozen=e=>{const k=srcKey(e.key);const ses=sessionOf(SK[k||e.key].day);return e.day-ses.ref>3};
+const frozen=e=>{const k=srcKey(e.key);const ses=sessionOf(SK[k||e.key].day);return POS(e.day)-ses.ref>3};
 
 // ---------- Formatage ----------
 const frac=x=>{const w=Math.floor(x),h=x-w;return ((w?w:"")+(h>=0.5?(w?" ½":"½"):""))||"0"};
@@ -2376,7 +2393,7 @@ const dateOf=i=>dayDate(S.cur,i).toLocaleDateString("fr-FR",{day:"numeric",month
 
 // ---------- En-tête semaine ----------
 function renderWeekNav(){
-  const a=dayDate(S.cur,0),b=dayDate(S.cur,6);
+  const a=dayDate(S.cur,6),b=dayDate(S.cur,5);
   const f=d=>d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"}).replace(/^1 /,"1er ");
   document.getElementById("weekLabel").textContent="Semaine "+(S.cur+1)+" · du "+f(a)+" au "+f(b);
   document.getElementById("prevW").disabled=S.cur===0;
@@ -2434,7 +2451,7 @@ function trackEdit(){if(!W||isKid())return;const sg=weekSig(W);if(_seen!==null&&
 function renderWeek(){
   renderValid();
   const el=document.getElementById("week");
-  el.innerHTML=DAYS.map((d,i)=>{
+  el.innerHTML=ORDER.map(i=>{const d=DAYS[i];
     const dayOff=false;
     const tot=Math.round(["m","s"].reduce((a,w)=>{const k=i+w;if(W.mode[k]==="skip")return a;const r=recipeAt(k),src=srcKey(k);return a+(r?kcal(r):0)+(src===k?XS(k).reduce((b,x)=>b+kcal(RB[x.id])*x.n/PN(SK[k]),0):0)},0));
     const meals=["m","s"].map(w=>{
@@ -2828,8 +2845,9 @@ function pickC(slot,used,plan,rand,avoid,pred,C,ever){
   let c=R.filter(r=>fits(r,slot,used,plan)&&(!pred||pred(r)));
   if(!c.length&&pred)c=R.filter(r=>allowed(r)&&!used.has(r.id)&&pred(r));
   if(!c.length)return null;
-  const stc={};if(starchVar())Object.entries(plan||{}).forEach(([k,id])=>{if(k!==slot.key&&id&&RB[id]){const f=starchOf(RB[id])||"-";stc[f]=(stc[f]||0)+1}});
-  const stPen=r=>{const f=starchOf(r)||"-",c=stc[f]||0;if(f==="-")return c>3?-0.6*(c-3):0;return c<1?0.3:-1.2*c*(f==="pates"?1.4:1)+(c===1?0.9:0)};
+  // féculents : le repas juste avant et juste après (veille au soir, lendemain midi) évitent aussi le même
+  const si=SLOTS.indexOf(slot),nb=starchVar()?[SLOTS[si-1],SLOTS[si+1]].filter(x=>x&&x.day!==slot.day).map(x=>RB[(plan||{})[x.key]]).filter(Boolean).map(starchOf).filter(Boolean):[];
+  const stPen=r=>{const f=starchOf(r);return f&&nb.includes(f)?-1.5:0};
   return c.map(r=>[r,stPen(r)+likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?3:0)+(isFav(r.id)?2:0)+(noteOf(r.id)?(noteOf(r.id)-3)*1.2:0)-(noteOf(r.id)===1?6:0)+(CLASSIC.has(r.id)?1:0)+(r.simple&&slot.day<5?(CLASSIC.has(r.id)?0.2:0.9):0)+cfgScore(r,slot,C,ever)]).sort((a,b)=>b[1]-a[1])[0][0].id;
 }
 function buildCfg(mode){
@@ -2928,13 +2946,13 @@ function renderCfg(){
           <input type="range" min="0" max="${c.top}" step="1" value="${mx}" data-rmax="${c.k}" ${on?"":"disabled"} aria-label="${esc(c.lab)} : maximum par semaine">
           <span class="ticks" aria-hidden="true">${Array.from({length:c.top+1},(_,n)=>`<i>${n===c.top?n+"+":n}</i>`).join("")}</span></span>
         <output class="rval" id="rv-${c.k}">${on?rangeTxt(mn,mx,c.top):"désactivée"}</output></div>`}).join("")}
-      <label class="cfgtog"><input type="checkbox" data-cfgtog="starch" ${C.starch!==0?"checked":""}><span><b>🍝 Féculents variés</b><small class="muted">Jamais le même féculent midi et soir (pas de pâtes deux fois dans la journée), et on alterne pâtes, riz, pommes de terre, semoule et pain sur la semaine.</small></span></label>
+      <label class="cfgtog"><input type="checkbox" data-cfgtog="starch" ${C.starch!==0?"checked":""}><span><b>🍝 Féculents variés</b><small class="muted">Jamais le même féculent midi et soir (pas de pâtes deux fois dans la journée). On évite aussi d'enchaîner le même du soir au lendemain midi. Sur la semaine, pas de limite.</small></span></label>
       <label class="cfgtog"><input type="checkbox" data-cfgtog="nosouplunch" ${C.nosouplunch?"checked":""}><span><b>🥣 Pas de soupe ni de velouté le midi</b><small class="muted">Les soupes et veloutés ne sont proposés que le soir. Vous pouvez toujours en choisir un à la main pour un midi.</small></span></label>
       <div class="cfgrow seasonrow"><span><b>🌱 Légumes et fruits de saison</b><small class="muted">En ${MOIS[MONTH()-1]} : ${esc(seasonNow(MONTH()).join(", ").toLowerCase())}.</small></span><select data-cfgsel="saison" aria-label="Légumes et fruits de saison">${[[0,"Peu importe"],[1,"Les privilégier"],[2,"Uniquement de saison"]].map(([v,l])=>`<option value="${v}" ${(+C.saison||0)===v?"selected":""}>${l}</option>`).join("")}</select></div>
       <p class="muted small">Activez une règle, puis glissez les deux poignées : le minimum et le maximum de fois par semaine (tout à droite = pas de maximum). Viande rouge : bœuf, agneau, veau. « Tout simple » ne compte que du lundi au vendredi, la soupe que le soir.</p></section>
     <section class="cfgcard"><h3>📅 Nos rendez-vous</h3><p class="muted small">Un repas qui revient chaque semaine : la soirée pizza du vendredi, le poisson du mardi…</p>
       <ul class="thlist">${ths.map(([id,x])=>`<li><span class="thic" aria-hidden="true">${THEMES[x.t][0]}</span><b>${DAYS[x.d]} ${x.w==="m"?"midi":"soir"}</b><span>${esc(THEMES[x.t][1])}</span><button type="button" class="xdel" data-thdel="${id}" aria-label="Retirer">×</button></li>`).join("")||'<li class="muted">Aucun rendez-vous pour l\'instant.</li>'}</ul>
-      <div class="thadd"><select id="thD">${DAYS.map((d,i)=>`<option value="${i}" ${i===4?"selected":""}>${d}</option>`).join("")}</select><select id="thW"><option value="s">soir</option><option value="m">midi</option></select><select id="thT">${Object.entries(THEMES).map(([k,t])=>`<option value="${k}">${t[0]} ${t[1]}</option>`).join("")}</select><button type="button" class="btn sm primary" data-thadd>Ajouter</button></div></section>
+      <div class="thadd"><select id="thD">${ORDER.map(i=>`<option value="${i}" ${i===4?"selected":""}>${DAYS[i]}</option>`).join("")}</select><select id="thW"><option value="s">soir</option><option value="m">midi</option></select><select id="thT">${Object.entries(THEMES).map(([k,t])=>`<option value="${k}">${t[0]} ${t[1]}</option>`).join("")}</select><button type="button" class="btn sm primary" data-thadd>Ajouter</button></div></section>
     <section class="cfgcard"><h3>⏱️ Le soir en semaine</h3>
       <div class="cfgrow"><span>Temps de préparation maximum</span><select data-cfgsel="tmax">${[[0,"Pas de limite"],[20,"20 min"],[30,"30 min"],[45,"45 min"],[60,"1 h"]].map(([v,l])=>`<option value="${v}" ${C.tmax==v?"selected":""}>${l}</option>`).join("")}</select></div>
       <label class="cfgtog"><input type="checkbox" data-cfgtog="light" ${C.light?"checked":""}><span><b>Dîners plutôt légers</b><small class="muted">Privilégie les plats de moins de 600 kcal par portion le soir.</small></span></label>
@@ -3010,7 +3028,7 @@ function eatersHTML(){
       <label>Midis du lundi au vendredi <select data-eqfill="wm">${eaterOptions("",null)}</select></label>
       <label>Soirs de la semaine <select data-eqfill="ws">${eaterOptions("",null)}</select></label>
       <label>Week-end <select data-eqfill="we">${eaterOptions("",null)}</select></label></div>
-    <div class="eqgrid"><span></span><b>Midi</b><b>Soir</b>${DAYS.map((d,i)=>`<b class="eqd">${d}</b>${["m","s"].map(w=>`<select data-eater="${i}${w}" class="${E[i+w]?"set":""}" aria-label="${d} ${w==="m"?"midi":"soir"}">${eaterOptions(i+w,E[i+w])}</select>`).join("")}`).join("")}</div>
+    <div class="eqgrid"><span></span><b>Midi</b><b>Soir</b>${ORDER.map(i=>{const d=DAYS[i];return `<b class="eqd">${d}</b>${["m","s"].map(w=>`<select data-eater="${i}${w}" class="${E[i+w]?"set":""}" aria-label="${d} ${w==="m"?"midi":"soir"}">${eaterOptions(i+w,E[i+w])}</select>`).join("")}`}).join("")}</div>
     <p class="muted small">« Pas de repas » : le repas est retiré des nouvelles semaines (vous pouvez toujours le rétablir sur la carte).</p></section>`;
 }
 document.addEventListener("change",e=>{
@@ -3030,12 +3048,12 @@ function route(){
   window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
-loadFoy();useWeek(S.cur||0);renderAll();route();
+migrateSunday();loadFoy();useWeek(S.cur||0);renderAll();route();
 function reloadFromStorage(){
   const cur0=S.cur,sig0=W?weekSig(W):null;
   try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(o)S=Object.assign({prefs:{},kid:true,cur:0,weeks:{}},o)}catch(e){}
   if(!S.def||S.def.midi==null){const o=S.def||{};S.def={midi:o.l2||2,soir:o.fam||4}}if(S.optN==null)S.optN=2;remapWeeks();
-  avLoad();loadFoy();useWeek(S.cur||0);renderAll();
+  migrateSunday();avLoad();loadFoy();useWeek(S.cur||0);renderAll();
   if(sig0&&S.cur===cur0&&weekSig(W)!==sig0){const ed=W.edit;toast(ed&&ed.by&&ed.by!==meName()?"Semainier mis à jour par "+ed.by:"Semainier mis à jour")}
 }
 CLOUD.init({apply:reloadFromStorage});
