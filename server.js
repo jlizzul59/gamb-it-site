@@ -236,9 +236,67 @@ async function stateOf(user) {
   };
 }
 
+// ---------- Maintenance (protégée par une clé dont seul le hachage est ici) ----------
+const ADMIN_HASH = "b07e97e09dff390f0ff6caecce4b6c229c7a21c56d4983fc23f56406febf517e";
+function adminCheck(req) {
+  const k = new URL(req.url, "http://x").searchParams.get("k") || "";
+  const a = Buffer.from(sha256(k)), b = Buffer.from(ADMIN_HASH);
+  if (!k || !crypto.timingSafeEqual(a, b)) throw new HttpError(404, "Adresse inconnue.");
+  return new URL(req.url, "http://x").searchParams;
+}
+function weekSummary(weeks) {
+  const out = {};
+  Object.entries(weeks || {}).forEach(([w, x]) => {
+    if (!x || typeof x !== "object") return;
+    const plan = x.plan || {};
+    out[w] = { slots: Object.keys(plan).length, pins: Object.keys(x.pin || {}).length, extra: Object.keys(x.extra || {}).length,
+      plan: Object.fromEntries(Object.entries(plan).slice(0, 14)) };
+  });
+  return out;
+}
+
 // ---------- Routes ----------
 const routes = {
   "GET /health": async () => ({ ok: true }),
+
+  "GET /admin/diag": async (req) => {
+    adminCheck(req);
+    const users = (await q(`SELECT u.id, u.username, u.name, u.active_group, d.data->'weeks' AS weeks, d.updated_at FROM menus_users u LEFT JOIN menus_user_data d ON d.user_id = u.id ORDER BY u.id`)).rows;
+    const groups = (await q(`SELECT id, name, version, updated_at, data->'weeks' AS weeks FROM menus_groups ORDER BY id`)).rows;
+    const mem = (await q(`SELECT m.group_id, u.username, m.role FROM menus_members m JOIN menus_users u ON u.id = m.user_id ORDER BY m.joined_at`)).rows;
+    return {
+      users: users.map((u) => ({ id: u.id, username: u.username, name: u.name, active_group: u.active_group, perso_updated: u.updated_at, perso_weeks: weekSummary(u.weeks) })),
+      groups: groups.map((g) => ({ id: g.id, name: g.name, version: g.version, updated: g.updated_at,
+        members: mem.filter((m) => String(m.group_id) === String(g.id)).map((m) => m.username + ":" + m.role), weeks: weekSummary(g.weeks) })),
+    };
+  },
+
+  // Copie des semaines d'une source (groupe ou données perso d'un compte) vers un groupe.
+  "GET /admin/copyweeks": async (req) => {
+    const p = adminCheck(req);
+    const to = parseInt(p.get("to"), 10), weeks = String(p.get("weeks") || "").split(",").filter((s) => /^\d+$/.test(s));
+    const from = String(p.get("from") || "");
+    let src;
+    if (/^group:\d+$/.test(from)) src = (await q(`SELECT data->'weeks' AS w FROM menus_groups WHERE id = $1`, [+from.slice(6)])).rows[0];
+    else if (/^perso:\d+$/.test(from)) src = (await q(`SELECT data->'weeks' AS w FROM menus_user_data WHERE user_id = $1`, [+from.slice(6)])).rows[0];
+    if (!src || !src.w) throw new HttpError(404, "Source vide.");
+    const g = (await q(`SELECT data FROM menus_groups WHERE id = $1`, [to])).rows[0];
+    if (!g) throw new HttpError(404, "Groupe inconnu.");
+    const data = g.data || {};
+    data.weeks = data.weeks || {};
+    const done = [];
+    weeks.forEach((w) => { if (src.w[w]) { data.weeks[w] = src.w[w]; done.push(w); } });
+    if (p.get("dry") !== "0") return { dry: true, would_copy: done, preview: weekSummary(Object.fromEntries(done.map((w) => [w, src.w[w]]))) };
+    await q(`UPDATE menus_groups SET data = $1::jsonb, version = version + 1, updated_at = now() WHERE id = $2`, [JSON.stringify(data), to]);
+    return { copied: done };
+  },
+
+  "GET /admin/active": async (req) => {
+    const p = adminCheck(req);
+    await memberGroup(parseInt(p.get("user"), 10), p.get("group"));
+    await q(`UPDATE menus_users SET active_group = $1 WHERE id = $2`, [parseInt(p.get("group"), 10), parseInt(p.get("user"), 10)]);
+    return { ok: true };
+  },
 
   "POST /auth/register": async (req, body) => {
     limit(req, "register", 10, 3600e3);
