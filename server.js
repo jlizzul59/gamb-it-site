@@ -12,8 +12,8 @@ const DB_URL = process.env.DATABASE_URL;
 const ORIGINS = (process.env.ALLOWED_ORIGINS || "https://gamb-it-apps.fr,https://www.gamb-it-apps.fr")
   .split(",").map((s) => s.trim()).filter(Boolean);
 const SESSION_DAYS = 180;
-const MAX_BODY = 1024 * 1024;       // 1 Mo par requête
-const MAX_DATA = 600 * 1024;        // 600 Ko de données par compte ou groupe
+const MAX_BODY = 3 * 1024 * 1024;   // 3 Mo par requête
+const MAX_DATA = 2 * 1024 * 1024;   // 2 Mo de données par compte ou groupe (semainiers, historique, recettes perso)
 
 if (!DB_URL) {
   console.error("La variable DATABASE_URL est manquante.");
@@ -227,6 +227,12 @@ function childMerge(cur, inc, username) {
   Object.keys(ip).forEach((id) => { if (mine(ip[id]) && (!cp[id] || mine(cp[id]))) props[id] = ip[id]; });
   Object.keys(cp).forEach((id) => { if (mine(cp[id]) && !ip[id]) delete props[id]; });
   out.propositions = props;
+  // avis de la famille : un enfant ne pose ou ne retire que ses propres votes (clés « recette|identifiant »)
+  const cv = (cur && cur.votes) || {}, iv = (inc && inc.votes) || {}, suf = "|" + username;
+  const votes = JSON.parse(JSON.stringify(cv));
+  Object.keys(iv).forEach((k) => { if (k.endsWith(suf) && (iv[k] === 1 || iv[k] === -1)) votes[k] = iv[k]; });
+  Object.keys(cv).forEach((k) => { if (k.endsWith(suf) && !(k in iv)) delete votes[k]; });
+  out.votes = votes;
   return out;
 }
 function checkData(data) {
@@ -316,6 +322,51 @@ async function stateOf(user) {
   };
 }
 
+// ---------- Import d'une recette depuis un lien (données « schema.org/Recipe » de la page) ----------
+const dns = require("dns").promises;
+const net = require("net");
+function privateIp(ip) {
+  if (net.isIPv6(ip)) { const l = ip.toLowerCase(); return l === "::1" || l.startsWith("fc") || l.startsWith("fd") || l.startsWith("fe80") || l.startsWith("::ffff:127.") || l.startsWith("::ffff:10.") || l.startsWith("::ffff:192.168."); }
+  const [a, b] = ip.split(".").map(Number);
+  return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
+}
+async function safeFetch(url, hops = 0) {
+  let u;
+  try { u = new URL(url); } catch (e) { throw new HttpError(400, "Lien invalide."); }
+  if (!/^https?:$/.test(u.protocol)) throw new HttpError(400, "Lien invalide.");
+  const addrs = await dns.lookup(u.hostname, { all: true }).catch(() => []);
+  if (!addrs.length || (!process.env.IMPORT_ALLOW_LOCAL && addrs.some((a) => privateIp(a.address)))) throw new HttpError(400, "Ce site n'est pas accessible.");
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 9000);
+  try {
+    const r = await fetch(u, { redirect: "manual", signal: ctl.signal, headers: { "User-Agent": "Mozilla/5.0 (compatible; SemainierBot/1.0)", "Accept": "text/html" } });
+    if (r.status >= 300 && r.status < 400 && r.headers.get("location")) {
+      if (hops >= 3) throw new HttpError(400, "Trop de redirections.");
+      return safeFetch(new URL(r.headers.get("location"), u).href, hops + 1);
+    }
+    if (!r.ok) throw new HttpError(400, "La page ne répond pas (erreur " + r.status + ").");
+    const buf = Buffer.from(await r.arrayBuffer());
+    return buf.subarray(0, 3 * 1024 * 1024).toString("utf8");
+  } catch (e) {
+    if (e instanceof HttpError) throw e;
+    throw new HttpError(400, "Impossible d'ouvrir cette page.");
+  } finally { clearTimeout(timer); }
+}
+function findRecipe(node) {
+  if (!node || typeof node !== "object") return null;
+  if (Array.isArray(node)) { for (const x of node) { const r = findRecipe(x); if (r) return r; } return null; }
+  const t = node["@type"];
+  if (t === "Recipe" || (Array.isArray(t) && t.includes("Recipe"))) return node;
+  return findRecipe(node["@graph"]) || null;
+}
+const txt = (v) => String(v == null ? "" : v).replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/\s+/g, " ").trim();
+function steps(ins) {
+  if (!ins) return [];
+  if (typeof ins === "string") return ins.split(/\n+|(?<=\.)\s+(?=[A-ZÉÀ])/).map(txt).filter(Boolean);
+  if (Array.isArray(ins)) return ins.flatMap((x) => typeof x === "string" ? [txt(x)] : x && x.itemListElement ? steps(x.itemListElement) : x && x.text ? [txt(x.text)] : x && x.name ? [txt(x.name)] : []).filter(Boolean);
+  return ins.text ? [txt(ins.text)] : [];
+}
+const isoMin = (d) => { const m = String(d || "").match(/P(?:T)?(?:(\d+)H)?(?:(\d+)M)?/i); return m ? (+(m[1] || 0)) * 60 + (+(m[2] || 0)) : 0; };
+
 // ---------- Administration générale ----------
 async function superAuth(req) {
   const user = await auth(req);
@@ -339,6 +390,25 @@ const uid = (v) => { const n = parseInt(v, 10); if (!n) throw new HttpError(400,
 // ---------- Routes ----------
 const routes = {
   "GET /admin/overview": async (req) => { await superAuth(req); return adminOverview(); },
+
+  "POST /import": async (req, body) => {
+    await auth(req);
+    limit(req, "import", 30, 3600e3);
+    const html = await safeFetch(String(body.url || "").trim());
+    const blocks = [...html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+    let rec = null;
+    for (const b of blocks) { try { rec = findRecipe(JSON.parse(b.trim())); } catch (e) { /* bloc illisible */ } if (rec) break; }
+    if (!rec) throw new HttpError(422, "Pas de recette lisible sur cette page. Vous pouvez la saisir à la main.");
+    const yieldN = parseInt(String(Array.isArray(rec.recipeYield) ? rec.recipeYield[0] : rec.recipeYield || "").match(/\d+/) || 4, 10) || 4;
+    return {
+      name: txt(rec.name).slice(0, 120),
+      time: isoMin(rec.totalTime) || isoMin(rec.cookTime) + isoMin(rec.prepTime) || 0,
+      yield: Math.min(20, Math.max(1, yieldN)),
+      ingredients: (rec.recipeIngredient || rec.ingredients || []).map(txt).filter(Boolean).slice(0, 40),
+      steps: steps(rec.recipeInstructions).slice(0, 20),
+      cuisine: txt(Array.isArray(rec.recipeCuisine) ? rec.recipeCuisine[0] : rec.recipeCuisine || ""),
+    };
+  },
 
   "POST /admin/ban": async (req, body) => {
     const me = await superAuth(req);
