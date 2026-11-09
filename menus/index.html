@@ -681,6 +681,9 @@ body.storemode #shop .hint{font-size:13px}
 .htab tbody th{width:110px;font-weight:600}.htab tbody th small{color:var(--muted,#888);font-weight:400}
 @media(max-width:560px){.htab tbody th{width:74px}.htab{font-size:13px}}
 .hempty{padding:20px 0}
+.iconfirm{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 6px 4px 10px;border-radius:999px;background:#fdecea;border:1px solid #e7b9b9;animation:icin .15s ease-out}
+.iconfirm .icq{font-size:13px;font-weight:600;color:#8f2020}
+@keyframes icin{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 .rapstate{background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:14px}.rapstate p{margin:4px 0 10px}
 .raplist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .raplist li{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface,#fff);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
@@ -2840,6 +2843,16 @@ function renderFoyer(){const el=document.getElementById("foyer");if(el)el.innerH
 DIETUI.onChange=(k,soft)=>{if(k!=="foyer")return;const before=JSON.stringify(W.plan);loadFoy();build("keep");const n=Object.keys(W.plan).filter(x=>JSON.parse(before)[x]!==W.plan[x]).length;if(soft){renderWeek();return}renderAll();if(n)toast(n+" repas remplacé"+(n>1?"s":"")+" pour respecter le groupe")};
 function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules();renderHistory();try{MINE.render()}catch(e){console.warn(e)}try{renderRappels()}catch(e){console.warn(e)}try{rapUpload()}catch(e){}try{renderToday()}catch(e){console.warn(e)}const at=document.getElementById("adminTab");if(at)at.hidden=!isSuper()}
 
+// ---------- Confirmation à côté du bouton (Oui / Non) pour les actions qui ne se défont pas ----------
+function askInline(btn,msg,yes){if(!btn||btn.dataset.asking)return;btn.dataset.asking="1";
+  const box=document.createElement("span");box.className="iconfirm";box.setAttribute("role","group");box.setAttribute("aria-label",msg);
+  box.innerHTML=`<span class="icq">${esc(msg)}</span><button type="button" class="btn sm danger icyes">Oui</button><button type="button" class="btn sm icno">Non</button>`;
+  const prevHidden=btn.hidden;btn.hidden=true;btn.insertAdjacentElement("afterend",box);
+  const done=()=>{clearTimeout(t);box.remove();btn.hidden=prevHidden;delete btn.dataset.asking};
+  const t=setTimeout(done,12000);
+  box.addEventListener("click",e=>{e.stopPropagation();if(e.target.closest(".icyes")){done();yes()}else if(e.target.closest(".icno")){done();btn.focus()}});
+  box.querySelector(".icno").focus();
+}
 // ---------- Administration générale (réservée à l'administrateur du site) ----------
 const isSuper=()=>{const a=meAcc();return !!(a&&a.user&&(a.user.superadmin||a.user.moderator))};
 const isSiteAdmin=()=>{const a=meAcc();return !!(a&&a.user&&a.user.superadmin)};
@@ -2889,13 +2902,13 @@ const ADM=(()=>{
     const u=e.target.closest("[data-ugadd]");if(u&&u.value){call("/admin/member",{group:+u.value,user:+u.dataset.ugadd,add:true});return}
     const r=e.target.closest("[data-srole]");if(r){const v=r.value,who=(D.users.find(x=>x.id===+r.dataset.srole)||{}).name||"";call("/admin/siterole",{id:+r.dataset.srole,role:v}).then(()=>toast(who+(v==="admin"?" est maintenant admin du site":v==="moderateur"?" est maintenant modérateur":" n'a plus de rôle sur le site")))}});
   document.addEventListener("click",e=>{const b=e.target.closest("[data-adm]");if(!b||busy)return;const [k,a,c,d]=b.dataset.adm.split("|");
-    if(k==="ban"){if(c==="1"){const u=D.users.find(x=>x.id===+a);if(!confirmOnce("ban"+a,"Cliquez encore pour suspendre "+(u?u.name:"ce compte")+" : il sera déconnecté partout"))return}call("/admin/ban",{id:+a,ban:c==="1"});return}
-    if(k==="pw"){if(!confirmOnce("pw"+a,"Cliquez encore pour remplacer son mot de passe"))return;call("/admin/reset-password",{id:+a});return}
-    if(k==="del"){if(!confirmOnce("del"+a,"Cliquez encore pour supprimer définitivement ce compte et ses données"))return;call("/admin/delete-user",{id:+a});return}
-    if(k==="gdel"){if(!confirmOnce("gdel"+a,"Cliquez encore pour supprimer ce groupe et son semainier"))return;call("/admin/delete-group",{id:+a});return}
+    if(k==="ban"){const u=D.users.find(x=>x.id===+a);if(c==="1")askInline(b,"Suspendre "+(u?u.name:"ce compte")+" ? Il sera déconnecté partout.",()=>call("/admin/ban",{id:+a,ban:true}));else call("/admin/ban",{id:+a,ban:false});return}
+    if(k==="pw"){askInline(b,"Remplacer son mot de passe ?",()=>call("/admin/reset-password",{id:+a}));return}
+    if(k==="del"){askInline(b,"Supprimer définitivement ce compte ?",()=>call("/admin/delete-user",{id:+a}));return}
+    if(k==="gdel"){askInline(b,"Supprimer ce groupe et son semainier ?",()=>call("/admin/delete-group",{id:+a}));return}
     if(k==="role"){call("/admin/member",{group:+a,user:+c,role:d});return}
     if(k==="gadm"){call("/admin/member",{group:+a,user:+c,admin:d==="1"});return}
-    if(k==="out"){if(!confirmOnce("out"+a+c,"Cliquez encore pour retirer ce membre du groupe"))return;call("/admin/member",{group:+a,user:+c,remove:true});return}
+    if(k==="out"){askInline(b,"Retirer du groupe ?",()=>call("/admin/member",{group:+a,user:+c,remove:true}));return}
   });
   return {load,render};
 })();
@@ -3032,7 +3045,7 @@ const MINE=(()=>{
     const b=e.target.closest("[data-mine]");if(!b||isKid())return;const [k,a]=b.dataset.mine.split("|");
     if(k==="new"){edit=blank();edit.rows=[{id:"",q:100,name:"",u:"g"}];render();return}
     if(k==="edit"){const x=mineRead()[a];if(!x)return;edit=Object.assign(blank(),JSON.parse(JSON.stringify(x)));Object.entries(x.custom||{}).forEach(([cid,v])=>{I[cid]=I[cid]||Object.assign({k:0,custom:1},v)});edit.rows=toRows(x);render();return}
-    if(k==="del"){if(arm!==a){arm=a;toast("Cliquez encore pour supprimer cette recette");setTimeout(()=>{if(arm===a)arm=""},4000);return}arm="";const M=mineRead();delete M[a];try{localStorage.setItem(MRK,JSON.stringify(M))}catch(_){}cloudChanged();loadMine();render();toast("Recette supprimée");return}
+    if(k==="del"){askInline(b,"Supprimer cette recette ?",()=>{const M=mineRead();delete M[a];try{localStorage.setItem(MRK,JSON.stringify(M))}catch(_){}cloudChanged();loadMine();render();toast("Recette supprimée");});return}
     if(k==="cancel"){edit=null;render();return}
     if(k==="rowadd"){readForm();edit.rows.push({id:"",q:0,name:"",u:"g"});render();const r=document.querySelectorAll(".iname");if(r.length)r[r.length-1].focus();return}
     if(k==="rowdel"){readForm();edit.rows.splice(+a,1);render();return}
@@ -3102,10 +3115,9 @@ function renderHistory(){
 }
 let _reuseArm={w:-1,t:0};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-hreuse]");if(!b||isKid())return;const w=+b.dataset.hreuse,x=S.weeks[w];if(!x)return;
-  if(_reuseArm.w!==w||Date.now()-_reuseArm.t>4000){_reuseArm={w,t:Date.now()};toast("Cliquez encore pour remplacer la semaine "+weekRange(S.cur)+" par ce menu");return}
-  _reuseArm={w:-1,t:0};const c=JSON.parse(JSON.stringify(x));
+  askInline(b,"Remplacer la semaine "+weekRange(S.cur)+" par ce menu ?",()=>{const c=JSON.parse(JSON.stringify(x));
   W.plan=c.plan||{};W.mode=c.mode||{};W.extra=c.extra||{};W.temp=c.temp||{};W.pin={};SLOTS.forEach(s=>{if(W.plan[s.key])W.pin[s.key]=1});delete W.valid;W.ok={};
-  build("keep");save();renderAll();location.hash="#semaine";toast("Menu repris pour la semaine "+weekRange(S.cur))});
+  build("keep");save();renderAll();location.hash="#semaine";toast("Menu repris pour la semaine "+weekRange(S.cur))})});
 
 // ---------- Interactions ----------
 let toastT;
@@ -3153,7 +3165,7 @@ document.addEventListener("change",e=>{
 document.getElementById("prevW").addEventListener("click",()=>goWeek(S.cur-1));
 document.getElementById("nextW").addEventListener("click",()=>goWeek(S.cur+1));
 let _regenArm=0;
-document.getElementById("regen").addEventListener("click",()=>{if(W.valid&&Date.now()-_regenArm>4000){_regenArm=Date.now();toast("Le semainier est validé : cliquez encore pour tout remplacer");return}_regenArm=0;W.pin={};build("random");renderAll();toast("Nouvelle semaine générée")});
+document.getElementById("regen").addEventListener("click",e=>{const go=()=>{W.pin={};build("random");renderAll();toast("Nouvelle semaine générée · « Annuler » pour revenir")};if(W.valid)askInline(e.currentTarget,"Le semainier est validé. Tout remplacer ?",go);else go()});
 // ---------- Menus des cartes : « Changer », « ⋯ » et personnes ----------
 const CM=(()=>{let el=null,cur=null;
   function close(){if(!el)return;el.remove();el=null;if(cur&&cur.btn)cur.btn.setAttribute("aria-expanded","false");cur=null}
