@@ -78,6 +78,23 @@ const SCHEMA = [
   `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS banned_at TIMESTAMPTZ`,
   `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS ban_reason TEXT`,
   `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS last_seen TIMESTAMPTZ`,
+  // notifications (rappels planifiés, envoyés par le serveur)
+  `CREATE TABLE IF NOT EXISTS menus_kv (k TEXT PRIMARY KEY, v TEXT NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS menus_push_subs (
+     endpoint TEXT PRIMARY KEY,
+     user_id INT NOT NULL REFERENCES menus_users(id) ON DELETE CASCADE,
+     sub JSONB NOT NULL,
+     created_at TIMESTAMPTZ NOT NULL DEFAULT now())`,
+  `CREATE TABLE IF NOT EXISTS menus_notifs (
+     id SERIAL PRIMARY KEY,
+     user_id INT NOT NULL REFERENCES menus_users(id) ON DELETE CASCADE,
+     at TIMESTAMPTZ NOT NULL,
+     title TEXT NOT NULL,
+     body TEXT NOT NULL,
+     url TEXT,
+     tag TEXT,
+     sent BOOLEAN NOT NULL DEFAULT false)`,
+  `CREATE INDEX IF NOT EXISTS menus_notifs_due ON menus_notifs(at) WHERE NOT sent`,
 ];
 // Administrateurs généraux du site (identifiants)
 const SUPER = new Set(["jlizzul"]);
@@ -322,6 +339,39 @@ async function stateOf(user) {
   };
 }
 
+// ---------- Notifications push (bibliothèque web-push, clés VAPID gardées en base) ----------
+let webpush = null;
+try { webpush = require("web-push"); } catch (e) { console.warn("web-push absent : notifications désactivées"); }
+let VAPID = null;
+async function vapidInit() {
+  if (!webpush) return;
+  const r = (await q(`SELECT v FROM menus_kv WHERE k = 'vapid'`)).rows[0];
+  if (r) VAPID = JSON.parse(r.v);
+  else { VAPID = webpush.generateVAPIDKeys(); await q(`INSERT INTO menus_kv (k, v) VALUES ('vapid', $1) ON CONFLICT (k) DO NOTHING`, [JSON.stringify(VAPID)]); VAPID = JSON.parse((await q(`SELECT v FROM menus_kv WHERE k = 'vapid'`)).rows[0].v); }
+  webpush.setVapidDetails("mailto:contact@gamb-it-apps.fr", VAPID.publicKey, VAPID.privateKey);
+}
+async function pushTo(userId, payload) {
+  if (!webpush || !VAPID) return 0;
+  const subs = (await q(`SELECT endpoint, sub FROM menus_push_subs WHERE user_id = $1`, [userId])).rows;
+  let ok = 0;
+  for (const s of subs) {
+    const sub = typeof s.sub === "string" ? JSON.parse(s.sub) : s.sub;
+    try { await webpush.sendNotification(sub, JSON.stringify(payload), { TTL: 6 * 3600 }); ok++; }
+    catch (e) { if (e && (e.statusCode === 404 || e.statusCode === 410)) await q(`DELETE FROM menus_push_subs WHERE endpoint = $1`, [s.endpoint]); else console.warn("push :", e && e.statusCode, e && e.body); }
+  }
+  return ok;
+}
+let pushBusy = false;
+async function pushTick() {
+  if (pushBusy || !VAPID) return;
+  pushBusy = true;
+  try {
+    const due = (await q(`UPDATE menus_notifs SET sent = true WHERE id IN (SELECT id FROM menus_notifs WHERE NOT sent AND at <= now() ORDER BY at LIMIT 100) RETURNING user_id, at, title, body, url, tag`)).rows;
+    for (const n of due) { if (Date.now() - new Date(n.at).getTime() < 6 * 3600e3) await pushTo(Number(n.user_id), { title: n.title, body: n.body, url: n.url || "/menus/", tag: n.tag || undefined }); }
+    await q(`DELETE FROM menus_notifs WHERE sent AND at < now() - interval '3 days'`);
+  } catch (e) { console.warn("rappels :", e.message); } finally { pushBusy = false; }
+}
+
 // ---------- Import d'une recette depuis un lien (données « schema.org/Recipe » de la page) ----------
 const dns = require("dns").promises;
 const net = require("net");
@@ -390,6 +440,39 @@ const uid = (v) => { const n = parseInt(v, 10); if (!n) throw new HttpError(400,
 // ---------- Routes ----------
 const routes = {
   "GET /admin/overview": async (req) => { await superAuth(req); return adminOverview(); },
+
+  "GET /push/key": async () => ({ key: VAPID ? VAPID.publicKey : null }),
+
+  "POST /push/subscribe": async (req, body) => {
+    const user = await auth(req);
+    const sub = body.sub;
+    if (!sub || typeof sub.endpoint !== "string" || !/^https:\/\//.test(sub.endpoint) || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) throw new HttpError(400, "Abonnement invalide.");
+    await q(`INSERT INTO menus_push_subs (endpoint, user_id, sub) VALUES ($1, $2, $3::jsonb) ON CONFLICT (endpoint) DO UPDATE SET user_id = $2, sub = $3::jsonb`, [sub.endpoint.slice(0, 900), user.id, JSON.stringify(sub)]);
+    return { ok: true };
+  },
+
+  "POST /push/unsubscribe": async (req, body) => {
+    const user = await auth(req);
+    await q(`DELETE FROM menus_push_subs WHERE endpoint = $1 AND user_id = $2`, [String(body.endpoint || ""), user.id]);
+    return { ok: true };
+  },
+
+  // Le site calcule les rappels des prochains jours (contenu du semainier compris) et les confie au serveur
+  "PUT /push/schedule": async (req, body) => {
+    const user = await auth(req);
+    const now = Date.now(), items = (Array.isArray(body.items) ? body.items : []).slice(0, 200)
+      .map((x) => ({ at: Number(x.at), title: String(x.title || "").slice(0, 80), body: String(x.body || "").slice(0, 240), url: String(x.url || "/menus/").slice(0, 200), tag: String(x.tag || "").slice(0, 40) }))
+      .filter((x) => x.at > now && x.at < now + 31 * 864e5 && x.title && /^\/menus\//.test(x.url));
+    await q(`DELETE FROM menus_notifs WHERE user_id = $1 AND NOT sent`, [user.id]);
+    for (const x of items) await q(`INSERT INTO menus_notifs (user_id, at, title, body, url, tag) VALUES ($1, to_timestamp($2 / 1000.0), $3, $4, $5, $6)`, [user.id, x.at, x.title, x.body, x.url, x.tag]);
+    return { ok: true, planned: items.length };
+  },
+
+  "POST /push/test": async (req) => {
+    const user = await auth(req);
+    const n = await pushTo(user.id, { title: "Semainier", body: "Les rappels fonctionnent sur cet appareil 👍", url: "/menus/index.html#rappels", tag: "test" });
+    return { sent: n };
+  },
 
   "POST /import": async (req, body) => {
     await auth(req);
@@ -723,7 +806,8 @@ const server = http.createServer(async (req, res) => {
 });
 
 migrate()
-  .then(() => server.listen(PORT, () => console.log("menus-api prêt sur le port " + PORT)))
+  .then(() => vapidInit().catch((e) => console.warn("VAPID :", e.message)))
+  .then(() => { setInterval(pushTick, 60e3); return server.listen(PORT, () => console.log("menus-api prêt sur le port " + PORT)); })
   .catch((e) => { console.error("Impossible de préparer la base :", e.message); process.exit(1); });
 
 module.exports = { server };
