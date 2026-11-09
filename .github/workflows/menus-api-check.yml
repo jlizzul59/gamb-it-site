@@ -17,6 +17,7 @@ jobs:
             echo "--- essai $i"; date -u
             curl -sS -m 70 -o body.txt -w "HTTP %{http_code} en %{time_total}s\n" https://menus-api-oemz.onrender.com/health || true
             cat body.txt 2>/dev/null; echo
+            curl -sS -m 30 https://menus-api-oemz.onrender.com/push/key; echo
             curl -sS -m 30 -o /dev/null -D - -X OPTIONS -H "Origin: https://gamb-it-apps.fr" -H "Access-Control-Request-Method: POST" https://menus-api-oemz.onrender.com/auth/login | grep -i "HTTP\|access-control" || true
             grep -q '"ok"' body.txt 2>/dev/null && break
             sleep 20

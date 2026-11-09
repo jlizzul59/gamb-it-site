@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2f6b3a">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Semainier">
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.tsel{display:flex;gap:4px}
 .tsel button{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:8px;padding:4px 6px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap}
 .tsel button[aria-pressed="true"][data-temp$="chaud"]{background:#FBEFE4;border-color:#E9B48A;color:#B85A14}
@@ -676,6 +681,11 @@ body.storemode #shop .hint{font-size:13px}
 .htab tbody th{width:110px;font-weight:600}.htab tbody th small{color:var(--muted,#888);font-weight:400}
 @media(max-width:560px){.htab tbody th{width:74px}.htab{font-size:13px}}
 .hempty{padding:20px 0}
+.rapstate{background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:14px}.rapstate p{margin:4px 0 10px}
+.raplist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.raplist li{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface,#fff);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.raplist .cfgtog{flex:1 1 260px}.raplist .cfgtog small{display:block}.raptime{display:flex;gap:6px}
+.raptime input,.raptime select{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .tag.maison{border:1px solid #d6b98a;color:#7a5520;background:#fbf2e2}
 .mineadd{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.mineimp{display:flex;gap:6px;flex:1 1 320px}.mineimp input{flex:1;min-width:0;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface,#fff)}
 .minelist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}.minelist li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface,#fff);border:1px solid var(--line);border-radius:12px;padding:10px 14px}.minelist .linkish{flex:1 1 200px;text-align:left;background:none;border:0;font:inherit;cursor:pointer;padding:0;color:var(--ink)}.mineact{display:flex;gap:6px}
@@ -773,6 +783,7 @@ body.storemode #shop .hint{font-size:13px}
       <a role="menuitem" href="#batch">🧑‍🍳 Batch cooking</a>
       <a role="menuitem" href="#historique">🗓️ Historique</a>
       <a role="menuitem" href="#mesrecettes">📝 Mes recettes</a>
+      <a role="menuitem" href="#rappels">🔔 Rappels</a>
       <hr>
       <a role="menuitem" href="recettes.html">📖 Catalogue des recettes</a>
       <a role="menuitem" href="recettes.html#frigo">🧊 Vider le frigo</a>
@@ -837,6 +848,7 @@ body.storemode #shop .hint{font-size:13px}
 
   <section class="view" id="v-propositions" hidden><nav class="subnav" aria-label="Groupe"><a href="#groupe">Groupe et règles</a><a href="#gouts">Mes goûts</a><a href="#propositions" aria-current="page">Propositions</a></nav><div id="propbox"></div></section>
   <section class="view" id="v-historique" hidden><div id="histbox"></div></section>
+  <section class="view" id="v-rappels" hidden><div id="rapbox"></div></section>
   <section class="view" id="v-mesrecettes" hidden><div id="minebox"></div></section>
   <section class="view" id="v-admin" hidden><div id="adminbox"></div></section>
 
@@ -2021,7 +2033,7 @@ const CLOUD=(()=>{
   API=API.replace(/\/+$/,"");
   const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
   const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
-  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions","config","votes","mesrecettes"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions","config","votes","mesrecettes"];
+  const PERSO_KEYS=["prefs","kid","cur","def","optN","note","rappels"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions","config","votes","mesrecettes"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions","config","votes","mesrecettes"];
   let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
   let hooks={apply(){},status(){}},busy=false,again=false,timer=null,status="idle",lastErr="",view="login",note="";
   const J=JSON.stringify,clone=o=>JSON.parse(J(o===undefined?null:o));
@@ -2815,7 +2827,7 @@ function renderDefaults(){
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));if(catKey)renderCatList("m",catKey);renderWeek()}
 function renderFoyer(){const el=document.getElementById("foyer");if(el)el.innerHTML=peopleEditor("foyer",{empty:"Personne n'est encore indiqué. Ajoutez par exemple chaque membre de la famille.",addLabel:"+ Ajouter une personne du groupe"})}
 DIETUI.onChange=(k,soft)=>{if(k!=="foyer")return;const before=JSON.stringify(W.plan);loadFoy();build("keep");const n=Object.keys(W.plan).filter(x=>JSON.parse(before)[x]!==W.plan[x]).length;if(soft){renderWeek();return}renderAll();if(n)toast(n+" repas remplacé"+(n>1?"s":"")+" pour respecter le groupe")};
-function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules();renderHistory();try{MINE.render()}catch(e){console.warn(e)}try{renderToday()}catch(e){console.warn(e)}const at=document.getElementById("adminTab");if(at)at.hidden=!isSuper()}
+function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules();renderHistory();try{MINE.render()}catch(e){console.warn(e)}try{renderRappels()}catch(e){console.warn(e)}try{rapUpload()}catch(e){}try{renderToday()}catch(e){console.warn(e)}const at=document.getElementById("adminTab");if(at)at.hidden=!isSuper()}
 
 // ---------- Administration générale (réservée à l'administrateur du site) ----------
 const isSuper=()=>{const a=meAcc();return !!(a&&a.user&&a.user.superadmin)};
@@ -3009,6 +3021,47 @@ const MINE=(()=>{
 })();
 function openRecipeAny(id){const r=RB[id];if(!r)return;ov.innerHTML=`<article class="rcard"><button class="close" type="button" data-close>Fermer ×</button><div class="rhead"><small>${esc(r.pays||"")} · ${r.t} min</small><h3>${esc(r.n)}</h3><div class="rfacts"><span class="num">≈ ${kcal(r)} kcal / portion</span><span class="num">≈ ${euro(costPortion(r))} / portion</span>${tagHTML(r)}</div></div>
   <div class="rbody"><div><h4>Ingrédients (1 personne)</h4><ul class="ing">${r.ing.map(([i,q])=>`<li><span class="num">${fmt(q,I[i].u,false)}</span><span>${esc(I[i].n)}</span></li>`).join("")}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(t=>`<li>${esc(t)}</li>`).join("")}</ol></div></div></article>`;ov.hidden=false}
+
+// ---------- Rappels : notifications planifiées, réglables et désactivables ----------
+const RAPDEF={menu:{on:1,h:"10:30"},batch:{on:1,h:"10:00"},gel:{on:1,h:"20:00"},avis:{on:1,h:"21:00"},courses:{on:0,h:"10:00",d:6},valider:{on:1,h:"18:00",d:5}};
+const RAPLAB={menu:["🍽️ Le menu du jour","Ce midi et ce soir, chaque matin."],batch:["🧑‍🍳 Session de batch cooking","Le dimanche et le mercredi."],gel:["🧊 Sortir du congélateur","La veille, quand un plat congelé est prévu le lendemain."],avis:["👍 Votre avis sur le dîner","Le soir, pour noter le plat en un clic."],courses:["🛒 Les courses","Le jour de votre choix, avec le nombre d'articles."],valider:["📝 Valider le semainier","Si la semaine suivante n'est pas encore validée."]};
+const JOURS=["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+const rapCfg=()=>{const r=S.rappels||{};const o={};Object.keys(RAPDEF).forEach(k=>o[k]=Object.assign({},RAPDEF[k],r[k]||{}));return o};
+const pushOn=()=>{try{return localStorage.getItem("menus.push.on")==="1"}catch(e){return false}};
+function weekOfDate(dt){const s0=new Date(START);s0.setDate(s0.getDate()-1);s0.setHours(12,0,0,0);const t=new Date(dt);t.setHours(12,0,0,0);return Math.floor(Math.round((t-s0)/864e5)/7)}
+function rapSchedule(){const C=rapCfg(),out=[],now=Date.now();
+  const at=(dt,h)=>{const [H,M]=String(h||"10:00").split(":").map(Number);const x=new Date(dt);x.setHours(H||0,M||0,0,0);return x.getTime()};
+  for(let k=0;k<14;k++){const dt=new Date();dt.setDate(dt.getDate()+k);const g=dt.getDay(),i=g===0?6:g-1,w=weekOfDate(dt);
+    const names=S.weeks[w]?withWeek(w,()=>["m","s"].map(x=>{const key=i+x;if((W.mode[key]||"cook")==="skip")return null;const r=recipeAt(key);return r?shortName(r):null})):[null,null];
+    if(C.menu.on&&(names[0]||names[1]))out.push({at:at(dt,C.menu.h),title:"Au menu aujourd'hui",body:[names[0]&&"Midi : "+names[0],names[1]&&"Soir : "+names[1]].filter(Boolean).join(" · "),url:"/menus/index.html#aujourdhui",tag:"menu"});
+    if(C.batch.on&&(i===6||i===2))out.push({at:at(dt,C.batch.h),title:"Session de batch cooking",body:i===6?"Aujourd'hui : on prépare les repas du dimanche au mercredi.":"Aujourd'hui : on prépare les repas du jeudi au samedi.",url:"/menus/index.html#batch",tag:"batch"});
+    if(C.gel.on){const t2=new Date(dt);t2.setDate(t2.getDate()+1);const g2=t2.getDay(),i2=g2===0?6:g2-1,w2=weekOfDate(t2);if(S.weeks[w2])withWeek(w2,()=>{const fz=["m","s"].map(x=>SK[i2+x]).filter(sl=>(W.mode[sl.key]||"cook")!=="skip"&&recipeAt(sl.key)&&frozen(sl));if(fz.length)out.push({at:at(dt,C.gel.h),title:"Sortir du congélateur",body:fz.map(sl=>"Demain "+sl.when.toLowerCase()+" : "+shortName(recipeAt(sl.key))).join(" · "),url:"/menus/index.html#aujourdhui",tag:"gel"})})}
+    if(C.avis.on&&names[1])out.push({at:at(dt,C.avis.h),title:"Vous avez aimé ce soir ?",body:names[1]+" : 👍 ou 👎 en un clic.",url:"/menus/index.html#aujourdhui",tag:"avis"});
+    if(C.courses.on&&i===+C.courses.d&&S.weeks[w]){const n=withWeek(w,()=>{const ss=0;return shopping(ss).reduce((t,[,it])=>t+it.length,0)});out.push({at:at(dt,C.courses.h),title:"C'est le jour des courses",body:n+" articles dans la liste. Le mode magasin vous attend.",url:"/menus/index.html#courses",tag:"courses"})}
+    if(C.valider.on&&i===+C.valider.d){const nx=S.weeks[w+1];const ok=nx&&nx.valid&&nx.valid.sig===weekSig(nx);if(!ok)out.push({at:at(dt,C.valider.h),title:"Le semainier de la semaine prochaine",body:"Pensez à le regarder et à le valider pour le groupe.",url:"/menus/index.html#semaine",tag:"valider"})}
+  }
+  return out.filter(x=>x.at>now).sort((a,b)=>a.at-b.at)}
+let _rapT=null;
+function rapUpload(){if(!pushOn())return;clearTimeout(_rapT);_rapT=setTimeout(()=>{const a=meAcc();if(!a||!a.token)return;try{CLOUD.call("PUT","/push/schedule",{items:rapSchedule()}).catch(()=>{})}catch(e){}},4000)}
+function b64u(s){const p="=".repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(b,c=>c.charCodeAt(0))}
+let rapMsg="";
+async function rapEnable(){rapMsg="";try{
+    if(!meAcc()||!meAcc().token){rapMsg="Connectez-vous à votre compte pour recevoir des rappels.";return renderRappels()}
+    const perm=await Notification.requestPermission();if(perm!=="granted"){rapMsg="Notifications refusées. Autorisez-les dans les réglages du navigateur pour ce site.";return renderRappels()}
+    const reg=await navigator.serviceWorker.ready,k=await CLOUD.call("GET","/push/key");if(!k.key){rapMsg="Le serveur de rappels n'est pas encore prêt, réessayez dans quelques minutes.";return renderRappels()}
+    let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(k.key)});
+    await CLOUD.call("POST","/push/subscribe",{sub:sub.toJSON()});localStorage.setItem("menus.push.on","1");rapUpload();rapMsg="✅ Rappels activés sur cet appareil.";
+  }catch(e){rapMsg="Activation impossible : "+(e.message||e)}renderRappels()}
+async function rapDisable(){try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){await CLOUD.call("POST","/push/unsubscribe",{endpoint:sub.endpoint}).catch(()=>{});await sub.unsubscribe()}}catch(e){}localStorage.removeItem("menus.push.on");rapMsg="Rappels désactivés sur cet appareil.";renderRappels()}
+function renderRappels(){const el=document.getElementById("rapbox");if(!el)return;const C=rapCfg(),sup="Notification" in window&&"serviceWorker" in navigator&&"PushManager" in window,ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone,on=pushOn()&&sup&&Notification.permission==="granted";
+  const next=rapSchedule().slice(0,5);
+  el.innerHTML=`<div class="sechead"><h2>Rappels</h2><p class="muted">Des notifications sur votre téléphone ou votre ordinateur, au bon moment. Chacune se règle et se désactive ici, pour vous seul.</p></div>
+    <div class="rapstate">${!sup?(ios&&!standalone?`<p>📲 Sur iPhone, installez d'abord l'appli : <b>Plus › Installer l'appli</b>, puis ouvrez-la depuis l'écran d'accueil et revenez ici.</p>`:`<p>Ce navigateur ne gère pas les notifications.</p>`):on?`<p><b>🔔 Rappels activés sur cet appareil.</b></p><div class="sharebtns"><button class="btn" type="button" data-rap="test">Envoyer un rappel de test</button><button class="btn" type="button" data-rap="off">Désactiver sur cet appareil</button></div>`:`<p>Les rappels ne sont pas encore activés sur cet appareil.</p><button class="btn primary" type="button" data-rap="on">🔔 Activer les rappels</button>`}${rapMsg?`<p class="muted">${esc(rapMsg)}</p>`:""}</div>
+    <ul class="raplist">${Object.keys(RAPDEF).map(k=>{const c=C[k];return `<li><label class="cfgtog"><span class="sw"><input type="checkbox" data-rapon="${k}" ${c.on?"checked":""}><span class="swt" aria-hidden="true"></span></span><span><b>${RAPLAB[k][0]}</b><small class="muted">${RAPLAB[k][1]}</small></span></label><span class="raptime">${"d" in RAPDEF[k]?`<select data-rapd="${k}" aria-label="Jour">${JOURS.map((j,i)=>`<option value="${i}" ${+c.d===i?"selected":""}>le ${j}</option>`).join("")}</select>`:""}<input type="time" data-raph="${k}" value="${c.h}" aria-label="Heure"></span></li>`}).join("")}</ul>
+    ${next.length?`<h3 class="th3">Prochains rappels</h3><ul class="todo">${next.map(x=>`<li><small class="muted">${new Date(x.at).toLocaleString("fr-FR",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})}</small><br><b>${esc(x.title)}</b> · ${esc(x.body)}</li>`).join("")}</ul>`:""}`}
+function rapSet(k,f,v){S.rappels=S.rappels||{};S.rappels[k]=Object.assign({},S.rappels[k]||{},{[f]:v});save();rapUpload();renderRappels()}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-rap]");if(!b)return;const a=b.dataset.rap;if(a==="on")rapEnable();else if(a==="off")rapDisable();else if(a==="test")CLOUD.call("POST","/push/test",{}).then(r=>{rapMsg=r.sent?"Rappel de test envoyé.":"Aucun appareil abonné trouvé : réactivez les rappels.";renderRappels()},err=>{rapMsg=err.message;renderRappels()})});
+document.addEventListener("change",e=>{const t=e.target;if(t.dataset.rapon)rapSet(t.dataset.rapon,"on",t.checked?1:0);else if(t.dataset.raph)rapSet(t.dataset.raph,"h",t.value||"10:00");else if(t.dataset.rapd)rapSet(t.dataset.rapd,"d",+t.value)});
 
 // ---------- Historique des semaines passées ----------
 function renderHistory(){
@@ -3556,7 +3609,7 @@ document.addEventListener("change",e=>{
   cfgWrite(C);save();build("keep");renderAll();toast(s.dataset.eqfill?"Semaine type mise à jour":"Repas mis à jour : "+(val?eaterLabel(val):"par défaut"));
 });
 
-const VIEWS=["aujourdhui","groupe","semaine","batch","gouts","recettes","courses","propositions","historique","admin","mesrecettes"];
+const VIEWS=["aujourdhui","groupe","semaine","batch","gouts","recettes","courses","propositions","historique","admin","mesrecettes","rappels"];
 function route(){
   let v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"aujourdhui";
   if(v==="admin"&&!isSuper())v="semaine";if(v==="admin")ADM.load();
@@ -3587,6 +3640,16 @@ CLOUD.init({apply:reloadFromStorage});
   document.addEventListener("click",e=>{if(!m.hidden&&!e.target.closest("#plusMenu"))close();else if(e.target.closest("#plusMenu a"))close()});
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!m.hidden){close();b.focus()}});
   window.addEventListener("resize",close);window.addEventListener("scroll",close,{passive:true});
+})();
+
+// ---------- Appli installable : service worker et bouton « Installer » ----------
+if("serviceWorker" in navigator&&location.protocol==="https:")window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+(()=>{let deferred=null;const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+  const m=document.getElementById("plusMenu");if(!m||standalone)return;
+  const a=document.createElement("a");a.href="#";a.setAttribute("role","menuitem");a.textContent="📲 Installer l'appli";a.hidden=!isIOS;m.insertBefore(a,m.querySelector("hr"));
+  window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;a.hidden=false});
+  a.addEventListener("click",e=>{e.preventDefault();if(deferred){deferred.prompt();deferred.userChoice.finally(()=>{deferred=null;a.hidden=true})}else if(isIOS){alertBox("Sur iPhone : touchez le bouton Partager <b>⬆︎</b> de Safari, puis « <b>Sur l'écran d'accueil</b> ». L'appli s'ouvrira ensuite en plein écran, comme une vraie appli.")}});
+  function alertBox(h){const d=document.createElement("div");d.className="shareov";d.innerHTML=`<div class="sharesheet" role="dialog" aria-modal="true"><button type="button" class="close" data-ovclose>Fermer ×</button><h3>Installer l'appli</h3><p>${h}</p></div>`;d.addEventListener("click",ev=>{if(ev.target===d||ev.target.closest("[data-ovclose]"))d.remove()});document.body.appendChild(d)}
 })();
 </script>
 
