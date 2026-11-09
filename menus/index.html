@@ -354,6 +354,7 @@ img.art.ready{opacity:1}
 .acctabs{display:inline-flex;gap:4px;background:var(--bg);border-radius:999px;padding:3px;align-self:flex-start}
 .acctabs button{border:0;background:none;border-radius:999px;padding:6px 14px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;font-family:var(--f-body)}
 .acctabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.accchk{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.45;color:var(--muted);margin:4px 0 10px}.accchk input{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--accent)}.accchk a{color:var(--accent)}.accchk.need{color:var(--bad,#A2372A)}.accchk.need span::after{content:" " attr(data-need);font-weight:700;display:block;margin-top:4px}
 .accform{display:flex;flex-direction:column;gap:10px}
 .accform.inline{flex-direction:row;align-items:flex-end;flex-wrap:wrap}
 .accform.inline .accf{flex:1 1 200px}
@@ -794,6 +795,15 @@ body.storemode #shop .hint{font-size:13px}
 #cfgbox .cfgcard.closed>h3::after{transform:rotate(-90deg)}
 #cfgbox .cfgcard.closed>:not(h3){display:none!important}
 #cfgbox .cfgcard.closed{padding-bottom:12px}
+.growth h3{font-family:inherit;font-size:15px;margin:22px 0 10px}
+.gbars{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;height:170px;align-items:end;padding-bottom:30px}
+.gbar{position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.gbar i{display:block;width:100%;min-height:2px;background:var(--accent);border-radius:6px 6px 2px 2px}
+.gbar b{font-size:12px;font-variant-numeric:tabular-nums;margin-bottom:2px;order:-1}
+.gbar small{position:absolute;bottom:-22px;font-size:10px;color:var(--muted);white-space:nowrap}
+.gsrc{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.gsrc li{display:grid;grid-template-columns:minmax(120px,220px) 1fr 40px;gap:10px;align-items:center;font-size:14px}
+.gsrc i{display:block;height:10px;border-radius:5px;background:var(--accent);min-width:3px}.gsrc b{text-align:right;font-variant-numeric:tabular-nums}
 .admstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 16px}.admstats div{background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 14px}
 .admstats b{display:block;font-size:24px}.admstats span{font-size:12.5px;color:var(--muted,#777)}
 @media(max-width:600px){.admstats{grid-template-columns:repeat(2,1fr)}}
@@ -2120,6 +2130,8 @@ const CLOUD=(()=>{
   const write=(k,v)=>{try{localStorage.setItem(k,J(v))}catch(e){}};
   const esc2=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+  try{if(!localStorage.getItem("menus.ref")){const P=new URLSearchParams(location.search),h=(()=>{try{return document.referrer?new URL(document.referrer).hostname:""}catch(_){return ""}})();
+    const r=P.get("ref")||P.get("utm_source")||(h&&!/gamb-it-apps\.fr$/.test(h)?"web:"+h.replace(/^www\./,""):"direct");localStorage.setItem("menus.ref",r.slice(0,40))}}catch(_){}
   async function api(method,path,body){
     const h={"Content-Type":"application/json"};if(acc&&acc.token)h.Authorization="Bearer "+acc.token;
     let r;
@@ -2263,6 +2275,7 @@ const CLOUD=(()=>{
           ${field("accUser","Identifiant","text",'autocomplete="username" autocapitalize="none" spellcheck="false" required')}
           ${view==="register"?field("accName","Prénom","text",'autocomplete="given-name" required'):""}
           ${field("accPass","Mot de passe"+(view==="register"?" (8 caractères minimum)":""),"password",`autocomplete="${view==="register"?"new-password":"current-password"}" required`)}
+          ${view==="register"?`<label class="accchk"><input type="checkbox" id="accConsent"><span>J'accepte les <a href="conditions.html" target="_blank" rel="noopener">conditions d'utilisation</a> et la <a href="../confidentialite.html#semainier" target="_blank" rel="noopener">politique de confidentialité</a>. J'ai 15 ans ou plus, ou un parent est d'accord.</span></label>`:""}
           <button class="btn primary" type="submit">${view==="login"?"Se connecter":"Créer mon compte"}</button>
         </form>
         ${view==="register"?'<p class="muted small">Aucune adresse e-mail n\'est demandée. Notez bien votre mot de passe : il ne peut pas être récupéré. Ce que vous avez déjà fait sur cet appareil est conservé dans votre nouveau compte.</p>':'<p class="muted small">En vous connectant, les données de votre compte remplacent celles de cet appareil.</p>'}`;
@@ -2293,7 +2306,7 @@ const CLOUD=(()=>{
       <section class="accsec"><h4>Mon compte</h4>
       ${view==="password"?`<form class="accform" data-accform="password" novalidate>${field("accCur","Mot de passe actuel","password",'autocomplete="current-password"')}${field("accNew","Nouveau mot de passe (8 caractères minimum)","password",'autocomplete="new-password"')}<div class="row"><button class="btn primary" type="submit">Changer le mot de passe</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
       :view==="delete"?`<form class="accform" data-accform="delete" novalidate><p>Supprimer définitivement votre compte et ses données enregistrées ? Ce qui est sur cet appareil reste disponible sans compte.</p>${field("accDel","Mot de passe","password",'autocomplete="current-password"')}<div class="row"><button class="btn danger" type="submit">Supprimer mon compte</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
-      :`<div class="row"><button class="btn" type="button" data-acc="logout">Se déconnecter</button><button class="btn" type="button" data-acc="view-password">Changer de mot de passe</button><button class="btn linkbad" type="button" data-acc="view-delete">Supprimer mon compte</button></div>`}
+      :`<div class="row"><button class="btn" type="button" data-acc="logout">Se déconnecter</button><button class="btn" type="button" data-acc="view-password">Changer de mot de passe</button><button class="btn" type="button" data-acc="export">Télécharger mes données</button><button class="btn linkbad" type="button" data-acc="view-delete">Supprimer mon compte</button></div>`}
       </section>`;
   }
   async function act(fn,okMsg){
@@ -2314,6 +2327,7 @@ const CLOUD=(()=>{
       if(k==="open"){note="";view=acc?"main":"login";open();return}
       if(k.startsWith("view-")){view=k.slice(5);note="";if(!document.getElementById("accBody"))open();else renderPanel();const f=document.querySelector("#accBody input");if(f)try{f.focus()}catch(_){};return}
       if(k==="copy"){const c=(acc&&acc.group&&acc.group.code)||"";const done=()=>{note="Code copié : "+c;renderPanel()};try{navigator.clipboard.writeText(c).then(done,()=>{note="Code : "+c;renderPanel()})}catch(_){note="Code : "+c;renderPanel()};return}
+      if(k==="export"){act(async()=>{const d=await api("GET","/account/export");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));a.download="semainier-mes-donnees-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)},"Vos données ont été téléchargées.");return}
       if(k==="logout"){act(async()=>{try{await api("POST","/auth/logout")}catch(_){}acc=null;keep();view="login";setStatus("idle")},"Vous êtes déconnecté. Vos données restent sur cet appareil.");return}
       if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave",{id:acc.group&&acc.group.id});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply()},"Vous avez quitté le groupe.");return}
     }
@@ -2329,7 +2343,8 @@ const CLOUD=(()=>{
     const v=id=>id in snap?snap[id]:((document.getElementById(id)||{}).value||"");
     const kind=f.dataset.accform;
     if(kind==="login")act(async()=>{const r=await api("POST","/auth/login",{username:v("accUser").trim(),password:v("accPass")});startSession(r,false);await sync();hooks.apply();},"Connecté.");
-    if(kind==="register")act(async()=>{const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass")});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
+    if(kind==="register"){const ck=document.getElementById("accConsent");if(ck&&!ck.checked){const l=ck.closest("label");l.classList.add("need");l.querySelector("span").dataset.need="Cochez cette case pour créer votre compte.";ck.focus();return}}
+    if(kind==="register")act(async()=>{let ref="";try{ref=localStorage.getItem("menus.ref")||""}catch(_){}const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass"),consent:true,ref});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
     if(kind==="create")act(async()=>{await sync();const L=local();const st=await api("POST","/groups",{name:v("accGroup"),icon:v("accIcon"),data:v("accStart")==="copie"?L.shared:{}});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply();},"Groupe créé et activé. Partagez le code ci-dessous pour inviter.");
     if(kind==="rename")act(async()=>{const st=await api("POST","/groups/rename",{id:acc.group.id,name:v("accGName"),icon:v("accGIcon")});acc.group=st.group;acc.groups=st.groups;keep();view="main";paintBtn();hooks.apply()},"Groupe renommé.");
     if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn"),role:v("accRole")||"adulte"});acc.user=st.user;acc.group=st.group;acc.groups=st.groups;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply();},"Bienvenue dans le groupe : c'est maintenant votre groupe actif.");
@@ -3112,6 +3127,28 @@ const ADM=(()=>{
   async function call(path,body){busy=true;err="";render();try{const r=await CLOUD.call(body?"POST":"GET",path,body);if(r.overview){D=r.overview;pw=r.password?{id:body.id,pw:r.password}:null}else D=r;const a=meAcc();const mu=a&&a.user&&D.users.find(x=>x.username===a.user.username);D.meId=mu?mu.id:null}catch(e){err=e.message}busy=false;render()}
   const load=()=>call("/admin/overview");
   const confirmOnce=(k,msg)=>{if(arm.k===k&&Date.now()-arm.t<4000){arm={k:"",t:0};return true}arm={k,t:Date.now()};toast(msg);return false};
+  // Croissance : inscriptions par semaine, comptes actifs, groupes vivants, d'où viennent les inscrits
+  function growthHTML(){
+    const now=Date.now(),day=864e5,act=n=>D.users.filter(u=>u.seen&&now-new Date(u.seen)<n*day).length;
+    const wk=[...Array(12)].map((_,k)=>{const end=now-k*7*day,start=end-7*day;return {k,n:D.users.filter(u=>{const t=new Date(u.created).getTime();return t>=start&&t<end}).length,start}}).reverse();
+    const mx=Math.max(1,...wk.map(w=>w.n));
+    const multi=D.groups.filter(g=>g.members.length>1).length,live=D.groups.filter(g=>g.updated&&now-new Date(g.updated)<7*day).length;
+    const avg=D.groups.length?(D.groups.reduce((t,g)=>t+g.members.length,0)/D.groups.length).toFixed(1).replace(".",","):"0";
+    const src={};D.users.forEach(u=>{const r=(u.ref||"inconnue (avant le suivi)").replace(/^web:/,"site : ");src[r]=(src[r]||0)+1});
+    const srcs=Object.entries(src).sort((a,b)=>b[1]-a[1]);
+    const plans={};D.groups.forEach(g=>plans[g.plan||"gratuit"]=(plans[g.plan||"gratuit"]||0)+1);
+    const r30=D.users.filter(u=>now-new Date(u.created)>30*day),ret=r30.length?Math.round(r30.filter(u=>u.seen&&now-new Date(u.seen)<30*day).length/r30.length*100):null;
+    const lbl=t=>new Date(t).toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
+    return `<div class="growth">
+      <div class="admstats"><div><b>${act(1)}</b><span>actifs aujourd'hui</span></div><div><b>${act(7)}</b><span>actifs sur 7 jours</span></div><div><b>${act(30)}</b><span>actifs sur 30 jours</span></div><div><b>${ret==null?"–":ret+" %"}</b><span>fidélité à 30 jours</span></div></div>
+      <div class="admstats"><div><b>${live}</b><span>groupes utilisés cette semaine</span></div><div><b>${multi}</b><span>groupes à plusieurs</span></div><div><b>${avg}</b><span>membres par groupe</span></div><div><b>${Object.entries(plans).map(([p,n])=>n+" "+p).join(", ")}</b><span>offres</span></div></div>
+      <h3>Nouveaux comptes par semaine</h3>
+      <div class="gbars" role="img" aria-label="Inscriptions des 12 dernières semaines">${wk.map(w=>`<div class="gbar" title="Semaine du ${lbl(w.start)} : ${w.n}"><i style="height:${Math.round(w.n/mx*100)}%"></i><b>${w.n||""}</b><small>${lbl(w.start)}</small></div>`).join("")}</div>
+      <h3>D'où viennent les inscrits</h3>
+      <ul class="gsrc">${srcs.map(([r,n])=>`<li><span>${esc(r)}</span><i style="width:${Math.round(n/D.users.length*100)}%"></i><b>${n}</b></li>`).join("")}</ul>
+      <p class="muted small">Pour savoir d'où viennent les gens, partagez des liens avec une étiquette : <code>gamb-it-apps.fr/menus/?ref=tiktok</code>, <code>?ref=whatsapp-famille</code>… La première étiquette vue est gardée et enregistrée à l'inscription. « fidélité à 30 jours » = parmi les comptes de plus d'un mois, la part revenue dans les 30 derniers jours.</p>
+    </div>`;
+  }
   function render(){
     const el=document.getElementById("adminbox");if(!el)return;
     if(!isSuper()){el.innerHTML="";return}
@@ -3123,7 +3160,7 @@ const ADM=(()=>{
       <div class="admstats"><div><b>${D.users.length}</b><span>comptes</span></div><div><b>${D.groups.length}</b><span>groupes</span></div><div><b>${active}</b><span>actifs cette semaine</span></div><div><b>${banned}</b><span>suspendus</span></div></div>
       ${err?`<p class="warnbox">${esc(err)}</p>`:""}
       ${pw?`<div class="admpw">Nouveau mot de passe de <b>${esc((U[pw.id]||{}).name||"")}</b> : <code>${esc(pw.pw)}</code> <span class="muted">Transmettez-le-lui ; il pourra le changer dans « Mon compte ».</span></div>`:""}
-      <nav class="subnav admtabs" aria-label="Administration"><a href="#admin" data-admtab="users" ${tab==="users"?'aria-current="page"':""}>👤 Comptes (${D.users.length})</a><a href="#admin" data-admtab="groups" ${tab==="groups"?'aria-current="page"':""}>👥 Groupes (${D.groups.length})</a></nav>
+      <nav class="subnav admtabs" aria-label="Administration"><a href="#admin" data-admtab="users" ${tab==="users"?'aria-current="page"':""}>👤 Comptes (${D.users.length})</a><a href="#admin" data-admtab="groups" ${tab==="groups"?'aria-current="page"':""}>👥 Groupes (${D.groups.length})</a><a href="#admin" data-admtab="growth" ${tab==="growth"?'aria-current="page"':""}>📈 Croissance</a></nav>
       ${tab==="users"?`<input type="search" class="admsearch" id="admQ" placeholder="Rechercher un nom, un identifiant ou un groupe" value="${esc(q)}" aria-label="Rechercher un compte">`:`<input type="search" class="admsearch" id="admGQ" placeholder="Rechercher un groupe ou un de ses membres" value="${esc(gq)}" aria-label="Rechercher un groupe">`}
       ${tab==="users"?`<div class="admlist">${D.users.filter(match).map(u=>{const adm=isSiteAdmin(),staff=u.siteRole==="admin"||u.siteRole==="moderateur",canAct=!u.locked&&(adm||!staff);
         const ug=D.groups.filter(g=>g.members.some(m=>m.id===u.id));
@@ -3136,6 +3173,7 @@ const ADM=(()=>{
         <div class="admact">${adm&&!u.locked&&u.id!==D.meId?`<select class="srole" data-srole="${u.id}" aria-label="Rôle de ${esc(u.name)} sur le site"><option value="" ${!u.siteRole?"selected":""}>Membre</option><option value="moderateur" ${u.siteRole==="moderateur"?"selected":""}>Modérateur</option><option value="admin" ${u.siteRole==="admin"?"selected":""}>Admin du site</option></select>`:""}${canAct&&u.id!==D.meId?`<button type="button" class="btn sm" data-adm="ban|${u.id}|${u.banned?0:1}">${u.banned?"Réactiver":"Suspendre"}</button>`:""}${adm&&canAct&&u.id!==D.meId?`<button type="button" class="btn sm" data-adm="pw|${u.id}">Nouveau mot de passe</button><button type="button" class="btn sm danger" data-adm="del|${u.id}">Supprimer</button>`:""}</div>
       </div>`}).join("")||'<p class="muted">Aucun compte ne correspond.</p>'}</div>
       <p class="muted small admroles"><b>Admin du site</b> : tout gérer, y compris les rôles. <b>Modérateur</b> : suspendre des comptes et gérer les membres des groupes, sans toucher à l'équipe.</p>`:""}
+      ${tab==="growth"?growthHTML():""}
       ${tab==="groups"?`<div class="admgroups">${D.groups.filter(g=>!gq.trim()||qMatch(gq,g.name+" "+g.members.map(m=>{const u=U[m.id];return u?u.name+" "+u.username:""}).join(" "))).map(g=>gopen!==g.id?`<button type="button" class="admgrow" data-gopen="${g.id}"><b>${esc((g.icon||"")+" "+g.name)}</b><span class="muted">${g.members.length} membre${g.members.length>1?"s":""} · ${esc(g.members.slice(0,4).map(m=>(U[m.id]||{}).name||"?").join(", "))}${g.members.length>4?"…":""}</span><span class="chev" aria-hidden="true">›</span></button>`:`<article class="admg open"><header><button type="button" class="linkish" data-gopen="0" aria-label="Refermer">‹</button><b>${esc((g.icon||"")+" "+g.name)}</b><span class="muted">code ${esc(g.code)} · créé le ${dt(g.created)}</span>${isSiteAdmin()?`<button type="button" class="btn sm danger" data-adm="gdel|${g.id}">Supprimer le groupe</button>`:""}</header>
         <ul class="mlist">${g.members.map(m=>{const u=U[m.id]||{name:"?",username:"?"},kid=m.role==="enfant";return `<li class="mrow"><span class="mname">${esc(u.name)} <small class="muted">@${esc(u.username)}</small></span><span class="mbadges"><span class="mb ${m.admin?"adm":"mbr"}">${m.admin?"👑 Admin":"Membre"}</span><span class="mb ${kid?"kid":"adu"}">${kid?"Enfant":"Adulte"}</span></span>
           <span class="mact"><button type="button" class="rolebtn" data-adm="role|${g.id}|${m.id}|${kid?"adulte":"enfant"}">→ ${kid?"Adulte":"Enfant"}</button><button type="button" class="rolebtn" data-adm="gadm|${g.id}|${m.id}|${m.admin?0:1}" ${kid&&!m.admin?"disabled":""}>${m.admin?"Retirer admin":"→ Admin"}</button><button type="button" class="rolebtn" data-adm="out|${g.id}|${m.id}">Retirer du groupe</button></span></li>`}).join("")||'<li class="muted">Aucun membre.</li>'}</ul>

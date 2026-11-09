@@ -177,6 +177,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 .acctabs{display:inline-flex;gap:4px;background:var(--bg);border-radius:999px;padding:3px;align-self:flex-start}
 .acctabs button{border:0;background:none;border-radius:999px;padding:6px 14px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;font-family:var(--f-body)}
 .acctabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.accchk{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.45;color:var(--muted);margin:4px 0 10px}.accchk input{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--accent)}.accchk a{color:var(--accent)}.accchk.need{color:var(--bad,#A2372A)}.accchk.need span::after{content:" " attr(data-need);font-weight:700;display:block;margin-top:4px}
 .accform{display:flex;flex-direction:column;gap:10px}
 .accform.inline{flex-direction:row;align-items:flex-end;flex-wrap:wrap}
 .accform.inline .accf{flex:1 1 200px}
@@ -1757,6 +1758,8 @@ const CLOUD=(()=>{
   const write=(k,v)=>{try{localStorage.setItem(k,J(v))}catch(e){}};
   const esc2=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+  try{if(!localStorage.getItem("menus.ref")){const P=new URLSearchParams(location.search),h=(()=>{try{return document.referrer?new URL(document.referrer).hostname:""}catch(_){return ""}})();
+    const r=P.get("ref")||P.get("utm_source")||(h&&!/gamb-it-apps\.fr$/.test(h)?"web:"+h.replace(/^www\./,""):"direct");localStorage.setItem("menus.ref",r.slice(0,40))}}catch(_){}
   async function api(method,path,body){
     const h={"Content-Type":"application/json"};if(acc&&acc.token)h.Authorization="Bearer "+acc.token;
     let r;
@@ -1870,6 +1873,7 @@ const CLOUD=(()=>{
           ${field("accUser","Identifiant","text",'autocomplete="username" autocapitalize="none" spellcheck="false" required')}
           ${view==="register"?field("accName","Prénom","text",'autocomplete="given-name" required'):""}
           ${field("accPass","Mot de passe"+(view==="register"?" (8 caractères minimum)":""),"password",`autocomplete="${view==="register"?"new-password":"current-password"}" required`)}
+          ${view==="register"?`<label class="accchk"><input type="checkbox" id="accConsent"><span>J'accepte les <a href="conditions.html" target="_blank" rel="noopener">conditions d'utilisation</a> et la <a href="../confidentialite.html#semainier" target="_blank" rel="noopener">politique de confidentialité</a>. J'ai 15 ans ou plus, ou un parent est d'accord.</span></label>`:""}
           <button class="btn primary" type="submit">${view==="login"?"Se connecter":"Créer mon compte"}</button>
         </form>
         ${view==="register"?'<p class="muted small">Aucune adresse e-mail n\'est demandée. Notez bien votre mot de passe : il ne peut pas être récupéré. Ce que vous avez déjà fait sur cet appareil est conservé dans votre nouveau compte.</p>':'<p class="muted small">En vous connectant, les données de votre compte remplacent celles de cet appareil.</p>'}`;
@@ -1900,7 +1904,7 @@ const CLOUD=(()=>{
       <section class="accsec"><h4>Mon compte</h4>
       ${view==="password"?`<form class="accform" data-accform="password" novalidate>${field("accCur","Mot de passe actuel","password",'autocomplete="current-password"')}${field("accNew","Nouveau mot de passe (8 caractères minimum)","password",'autocomplete="new-password"')}<div class="row"><button class="btn primary" type="submit">Changer le mot de passe</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
       :view==="delete"?`<form class="accform" data-accform="delete" novalidate><p>Supprimer définitivement votre compte et ses données enregistrées ? Ce qui est sur cet appareil reste disponible sans compte.</p>${field("accDel","Mot de passe","password",'autocomplete="current-password"')}<div class="row"><button class="btn danger" type="submit">Supprimer mon compte</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
-      :`<div class="row"><button class="btn" type="button" data-acc="logout">Se déconnecter</button><button class="btn" type="button" data-acc="view-password">Changer de mot de passe</button><button class="btn linkbad" type="button" data-acc="view-delete">Supprimer mon compte</button></div>`}
+      :`<div class="row"><button class="btn" type="button" data-acc="logout">Se déconnecter</button><button class="btn" type="button" data-acc="view-password">Changer de mot de passe</button><button class="btn" type="button" data-acc="export">Télécharger mes données</button><button class="btn linkbad" type="button" data-acc="view-delete">Supprimer mon compte</button></div>`}
       </section>`;
   }
   async function act(fn,okMsg){
@@ -1921,6 +1925,7 @@ const CLOUD=(()=>{
       if(k==="open"){note="";view=acc?"main":"login";open();return}
       if(k.startsWith("view-")){view=k.slice(5);note="";if(!document.getElementById("accBody"))open();else renderPanel();const f=document.querySelector("#accBody input");if(f)try{f.focus()}catch(_){};return}
       if(k==="copy"){const c=(acc&&acc.group&&acc.group.code)||"";const done=()=>{note="Code copié : "+c;renderPanel()};try{navigator.clipboard.writeText(c).then(done,()=>{note="Code : "+c;renderPanel()})}catch(_){note="Code : "+c;renderPanel()};return}
+      if(k==="export"){act(async()=>{const d=await api("GET","/account/export");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));a.download="semainier-mes-donnees-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)},"Vos données ont été téléchargées.");return}
       if(k==="logout"){act(async()=>{try{await api("POST","/auth/logout")}catch(_){}acc=null;keep();view="login";setStatus("idle")},"Vous êtes déconnecté. Vos données restent sur cet appareil.");return}
       if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave",{id:acc.group&&acc.group.id});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply()},"Vous avez quitté le groupe.");return}
     }
@@ -1935,7 +1940,8 @@ const CLOUD=(()=>{
     const v=id=>id in snap?snap[id]:((document.getElementById(id)||{}).value||"");
     const kind=f.dataset.accform;
     if(kind==="login")act(async()=>{const r=await api("POST","/auth/login",{username:v("accUser").trim(),password:v("accPass")});startSession(r,false);await sync();hooks.apply();},"Connecté.");
-    if(kind==="register")act(async()=>{const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass")});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
+    if(kind==="register"){const ck=document.getElementById("accConsent");if(ck&&!ck.checked){const l=ck.closest("label");l.classList.add("need");l.querySelector("span").dataset.need="Cochez cette case pour créer votre compte.";ck.focus();return}}
+    if(kind==="register")act(async()=>{let ref="";try{ref=localStorage.getItem("menus.ref")||""}catch(_){}const r=await api("POST","/auth/register",{username:v("accUser").trim(),name:v("accName"),password:v("accPass"),consent:true,ref});startSession(r,true);await sync();},"Compte créé. Vos données sont maintenant enregistrées en ligne.");
     if(kind==="create")act(async()=>{await sync();const L=local();const st=await api("POST","/groups",{name:v("accGroup"),icon:v("accIcon"),data:v("accStart")==="copie"?L.shared:{}});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply();},"Groupe créé et activé. Partagez le code ci-dessous pour inviter.");
     if(kind==="rename")act(async()=>{const st=await api("POST","/groups/rename",{id:acc.group.id,name:v("accGName"),icon:v("accGIcon")});acc.group=st.group;acc.groups=st.groups;keep();view="main";paintBtn();hooks.apply()},"Groupe renommé.");
     if(kind==="join")act(async()=>{await sync();const L=local();const st=await api("POST","/groups/join",{code:v("accCodeIn"),role:v("accRole")||"adulte"});acc.user=st.user;acc.group=st.group;acc.groups=st.groups;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply();},"Bienvenue dans le groupe : c'est maintenant votre groupe actif.");

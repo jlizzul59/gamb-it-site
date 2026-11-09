@@ -83,7 +83,7 @@ def page(title, desc, path, body, ld=None):
 <meta property="og:image" content="{SITE}/menus/icon-512.png"><link rel="icon" href="../icon-192.png"><meta name="theme-color" content="#2D6A42">
 {f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' if ld else ''}
 <style>{CSS}</style></head><body>
-<header><a class="brand" href="index.html">🍽️ Le <span>Semainier</span></a><a class="cta" href="../index.html">Planifier ma semaine</a></header>
+<header><a class="brand" href="index.html">🍽️ Le <span>Semainier</span></a><a class="cta" href="../index.html?ref=recette">Planifier ma semaine</a></header>
 <main>{body}</main>
 <footer><span>© GAMB-IT · <a href="https://gamb-it-apps.fr/">gamb-it-apps.fr</a></span><span><a href="index.html">Toutes les recettes</a> · <a href="../conditions.html">Conditions</a> · <a href="https://gamb-it-apps.fr/confidentialite.html">Confidentialité</a> · <a href="https://gamb-it-apps.fr/mentions-legales.html">Mentions légales</a></span></footer>
 </body></html>
@@ -120,7 +120,7 @@ for r in R:
 <ul class="meta"><li>⏱ {t} min</li><li>👥 {PORTIONS} personnes</li><li>🌍 {e(pays)}</li></ul>
 <div class="grid"><section class="card"><h2>Ingrédients</h2><ul class="ing">{''.join(f'<li><b>{e(q)}</b><span>{e(n)}</span></li>' for q, n, _ in ings)}</ul></section>
 <section class="card"><h2>Préparation</h2><ol class="steps">{''.join(f'<li>{e(x)}</li>' for x in r['st'])}</ol></section></div>
-<div class="actions"><a class="cta" href="../recettes.html#r={e(r['id'])}">Ajouter à mon semainier</a><a class="cta ghost" href="../recettes.html#c={e(r["id"])}">Cuisiner pas à pas</a></div>
+<div class="actions"><a class="cta" href="../recettes.html?ref=recette#r={e(r['id'])}">Ajouter à mon semainier</a><a class="cta ghost" href="../recettes.html?ref=recette#c={e(r["id"])}">Cuisiner pas à pas</a></div>
 <p>Le Semainier prépare vos menus de la semaine, la liste de courses au gramme près et le pas-à-pas en cuisine. Gratuit, à partager avec toute la famille.</p>
 {f'<h2>Dans le même esprit</h2><ul class="rel">' + ''.join(f'<li><a href="{SL[x["id"]]}.html">{e(x["n"])}<small>{e(x.get("pays") or "")} · {x.get("t") or 0} min</small></a></li>' for x in rel) + '</ul>' if rel else ''}"""
     open(os.path.join(OUT, s + ".html"), "w", encoding="utf-8").write(page(f"{r['n']} – recette | Le Semainier", desc, s + ".html", body, ld))
