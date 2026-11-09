@@ -506,6 +506,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 <footer class="wrap foot">Sans compte, vos menus, favoris, notes et goûts restent sur cet appareil, dans ce navigateur. Avec un compte, vous les retrouvez sur tous vos appareils et pouvez les partager en groupe.</footer>
 <div class="overlay" id="overlay" hidden></div>
 <div class="toast" id="toast" hidden></div>
+<script src="recettes-plus.js?v=20261109"></script>
 <script>
 
 // ---------- Ingrédients ----------
@@ -1417,6 +1418,8 @@ const QNEW=[{"ing":[["toncru",120],["soja",1],["huilesesame",0.5],["citronvert",
 const QBC={"poke":{"t":[],"j":"Cuire le riz à l'avance si besoin ; couper le poisson et assembler au dernier moment."},"pulled":{"t":[["four","Cuire l'échine 3 h et l'effilocher"]],"j":"Réchauffer la viande dans sa sauce, préparer le coleslaw, garnir les pains."},"cevichecuit":{"t":[["feu","Cuire la patate douce"]],"j":"Couper le poisson, le mariner 5 à 10 min au citron vert et servir aussitôt."},"poutine":{"t":[["cru","Tailler les frites"]],"j":"Frites au four, sauce brune, assembler avec le fromage."},"tahitienne":{"t":[["cru","Couper les légumes"]],"j":"Couper le thon, le mariner 10 min au citron vert, ajouter le lait de coco et servir."},"bowlsaumon":{"t":[["cru","Couper les légumes"]],"j":"Cuire et assaisonner le riz, trancher le saumon au dernier moment."}};
 for(const id in QUAL){if(RB[id])Object.assign(RB[id],QUAL[id])}
 QNEW.forEach(o=>{const r=Object.assign({},o);delete r.j;if(RB[r.id])Object.assign(RB[r.id],r);else{R.push(r);RB[r.id]=r}BC[r.id]={t:[],j:o.j}});
+// Recettes ajoutées (fichier partagé recettes-plus.js)
+(()=>{const X=window.MENUS_PLUS;if(!X)return;Object.assign(I,X.I);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:"Réchauffer doucement avant de servir."}})})();
 Object.assign(BC,QBC);
 const SIMPLE=new Set(["ssoupecourgette","ssoupecarotte","ssoupepoireau","ssoupetomate","ssoupebrocoli","ssoupepois","ssoupepotiron","ssoupechampi","ssoupevermicelle","scordonbleu","spoissonpane","ssteakfrites","spoulethv","spouletcreme","spatesbeurre","spatesthon","spatestomate","sjambonpuree","sknackis","somelette","soeufscoque","soeufsdurs","stomatesfarcies","sgratincourgette","sraviolis","srizpoulet","ssteakcarottes","spoireauxvinaigrette","squichesimple","spurrecabillaud","spatesbolo","sgratinpdt","wsteak","wsaumon","wpoulettenders","wcurry","whoumous","wjambonchaud","woeuf","ppouletfrites","ppouletpatates","ppouletpatatesdouces","psaucissesplaque","psaumonplaque","pgnocchisfour","ppatesfour","prizfour","pfajitasplaque","pboulettesfour","pcabillaudfour","pcurryfour","ppatatesfarcies","sailesfour","ssaucissesfrites","spateslardons","spouletcurryriz","sescalopepanee","soeufsbrouilles","srizsaute","spoeleepoulet","ssteakhvpdt","sgratinchoufleurs","ssaladecomposee","pouletroti","steakpuree","ksteakhache","kjambonpuree","kcotesporc","saucissepuree","coquillettes","croques","kcroquemadame","komelettejambon","ksoupelegumes","kchoufleursoupe","kcourgettesoupe","kpoiscasses","kwrapjambon","ksaladepates","ksaladeriz","galettes","kcrepessalees","kpetitspoissoupe","ktomatesoupe"]);R.forEach(r=>{if(SIMPLE.has(r.id))r.simple=1});
 // ---------- Assiette toute simple : viande ou poisson + accompagnement + légume ----------
@@ -1484,7 +1487,7 @@ const tempOf=r=>COLD_RX.test(r.n.split(",")[0])?"froid":"chaud";
 // ---------- Légumes et fruits de saison (France) ----------
 // Mois de début et de fin (une plage peut chevaucher la fin d'année). Les légumes en conserve,
 // surgelés ou disponibles toute l'année (carottes, champignons, salade…) ne comptent pas.
-const SEASON={courgette:[6,9],tomate:[6,9],tomcerise:[6,9],aubergine:[6,9],poivron:[7,10],concombre:[5,9],haricotsverts:[6,9],fenouil:[6,10],radis:[4,7],roquette:[4,10],celeri:[6,11],brocoli:[6,11],epinards:[[3,6],[9,11]],choufleur:[9,4],poireau:[9,4],potiron:[9,1],chou:[10,3],chourouge:[10,3],endive:[10,4],betterave:[9,3],navet:[10,3],panais:[10,3],cresson:[10,4],pakchoi:[9,12],choucroute:[10,3],pomme:[9,4],orange:[12,4]};
+const SEASON={courgette:[6,9],tomate:[6,9],tomcerise:[6,9],aubergine:[6,9],poivron:[7,10],concombre:[5,9],haricotsverts:[6,9],fenouil:[6,10],radis:[4,7],roquette:[4,10],celeri:[6,11],brocoli:[6,11],epinards:[[3,6],[9,11]],choufleur:[9,4],poireau:[9,4],potiron:[9,1],chou:[10,3],chourouge:[10,3],endive:[10,4],betterave:[9,3],navet:[10,3],panais:[10,3],cresson:[10,4],pakchoi:[9,12],choucroute:[10,3],pomme:[9,4],orange:[12,4],asperges:[4,6],blettes:[6,11],celerirave:[9,3],topinambour:[10,3],choubxl:[10,2]};
 const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 const inRange=(m,[a,b])=>a<=b?m>=a&&m<=b:m>=a||m<=b;
 const inSeason=(id,m)=>{const s=SEASON[id];if(!s)return true;return (Array.isArray(s[0])?s:[s]).some(x=>inRange(m,x))};
@@ -2064,7 +2067,7 @@ function render(){
 function planner(){try{return JSON.parse(localStorage.getItem("semainier.v3")||"null")}catch(e){return null}}
 function addToMenu(id,day,when,how){
   let S=planner()||{prefs:{},kid:true,cur:0,weeks:{}};
-  const w=S.cur||0;S.weeks=S.weeks||{};
+  const w=Math.max(S.cur||0,(()=>{const t=new Date();t.setHours(12,0,0,0);return Math.max(0,Math.floor(Math.round((t-new Date(2026,10,1,12))/864e5)/7))})());S.cur=w;S.weeks=S.weeks||{};
   const W=S.weeks[w]=S.weeks[w]||{plan:{},mode:{},pin:{},checked:{},shopSess:1};
   const key=day+(when==="Midi"?"m":"s");
   W.plan=W.plan||{};W.pin=W.pin||{};W.mode=W.mode||{};
@@ -2160,7 +2163,7 @@ const ov=document.getElementById("overlay");let current=null;
 function openRecipe(id){
   const r=RB[id];if(!r)return;current=id;
   const bc=BC[r.id]||{t:[],j:""};
-  const S=planner(),wk=(S&&S.cur)||0;
+  const S=planner(),wk=Math.max((S&&S.cur)||0,(()=>{const t=new Date();t.setHours(12,0,0,0);return Math.max(0,Math.floor(Math.round((t-new Date(2026,10,1,12))/864e5)/7))})());
   ov.innerHTML=`<article class="sheet" role="dialog" aria-modal="true" aria-label="${esc(r.n)}">
     <button class="close" type="button" data-close>Fermer ×</button>
     <div class="hd" style="background:${ART.BG[r.reg]};color:${DARKREG.has(r.reg)?"#fff":"#1C2A20"}"><div class="tt"><small>${esc(r.pays)} · ${esc(r.reg)}</small><h3>${esc(r.n)}</h3></div></div>

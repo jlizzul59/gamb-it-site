@@ -745,6 +745,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 <div class="toast" id="toast" hidden></div>
 <textarea id="copyArea" style="position:fixed;left:-9999px;top:0" aria-hidden="true" tabindex="-1"></textarea>
 
+<script src="recettes-plus.js?v=20261109"></script>
 <script>
 // ---------- Ingrédients ----------
 // u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
@@ -1655,6 +1656,8 @@ const QNEW=[{"ing":[["toncru",120],["soja",1],["huilesesame",0.5],["citronvert",
 const QBC={"poke":{"t":[],"j":"Cuire le riz à l'avance si besoin ; couper le poisson et assembler au dernier moment."},"pulled":{"t":[["four","Cuire l'échine 3 h et l'effilocher"]],"j":"Réchauffer la viande dans sa sauce, préparer le coleslaw, garnir les pains."},"cevichecuit":{"t":[["feu","Cuire la patate douce"]],"j":"Couper le poisson, le mariner 5 à 10 min au citron vert et servir aussitôt."},"poutine":{"t":[["cru","Tailler les frites"]],"j":"Frites au four, sauce brune, assembler avec le fromage."},"tahitienne":{"t":[["cru","Couper les légumes"]],"j":"Couper le thon, le mariner 10 min au citron vert, ajouter le lait de coco et servir."},"bowlsaumon":{"t":[["cru","Couper les légumes"]],"j":"Cuire et assaisonner le riz, trancher le saumon au dernier moment."}};
 for(const id in QUAL){if(RB[id])Object.assign(RB[id],QUAL[id])}
 QNEW.forEach(o=>{const r=Object.assign({},o);delete r.j;if(RB[r.id])Object.assign(RB[r.id],r);else{R.push(r);RB[r.id]=r}BC[r.id]={t:[],j:o.j}});
+// Recettes ajoutées (fichier partagé recettes-plus.js)
+(()=>{const X=window.MENUS_PLUS;if(!X)return;Object.assign(I,X.I);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:"Réchauffer doucement avant de servir."}})})();
 Object.assign(BC,QBC);
 const SIMPLE=new Set(["ssoupecourgette","ssoupecarotte","ssoupepoireau","ssoupetomate","ssoupebrocoli","ssoupepois","ssoupepotiron","ssoupechampi","ssoupevermicelle","scordonbleu","spoissonpane","ssteakfrites","spoulethv","spouletcreme","spatesbeurre","spatesthon","spatestomate","sjambonpuree","sknackis","somelette","soeufscoque","soeufsdurs","stomatesfarcies","sgratincourgette","sraviolis","srizpoulet","ssteakcarottes","spoireauxvinaigrette","squichesimple","spurrecabillaud","spatesbolo","sgratinpdt","wsteak","wsaumon","wpoulettenders","wcurry","whoumous","wjambonchaud","woeuf","ppouletfrites","ppouletpatates","ppouletpatatesdouces","psaucissesplaque","psaumonplaque","pgnocchisfour","ppatesfour","prizfour","pfajitasplaque","pboulettesfour","pcabillaudfour","pcurryfour","ppatatesfarcies","sailesfour","ssaucissesfrites","spateslardons","spouletcurryriz","sescalopepanee","soeufsbrouilles","srizsaute","spoeleepoulet","ssteakhvpdt","sgratinchoufleurs","ssaladecomposee","pouletroti","steakpuree","ksteakhache","kjambonpuree","kcotesporc","saucissepuree","coquillettes","croques","kcroquemadame","komelettejambon","ksoupelegumes","kchoufleursoupe","kcourgettesoupe","kpoiscasses","kwrapjambon","ksaladepates","ksaladeriz","galettes","kcrepessalees","kpetitspoissoupe","ktomatesoupe"]);R.forEach(r=>{if(SIMPLE.has(r.id))r.simple=1});
 // ---------- Assiette toute simple : viande ou poisson + accompagnement + légume ----------
@@ -1722,7 +1725,7 @@ const tempOf=r=>COLD_RX.test(r.n.split(",")[0])?"froid":"chaud";
 // ---------- Légumes et fruits de saison (France) ----------
 // Mois de début et de fin (une plage peut chevaucher la fin d'année). Les légumes en conserve,
 // surgelés ou disponibles toute l'année (carottes, champignons, salade…) ne comptent pas.
-const SEASON={courgette:[6,9],tomate:[6,9],tomcerise:[6,9],aubergine:[6,9],poivron:[7,10],concombre:[5,9],haricotsverts:[6,9],fenouil:[6,10],radis:[4,7],roquette:[4,10],celeri:[6,11],brocoli:[6,11],epinards:[[3,6],[9,11]],choufleur:[9,4],poireau:[9,4],potiron:[9,1],chou:[10,3],chourouge:[10,3],endive:[10,4],betterave:[9,3],navet:[10,3],panais:[10,3],cresson:[10,4],pakchoi:[9,12],choucroute:[10,3],pomme:[9,4],orange:[12,4]};
+const SEASON={courgette:[6,9],tomate:[6,9],tomcerise:[6,9],aubergine:[6,9],poivron:[7,10],concombre:[5,9],haricotsverts:[6,9],fenouil:[6,10],radis:[4,7],roquette:[4,10],celeri:[6,11],brocoli:[6,11],epinards:[[3,6],[9,11]],choufleur:[9,4],poireau:[9,4],potiron:[9,1],chou:[10,3],chourouge:[10,3],endive:[10,4],betterave:[9,3],navet:[10,3],panais:[10,3],cresson:[10,4],pakchoi:[9,12],choucroute:[10,3],pomme:[9,4],orange:[12,4],asperges:[4,6],blettes:[6,11],celerirave:[9,3],topinambour:[10,3],choubxl:[10,2]};
 const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 const inRange=(m,[a,b])=>a<=b?m>=a&&m<=b:m>=a||m<=b;
 const inSeason=(id,m)=>{const s=SEASON[id];if(!s)return true;return (Array.isArray(s[0])?s:[s]).some(x=>inRange(m,x))};
@@ -1732,7 +1735,7 @@ function seasonOf(r,m){const k=r.id+"|"+m;if(_ssc[k])return _ssc[k];
   return _ssc[k]={s:!ids.length?"neutre":out.length?"hors":"saison",out,ids}}
 const seasonNow=m=>Object.keys(SEASON).filter(id=>inSeason(id,m)&&I[id]).map(id=>I[id].n.replace(/\s*\(.*?\)/,""));
 // ---------- Féculents : famille principale d'un plat ----------
-const STARCH={pates:"pates",macaroni:"pates",spaghetti:"pates",penne:"pates",tagl:"pates",ravioli:"pates",lasagne:"pates",gnocchis:"pates",nouilles:"pates",nouillesriz:"pates",udonn:"pates",ramenn:"pates",
+const STARCH={orzo:"pates",naan:"pain",pates:"pates",macaroni:"pates",spaghetti:"pates",penne:"pates",tagl:"pates",ravioli:"pates",lasagne:"pates",gnocchis:"pates",nouilles:"pates",nouillesriz:"pates",udonn:"pates",ramenn:"pates",
   riz:"riz",rizsushi:"riz",rizrond:"riz",rizjasmin:"riz",
   pdt:"pdt",patatedouce:"pdt",frites:"pdt",plantain:"pdt",
   semoule:"grain",boulgour:"grain",quinoa:"grain",polenta:"grain",farinemais:"grain",
