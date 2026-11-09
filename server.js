@@ -74,7 +74,13 @@ const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS menus_sessions_user ON menus_sessions(user_id)`,
   // administrateur du groupe : le créateur, puis ceux qu'il nomme
   `ALTER TABLE menus_members ADD COLUMN IF NOT EXISTS admin BOOLEAN NOT NULL DEFAULT false`,
+  // administration générale : suspension de compte et dernière visite
+  `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS banned_at TIMESTAMPTZ`,
+  `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS ban_reason TEXT`,
+  `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS last_seen TIMESTAMPTZ`,
 ];
+// Administrateurs généraux du site (identifiants)
+const SUPER = new Set(["jlizzul"]);
 // Un groupe sans administrateur reçoit comme administrateur son plus ancien membre adulte (le créateur).
 const FIX_ADMINS = `UPDATE menus_members m SET admin = true
   WHERE m.ctid = (SELECT x.ctid FROM menus_members x WHERE x.group_id = m.group_id
@@ -246,12 +252,15 @@ async function auth(req) {
   const m = h.match(/^Bearer\s+([A-Za-z0-9_-]{20,})$/);
   if (!m) throw new HttpError(401, "Connexion requise.");
   const r = await q(
-    `SELECT u.id, u.username, u.name FROM menus_sessions s JOIN menus_users u ON u.id = s.user_id
+    `SELECT u.id, u.username, u.username_key, u.name, u.banned_at, u.last_seen FROM menus_sessions s JOIN menus_users u ON u.id = s.user_id
      WHERE s.token_hash = $1 AND s.expires_at > now()`,
     [sha256(m[1])]
   );
   if (!r.rows.length) throw new HttpError(401, "Session expirée. Reconnectez-vous.");
-  return { id: Number(r.rows[0].id), username: r.rows[0].username, name: r.rows[0].name, tokenHash: sha256(m[1]) };
+  const u = r.rows[0];
+  if (u.banned_at) throw new HttpError(403, "Ce compte est suspendu.");
+  if (!u.last_seen || Date.now() - new Date(u.last_seen).getTime() > 300e3) q(`UPDATE menus_users SET last_seen = now() WHERE id = $1`, [u.id]).catch(() => {});
+  return { id: Number(u.id), username: u.username, name: u.name, superadmin: SUPER.has(u.username_key), tokenHash: sha256(m[1]) };
 }
 
 // ---------- État complet d'un compte ----------
@@ -299,7 +308,7 @@ async function stateOf(user) {
   }
   const p = pr.rows[0];
   return {
-    user: { username: user.username, name: user.name, role: g ? g.role : "adulte", admin: g ? isAdm(g) : false },
+    user: { username: user.username, name: user.name, role: g ? g.role : "adulte", admin: g ? isAdm(g) : false, superadmin: !!user.superadmin },
     group,
     groups,
     perso: p ? { data: p.data || {}, version: Number(p.version) } : { data: {}, version: 0 },
@@ -307,8 +316,90 @@ async function stateOf(user) {
   };
 }
 
+// ---------- Administration générale ----------
+async function superAuth(req) {
+  const user = await auth(req);
+  if (!user.superadmin) throw new HttpError(403, "Réservé à l'administrateur du site.");
+  return user;
+}
+async function adminOverview() {
+  const users = (await q(`SELECT id, username, name, created_at, last_seen, banned_at, ban_reason FROM menus_users ORDER BY created_at`)).rows;
+  const groups = (await q(`SELECT id, name, icon, invite_code, created_at, updated_at FROM menus_groups ORDER BY created_at`)).rows;
+  const mem = (await q(`SELECT user_id, group_id, role, admin, joined_at FROM menus_members ORDER BY joined_at`)).rows;
+  return {
+    users: users.map((u) => ({ id: Number(u.id), username: u.username, name: u.name, created: u.created_at, seen: u.last_seen, banned: u.banned_at, reason: u.ban_reason,
+      super: SUPER.has(String(u.username).toLowerCase()),
+      groups: mem.filter((m) => Number(m.user_id) === Number(u.id)).map((m) => Number(m.group_id)) })),
+    groups: groups.map((g) => ({ id: Number(g.id), name: g.name, icon: g.icon, code: g.invite_code, created: g.created_at, updated: g.updated_at,
+      members: mem.filter((m) => Number(m.group_id) === Number(g.id)).map((m) => ({ id: Number(m.user_id), role: m.role, admin: isAdm(m) })) })),
+  };
+}
+const uid = (v) => { const n = parseInt(v, 10); if (!n) throw new HttpError(400, "Compte inconnu."); return n; };
+
 // ---------- Routes ----------
 const routes = {
+  "GET /admin/overview": async (req) => { await superAuth(req); return adminOverview(); },
+
+  "POST /admin/ban": async (req, body) => {
+    const me = await superAuth(req);
+    const id = uid(body.id);
+    if (id === me.id) throw new HttpError(409, "Vous ne pouvez pas vous suspendre vous-même.");
+    if (body.ban === false) await q(`UPDATE menus_users SET banned_at = NULL, ban_reason = NULL WHERE id = $1`, [id]);
+    else {
+      await q(`UPDATE menus_users SET banned_at = now(), ban_reason = $2 WHERE id = $1`, [id, String(body.reason || "").slice(0, 200) || null]);
+      await q(`DELETE FROM menus_sessions WHERE user_id = $1`, [id]);
+    }
+    return adminOverview();
+  },
+
+  "POST /admin/delete-user": async (req, body) => {
+    const me = await superAuth(req);
+    const id = uid(body.id);
+    if (id === me.id) throw new HttpError(409, "Supprimez votre propre compte depuis « Mon compte ».");
+    await q(
+      `WITH g AS (
+         DELETE FROM menus_groups g WHERE g.id IN (SELECT group_id FROM menus_members WHERE user_id = $1)
+           AND NOT EXISTS (SELECT 1 FROM menus_members m WHERE m.group_id = g.id AND m.user_id <> $1) RETURNING id)
+       DELETE FROM menus_users WHERE id = $1`, [id]);
+    await q(FIX_ADMINS);
+    return adminOverview();
+  },
+
+  "POST /admin/reset-password": async (req, body) => {
+    await superAuth(req);
+    const id = uid(body.id);
+    const words = ["tomate", "basilic", "crumble", "risotto", "paprika", "noisette", "cannelle", "brioche", "gratin", "citron"];
+    const pw = words[crypto.randomInt(words.length)] + "-" + crypto.randomInt(1000, 9999) + "-" + words[crypto.randomInt(words.length)];
+    await q(`UPDATE menus_users SET pass_hash = $1 WHERE id = $2`, [hashPassword(pw), id]);
+    await q(`DELETE FROM menus_sessions WHERE user_id = $1`, [id]);
+    return { password: pw, overview: await adminOverview() };
+  },
+
+  // Changer le profil, le rôle d'administrateur ou retirer un membre, dans n'importe quel groupe
+  "POST /admin/member": async (req, body) => {
+    await superAuth(req);
+    const id = uid(body.user), gid = uid(body.group);
+    if (body.remove) {
+      await q(`DELETE FROM menus_members WHERE user_id = $1 AND group_id = $2`, [id, gid]);
+      await q(`UPDATE menus_users SET active_group = NULL WHERE id = $1 AND active_group = $2`, [id, gid]);
+    } else if (body.add) {
+      await q(`INSERT INTO menus_members (user_id, group_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`, [id, gid, body.role === "enfant" ? "enfant" : "adulte"]);
+    } else {
+      if (body.role === "adulte" || body.role === "enfant") await q(`UPDATE menus_members SET role = $1, admin = CASE WHEN $1 = 'enfant' THEN false ELSE admin END WHERE user_id = $2 AND group_id = $3`, [body.role, id, gid]);
+      if (typeof body.admin === "boolean") await q(`UPDATE menus_members SET admin = $1 WHERE user_id = $2 AND group_id = $3 AND role = 'adulte'`, [body.admin, id, gid]);
+    }
+    await q(FIX_ADMINS);
+    return adminOverview();
+  },
+
+  "POST /admin/delete-group": async (req, body) => {
+    await superAuth(req);
+    const gid = uid(body.id);
+    await q(`UPDATE menus_users SET active_group = NULL WHERE active_group = $1`, [gid]);
+    await q(`DELETE FROM menus_groups WHERE id = $1`, [gid]);
+    return adminOverview();
+  },
+
   "GET /health": async () => ({ ok: true }),
 
   "POST /auth/register": async (req, body) => {
@@ -343,10 +434,11 @@ const routes = {
     limit(req, "login", 20, 900e3);
     const username = String(body.username || "").trim().toLowerCase();
     const password = String(body.password || "");
-    const r = await q(`SELECT id, pass_hash FROM menus_users WHERE username_key = $1`, [username]);
+    const r = await q(`SELECT id, pass_hash, banned_at FROM menus_users WHERE username_key = $1`, [username]);
     const row = r.rows[0];
     const ok = checkPassword(password, row ? row.pass_hash : DUMMY_HASH) && !!row;
     if (!ok) throw new HttpError(401, "Identifiant ou mot de passe incorrect.");
+    if (row.banned_at) throw new HttpError(403, "Ce compte est suspendu.");
     const token = await newSession(Number(row.id));
     const user = await auth({ headers: { authorization: "Bearer " + token } });
     return { token, state: await stateOf(user) };
