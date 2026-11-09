@@ -643,6 +643,30 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .tag.froid{border-color:#9CC3DA;color:#2C6E91;background:#E7F2F8}
 .restfor{font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:3px 7px}
 .meal{overflow:hidden}
+.mealpick,.mealsum{column-span:all}.mealpick{border:1px solid var(--line);border-radius:14px;background:var(--surface,#fff);margin-bottom:14px;overflow:hidden}
+.mealpick.partial{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.mp-head{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:none;border:0;font:inherit;text-align:left;cursor:pointer;color:var(--ink)}
+.mp-lab{font-weight:700}.mp-sum{color:var(--muted);margin-left:4px}.mealpick.partial .mp-sum{color:var(--accent);font-weight:600}
+.mp-days-s{display:block;color:var(--muted);font-size:12px;margin-top:2px}.mp-chev{color:var(--muted)}
+.mealpick-b{padding:0 14px 12px}
+.mp-quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chipbtn{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+.chipbtn:disabled{opacity:.45;cursor:default}
+.mp-days{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:8px}@media(max-width:640px){.mp-days{grid-template-columns:1fr 1fr}.mp-w{width:auto}.mp-m{flex-wrap:wrap;gap:2px 6px}}
+.mp-day{border:1px solid var(--line);border-radius:12px;padding:6px;background:var(--bg)}
+.mp-day.off{opacity:.6}.mp-day.past .mp-dh b::after{content:" · passé";font-weight:400;color:var(--muted);font-size:12px}
+.mp-day ul{list-style:none;margin:0;padding:0}
+.mp-dh,.mp-m{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;font:inherit;text-align:left;cursor:pointer;color:var(--ink);border-radius:8px;padding:6px}
+.mp-dh:hover,.mp-m:hover{background:var(--surface,#fff)}.mp-dh:disabled,.mp-m:disabled{cursor:default}
+.mp-dh small{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+.mp-box{flex:none;width:18px;height:18px;border-radius:5px;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;line-height:1;color:var(--accent-ink);background:var(--surface,#fff)}
+.mp-m.on .mp-box,.mp-day.on .mp-dh .mp-box{background:var(--accent);border-color:var(--accent)}
+.mp-m.on .mp-box::after,.mp-day.on .mp-dh .mp-box::after{content:"✓"}
+.mp-day.part .mp-dh .mp-box{border-color:var(--accent)}.mp-day.part .mp-dh .mp-box::after{content:"–";color:var(--accent);font-weight:700}
+.mp-m{font-size:13px;align-items:flex-start}.mp-m .mp-box{width:16px;height:16px;margin-top:1px}
+.mp-w{flex:none;color:var(--muted);font-size:12px;width:38px;margin-top:1px}.mp-n{min-width:0}
+.mp-m:not(.on) .mp-n{text-decoration:line-through;color:var(--muted)}
+.mealsum{font-size:14px;color:var(--muted);margin:0 0 10px}
 .aisle.manual,.aisle.extra{background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px}
 .manadd{display:flex;gap:6px;margin:6px 0}.manadd input{flex:1;min-width:0;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .aisle.manual li{display:flex;align-items:center;gap:6px}.aisle.manual li label{flex:1}
@@ -2787,10 +2811,54 @@ const panRead=()=>{try{return JSON.parse(localStorage.getItem(PANK)||"null")||{}
 const panWrite=c=>{try{localStorage.setItem(PANK,JSON.stringify(c))}catch(e){}cloudChanged()};
 const panIds=()=>Object.keys(panRead()).filter(k=>k.startsWith("r:")&&RB[k.slice(2)]).map(k=>k.slice(2));
 let PANFOR={};
+// Repas retenus pour les courses : on peut en retirer un, ou un jour entier (W.shopOff, commun au groupe)
+const offKey=c=>c.sl.key+":"+c.r.id;
+const shopIn=c=>!(W.shopOff&&W.shopOff[offKey(c)]);
+const sessCooks=sess=>cooks().filter(c=>!sess||sessionOf(c.sl.day).n===sess);
+const shopCooks=sess=>sessCooks(sess).filter(shopIn);
+const isPastDay=d=>{const t=new Date();t.setHours(0,0,0,0);const x=dayDate(S.cur,d);x.setHours(0,0,0,0);return x<t};
+function setOff(list,off){W.shopOff=W.shopOff||{};list.forEach(c=>{if(off)W.shopOff[offKey(c)]=1;else delete W.shopOff[offKey(c)]});if(!Object.keys(W.shopOff).length)delete W.shopOff;save();renderShop()}
+let mealsOpen=null;
+// Coches : une par session (1 = dimanche, 2 = mercredi). « Toute la semaine » se déduit des deux :
+// ce qui a été acheté le dimanche est retiré de la vue semaine, et cocher dans la vue semaine coche les deux sessions.
+const baseOf=(a,id)=>(a==="op"?"op-":"")+id;
+function shopState(ss){
+  let Q=null;
+  if(ss===0){Q={1:{},2:{}};[1,2].forEach(n=>shopping(n).forEach(([a,items])=>items.forEach(([id,q])=>Q[n][baseOf(a,id)]=q)))}
+  const list=shopping(ss);
+  const st=(a,id,q)=>{const b=baseOf(a,id);
+    if(ss!==0)return {done:!!W.checked[ss+":"+b],ck:ss+":"+b,q,got:0};
+    const q1=Q[1][b]||0,q2=Q[2][b]||0,c1=!!W.checked["1:"+b],c2=!!W.checked["2:"+b];
+    const got=(c1?q1:0)+(c2?q2:0),done=!!W.checked["0:"+b]||(!!(q1||q2)&&(!q1||c1)&&(!q2||c2));
+    return {done,ck:"w:"+b,q:done?q:Math.max(0,q-got),got:done?0:got,from:c1&&q1?"dimanche":c2&&q2?"mercredi":""}};
+  return {list,st,Q};
+}
+function toggleWeekCheck(b,on){const S2=shopState(0).Q;
+  ["0:","1:","2:"].forEach(p=>delete W.checked[p+b]);
+  if(on){let any=false;[1,2].forEach(n=>{if(S2[n][b]){W.checked[n+":"+b]=1;any=true}});if(!any)W.checked["0:"+b]=1}}
+function mealPickHTML(ss,store,kid){
+  const all=sessCooks(ss);if(!all.length)return"";
+  const inc=all.filter(shopIn),nIn=inc.length,nAll=all.length,partial=nIn<nAll;
+  if(mealsOpen===null)mealsOpen=partial;
+  const days=[];all.forEach(c=>{let d=days.find(x=>x.day===c.sl.day);if(!d)days.push(d={day:c.sl.day,items:[]});d.items.push(c)});
+  const sum=nIn===nAll?`Tous les repas (${nAll})`:nIn?`<b>${nIn}</b> repas sur ${nAll}`:"Aucun repas";
+  const dLab=d=>{const x=dayDate(S.cur,d);return DAYS[d].slice(0,3)+". "+x.getDate()};
+  const daysTxt=days.filter(d=>d.items.some(shopIn)).map(d=>dLab(d.day)).join(", ");
+  if(store)return partial?`<p class="mealsum">🍽️ Courses pour : ${esc(daysTxt)||"aucun repas"}</p>`:"";
+  const ro=kid?"disabled":"";
+  const past=all.filter(c=>isPastDay(c.sl.day));
+  const body=mealsOpen?`<div class="mealpick-b">
+    ${kid?"":`<div class="mp-quick"><button type="button" class="chipbtn" data-mp="all" ${nIn===nAll?"disabled":""}>Tout</button><button type="button" class="chipbtn" data-mp="none" ${!nIn?"disabled":""}>Rien</button>${past.length?`<button type="button" class="chipbtn" data-mp="future">À partir d'aujourd'hui</button>`:""}</div>`}
+    <div class="mp-days">${days.map(d=>{const k=d.items.filter(shopIn).length,st=k===d.items.length?"on":k?"part":"off";
+      return `<div class="mp-day ${st} ${isPastDay(d.day)?"past":""}"><button type="button" class="mp-dh" data-mpday="${d.day}" aria-pressed="${st==="on"}" ${ro}><span class="mp-box" aria-hidden="true"></span><b>${dLab(d.day)}</b><small>${k}/${d.items.length}</small></button>
+        <ul>${d.items.map(c=>{const on=shopIn(c);return `<li><button type="button" class="mp-m ${on?"on":""}" data-mpmeal="${esc(offKey(c))}" aria-pressed="${on}" ${ro}><span class="mp-box" aria-hidden="true"></span><span class="mp-w">${c.xi!=null?"+ ":""}${c.sl.when}</span><span class="mp-n">${esc(shortName(c.r))}</span></button></li>`}).join("")}</ul></div>`}).join("")}</div>
+    <p class="aisnote">${kid?"Seuls les adultes du groupe peuvent changer la sélection.":"Touchez un repas pour le retirer de la liste, ou le nom du jour pour retirer la journée. Le choix est partagé avec le groupe."}</p></div>`:"";
+  return `<div class="mealpick ${partial?"partial":""}"><button type="button" class="mp-head" data-mptoggle aria-expanded="${mealsOpen}"><span>🍽️ <span class="mp-lab">Pour quels repas ?</span> <span class="mp-sum">${sum}</span>${partial&&!mealsOpen?`<small class="mp-days-s">${esc(daysTxt)}</small>`:""}</span><span class="mp-chev" aria-hidden="true">${mealsOpen?"▴":"▾"}</span></button>${body}</div>`;
+}
 function shopping(sess){
   const tot={},opt={};OPTFOR={};PANFOR={};
   if(sess!==2){const pc=panRead();panIds().forEach(id=>{const r=RB[id],n=pc["r:"+id]||1;r.ing.forEach(([i,q])=>{tot[i]=(tot[i]||0)+q*n;(PANFOR[i]=PANFOR[i]||new Set()).add(shortName(r))})})}
-  cooks().filter(c=>!sess||sessionOf(c.sl.day).n===sess).forEach(c=>{c.r.ing.forEach(([id,q])=>{tot[id]=(tot[id]||0)+qtyCook(c,id,q)});optionsFor(c.r).forEach(([id])=>{const v=optQty(c,id);if(v){opt[id]=(opt[id]||0)+v;(OPTFOR[id]=OPTFOR[id]||new Set()).add(shortName(c.r))}})});
+  shopCooks(sess).forEach(c=>{c.r.ing.forEach(([id,q])=>{tot[id]=(tot[id]||0)+qtyCook(c,id,q)});optionsFor(c.r).forEach(([id])=>{const v=optQty(c,id);if(v){opt[id]=(opt[id]||0)+v;(OPTFOR[id]=OPTFOR[id]||new Set()).add(shortName(c.r))}})});
   const by={};
   Object.entries(tot).forEach(([id,q])=>{const r=I[id].r;(by[r]=by[r]||[]).push([id,q])});
   if(Object.keys(opt).length)by.op=Object.entries(opt);
@@ -2800,9 +2868,9 @@ const hint=(id,q)=>{const x=I[id];if(!x.w)return"";const n=Math.max(1,Math.ceil(
 function renderShop(){
   const ss=W.shopSess??1;
   document.querySelectorAll("[data-sess]").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.sess===ss)));
-  const list=shopping(ss),store=document.body.classList.contains("storemode"),kid=isKid();
-  const li=(ck,label,h,q)=>{const done=!!W.checked[ck];return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${ck}" ${done?"checked":""}><span>${label}${h?`<span class="hint">${h}</span>`:""}</span><span class="q">${q}</span></label></li>`};
-  const sortDone=arr=>store?arr.slice().sort((a,b)=>(!!W.checked[a.ck])-(!!W.checked[b.ck])):arr;
+  const SS=shopState(ss),list=SS.list,store=document.body.classList.contains("storemode"),kid=isKid();
+  const li=(ck,label,h,q,dn)=>{const done=dn!=null?dn:!!W.checked[ck];return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${ck}" ${done?"checked":""}><span>${label}${h?`<span class="hint">${h}</span>`:""}</span><span class="q">${q}</span></label></li>`};
+  const sortDone=arr=>store?arr.slice().sort((a,b)=>(a.done!=null?a.done:!!W.checked[a.ck])-(b.done!=null?b.done:!!W.checked[b.ck])):arr;
   // articles libres
   const man=Object.entries(W.manual||{});
   const manHTML=`<div class="aisle manual"><h3>✍️ À ajouter</h3>${kid?"":`<form class="manadd" data-manform><input type="text" id="manInput" maxlength="60" placeholder="Liquide vaisselle, yaourts, café…" aria-label="Ajouter un article à la liste" autocomplete="off"><button class="btn sm" type="submit">Ajouter</button></form>`}
@@ -2810,14 +2878,14 @@ function renderShop(){
   // recettes du catalogue
   const pc=panRead(),pids=panIds();
   const panHTML=ss===2?"":pids.length?`<div class="aisle extra"><h3>📖 En plus, depuis le catalogue</h3><ul class="panlist">${pids.map(id=>`<li><button type="button" class="linkish" data-panopen="${id}">${esc(shortName(RB[id]))}</button><span class="pstep"><button type="button" class="pm" data-pann="${id}" data-d="-1" aria-label="Une portion de moins" ${(pc["r:"+id]||1)<=1?"disabled":""}>−</button><b class="num">${pc["r:"+id]||1}</b><button type="button" class="pm" data-pann="${id}" data-d="1" aria-label="Une portion de plus">+</button></span><button type="button" class="xdel" data-panrm="${id}" aria-label="Retirer ${esc(shortName(RB[id]))}">×</button></li>`).join("")}</ul><p class="aisnote">Leurs ingrédients sont ajoutés aux rayons ci-dessous. <a href="recettes.html">Ajouter une recette du catalogue</a></p></div>`:`<p class="aisnote panhint">Pour acheter les ingrédients d'une recette hors semainier, cochez « Ajouter à ma liste de courses » dans le <a href="recettes.html">catalogue</a>.</p>`;
-  const aisles=list.length?list.map(([a,items])=>`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${sortDone(items.map(([id,q])=>({id,q,ck:ss+":"+(a==="op"?"op-":"")+id}))).map(({id,q,ck})=>{
-    const h=a==="op"&&OPTFOR[id]?"avec : "+esc([...OPTFOR[id]].join(", ")):[hint(id,q),PANFOR[id]?"dont "+esc([...PANFOR[id]].join(", ")):""].filter(Boolean).join(" · ");
-    return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true))}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
-  const n=list.reduce((t,[a,items])=>t+items.length,0)+man.length,d=list.reduce((t,[a,items])=>t+items.filter(([id])=>W.checked[ss+":"+(a==="op"?"op-":"")+id]).length,0)+man.filter(([id])=>W.checked["m:"+id]).length;
+  const aisles=list.length?list.map(([a,items])=>`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${sortDone(items.map(([id,q])=>({id,...SS.st(a,id,q)}))).map(({id,q,ck,done,got,from})=>{
+    const h=[a==="op"&&OPTFOR[id]?"avec : "+esc([...OPTFOR[id]].join(", ")):"",a!=="op"?hint(id,q):"",a!=="op"&&PANFOR[id]?"dont "+esc([...PANFOR[id]].join(", ")):"",got?`✓ déjà acheté : ${fmt(got,I[id].u,true)} (courses du ${from})`:""].filter(Boolean).join(" · ");
+    return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true),done)}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
+  const n=list.reduce((t,[a,items])=>t+items.length,0)+man.length,d=list.reduce((t,[a,items])=>t+items.filter(([id,q])=>SS.st(a,id,q).done).length,0)+man.filter(([id])=>W.checked["m:"+id]).length;
   const bud=list.filter(([a])=>a!=="op").reduce((t,[,items])=>t+items.reduce((u,[id,q])=>u+unitPrice(id)*q,0),0)+0;
-  const meals=cooks().filter(c=>c.xi==null&&(!ss||sessionOf(c.sl.day).n===ss)).reduce((t,c)=>t+persOf(c),0);
+  const meals=shopCooks(ss).filter(c=>c.xi==null).reduce((t,c)=>t+persOf(c),0);
   const budHTML=store||!bud?"":`<div class="budget"><b>💶 Budget estimé : ≈ ${euro(bud)}</b>${meals?`<span class="muted"> · ≈ ${euro(bud/meals)} par repas et par personne</span>`:""}<small class="muted">Prix moyens en supermarché, hors placard. Pour dépenser moins : Groupe › règle « Semaine économique ».</small></div>`;
-  document.getElementById("shop").innerHTML=budHTML+(store?`<div class="storebar"><div class="bar"><i style="width:${n?Math.round(d/n*100):0}%"></i></div><b class="num">${d} / ${n}</b><button type="button" class="btn sm" id="storeExit">Terminer</button></div>`:"")+manHTML+panHTML+aisles;
+  document.getElementById("shop").innerHTML=mealPickHTML(ss,store,kid)+budHTML+(store?`<div class="storebar"><div class="bar"><i style="width:${n?Math.round(d/n*100):0}%"></i></div><b class="num">${d} / ${n}</b><button type="button" class="btn sm" id="storeExit">Terminer</button></div>`:"")+manHTML+panHTML+aisles;
 }
 
 // ---------- Goûts ----------
@@ -2966,7 +3034,7 @@ function renderToday(){
     if(tw!==null&&S.weeks[tw])withWeek(tw,()=>{["m","s"].forEach(w=>{const sl=SK[tomorrow+w];if((W.mode[sl.key]||"cook")!=="skip"&&recipeAt(sl.key)&&frozen(sl))todo.push(`🧊 Sortir du congélateur pour demain ${sl.when.toLowerCase()} : <b>${esc(shortName(recipeAt(sl.key)))}</b>`)})});
     const ses=SESSIONS.find(x=>POS(d)===x.ref||(x.ref===-1&&d===6));
     if(ses)todo.push(`🧑‍🍳 Aujourd'hui, session de batch cooking : les repas du ${ses.cover}. <a href="#batch">Voir le déroulé</a>`);
-    withWeek(now,()=>{const ss=W.shopSess??1,left=shopping(ss).reduce((t,[,it])=>t+it.filter(([id])=>!W.checked[ss+":"+id]).length,0)+Object.keys(W.manual||{}).filter(id=>!W.checked["m:"+id]).length;if(left)todo.push(`🛒 Il reste <b>${left}</b> article${left>1?"s":""} dans la liste de courses. <a href="#courses">Ouvrir</a>`);
+    withWeek(now,()=>{const ss=W.shopSess??1,SS=shopState(ss),left=SS.list.reduce((t,[a,it])=>t+it.filter(([id,q])=>!SS.st(a,id,q).done).length,0)+Object.keys(W.manual||{}).filter(id=>!W.checked["m:"+id]).length;if(left)todo.push(`🛒 Il reste <b>${left}</b> article${left>1?"s":""} dans la liste de courses. <a href="#courses">Ouvrir</a>`);
       if(!weekOk()&&!isKid())todo.push(`📝 Le semainier de la semaine n'est pas encore validé. <a href="#semaine">Le voir</a>`)});
   }
   const pend=Object.values(read2("menus.propositions")||{}).filter(p=>p&&p.status==="attente").length;
@@ -3149,6 +3217,11 @@ document.addEventListener("click",e=>{
   const sk=e.target.closest("[data-skip]");if(sk){const k=sk.dataset.skip;setMode(k,"skip");build("keep");renderAll();toast("Repas du "+slotLabel(SK[k])+" supprimé");return}
   const us=e.target.closest("[data-unskip]");if(us){setMode(us.dataset.unskip,"cook");build("keep");renderAll();return}
   const ss=e.target.closest("[data-sess]");if(ss){W.shopSess=+ss.dataset.sess;save();renderShop();return}
+  if(e.target.closest("[data-mptoggle]")){mealsOpen=!mealsOpen;renderShop();return}
+  const mpm=e.target.closest("[data-mpmeal]");if(mpm&&!isKid()){const c=sessCooks(W.shopSess??1).find(x=>offKey(x)===mpm.dataset.mpmeal);if(c)setOff([c],shopIn(c));return}
+  const mpd=e.target.closest("[data-mpday]");if(mpd&&!isKid()){const l=sessCooks(W.shopSess??1).filter(c=>c.sl.day===+mpd.dataset.mpday);setOff(l,l.every(shopIn));return}
+  const mpq=e.target.closest("[data-mp]");if(mpq&&!isKid()){const l=sessCooks(W.shopSess??1),v=mpq.dataset.mp;
+    if(v==="all")setOff(l,false);else if(v==="none")setOff(l,true);else{setOff(l.filter(c=>!isPastDay(c.sl.day)),false);setOff(l.filter(c=>isPastDay(c.sl.day)),true)}return}
   const p=e.target.closest("[data-pref]");
   if(p){const id=p.dataset.pref,v=S.prefs[id];S.prefs[id]=v===1?-1:v===-1?0:1;if(!S.prefs[id])delete S.prefs[id];build("keep");renderAll()}
 });
@@ -3158,6 +3231,7 @@ document.addEventListener("input",e=>{
 });
 document.addEventListener("change",e=>{
   const c=e.target.closest("[data-check]");
+  if(c&&c.dataset.check.startsWith("w:")){toggleWeekCheck(c.dataset.check.slice(2),c.checked);save();renderShop();return}
   if(c){const id=c.dataset.check;if(c.checked)W.checked[id]=1;else delete W.checked[id];save();c.closest("li").classList.toggle("done",c.checked);if(document.body.classList.contains("storemode"))renderShop();return}
   const m=e.target.closest("[data-mode]");
   if(m){setMode(m.dataset.mode,m.value);build("keep");renderAll()}
@@ -3267,7 +3341,7 @@ document.getElementById("helpBtn").addEventListener("click",e=>{const b=document
   ["1m","3m","4m"].forEach(k=>{if(W.mode[k]!=="skip")W.mode[k]="rest"});build("keep");renderAll();toast("Midis de mardi, jeudi et vendredi en restes de la veille");
 });
 document.getElementById("clearPrefs").addEventListener("click",()=>{S.prefs={};build("keep");renderAll()});
-document.getElementById("uncheck").addEventListener("click",()=>{const ss=W.shopSess??1;Object.keys(W.checked).forEach(k=>{if(k.startsWith(ss+":")||k.startsWith("m:"))delete W.checked[k]});save();renderShop()});
+document.getElementById("uncheck").addEventListener("click",()=>{const ss=W.shopSess??1;Object.keys(W.checked).forEach(k=>{if((ss===0?/^[012]:/.test(k):k.startsWith(ss+":"))||k.startsWith("m:"))delete W.checked[k]});save();renderShop()});
 // Mode magasin : gros caractères, ce qui est pris descend, synchronisation plus fréquente
 document.getElementById("storeMode").addEventListener("click",()=>{document.body.classList.add("storemode");renderShop();window.scrollTo(0,0);try{navigator.wakeLock&&navigator.wakeLock.request("screen").then(l=>{window._storeLock=l}).catch(()=>{})}catch(e){}});
 document.addEventListener("click",e=>{
@@ -3283,7 +3357,7 @@ document.getElementById("copyList").addEventListener("click",()=>{
   const ss=W.shopSess??1;
   const title=(ss?"Courses session "+ss+" · ":"Courses · ")+"semaine du "+dateOf(0);
   const man=Object.values(W.manual||{});
-  const txt=title+"\n\n"+(man.length?"À AJOUTER\n"+man.map(t=>"- "+t).join("\n")+"\n\n":"")+shopping(ss).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,q])=>"- "+I[id].n+" : "+fmt(q,I[id].u,true)).join("\n")).join("\n\n");
+  const txt=title+"\n\n"+(man.length?"À AJOUTER\n"+man.map(t=>"- "+t).join("\n")+"\n\n":"")+(()=>{const SS=shopState(ss);return SS.list.map(([a,items])=>[a,items.map(([id,q])=>[id,SS.st(a,id,q)]).filter(([,x])=>!x.done)]).filter(([,it])=>it.length).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,x])=>"- "+I[id].n+" : "+fmt(x.q,I[id].u,true)).join("\n")).join("\n\n")})();
   const done=()=>toast("Liste copiée");
   const fallback=()=>{const ta=document.getElementById("copyArea");ta.value=txt;ta.select();try{document.execCommand("copy");done()}catch(err){toast("Copie impossible, sélectionnez la liste à la main")}};
   try{navigator.clipboard.writeText(txt).then(done,fallback)}catch(err){fallback()}
