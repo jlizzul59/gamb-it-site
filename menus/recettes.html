@@ -34,6 +34,8 @@ nav.tabs .plusbtn:hover:not([aria-current="page"]){background:var(--accent-soft)
 
 
 .subwrap{padding-top:14px}
+.frigohit{display:block;font-size:12.5px;color:#1f6f8b;background:#e7f3f8;border-radius:8px;padding:3px 8px;margin:4px 0}
+.frigobtn[aria-pressed="true"]{background:#1f6f8b;color:#fff;border-color:#1f6f8b}
 </style>
 <title>Le tour du monde en cuisine</title>
 <meta name="description" content="Près de 400 recettes de tous les continents, à filtrer par ingrédient.">
@@ -507,8 +509,10 @@ html.ck-on,html.ck-on body{overflow:hidden}
       <a role="menuitem" href="index.html#propositions">💡 Propositions<span class="pbadge" id="propBadge" hidden></span></a>
       <a role="menuitem" href="index.html#batch">🧑‍🍳 Batch cooking</a>
       <a role="menuitem" href="index.html#historique">🗓️ Historique</a>
+      <a role="menuitem" href="index.html#mesrecettes">📝 Mes recettes</a>
       <hr>
       <a role="menuitem" href="recettes.html">📖 Catalogue des recettes</a>
+      <a role="menuitem" href="recettes.html#frigo">🧊 Vider le frigo</a>
       <a role="menuitem" href="recevoir.html">🥂 On reçoit</a>
       <a role="menuitem" href="index.html#admin" id="adminTab" hidden>🛡️ Administration</a>
     </div>
@@ -531,6 +535,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 
   <div class="tools">
     <label class="search"><input type="search" id="q" placeholder="Rechercher : curry, gratin, Mexique, saumon…" autocomplete="off" aria-label="Rechercher une recette"></label>
+    <button type="button" class="qf frigobtn" id="frigoBtn" aria-pressed="false" title="Tapez ce qu'il vous reste, séparé par des virgules : les recettes qui l'utilisent le plus remontent">🧊 Vider le frigo</button>
     <div id="quick" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     <select class="sort" id="sort" aria-label="Trier les recettes"><option value="nom">Trier : nom</option><option value="note">Trier : mes notes</option><option value="kcal">Trier : calories</option><option value="temps">Trier : les plus rapides</option><option value="region">Trier : par région</option></select>
     <button type="button" id="toggleFacets" aria-expanded="false" aria-controls="side">Ingrédients</button>
@@ -1546,6 +1551,18 @@ const seasonNow=m=>Object.keys(SEASON).filter(id=>inSeason(id,m)&&I[id]).map(id=
 const seasonOutTxt=(r,m)=>seasonOf(r,m).out.map(id=>I[id].n.replace(/\s*\(.*?\)/,"").toLowerCase()).join(", ");
 
 R.forEach(r=>{r.temp=tempOf(r)});
+// ---------- Recettes de la famille (créées ou importées par le groupe, partagées) ----------
+const MRK="menus.mesrecettes";
+const mineRead=()=>{try{return JSON.parse(localStorage.getItem(MRK)||"null")||{}}catch(e){return {}}};
+function loadMine(){const M=mineRead();
+  for(let i=R.length-1;i>=0;i--){const r=R[i];if(r.mine&&!M[r.id]){R.splice(i,1);delete RB[r.id];delete BC[r.id]}}
+  Object.values(M).forEach(x=>{if(!x||!x.id||!x.n)return;Object.entries(x.custom||{}).forEach(([k,v])=>{if(!I[k]||I[k].custom)I[k]=Object.assign({k:0,custom:1},v)});
+    const r=Object.assign({for:["l2","fam"],p:"vege",t:30,pays:"France",reg:"France",st:[]},x,{mine:1});r.ing=(x.ing||[]).filter(([id])=>I[id]);r.temp=tempOf(r);
+    if(RB[r.id]){Object.keys(RB[r.id]).forEach(k=>delete RB[r.id][k]);Object.assign(RB[r.id],r)}else{R.push(r);RB[r.id]=r}
+    BC[r.id]={t:[],j:"Réchauffer doucement avant de servir."}});
+}
+loadMine();
+
 const SOUP_RX=/velout|soupe|potage|bouillon|ramen|phở|laksa|harira|bortsch|minestrone|gaspacho|chorba|garbure|pistou|caldo|lohikeitto|chowder|tom kha|soto ayam|sopa|zurek|kartoffelsuppe|pozole|ajiaco|sancocho|tortellini en brodo/i;
 // ---------- Doublons fusionnés : chaque recette retirée renvoie vers sa jumelle ----------
 const ALIAS={"saladepates": "patespesto", "periafr": "piripiri", "piripiricrev": "currycrevettes", "fishcurry": "moqueca", "kpoulettikka": "tikka", "butterchicken": "tikka", "ksaumongrille": "teriyaki", "kpizzareine": "pizza", "calzone": "pizza", "gratinpates": "coquillettes", "kmacaroni": "coquillettes", "ksaumonepinards": "patessaumon", "kcannelloni": "lasagnesveg", "parmentiercolin": "brandade", "kcroque": "croques", "mongolian": "boeufbrocoli", "rumsteck": "ksteakfrites", "kpouletroticlassique": "pouletroti", "carbonara": "kcarbo", "kcarbocreme": "kcarbo", "karrabbiata": "ktomatebasilic", "paella": "kpaellaclassique", "kcesarclassique": "cesar", "kchili": "chili", "kriscantonais": "rizcantonais", "edamamebowl": "bowlsaumon", "kgaletteoeuf": "galettes", "couscous": "kcouscousclassique", "mijote": "boeufcarottes", "bolo": "kbolo", "kratatouilleriz": "ratatouille", "kmoulescreme": "moulesfrites", "escondidinho": "khachisclassique", "hachis": "khachisclassique", "kravioli": "ravioliepinards", "kgnocchisgratin": "gnocchis", "kquichesaumon": "quiche", "blanquette": "kblanquette", "kpouletchampi": "dinde", "kescalopecreme": "dinde", "ksoupechou": "kpaysanne", "kpoireauxpdt": "velouteporeaux", "kpotironclassique": "veloute", "pumpkinsoup": "veloute", "cultivateur": "ksoupelegumes", "kminestroneclassique": "minestrone", "chickennoodle": "kpoulettsoupe", "pancit": "miegoreng", "chowmein": "miegoreng", "kwokpoulet": "udon", "fijicurry": "fishcurry", "kokoda": "moqueca", "shishtaouk": "souvlaki", "pitas": "shawarma", "shopska": "grecque", "adana": "keftas", "lahmacun": "pide", "carnitas": "pastor", "kfajitasclassique": "fajitas", "ksaucissepuree": "saucissepuree", "kpouletpane": "nuggets", "kpoissonpane": "poissonpane", "kcordonbleu": "cordonbleu", "kmilanaise": "schnitzel", "arrozpollo": "jollof", "jambalaya": "kpaellaclassique", "chaufa": "nasigoreng", "kimchirice": "rizcantonais", "kraclette": "tartiflette", "kgratindauphinois": "dauphinois", "bigos": "choucroute", "irishstew": "navarin", "daube": "kbourguignon", "kvealmarengo": "kosso", "klapin": "cacciatora", "huli": "pouletananas", "colombo": "cari", "kpoulettcurry": "curryvert", "tabouleboulgour": "ktaboulefr", "chevrechaud": "kchevrechaud", "kcrevettesriz": "crevettesail", "klieuprovencale": "colinvierge", "polpette": "kboulettes", "boulettes": "kboulettes", "kthon": "spaghettithon", "kpesto": "patespesto", "kjambonpates": "tagliatelles", "lasagnes": "klasagnesbolo", "cajou": "kungpao"};
@@ -1690,7 +1707,7 @@ const CLOUD=(()=>{
   API=API.replace(/\/+$/,"");
   const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
   const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
-  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions","config"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions","config"];
+  const PERSO_KEYS=["prefs","kid","cur","def","optN","note"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions","config","votes","mesrecettes"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions","config","votes","mesrecettes"];
   let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
   let hooks={apply(){},status(){}},busy=false,again=false,timer=null,status="idle",lastErr="",view="login",note="";
   const J=JSON.stringify,clone=o=>JSON.parse(J(o===undefined?null:o));
@@ -1713,14 +1730,14 @@ const CLOUD=(()=>{
   function local(){
     const P=read(LP)||{},A=read(LA)||{};
     const perso={};PERSO_KEYS.forEach(k=>{const v=k==="note"?A.note:P[k];if(v!==undefined)perso[k]=clone(v)});
-    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{}),panier:clone(read("menus.panier")||{}),propositions:clone(read("menus.propositions")||{}),config:clone(read("menus.config")||{})}};
+    return {perso,shared:{weeks:clone(P.weeks||{}),fav:clone(A.fav||{}),foyer:clone(read("menus.foyer")||{}),invites:clone(read("menus.invites")||{}),receptions:clone(read("menus.receptions")||{}),panier:clone(read("menus.panier")||{}),propositions:clone(read("menus.propositions")||{}),config:clone(read("menus.config")||{}),votes:clone(read("menus.votes")||{}),mesrecettes:clone(read("menus.mesrecettes")||{})}};
   }
   function applyLocal(perso,shared){
     const P=read(LP)||{},A=read(LA)||{fav:{},note:{}};
     PERSO_KEYS.forEach(k=>{if(k==="note")A.note=perso.note||{};else if(perso[k]!==undefined)P[k]=perso[k];});
     P.weeks=shared.weeks||{};A.fav=shared.fav||{};
     write(LP,P);write(LA,A);
-    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});write("menus.panier",shared.panier||{});write("menus.propositions",shared.propositions||{});write("menus.config",shared.config||{});
+    write("menus.foyer",shared.foyer||{});write("menus.invites",shared.invites||{});write("menus.receptions",shared.receptions||{});write("menus.panier",shared.panier||{});write("menus.propositions",shared.propositions||{});write("menus.config",shared.config||{});write("menus.votes",shared.votes||{});write("menus.mesrecettes",shared.mesrecettes||{});
   }
   // Fusion à trois : on garde ce qui a changé ici depuis la dernière synchro, le reste vient du serveur
   function mergeMap(b,m,t){
@@ -2057,7 +2074,11 @@ const groupOf=id=>I[id].c||"Autres";
 const facetIds=[...new Set(R.flatMap(r=>r.ing.map(([id])=>id)))].filter(id=>I[id].r!=="pl"&&!BASICS.has(id));
 const DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 
-let sel={},quick=new Set(),q="",servings=4,region="",sort="nom";
+let sel={},quick=new Set(),q="",servings=4,region="",sort="nom",frigo=false;
+// « Vider le frigo » : on tape ce qu'on a, les recettes qui en utilisent le plus remontent
+const frigoItems=()=>q.split(/[,;\n]+/).length>1?q.split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean):qWords(q);
+const _fs={};
+function frigoScore(r){const items=frigoItems();if(!items.length)return {n:0,hit:[]};const names=r.ing.map(([id])=>I[id].n);const hit=items.filter(it=>names.some(nm=>qMatch(it,nm)));return {n:hit.length,hit,of:items.length}}
 try{const s=JSON.parse(localStorage.getItem("recettes.filtres")||"null");if(s){sel=s.sel||{};quick=new Set(s.quick||[]);servings=s.servings||4;region=s.region||"";sort=s.sort||"nom"}}catch(e){}
 Object.keys(sel).forEach(k=>{if(!I[k])delete sel[k]});
 function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,quick:[...quick],servings,region,sort}))}catch(e){}}
@@ -2070,7 +2091,8 @@ function matches(r,ignoreRegion){
   if(!ignoreRegion&&region&&r.reg!==region)return false;
   for(const [id,v] of Object.entries(sel)){if(v===1&&!has(r,id))return false;if(v===-1&&has(r,id))return false}
   for(const k of quick){const f=QUICK.find(x=>x[0]===k);if(f&&!f[2](r))return false}
-  if(q&&!qMatch(q,r.n+" "+r.pays+" "+r.reg+" "+r.ing.map(([id])=>I[id].n).join(" ")))return false;
+  if(q&&frigo){if(!frigoScore(r).n)return false}
+  else if(q&&!qMatch(q,r.n+" "+r.pays+" "+r.reg+" "+r.ing.map(([id])=>I[id].n).join(" ")))return false;
   return true;
 }
 const SORTS={nom:(a,b)=>a.n.localeCompare(b.n,"fr"),note:(a,b)=>noteOf(b.id)-noteOf(a.id)||(isFav(b.id)-isFav(a.id))||a.n.localeCompare(b.n,"fr"),kcal:(a,b)=>kcal(a)-kcal(b),temps:(a,b)=>a.t-b.t||a.n.localeCompare(b.n,"fr"),region:(a,b)=>REGIONS.indexOf(a.reg)-REGIONS.indexOf(b.reg)||a.pays.localeCompare(b.pays,"fr")||a.n.localeCompare(b.n,"fr")};
@@ -2088,7 +2110,9 @@ function renderRegions(){
   document.getElementById("regions").innerHTML=opts.map(([v,l,n,bg])=>`<button type="button" class="reg" data-reg="${v}" aria-pressed="${region===v}"><i style="background:${bg}"></i>${l} <small>${n}</small></button>`).join("");
 }
 function render(){
-  const res=R.filter(r=>matches(r)).sort(SORTS[sort]||SORTS.nom);
+  let res=R.filter(r=>matches(r)).sort(SORTS[sort]||SORTS.nom);
+  if(frigo&&q){const sc=new Map(res.map(r=>[r.id,frigoScore(r)]));res=res.sort((a,b)=>sc.get(b.id).n-sc.get(a.id).n||a.ing.length-b.ing.length);res.forEach(r=>_fs[r.id]=sc.get(r.id))}
+  const fb=document.getElementById("frigoBtn");if(fb){fb.setAttribute("aria-pressed",String(frigo));const qi=document.getElementById("q");qi.placeholder=frigo?"Ce que vous avez : courgettes, crème, jambon…":"Rechercher : curry, gratin, Mexique, saumon…"}
   renderRegions();
   document.getElementById("count").innerHTML=`<b>${res.length}</b> recette${res.length>1?"s":""}${region?" · "+region:""}`;
   const act=Object.entries(sel).map(([id,v])=>`<button type="button" class="pill ${v===1?"in":"out"}" data-rm="${id}" aria-label="Retirer ${esc(I[id].n)}">${v===1?"Avec":"Sans"} ${esc(I[id].n.toLowerCase())} ×</button>`).join("");
@@ -2109,7 +2133,7 @@ function render(){
   document.getElementById("results").innerHTML=mixHTML+(res.length?res.map(r=>{
     const main=r.ing.filter(([id])=>I[id].r!=="pl"&&!BASICS.has(id)).map(([id])=>sel[id]===1?`<mark>${esc(I[id].n.toLowerCase())}</mark>`:esc(I[id].n.toLowerCase())).join(", ");
     return `<div class="card" role="button" tabindex="0" data-r="${r.id}" aria-label="${esc(r.n)}"><div class="ph" style="background:${ART.BG[r.reg]}"></div>
-      <div class="bd"><div class="ctop"><span class="where tag">${esc(r.pays)}</span>${favBtn(r.id)}</div><span class="cname">${esc(r.n)}</span>${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}<span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${seasonOf(r,new Date().getMonth()+1).s==="saison"?'<span class="tag saison">🌱 De saison</span>':""}${(r.temp||tempOf(r))==="froid"?'<span class="tag froid">❄️ Froid</span>':'<span class="tag chaud">🔥 Chaud</span>'}${r.simple?'<span class="tag vege">Tout simple</span>':""}${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span>${cartBtn(r.id)}</div></div>`;
+      <div class="bd"><div class="ctop"><span class="where tag">${esc(r.pays)}</span>${favBtn(r.id)}</div><span class="cname">${esc(r.n)}</span>${frigo&&q&&_fs[r.id]?`<span class="frigohit">🧊 Utilise ${_fs[r.id].n}/${_fs[r.id].of} : ${esc(_fs[r.id].hit.join(", "))}</span>`:""}${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}<span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${seasonOf(r,new Date().getMonth()+1).s==="saison"?'<span class="tag saison">🌱 De saison</span>':""}${(r.temp||tempOf(r))==="froid"?'<span class="tag froid">❄️ Froid</span>':'<span class="tag chaud">🔥 Chaud</span>'}${r.simple?'<span class="tag vege">Tout simple</span>':""}${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span>${cartBtn(r.id)}</div></div>`;
   }).join(""):`<div class="none"><b>Aucune recette avec cette combinaison.</b><br>Retirez un ingrédient, un filtre ou changez de région.</div>`);
   ART.hydrate(document.getElementById("results"));
 }
@@ -2274,11 +2298,14 @@ document.addEventListener("click",e=>{
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));render()}
 document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&ov.hidden){const c=e.target.closest&&e.target.closest('.card[data-r]');if(c&&e.target===c){e.preventDefault();openRecipe(c.dataset.r)}}});
 document.getElementById("q").addEventListener("input",e=>{q=e.target.value;render()});
+document.getElementById("frigoBtn").addEventListener("click",()=>{frigo=!frigo;render();document.getElementById("q").focus()});
+window.addEventListener("hashchange",()=>{if(location.hash==="#frigo"){frigo=true;render();document.getElementById("q").focus()}});
+if(location.hash==="#frigo"){frigo=true;setTimeout(()=>{render();document.getElementById("q").focus()},30)}
 document.getElementById("sort").addEventListener("change",e=>{sort=e.target.value;save();render()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden&&!COOK.active)closeModal()});
 document.addEventListener("change",e=>{const c=e.target.closest("[data-tick]");if(c){cartTick(c.dataset.tick,c.checked);}});
 renderHero();render();paintCartBar();
-CLOUD.init({apply(){avLoad();loadFoy();render();paintCartBar();if(cartOpen)renderCart();document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis))}});
+CLOUD.init({apply(){try{loadMine()}catch(e){}avLoad();loadFoy();render();paintCartBar();if(cartOpen)renderCart();document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis))}});
 
 // ---------- Menu « Plus » de la navigation ----------
 (()=>{const b=document.getElementById("plusBtn"),m=document.getElementById("plusMenu");if(!b||!m)return;
