@@ -1917,6 +1917,7 @@ const CLOUD=(()=>{
     const n=acc&&acc.user?acc.user.name:"";
     b.innerHTML=acc?`<span class="av">${esc2((n||"?").slice(0,1).toUpperCase())}</span><span class="nm">${esc2(n)}${acc.group?`<small class="gnm"> · ${esc2(acc.group.icon||"👥")} ${esc2(acc.group.name)}</small>`:""}</span><span class="sdot ${status==="saving"?"saving":status==="error"?"err":"ok"}"></span>`:`<span class="av"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.3-7 8.5-7s7.7 2.4 8.5 7z"/></svg></span><span class="nm">Connexion</span>`;
     b.setAttribute("aria-label",acc?"Mon compte ("+n+")":"Se connecter ou créer un compte");
+    const at=document.getElementById("adminTab");if(at)at.hidden=!(acc&&acc.user&&(acc.user.superadmin||acc.user.moderator));
   }
   // Synchro régulière pour voir les changements des autres membres du groupe
   setInterval(()=>{if(acc&&document.visibilityState==="visible")sync()},30000);
