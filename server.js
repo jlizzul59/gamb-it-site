@@ -97,7 +97,14 @@ const SCHEMA = [
      tag TEXT,
      sent BOOLEAN NOT NULL DEFAULT false)`,
   `CREATE INDEX IF NOT EXISTS menus_notifs_due ON menus_notifs(at) WHERE NOT sent`,
+  // croissance : d'où vient le compte (lien partagé, invitation, page recette…) et acceptation des conditions
+  `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS ref TEXT`,
+  `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS consent_at TIMESTAMPTZ`,
+  `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS consent_version TEXT`,
+  // offre du groupe : tout est gratuit aujourd'hui ; prêt pour une offre payante
+  `ALTER TABLE menus_groups ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'gratuit'`,
 ];
+const TERMS_VERSION = "2026-11-10";
 // Administrateurs généraux du site (identifiants)
 const SUPER = new Set(["jlizzul"]);
 // Un groupe sans administrateur reçoit comme administrateur son plus ancien membre adulte (le créateur).
@@ -436,15 +443,15 @@ async function staffTarget(me, id) {
   return t;
 }
 async function adminOverview() {
-  const users = (await q(`SELECT id, username, name, created_at, last_seen, banned_at, ban_reason, site_role FROM menus_users ORDER BY created_at`)).rows;
-  const groups = (await q(`SELECT id, name, icon, invite_code, created_at, updated_at FROM menus_groups ORDER BY created_at`)).rows;
+  const users = (await q(`SELECT id, username, name, created_at, last_seen, banned_at, ban_reason, site_role, ref FROM menus_users ORDER BY created_at`)).rows;
+  const groups = (await q(`SELECT id, name, icon, invite_code, created_at, updated_at, plan FROM menus_groups ORDER BY created_at`)).rows;
   const mem = (await q(`SELECT user_id, group_id, role, admin, joined_at FROM menus_members ORDER BY joined_at`)).rows;
   return {
     users: users.map((u) => ({ id: Number(u.id), username: u.username, name: u.name, created: u.created_at, seen: u.last_seen, banned: u.banned_at, reason: u.ban_reason,
       super: SUPER.has(String(u.username).toLowerCase()), locked: SUPER.has(String(u.username).toLowerCase()),
-      siteRole: SUPER.has(String(u.username).toLowerCase()) ? "admin" : (u.site_role || ""),
+      siteRole: SUPER.has(String(u.username).toLowerCase()) ? "admin" : (u.site_role || ""), ref: u.ref || "",
       groups: mem.filter((m) => Number(m.user_id) === Number(u.id)).map((m) => Number(m.group_id)) })),
-    groups: groups.map((g) => ({ id: Number(g.id), name: g.name, icon: g.icon, code: g.invite_code, created: g.created_at, updated: g.updated_at,
+    groups: groups.map((g) => ({ id: Number(g.id), name: g.name, icon: g.icon, code: g.invite_code, created: g.created_at, updated: g.updated_at, plan: g.plan || "gratuit",
       members: mem.filter((m) => Number(m.group_id) === Number(g.id)).map((m) => ({ id: Number(m.user_id), role: m.role, admin: isAdm(m) })) })),
   };
 }
@@ -593,15 +600,18 @@ const routes = {
     if (!name) throw new HttpError(400, "Indiquez votre prénom.");
     if (password.length < 8 || password.length > 200)
       throw new HttpError(400, "Le mot de passe doit faire au moins 8 caractères.");
+    if (body.consent !== true)
+      throw new HttpError(400, "Merci d'accepter les conditions d'utilisation pour créer un compte.");
+    const ref = String(body.ref || "").replace(/[^A-Za-z0-9._:-]/g, "").slice(0, 40) || null;
     const token = crypto.randomBytes(32).toString("base64url");
     try {
       await q(
         `WITH u AS (
-           INSERT INTO menus_users (username, username_key, name, pass_hash)
-           VALUES ($1, $2, $3, $4) RETURNING id)
+           INSERT INTO menus_users (username, username_key, name, pass_hash, ref, consent_at, consent_version)
+           VALUES ($1, $2, $3, $4, $6, now(), $7) RETURNING id)
          INSERT INTO menus_sessions (token_hash, user_id, expires_at)
          SELECT $5, id, now() + interval '${SESSION_DAYS} days' FROM u`,
-        [username, username.toLowerCase(), name, hashPassword(password), sha256(token)]
+        [username, username.toLowerCase(), name, hashPassword(password), sha256(token), ref, TERMS_VERSION]
       );
     } catch (e) {
       if (e.code === "23505") throw new HttpError(409, "Cet identifiant est déjà pris.");
@@ -782,6 +792,23 @@ const routes = {
     await q(`UPDATE menus_users SET pass_hash = $1 WHERE id = $2`, [hashPassword(next), user.id]);
     await q(`DELETE FROM menus_sessions WHERE user_id = $1 AND token_hash <> $2`, [user.id, user.tokenHash]);
     return { ok: true };
+  },
+
+  // RGPD : toutes les données du compte, en un fichier
+  "GET /account/export": async (req) => {
+    limit(req, "export", 10, 3600e3);
+    const user = await auth(req);
+    const obj = (v) => { if (typeof v === "string") { try { return JSON.parse(v); } catch (e) { return null; } } return v; };
+    const u = (await q(`SELECT username, name, created_at, last_seen, ref, consent_at, consent_version, active_group FROM menus_users WHERE id = $1`, [user.id])).rows[0];
+    const groups = (await q(
+      `SELECT g.id, g.name, g.icon, g.invite_code, g.plan, g.created_at, g.updated_at, g.data, m.role, m.admin, m.joined_at,
+              (SELECT json_agg(json_build_object('name', uu.name, 'role', mm.role)) FROM menus_members mm JOIN menus_users uu ON uu.id = mm.user_id WHERE mm.group_id = g.id) AS members
+         FROM menus_members m JOIN menus_groups g ON g.id = m.group_id WHERE m.user_id = $1 ORDER BY m.joined_at`, [user.id])).rows;
+    const perso = (await q(`SELECT data, updated_at FROM menus_user_data WHERE user_id = $1`, [user.id])).rows[0] || null;
+    const subs = (await q(`SELECT created_at FROM menus_push_subs WHERE user_id = $1`, [user.id])).rows;
+    const notifs = (await q(`SELECT at, title, body, sent FROM menus_notifs WHERE user_id = $1 ORDER BY at DESC LIMIT 500`, [user.id])).rows;
+    return { exported_at: new Date().toISOString(), account: u, groups: groups.map((g) => Object.assign(g, { data: obj(g.data) })),
+      personal_data: perso ? obj(perso.data) : {}, notification_devices: subs.length, reminders: notifs };
   },
 
   "POST /account/delete": async (req, body) => {
