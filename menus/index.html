@@ -116,7 +116,10 @@ main{padding-block:28px 64px}
 .toggle input{accent-color:var(--accent);width:16px;height:16px}
 
 /* Semaine */
-.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.week{display:grid;grid-template-columns:var(--wcols,repeat(7,minmax(0,1fr)));gap:10px}
+.daypast{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;padding:10px 4px;border:1px dashed var(--line);border-radius:14px;background:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;writing-mode:vertical-rl;min-height:160px}
+.daypast:hover{color:var(--ink);border-color:var(--accent)}
+.pasthide{grid-column:1/-1;justify-self:start;background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:0}
 .day{display:flex;flex-direction:column;gap:8px;min-width:0}
 .dayhead{display:flex;justify-content:space-between;align-items:baseline;padding:0 2px 6px;border-bottom:2px solid var(--ink)}
 .dayhead b{font-family:var(--f-display);font-weight:400;font-size:19px}
@@ -137,7 +140,7 @@ main{padding-block:28px 64px}
 .empty{color:var(--bad);font-size:13px}
 
 @media (max-width:1100px){
-  .week{grid-template-columns:1fr;gap:0}
+  .week{grid-template-columns:1fr;gap:0}.daypast{writing-mode:horizontal-tb;min-height:0;flex-direction:row;justify-content:center;margin-bottom:10px}
   .day{display:grid;grid-template-columns:120px minmax(0,1fr) minmax(0,1fr);gap:10px;padding:12px 0;border-bottom:1px solid var(--line);align-items:stretch}
   .dayhead{flex-direction:column;border:0;padding:0;justify-content:flex-start}
   .day>.meal{grid-row:1 / span 2}
@@ -2839,10 +2842,20 @@ let _seen=null;
 function trackEdit(){if(!W||isKid())return;const sg=weekSig(W);if(_seen!==null&&sg!==_seen)W.edit={by:meName(),at:Date.now()};_seen=sg}
 
 // ---------- Semaine ----------
+let showPast=false;
+document.addEventListener("click",e=>{if(e.target.closest("[data-showpast]")){showPast=true;renderWeek()}else if(e.target.closest("[data-hidepast]")){showPast=false;renderWeek()}});
 function renderWeek(){
   renderValid();
   const el=document.getElementById("week");
-  el.innerHTML=ORDER.map(i=>{const d=DAYS[i];
+  // jours déjà passés de la semaine en cours : repliés dans une fine colonne
+  const t0=new Date();t0.setHours(0,0,0,0);
+  const past=ORDER.filter(i=>{const x=dayDate(S.cur,i);x.setHours(0,0,0,0);return x<t0});
+  const fold=past.length&&past.length<7&&!showPast,shown=fold?ORDER.filter(i=>!past.includes(i)):ORDER;
+  el.style.setProperty("--wcols",fold?`44px repeat(${shown.length},minmax(0,1fr))`:"repeat(7,minmax(0,1fr))");
+  const pl=past.map(i=>DAYS[i].slice(0,3)+". "+dayDate(S.cur,i).getDate()).join(", ");
+  el.innerHTML=(fold?`<button type="button" class="daypast" data-showpast title="Afficher ${pl}">‹ ${past.length>1?past.length+" jours passés":"Passé : "+pl}</button>`:"")+
+    (past.length&&past.length<7&&showPast?`<button type="button" class="pasthide" data-hidepast>Masquer les jours passés</button>`:"")+
+    shown.map(i=>{const d=DAYS[i];
     const dayOff=false;
     const tot=Math.round(["m","s"].reduce((a,w)=>{const k=i+w;if(W.mode[k]==="skip")return a;const r=recipeAt(k),src=srcKey(k);return a+(r?kcal(r):0)+(src===k?XS(k).reduce((b,x)=>b+kcal(RB[x.id])*x.n/PN(SK[k]),0):0)},0));
     const meals=["m","s"].map(w=>{

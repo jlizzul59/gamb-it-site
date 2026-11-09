@@ -2498,7 +2498,7 @@ CLOUD.init({apply(){try{loadMine()}catch(e){}avLoad();loadFoy();render();paintCa
 document.querySelectorAll("nav.mainnav [data-nav]").forEach(a=>{if(a.dataset.nav==="recettes")a.setAttribute("aria-current","page")});
 
 // Lien direct vers une recette : recettes.html#r=identifiant
-(()=>{const m=location.hash.match(/^#r=(.+)$/);if(m){const id=decodeURIComponent(m[1]);if(RB[id])setTimeout(()=>{try{openRecipe(id)}catch(e){}},50)}})();
+(()=>{const m=location.hash.match(/^#([rc])=(.+)$/);if(m){const id=decodeURIComponent(m[2]);if(RB[id])setTimeout(()=>{try{openRecipe(id);if(m[1]==="c"){const b=document.querySelector("[data-cook]");b&&b.click()}}catch(e){}},50)}})();
 
 // ---------- Appli installable : service worker et bouton « Installer » ----------
 if("serviceWorker" in navigator&&location.protocol==="https:")window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
