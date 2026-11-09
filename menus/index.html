@@ -609,6 +609,26 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .tag.froid{border-color:#9CC3DA;color:#2C6E91;background:#E7F2F8}
 .restfor{font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:3px 7px}
 .meal{overflow:hidden}
+.mbar{display:flex;gap:6px;margin-top:2px}
+.mbar .chg{flex:1;font:inherit;font-size:13px;font-weight:600;padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;min-width:0}
+.mbar .chg:hover,.mbar .more:hover{border-color:var(--accent);color:var(--accent)}
+.mbar .more{font:inherit;font-size:16px;line-height:1;width:36px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.ppill{font:inherit;font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.ppill.custom{border-color:var(--accent);color:var(--accent);background:#eef5ee}.ppill[disabled]{cursor:default;opacity:.8}
+.tpin{font-size:11px}
+.xcompact{display:flex;align-items:center;gap:6px}.xcompact .name{flex:1;min-width:0}
+.cmenu{position:absolute;z-index:60;min-width:230px;max-width:min(320px,calc(100vw - 16px));background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column}
+.cmenu .cmh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:6px 10px 4px}
+.cmenu>button{font:inherit;font-size:14px;text-align:left;background:none;border:0;border-radius:10px;padding:9px 10px;cursor:pointer;color:var(--ink)}
+.cmenu>button:hover:not([disabled]),.cmenu>button:focus-visible{background:var(--bg)}
+.cmenu>button[disabled]{opacity:.45;cursor:not-allowed}.cmenu>button.danger{color:#a12d2d}
+.cmstep{display:flex;align-items:center;justify-content:center;gap:16px;padding:6px 0 8px}
+.cmstep button{width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:var(--bg);font-size:20px;cursor:pointer}.cmstep b{font-size:22px;min-width:28px;text-align:center}
+.cmnote{display:block;padding:2px 10px 8px;font-size:12px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.helpbtn{width:38px;padding-left:0;padding-right:0;font-weight:700;border-radius:999px}
+.helpbox{background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 16px;margin:10px 0 14px;font-size:14px;line-height:1.5;max-width:760px}
+.helpbox p{margin:6px 0}
 .hweek{background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:16px;padding:14px 16px;margin:0 0 14px}
 .hweek header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}.hweek h3{margin:0;flex:1 1 auto;font-size:18px}
 .htab{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
@@ -680,16 +700,17 @@ html.ck-on,html.ck-on body{overflow:hidden}
   <section class="view" id="v-semaine">
     <div id="propBanner"></div>
     <div id="rulesbar"></div>
-    <div class="lede">
-      <div>
-        <h2>Les menus de la semaine, pour toute la famille</h2>
-        <p>Des plats du monde entier, faciles à préparer à l'avance. Certaines recettes proposent un accompagnement marqué « optionnel » (pain, riz ou fromage) pour ceux qui ont plus faim. Dans la liste de courses, ils sont regroupés à part : vous décidez sur place.</p>
-        <p>Réglez le nombre de personnes du midi et du soir, puis ajustez un repas avec − et + si besoin : les quantités suivent. Supprimez un repas avec la croix. Un repas peut aussi reprendre les restes du repas d'avant. La session de <a href="#batch">batch cooking</a> et la liste de courses suivent. Indiquez vos goûts dans <a href="#gouts">Mes goûts</a>.</p>
-      </div>
-    </div>
     <div class="toolbar">
       <button class="btn primary" id="regen" type="button">Nouvelle semaine au hasard</button>
-      <button class="btn" id="reset" type="button">Revenir au menu proposé</button>
+      <button class="btn" id="undoBtn" type="button" disabled title="Annuler la dernière modification (Ctrl+Z)">↶ Annuler</button>
+      <button class="btn" id="openBtn" type="button" hidden>Revenir à la version d'ouverture</button>
+      <button class="btn helpbtn" id="helpBtn" type="button" aria-expanded="false" aria-controls="helpBox" title="Comment ça marche ?">?</button>
+    </div>
+    <div class="helpbox" id="helpBox" hidden>
+      <p><b>Le semainier</b> propose un plat pour chaque midi et chaque soir, en respectant les règles de votre groupe. Il est partagé : ce qu'un adulte change, tout le groupe le voit.</p>
+      <p><b>Sur un repas :</b> « Changer » pour un autre plat (au hasard, chaud, froid ou depuis le catalogue), la pastille 👤 pour le nombre de personnes, « ⋯ » pour les restes, une recette en plus ou supprimer le repas.</p>
+      <p><b>Une erreur ?</b> « Annuler » défait la dernière modification ; « Revenir à la version d'ouverture » remet le semainier tel qu'il était quand vous avez ouvert l'appli.</p>
+      <p>Les accompagnements marqués « optionnel » (pain, riz, fromage) sont listés à part dans les courses : vous décidez sur place.</p>
     </div>
     <div class="defaults" id="defaults"></div>
     <div id="wvalid" class="wvalid" aria-live="polite"></div>
@@ -749,7 +770,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 <script>
 // ---------- Ingrédients ----------
 // u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
-const AISLES={bo:"Boucherie & poissonnerie",fl:"Fruits & légumes",cr:"Crèmerie, œufs & frais",co:"Épicerie & conserves",pa:"Pain",pl:"Placard (à vérifier)",op:"Optionnel : selon l'appétit"};
+const AISLES={bo:"Boucherie & poissonnerie",fl:"Fruits & légumes",cr:"Crèmerie, œufs & frais",co:"Épicerie & conserves",pa:"Pain",op:"Optionnel : selon l'appétit"};
 const I={
  poulet:{n:"Blanc de poulet",r:"bo",u:"g",k:1.1,c:"Viandes"},
  dinde:{n:"Escalope de dinde",r:"bo",u:"g",k:1.05,c:"Viandes"},
@@ -1656,6 +1677,8 @@ const QNEW=[{"ing":[["toncru",120],["soja",1],["huilesesame",0.5],["citronvert",
 const QBC={"poke":{"t":[],"j":"Cuire le riz à l'avance si besoin ; couper le poisson et assembler au dernier moment."},"pulled":{"t":[["four","Cuire l'échine 3 h et l'effilocher"]],"j":"Réchauffer la viande dans sa sauce, préparer le coleslaw, garnir les pains."},"cevichecuit":{"t":[["feu","Cuire la patate douce"]],"j":"Couper le poisson, le mariner 5 à 10 min au citron vert et servir aussitôt."},"poutine":{"t":[["cru","Tailler les frites"]],"j":"Frites au four, sauce brune, assembler avec le fromage."},"tahitienne":{"t":[["cru","Couper les légumes"]],"j":"Couper le thon, le mariner 10 min au citron vert, ajouter le lait de coco et servir."},"bowlsaumon":{"t":[["cru","Couper les légumes"]],"j":"Cuire et assaisonner le riz, trancher le saumon au dernier moment."}};
 for(const id in QUAL){if(RB[id])Object.assign(RB[id],QUAL[id])}
 QNEW.forEach(o=>{const r=Object.assign({},o);delete r.j;if(RB[r.id])Object.assign(RB[r.id],r);else{R.push(r);RB[r.id]=r}BC[r.id]={t:[],j:o.j}});
+// Produits d'épicerie qui ne sont pas « toujours au placard » : ils restent dans la liste de courses
+["pesto","beurrecacahuete","patecurry","miso","tahin","gochujang","tamarin"].forEach(k=>{if(I[k])I[k].r="co"});
 // Recettes ajoutées (fichier partagé recettes-plus.js)
 (()=>{const X=window.MENUS_PLUS;if(!X)return;Object.assign(I,X.I);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:"Réchauffer doucement avant de servir."}})})();
 Object.assign(BC,QBC);
@@ -2322,13 +2345,14 @@ function migrateSunday(){
   idx.concat(idx.map(w=>w+1)).forEach(w=>{const x=ws[w];if(x&&x.valid){if(wasValid[w]||wasValid[w-1])x.valid.sig=weekSig(x)}});
   C.sunday=1;cfgWrite(C);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}cloudChanged();return true;
 }
-function save(){try{trackEdit()}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}cloudChanged()}
+function save(){try{trackEdit()}catch(e){}try{histNote()}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}cloudChanged()}
 let W;
 function useWeek(w){
   S.cur=Math.max(NOWW(),Math.min(NOWW()+HORIZON-1,w));
   if(!S.weeks[S.cur]){S.weeks[S.cur]={plan:{},mode:{},pin:{},checked:{},shopSess:1};W=S.weeks[S.cur];try{const E=CFG().eaters||{};Object.keys(E).forEach(k=>{if(E[k]&&E[k].skip)W.mode[k]="skip"})}catch(_){}build(S.cur===0?"default":"seed")}
   W=S.weeks[S.cur];W.pin=W.pin||{};W.mode=W.mode||{};W.checked=W.checked||{};W.plan=W.plan||{};if(SLOTS.some(s=>W.plan[s.key]===undefined))build("keep");
   try{_seen=weekSig(W)}catch(e){}
+  try{histReset()}catch(e){}
 }
 
 function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -2427,7 +2451,10 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 const shortName=r=>r.n.split(",")[0];
 const MONTH=()=>dayDate(S.cur||0,3).getMonth()+1;
-const tagHTML=r=>(seasonOf(r,MONTH()).s==="saison"?'<span class="tag saison" title="Légumes ou fruits de saison">🌱 De saison</span>':"")+((r.temp||tempOf(r))==="froid"?'<span class="tag froid" title="Se mange froid">❄️ Froid</span>':'<span class="tag chaud" title="Se mange chaud">🔥 Chaud</span>')+(r.simple?'<span class="tag simple">Tout simple</span>':"")+(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"");
+const tagAll=r=>(seasonOf(r,MONTH()).s==="saison"?'<span class="tag saison" title="Légumes ou fruits de saison">🌱 De saison</span>':"")+((r.temp||tempOf(r))==="froid"?'<span class="tag froid" title="Se mange froid">❄️ Froid</span>':'<span class="tag chaud" title="Se mange chaud">🔥 Chaud</span>')+(r.simple?'<span class="tag simple">Tout simple</span>':"")+(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"");
+// Carte compacte : les étiquettes les plus utiles d'abord (« chaud » est la règle, on ne l'affiche pas)
+const TAGPRIO=["froid","simple","vege","plaisir","saison"];
+const tagHTML=(r,max)=>{const h=tagAll(r);if(!max)return h;const m=(h.match(/<span class="tag[^>]*>.*?<\/span>/g)||[]).map(x=>[TAGPRIO.indexOf((x.match(/class="tag (\w+)/)||[])[1]),x]).filter(x=>x[0]>=0).sort((a,b)=>a[0]-b[0]);return m.slice(0,max).map(x=>x[1]).join("")};
 const dateOf=i=>dayDate(S.cur,i).toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
 
 // ---------- En-tête semaine ----------
@@ -2500,18 +2527,13 @@ function renderWeek(){
       if(mode==="skip")body=`<span class="off">Repas supprimé</span><button class="restore" type="button" data-unskip="${sl.key}">Rétablir</button>`;
       else if(!r)body=`<span class="empty">Aucune recette compatible</span>`;
       else body=`${isRest?'<span class="restlab">Restes de '+slotLabel(SK[src])+'</span>':""}<button class="name" type="button" data-open="${src}">${esc(r.n)}${isFav(r.id)?' <span class="favdot" aria-label="Favori">♥</span>':""}</button>`+(!isRest?(()=>{const rs=SLOTS.filter(s=>s.key!==sl.key&&W.mode[s.key]==="rest"&&srcKey(s.key)===sl.key);return rs.length?`<span class="restfor">♻️ Faire plus : restes pour ${rs.map(s=>esc(slotLabel(s))).join(", ")} (${(n=>"+"+n+" portion"+(n>1?"s":""))(rs.reduce((t,s)=>t+ +PN(s),0))})</span>`:""})():"");
+      const tv=(W.temp||{})[sl.key],kid=isKid(),pc=W.pers&&W.pers[sl.key];
       return `<div class="meal ${mode==="skip"?"is-off":""} ${isRest?"is-rest":""}">
-        <div class="when"><span>${sl.when}</span><span class="wr">${mode!=="skip"&&r?okChip(sl.key):""}${mode!=="skip"?`<button class="del" type="button" data-skip="${sl.key}" aria-label="Supprimer le repas du ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" title="Supprimer ce repas">×</button>`:""}</span></div>
+        <div class="when"><span>${sl.when}${tv?` <span class="tpin" title="Préférence pour ce repas">${tv==="chaud"?"🔥":"❄️"}</span>`:""}</span><span class="wr">${mode!=="skip"&&r&&slotOk(sl.key)?'<span class="okchip">✓ Validé</span>':""}${mode!=="skip"?`<button type="button" class="ppill${pc?" custom":""}" ${kid?"disabled":`data-cmenu="pers|${sl.key}"`} aria-label="${PN(sl)} ${XS(sl.key).length&&!isRest?"portions":"personnes"}, modifier" title="Nombre de personnes pour ce repas">👤 ${PN(sl)}</button>`:""}</span></div>
         ${body}
-        ${mode!=="skip"?`<div class="prow"><span>${XS(sl.key).length&&!isRest?"Portions":"Personnes"}</span><span class="pstep"><button type="button" class="pm" data-pers="${sl.key}" data-d="-1" aria-label="Une personne de moins, ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" ${PN(sl)<=1?"disabled":""}>−</button><b class="num ${W.pers&&W.pers[sl.key]?"custom":""}">${PN(sl)}</b><button type="button" class="pm" data-pers="${sl.key}" data-d="1" aria-label="Une personne de plus, ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" ${PN(sl)>=12?"disabled":""}>+</button></span></div>`:""}
         ${mode!=="skip"&&!isRest?extraHTML(sl):""}
-        <div class="meta"><span class="num">${r&&mode!=="skip"?"≈ "+kcal(r)+" kcal":""}</span>${r&&!isRest&&mode!=="skip"?tagHTML(r):""}</div>${r&&mode!=="skip"&&foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}
-        <div class="ctrl"><select id="mode-${sl.key}" data-mode="${sl.key}" aria-label="${DAYS[i]} ${sl.when.toLowerCase()}">
-          <option value="cook" ${mode==="cook"?"selected":""}>Cuisiné</option>
-          <option value="rest" ${mode==="rest"?"selected":""} ${restOK?"":"disabled"}>Restes du repas d'avant</option>
-          <option value="skip" ${mode==="skip"?"selected":""}>Supprimé</option>
-        </select></div>
-        ${mode!=="skip"&&!isRest?`<div class="acts"><button class="swap" type="button" data-pick="${sl.key}">Catalogue</button><button class="swap" type="button" data-swap="${sl.key}">Au hasard</button></div><div class="tsel" role="group" aria-label="Manger chaud ou froid"><button type="button" data-temp="${sl.key}|chaud" aria-pressed="${(W.temp||{})[sl.key]==="chaud"}" title="Un plat chaud pour ce repas">🔥 Chaud</button><button type="button" data-temp="${sl.key}|froid" aria-pressed="${(W.temp||{})[sl.key]==="froid"}" title="Un plat froid pour ce repas">❄️ Froid</button></div><button class="xadd" type="button" data-xadd="${sl.key}">+ Ajouter une recette</button>`:""}</div>`;
+        ${mode!=="skip"&&r?`<div class="meta"><span class="num">≈ ${kcal(r)} kcal</span>${!isRest?tagHTML(r,2):""}</div>`:""}${r&&mode!=="skip"&&foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}
+        ${mode==="skip"?"":kid?(isRest?"":`<div class="mbar"><button class="chg" type="button" data-pick="${sl.key}">Proposer un autre plat</button></div>`):`<div class="mbar">${isRest?`<button class="chg" type="button" data-setmode="${sl.key}|cook">Cuisiner un plat</button>`:`<button class="chg" type="button" data-cmenu="chg|${sl.key}" aria-haspopup="menu">Changer <span aria-hidden="true">▾</span></button>`}<button class="more" type="button" data-cmenu="more|${sl.key}" aria-haspopup="menu" aria-label="Plus d'options pour ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" title="Plus d'options">⋯</button></div>`}</div>`;
     }).join("");
     return `<div class="day ${dayOff?"day-off":""}"><div class="dayhead"><b>${d}</b><small>${dateOf(i)}</small></div>${meals}${tot?`<div class="daytotal">Midi + soir : <span class="num">≈ ${tot} kcal</span></div>`:""}</div>`;
   }).join("");
@@ -2661,8 +2683,8 @@ function renderDefaults(){
     <span class="muted" style="font-size:13px">C'est le nombre de personnes par défaut. Pour un jour précis (lundi midi à deux, le soir à quatre…), réglez-le une fois pour toutes dans <a href="#groupe">Groupe → Qui mange quand ?</a>, ou ajustez un repas avec − et + sur sa carte.</span>`;
 }
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));if(catKey)renderCatList("m",catKey);renderWeek()}
-function renderFoyer(){const el=document.getElementById("foyer");if(el)el.innerHTML=peopleEditor("foyer",{empty:"Personne n'est encore indiqué. Ajoutez par exemple chaque membre de la famille.",addLabel:"+ Ajouter un membre du foyer"})}
-DIETUI.onChange=(k,soft)=>{if(k!=="foyer")return;const before=JSON.stringify(W.plan);loadFoy();build("keep");const n=Object.keys(W.plan).filter(x=>JSON.parse(before)[x]!==W.plan[x]).length;if(soft){renderWeek();return}renderAll();if(n)toast(n+" repas remplacé"+(n>1?"s":"")+" pour respecter le foyer")};
+function renderFoyer(){const el=document.getElementById("foyer");if(el)el.innerHTML=peopleEditor("foyer",{empty:"Personne n'est encore indiqué. Ajoutez par exemple chaque membre de la famille.",addLabel:"+ Ajouter une personne du groupe"})}
+DIETUI.onChange=(k,soft)=>{if(k!=="foyer")return;const before=JSON.stringify(W.plan);loadFoy();build("keep");const n=Object.keys(W.plan).filter(x=>JSON.parse(before)[x]!==W.plan[x]).length;if(soft){renderWeek();return}renderAll();if(n)toast(n+" repas remplacé"+(n>1?"s":"")+" pour respecter le groupe")};
 function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules();renderHistory();const at=document.getElementById("adminTab");if(at)at.hidden=!isSuper()}
 
 // ---------- Administration générale (réservée à l'administrateur du site) ----------
@@ -2783,7 +2805,68 @@ document.getElementById("prevW").addEventListener("click",()=>goWeek(S.cur-1));
 document.getElementById("nextW").addEventListener("click",()=>goWeek(S.cur+1));
 let _regenArm=0;
 document.getElementById("regen").addEventListener("click",()=>{if(W.valid&&Date.now()-_regenArm>4000){_regenArm=Date.now();toast("Le semainier est validé : cliquez encore pour tout remplacer");return}_regenArm=0;W.pin={};build("random");renderAll();toast("Nouvelle semaine générée")});
-document.getElementById("reset").addEventListener("click",()=>{W.mode={};W.pin={};build(S.cur===0?"default":"seed");renderAll();toast("Menu proposé rétabli")});
+// ---------- Menus des cartes : « Changer », « ⋯ » et personnes ----------
+const CM=(()=>{let el=null,cur=null;
+  function close(){if(!el)return;el.remove();el=null;if(cur&&cur.btn)cur.btn.setAttribute("aria-expanded","false");cur=null}
+  function html(kind,k){const sl=SK[k],mode=W.mode[k]||"cook",tv=(W.temp||{})[k],r=RB[W.plan[k]];
+    if(kind==="chg")return `<div class="cmh">Changer le plat</div>
+      <button type="button" role="menuitem" data-mact="swap|${k}">🎲 Un autre plat au hasard</button>
+      <button type="button" role="menuitem" data-mact="hot|${k}">🔥 Au hasard, un plat chaud</button>
+      <button type="button" role="menuitem" data-mact="cold|${k}">❄️ Au hasard, un plat froid</button>
+      <button type="button" role="menuitem" data-pick="${k}">📖 Choisir dans le catalogue</button>
+      ${tv?`<button type="button" role="menuitem" data-mact="anytemp|${k}">↺ Chaud ou froid : peu importe <small class="muted">(ce repas est réglé sur ${tv})</small></button>`:""}`;
+    if(kind==="more"){const restOK=!!prevActive(k);return `<div class="cmh">${esc(slotLabel(sl))}</div>
+      ${mode==="rest"?`<button type="button" role="menuitem" data-mact="cook|${k}">🍳 Cuisiner un plat à la place des restes</button>`:`<button type="button" role="menuitem" data-mact="rest|${k}" ${restOK?"":"disabled"}>♻️ Manger les restes du repas d'avant</button>`}
+      ${mode!=="rest"?`<button type="button" role="menuitem" data-xadd="${k}">➕ Ajouter une recette à ce repas</button>`:""}
+      ${r?`<button type="button" role="menuitem" data-mact="ok|${k}">${slotOk(k)?"✓ Retirer la validation":"✓ Valider ce repas"}</button>`:""}
+      ${r?`<button type="button" role="menuitem" data-open="${srcKey(k)}">📄 Voir la recette</button>`:""}
+      <button type="button" role="menuitem" class="danger" data-mact="skip|${k}">🗑 Supprimer ce repas</button>`}
+    if(kind==="pers"){const n=PN(sl),def=S.def[WH(sl)];return `<div class="cmh">Personnes · ${esc(slotLabel(sl))}</div>
+      <div class="cmstep"><button type="button" data-mact="p-|${k}" ${n<=1?"disabled":""} aria-label="Une personne de moins">−</button><b class="num">${n}</b><button type="button" data-mact="p+|${k}" ${n>=12?"disabled":""} aria-label="Une personne de plus">+</button></div>
+      ${n!==def?`<button type="button" role="menuitem" data-mact="pdef|${k}">↺ Revenir à ${def}, le nombre habituel</button>`:`<small class="muted cmnote">Nombre habituel : ${def}. Il se règle dans Groupe › Qui mange quand ?</small>`}`}
+    return "";
+  }
+  function place(btn){const r=btn.getBoundingClientRect(),w=el.offsetWidth,vw=document.documentElement.clientWidth;let x=r.left+window.scrollX;x=Math.max(window.scrollX+8,Math.min(x,window.scrollX+vw-w-8));el.style.left=x+"px";el.style.top=(r.bottom+window.scrollY+4)+"px"}
+  function open(kind,k,btn){close();cur={kind,k,btn};el=document.createElement("div");el.className="cmenu";el.setAttribute("role","menu");el.innerHTML=html(kind,k);document.body.appendChild(el);place(btn);btn.setAttribute("aria-expanded","true");const f=el.querySelector("button:not([disabled])");if(f)try{f.focus({preventScroll:true})}catch(_){}}
+  function refresh(){if(!cur)return;const b=document.querySelector(`[data-cmenu="${cur.kind}|${cur.k}"]`);if(!b){close();return}cur.btn=b;el.innerHTML=html(cur.kind,cur.k);place(b);b.setAttribute("aria-expanded","true")}
+  return {open,close,refresh,get cur(){return cur},get el(){return el}};
+})();
+function setPers(k,n){const sl=SK[k];W.pers=W.pers||{};n=Math.max(1,Math.min(12,n));if(n===S.def[WH(sl)])delete W.pers[k];else W.pers[k]=n;save();renderAll()}
+document.addEventListener("click",e=>{
+  const sm=e.target.closest("[data-setmode]");if(sm&&!isKid()){const [k,m]=sm.dataset.setmode.split("|");setMode(k,m);build("keep");renderAll();return}
+  const cb=e.target.closest("[data-cmenu]");
+  if(cb){if(isKid())return;const [kind,k]=cb.dataset.cmenu.split("|");if(CM.cur&&CM.cur.kind===kind&&CM.cur.k===k){CM.close();return}CM.open(kind,k,cb);return}
+  const ma=e.target.closest(".cmenu [data-mact]");
+  if(ma){if(isKid())return;const [a,k]=ma.dataset.mact.split("|"),sl=SK[k];
+    if(a==="p-"||a==="p+"){setPers(k,PN(sl)+(a==="p+"?1:-1));CM.refresh();return}
+    if(a==="pdef"){setPers(k,S.def[WH(sl)]);CM.refresh();return}
+    CM.close();
+    if(a==="swap")return swap(k);
+    if(a==="hot"||a==="cold"){const t=a==="hot"?"chaud":"froid";W.temp=W.temp||{};W.temp[k]=t;delete W.pin[k];swap(k);toast((t==="chaud"?"🔥 Plat chaud":"❄️ Plat froid")+" pour "+slotLabel(sl)+" : gardé pour les prochains tirages");return}
+    if(a==="anytemp"){if(W.temp)delete W.temp[k];save();renderAll();toast("Chaud ou froid : peu importe");return}
+    if(a==="rest"||a==="cook"){setMode(k,a);build("keep");renderAll();return}
+    if(a==="skip"){setMode(k,"skip");build("keep");renderAll();toast("Repas du "+slotLabel(sl)+" supprimé · « Annuler » pour le remettre");return}
+    if(a==="ok"){W.ok=W.ok||{};if(slotOk(k)){delete W.ok[k];toast("Validation retirée")}else{W.ok[k]={sig:slotSig(W,k),by:meName(),at:Date.now()};toast("Repas validé")}_seen=weekSig(W);save();renderAll();return}
+    return}
+  if(CM.el&&!e.target.closest(".cmenu"))CM.close();
+  else if(CM.el&&e.target.closest(".cmenu [data-pick],.cmenu [data-open],.cmenu [data-xadd]"))CM.close();
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&CM.el){const b=CM.cur&&CM.cur.btn;CM.close();if(b)b.focus()}});
+window.addEventListener("resize",()=>CM.close());
+
+// ---------- Annuler / version d'ouverture ----------
+const UNDO=[],OPENV={},OPENT=new Date();let _lastJ=null,_restoring=false;
+function histNote(){if(!W)return;const j=JSON.stringify(W);if(_lastJ!==null&&j!==_lastJ&&!_restoring){UNDO.push({w:S.cur,j:_lastJ});if(UNDO.length>40)UNDO.shift()}_lastJ=j;if(!(S.cur in OPENV))OPENV[S.cur]=j;paintHist()}
+function histReset(){if(!W)return;_lastJ=JSON.stringify(W);if(!(S.cur in OPENV))OPENV[S.cur]=_lastJ;paintHist()}
+function paintHist(){const u=document.getElementById("undoBtn"),o=document.getElementById("openBtn");if(!u||!W)return;
+  u.disabled=isKid()||!UNDO.some(x=>x.w===S.cur);o.hidden=isKid()||!(S.cur in OPENV)||OPENV[S.cur]===JSON.stringify(W);
+  o.title="Remettre le semainier tel qu'il était à "+OPENT.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}
+function restoreWeek(j,msg){_restoring=true;S.weeks[S.cur]=JSON.parse(j);W=S.weeks[S.cur];save();_restoring=false;_lastJ=JSON.stringify(W);renderAll();toast(msg)}
+function undo(){if(isKid())return;for(let i=UNDO.length-1;i>=0;i--){if(UNDO[i].w===S.cur){const x=UNDO.splice(i,1)[0];restoreWeek(x.j,"Modification annulée");return}}toast("Rien à annuler")}
+document.getElementById("undoBtn").addEventListener("click",undo);
+document.getElementById("openBtn").addEventListener("click",()=>{if(isKid()||!(S.cur in OPENV))return;const cur=JSON.stringify(W);UNDO.push({w:S.cur,j:cur});restoreWeek(OPENV[S.cur],"Semainier remis comme à l'ouverture ("+OPENT.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+"). « Annuler » pour revenir.")});
+document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==="z"&&!/INPUT|TEXTAREA|SELECT/.test((document.activeElement||{}).tagName||"")){e.preventDefault();undo()}});
+document.getElementById("helpBtn").addEventListener("click",e=>{const b=document.getElementById("helpBox"),o=b.hidden;b.hidden=!o;e.currentTarget.setAttribute("aria-expanded",String(o))});
 (()=>{
   ["1m","3m","4m"].forEach(k=>{if(W.mode[k]!=="skip")W.mode[k]="rest"});build("keep");renderAll();toast("Midis de mardi, jeudi et vendredi en restes de la veille");
 });
@@ -2799,7 +2882,7 @@ document.getElementById("copyList").addEventListener("click",()=>{
 });
 
 // ---------- Propositions : écran du semainier ----------
-const KIDBLOCK="[data-okslot],[data-wvalid],[data-temp],[data-swap],[data-skip],[data-unskip],[data-pers],[data-def],#regen,#reset,#restLunch,[data-padd],[data-pdel],[data-pdiet],[data-pref],#clearPrefs";
+const KIDBLOCK="[data-cmenu],[data-mact],[data-setmode],[data-okslot],[data-wvalid],[data-temp],[data-swap],[data-skip],[data-unskip],[data-pers],[data-def],#regen,#reset,#restLunch,[data-padd],[data-pdel],[data-pdiet],[data-pref],#clearPrefs";
 const KIDMSG="Profil Enfant : propose plutôt un plat, un adulte validera.";
 document.addEventListener("click",e=>{if(isKid()&&e.target.closest(KIDBLOCK)&&!e.target.closest(".ck")){e.preventDefault();e.stopImmediatePropagation();toast(KIDMSG)}},true);
 document.addEventListener("change",e=>{if(isKid()&&e.target.closest("[data-mode],[data-pname],[data-pnote]")){e.stopImmediatePropagation();toast(KIDMSG);renderAll()}},true);
@@ -2877,8 +2960,7 @@ const XS=k=>((W.extra||{})[k]||[]).filter(x=>RB[x.id]);
 function findCook(s){const [k,j]=String(s).split("|");return cooks().find(c=>c.sl.key===k&&(j===undefined?c.xi==null:c.xi===+j))}
 function extraHTML(sl){
   const xs=XS(sl.key);
-  return xs.map((x,j)=>{const r=RB[x.id];return `<div class="xrec"><button class="name xn" type="button" data-open="${sl.key}|${j}"><span class="plus" aria-hidden="true">+</span> ${esc(r.n)}</button>
-    <div class="prow"><span>Portions</span><span class="pstep"><button type="button" class="pm" data-xpers="${sl.key}|${j}" data-d="-1" aria-label="Une portion de moins" ${x.n<=1?"disabled":""}>−</button><b class="num">${x.n}</b><button type="button" class="pm" data-xpers="${sl.key}|${j}" data-d="1" aria-label="Une portion de plus" ${x.n>=12?"disabled":""}>+</button></span><button type="button" class="xdel" data-xdel="${sl.key}|${j}" aria-label="Retirer ${esc(r.n)}" title="Retirer cette recette">×</button></div></div>`}).join("");
+  return xs.map((x,j)=>{const r=RB[x.id];return `<div class="xrec xcompact"><button class="name xn" type="button" data-open="${sl.key}|${j}" title="Ouvrir la recette (portions modifiables)"><span class="plus" aria-hidden="true">+</span> ${esc(r.n)} <small class="muted">× ${x.n}</small></button>${isKid()?"":`<button type="button" class="xdel" data-xdel="${sl.key}|${j}" aria-label="Retirer ${esc(r.n)}" title="Retirer cette recette">×</button>`}</div>`}).join("");
 }
 function openExtraCatalog(key){
   catKey="x:"+key;const sl=SK[key];
@@ -3164,6 +3246,7 @@ function reloadFromStorage(){
   try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(o)S=Object.assign({prefs:{},kid:true,cur:0,weeks:{}},o)}catch(e){}
   if(!S.def||S.def.midi==null){const o=S.def||{};S.def={midi:o.l2||2,soir:o.fam||4}}if(S.optN==null)S.optN=2;remapWeeks();
   migrateSunday();avLoad();loadFoy();useWeek(S.cur||0);renderAll();
+  try{if(!UNDO.some(x=>x.w===S.cur))OPENV[S.cur]=JSON.stringify(W);paintHist()}catch(e){}
   if(sig0&&S.cur===cur0&&weekSig(W)!==sig0){const ed=W.edit;toast(ed&&ed.by&&ed.by!==meName()?"Semainier mis à jour par "+ed.by:"Semainier mis à jour")}
 }
 CLOUD.init({apply:reloadFromStorage});

@@ -511,7 +511,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 
 // ---------- Ingrédients ----------
 // u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
-const AISLES={bo:"Boucherie & poissonnerie",fl:"Fruits & légumes",cr:"Crèmerie, œufs & frais",co:"Épicerie & conserves",pa:"Pain",pl:"Placard (à vérifier)",op:"Optionnel : selon l'appétit"};
+const AISLES={bo:"Boucherie & poissonnerie",fl:"Fruits & légumes",cr:"Crèmerie, œufs & frais",co:"Épicerie & conserves",pa:"Pain",op:"Optionnel : selon l'appétit"};
 const I={
  poulet:{n:"Blanc de poulet",r:"bo",u:"g",k:1.1,c:"Viandes"},
  dinde:{n:"Escalope de dinde",r:"bo",u:"g",k:1.05,c:"Viandes"},
@@ -1418,6 +1418,8 @@ const QNEW=[{"ing":[["toncru",120],["soja",1],["huilesesame",0.5],["citronvert",
 const QBC={"poke":{"t":[],"j":"Cuire le riz à l'avance si besoin ; couper le poisson et assembler au dernier moment."},"pulled":{"t":[["four","Cuire l'échine 3 h et l'effilocher"]],"j":"Réchauffer la viande dans sa sauce, préparer le coleslaw, garnir les pains."},"cevichecuit":{"t":[["feu","Cuire la patate douce"]],"j":"Couper le poisson, le mariner 5 à 10 min au citron vert et servir aussitôt."},"poutine":{"t":[["cru","Tailler les frites"]],"j":"Frites au four, sauce brune, assembler avec le fromage."},"tahitienne":{"t":[["cru","Couper les légumes"]],"j":"Couper le thon, le mariner 10 min au citron vert, ajouter le lait de coco et servir."},"bowlsaumon":{"t":[["cru","Couper les légumes"]],"j":"Cuire et assaisonner le riz, trancher le saumon au dernier moment."}};
 for(const id in QUAL){if(RB[id])Object.assign(RB[id],QUAL[id])}
 QNEW.forEach(o=>{const r=Object.assign({},o);delete r.j;if(RB[r.id])Object.assign(RB[r.id],r);else{R.push(r);RB[r.id]=r}BC[r.id]={t:[],j:o.j}});
+// Produits d'épicerie qui ne sont pas « toujours au placard » : ils restent dans la liste de courses
+["pesto","beurrecacahuete","patecurry","miso","tahin","gochujang","tamarin"].forEach(k=>{if(I[k])I[k].r="co"});
 // Recettes ajoutées (fichier partagé recettes-plus.js)
 (()=>{const X=window.MENUS_PLUS;if(!X)return;Object.assign(I,X.I);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:"Réchauffer doucement avant de servir."}})})();
 Object.assign(BC,QBC);
@@ -2013,7 +2015,7 @@ function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,
 
 let FOY=[];function loadFoy(){FOY=Object.values(dread("foyer")).filter(p=>(p.r||[]).length)}loadFoy();
 const foyConf=r=>conflicts(r,I,FOY);
-const QUICK=[["foyer","Compatible avec le foyer",r=>!foyConf(r).length&&!cfgBanned(r)],["fav","♥ Favoris",r=>isFav(r.id)],["top","Mes notes ≥ 4",r=>noteOf(r.id)>=4],["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["simple","Tout simple",r=>r.simple],["soupe","Soupes",r=>SOUP_RX.test(r.n)],["saison","🌱 De saison",r=>seasonOf(r,new Date().getMonth()+1).s==="saison"],["chaud","🔥 Chaud",r=>(r.temp||tempOf(r))==="chaud"],["froid","❄️ Froid",r=>(r.temp||tempOf(r))==="froid"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
+const QUICK=[["foyer","Compatible avec le groupe",r=>!foyConf(r).length&&!cfgBanned(r)],["fav","♥ Favoris",r=>isFav(r.id)],["top","Mes notes ≥ 4",r=>noteOf(r.id)>=4],["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["simple","Tout simple",r=>r.simple],["soupe","Soupes",r=>SOUP_RX.test(r.n)],["saison","🌱 De saison",r=>seasonOf(r,new Date().getMonth()+1).s==="saison"],["chaud","🔥 Chaud",r=>(r.temp||tempOf(r))==="chaud"],["froid","❄️ Froid",r=>(r.temp||tempOf(r))==="froid"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
 const has=(r,id)=>r.ing.some(([x])=>x===id);
 function matches(r,ignoreRegion){
   if(!ignoreRegion&&region&&r.reg!==region)return false;
@@ -2120,7 +2122,7 @@ function renderCart(){
         <button type="button" class="crm" data-cartrm="${id}" aria-label="Retirer ${esc(RB[id].n)}">×</button></li>`}).join("")}</ul></div>
       <div class="cprog" id="cprog"></div>
       <div class="clist">${AISLE_ORDER.map(a=>sec(a,AISLES[a])).join("")}
-      ${sec("pl","À vérifier dans les placards","pl")}
+
       ${optKeys.length?`<section class="aisle opt"><h4><span aria-hidden="true">＋</span> Optionnel : selon l'appétit <small>${optKeys.length}</small></h4><ul>${optKeys.map(i=>lineHTML("o:"+i,i,opt[i],c)).join("")}</ul></section>`:""}</div>
       <div class="cacts"><button type="button" class="btn" data-ccopy>Copier la liste</button>${navigator.share?'<button type="button" class="btn ghost" data-cshare>Partager</button>':""}<button type="button" class="btn ghost" data-cuntick>Tout décocher</button><button type="button" class="btn ghost bad" data-cclear>Vider la liste</button></div>`;
   }
@@ -2133,7 +2135,7 @@ function renderCart(){
 function paintProgress(){const el=document.getElementById("cprog");if(!el)return;const all=[...document.querySelectorAll("[data-tick]")].filter(x=>!x.closest(".opt")),n=all.filter(x=>x.checked).length;
   el.innerHTML=`<div class="bar"><i style="width:${all.length?Math.round(n/all.length*100):0}%"></i></div><span><b class="num">${n}</b> / ${all.length} article${all.length>1?"s":""} dans le panier</span>`}
 function cartText(){const {c,ids,need,opt}=cartLines();const lines=["Liste de courses ("+ids.map(id=>shortN(id)+" ×"+c["r:"+id]).join(", ")+")"];
-  [...AISLE_ORDER,"pl"].forEach(a=>{const it=Object.keys(need).filter(i=>I[i].r===a&&!c["c:"+i]);if(!it.length)return;lines.push("",(a==="pl"?"À vérifier dans les placards":AISLES[a]).toUpperCase());it.sort((x,y)=>I[x].n.localeCompare(I[y].n,"fr")).forEach(i=>lines.push("☐ "+I[i].n+" : "+fmt(need[i].q,I[i].u)+(hintPc(i,need[i].q)?" ("+hintPc(i,need[i].q)+")":"")))});
+  AISLE_ORDER.forEach(a=>{const it=Object.keys(need).filter(i=>I[i].r===a&&!c["c:"+i]);if(!it.length)return;lines.push("",(a==="pl"?"À vérifier dans les placards":AISLES[a]).toUpperCase());it.sort((x,y)=>I[x].n.localeCompare(I[y].n,"fr")).forEach(i=>lines.push("☐ "+I[i].n+" : "+fmt(need[i].q,I[i].u)+(hintPc(i,need[i].q)?" ("+hintPc(i,need[i].q)+")":"")))});
   const o=Object.keys(opt).filter(i=>!c["c:o:"+i]);if(o.length){lines.push("","OPTIONNEL");o.forEach(i=>lines.push("☐ "+I[i].n+" : "+fmt(opt[i].q,I[i].u)))}
   return lines.join("\n")}
 function paintCartBar(){let b=document.getElementById("cartbar");if(!b){b=document.createElement("button");b.type="button";b.id="cartbar";b.className="cartbar";b.setAttribute("data-cartopen","");document.body.appendChild(b)}
