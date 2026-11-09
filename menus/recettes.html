@@ -565,7 +565,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 <footer class="wrap foot">Sans compte, vos menus, favoris, notes et goûts restent sur cet appareil, dans ce navigateur. Avec un compte, vous les retrouvez sur tous vos appareils et pouvez les partager en groupe.</footer>
 <div class="overlay" id="overlay" hidden></div>
 <div class="toast" id="toast" hidden></div>
-<script src="recettes-plus.js?v=20261109"></script>
+<script src="recettes-plus.js?v=20261109b"></script>
 <script>
 
 // ---------- Ingrédients ----------
@@ -1480,7 +1480,7 @@ QNEW.forEach(o=>{const r=Object.assign({},o);delete r.j;if(RB[r.id])Object.assig
 // Produits d'épicerie qui ne sont pas « toujours au placard » : ils restent dans la liste de courses
 ["pesto","beurrecacahuete","patecurry","miso","tahin","gochujang","tamarin"].forEach(k=>{if(I[k])I[k].r="co"});
 // Recettes ajoutées (fichier partagé recettes-plus.js)
-(()=>{const X=window.MENUS_PLUS;if(!X)return;Object.assign(I,X.I);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:"Réchauffer doucement avant de servir."}})})();
+(()=>{const X=window.MENUS_PLUS;if(!X)return;Object.assign(I,X.I);if(X.IREN)for(const k in X.IREN)if(I[k])Object.assign(I[k],X.IREN[k]);if(X.FIX)for(const id in X.FIX)if(RB[id])Object.assign(RB[id],X.FIX[id]);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:"Réchauffer doucement avant de servir."}})})();
 Object.assign(BC,QBC);
 const SIMPLE=new Set(["ssoupecourgette","ssoupecarotte","ssoupepoireau","ssoupetomate","ssoupebrocoli","ssoupepois","ssoupepotiron","ssoupechampi","ssoupevermicelle","scordonbleu","spoissonpane","ssteakfrites","spoulethv","spouletcreme","spatesbeurre","spatesthon","spatestomate","sjambonpuree","sknackis","somelette","soeufscoque","soeufsdurs","stomatesfarcies","sgratincourgette","sraviolis","srizpoulet","ssteakcarottes","spoireauxvinaigrette","squichesimple","spurrecabillaud","spatesbolo","sgratinpdt","wsteak","wsaumon","wpoulettenders","wcurry","whoumous","wjambonchaud","woeuf","ppouletfrites","ppouletpatates","ppouletpatatesdouces","psaucissesplaque","psaumonplaque","pgnocchisfour","ppatesfour","prizfour","pfajitasplaque","pboulettesfour","pcabillaudfour","pcurryfour","ppatatesfarcies","sailesfour","ssaucissesfrites","spateslardons","spouletcurryriz","sescalopepanee","soeufsbrouilles","srizsaute","spoeleepoulet","ssteakhvpdt","sgratinchoufleurs","ssaladecomposee","pouletroti","steakpuree","ksteakhache","kjambonpuree","kcotesporc","saucissepuree","coquillettes","croques","kcroquemadame","komelettejambon","ksoupelegumes","kchoufleursoupe","kcourgettesoupe","kpoiscasses","kwrapjambon","ksaladepates","ksaladeriz","galettes","kcrepessalees","kpetitspoissoupe","ktomatesoupe"]);R.forEach(r=>{if(SIMPLE.has(r.id))r.simple=1});
 // ---------- Assiette toute simple : viande ou poisson + accompagnement + légume ----------

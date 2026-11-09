@@ -1,6 +1,6 @@
 // Service worker du Semainier : fonctionne hors ligne et affiche les rappels.
-const VERSION = "semainier-2026-11-09a";
-const CORE = ["./", "index.html", "recettes.html", "recevoir.html", "recettes-plus.js?v=20261109", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
+const VERSION = "semainier-2026-11-09b";
+const CORE = ["./", "index.html", "recettes.html", "recevoir.html", "recettes-plus.js?v=20261109b", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));

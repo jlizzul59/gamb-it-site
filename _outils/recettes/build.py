@@ -54,6 +54,8 @@ NEWI = {
     "pignons": {"n": "Pignons de pin", "r": "co", "u": "g", "k": 6.7, "c": "Fruits secs"},
     "noisettes": {"n": "Noisettes", "r": "co", "u": "g", "k": 6.3, "c": "Fruits secs"},
 }
+import sys as _s; _s.path.insert(0, '/tmp/rx'); import fixes as FX
+NEWI.update(FX.NEWI2)
 ALLI = dict(I); ALLI.update(NEWI)
 PROT = {"poulet", "jambon", "saumon", "cabillaud", "boeuf", "porc", "oeuf", "poischiches", "thon", "lentilles", "dinde", "crevettes", "vege", "colin",
         "lardons", "tofu", "saucisse", "paleron", "rumsteck", "cuisse", "agneau", "daurade", "moules", "canard", "truite", "chorizo", "veau", "roti",
@@ -104,8 +106,45 @@ for f in files:
 
 if errs:
     print("\n".join(errs[:80])); print(len(errs), "erreurs"); sys.exit(1)
+
+# --- corrections de cohérence ---
+GW = {"salade": r"salade|roquette|crudit|verdure", "persil": r"persil", "coriandre": r"coriandre", "ciboulette": r"ciboulette",
+      "aneth": r"aneth", "basilic": r"basilic|pesto", "menthe": r"menthe", "oignonnouveau": r"oignons? nouveaux?|c[ée]bette",
+      "citron": r"citron(?! vert)", "citronvert": r"citron vert|citrons verts", "painscampagne": r"pain|tartine|cro[ûu]ton|mouillette",
+      "baguette": r"baguette|pain|cro[ûu]ton", "nori": r"nori|algue", "sesame": r"s[ée]same", "oignonrouge": r"oignon"}
+HERB = {"persil": "persil", "coriandre": "coriandre", "ciboulette": "ciboulette", "aneth": "aneth", "basilic": "basilic", "menthe": "menthe",
+        "oignonnouveau": "oignon nouveau émincé", "sesame": "sésame", "nori": "nori en lanières"}
+def garn(r):
+    txt = " ".join(r["st"]).lower(); add, herbs = [], []
+    for i, _ in r["ing"]:
+        if i in FX.GARN and not re.search(GW[i], txt):
+            if i in HERB:
+                if i in ("persil", "coriandre", "ciboulette", "aneth", "basilic", "menthe") and re.search(r"herbe", txt): continue
+                herbs.append(HERB[i])
+            elif FX.GARN[i] not in add: add.append(FX.GARN[i])
+    if herbs:
+        de = ["d'" + h if h[0] in "aeiouéo" else "de " + h for h in herbs]
+        add.insert(0, "Parsemer " + (", ".join(de[:-1]) + " et " + de[-1] if len(de) > 1 else de[0]) + ".")
+    sv = [a[len("Servir avec "):-1] for a in add if a.startswith("Servir avec ")]
+    if len(sv) > 1:
+        add = [a for a in add if not a.startswith("Servir avec ")] + ["Servir avec " + ", ".join(sv[:-1]) + " et " + sv[-1] + "."]
+    if add:
+        r = dict(r); r["st"] = list(r["st"]); r["st"][-1] = r["st"][-1].rstrip() + " " + " ".join(add)
+    return r, add
+out = [garn(FX.apply(r, FX.FIX[r["id"]], ALLI) if r["id"] in FX.FIX else r)[0] for r in out]
+FIXOUT, nadd = {}, 0
+BASE = [r for r in json.load(open('/tmp/t/full.json'))["R"] if r["id"] in old_ids]
+for r in BASE:
+    if r["id"].startswith("mix:"): continue
+    r2 = FX.apply(r, FX.FIX[r["id"]], ALLI) if r["id"] in FX.FIX else r
+    r2, add = garn(r2)
+    if r2 is not r or add:
+        FIXOUT[r["id"]] = {k: r2[k] for k in ("n", "ing", "st") if r2[k] != r[k]}
+missing = set(FX.FIX) - {r["id"] for r in out} - set(FIXOUT)
+if missing: print("corrections sans recette :", missing); sys.exit(1)
+print(len(FIXOUT), "recettes d'origine corrigées")
 js = ("// Recettes ajoutées au catalogue (généré, ne pas éditer à la main).\n"
-      "window.MENUS_PLUS=" + json.dumps({"I": NEWI, "R": out, "BC": bc}, ensure_ascii=False, separators=(",", ":")) + ";\n")
+      "window.MENUS_PLUS=" + json.dumps({"I": NEWI, "IREN": FX.IREN, "FIX": FIXOUT, "R": out, "BC": bc}, ensure_ascii=False, separators=(",", ":")) + ";\n")
 open('/home/claude/gamb-it-site/menus/recettes-plus.js', 'w', encoding='utf-8').write(js)
 from collections import Counter
 print(len(out), "nouvelles recettes ;", len(js) // 1024, "Ko ; total ≈", len(OLD) + len(out))
