@@ -1419,7 +1419,7 @@ const QF=[["ok","Compatible avec mes invités"],["v","Végétarien"],["c","Sans 
 const match=r=>{
   if(cat&&r.cat!==cat)return false;
   for(const t of flt){if(t==="veille"){if(r.w!=="veille")return false}else if(t==="ok"){if(conf(r).length)return false}else if(!has(r,t))return false}
-  if(q&&!qMatch(q,r.n+" "+CATS[r.cat].n+" "+r.ing.map(([id])=>I[id].n).join(" ")))return false;
+  if(q&&!qMatch(q,r.n))return false;
   return true;
 };
 function hintText(pl){const m=M(),g=P.g;

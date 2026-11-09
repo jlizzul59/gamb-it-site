@@ -40,7 +40,7 @@ nav.tabs .plusbtn:hover:not([aria-current="page"]){background:var(--accent-soft)
 
 .subwrap{padding-top:14px}
 .frigohit{display:block;font-size:12.5px;color:#1f6f8b;background:#e7f3f8;border-radius:8px;padding:3px 8px;margin:4px 0}
-.frigobtn[aria-pressed="true"]{background:#1f6f8b;color:#fff;border-color:#1f6f8b}
+.smodes{display:inline-flex;gap:4px;flex-wrap:wrap}.smodes .qf[aria-pressed="true"]{background:var(--ink,#22201b);color:#fff;border-color:var(--ink,#22201b)}.frigobtn[aria-pressed="true"]{background:#1f6f8b!important;color:#fff;border-color:#1f6f8b!important}
 .shareov{position:fixed;inset:0;z-index:80;background:rgba(20,20,15,.45);display:flex;align-items:center;justify-content:center;padding:16px}
 .sharesheet{position:relative;background:var(--surface,#fff);border-radius:18px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow:auto}
 .sharesheet h3{margin:0 0 10px;padding-right:90px}.sharesheet .close{position:absolute;top:14px;right:14px}
@@ -544,7 +544,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 
   <div class="tools">
     <label class="search"><input type="search" id="q" placeholder="Rechercher : curry, gratin, Mexique, saumon…" autocomplete="off" aria-label="Rechercher une recette"></label>
-    <button type="button" class="qf frigobtn" id="frigoBtn" aria-pressed="false" title="Tapez ce qu'il vous reste, séparé par des virgules : les recettes qui l'utilisent le plus remontent">🧊 Vider le frigo</button>
+    <div class="smodes" role="group" aria-label="Chercher dans"><button type="button" class="qf" data-smode="nom" aria-pressed="true" title="Tous les mots doivent être dans le nom de la recette">Par nom</button><button type="button" class="qf" data-smode="ing" aria-pressed="false" title="Toutes les recettes qui contiennent tous ces ingrédients">Par ingrédients</button><button type="button" class="qf frigobtn" data-smode="frigo" aria-pressed="false" title="Ce qu'il vous reste : les recettes qui en utilisent le plus remontent en premier">🧊 Vider le frigo</button></div>
     <div id="quick" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     <select class="sort" id="sort" aria-label="Trier les recettes"><option value="nom">Trier : nom</option><option value="note">Trier : mes notes</option><option value="kcal">Trier : calories</option><option value="temps">Trier : les plus rapides</option><option value="region">Trier : par région</option></select>
     <button type="button" id="toggleFacets" aria-expanded="false" aria-controls="side">Ingrédients</button>
@@ -2083,7 +2083,11 @@ const groupOf=id=>I[id].c||"Autres";
 const facetIds=[...new Set(R.flatMap(r=>r.ing.map(([id])=>id)))].filter(id=>I[id].r!=="pl"&&!BASICS.has(id));
 const DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 
-let sel={},quick=new Set(),q="",servings=4,region="",sort="nom",frigo=false;
+let sel={},quick=new Set(),q="",servings=4,region="",sort="nom",frigo=false,smode="nom";
+// Recherche par ingrédients : chaque mot (ou chaque élément séparé par une virgule) doit être un ingrédient de la recette
+const ISYN={patate:"pomme de terre",pdt:"pomme de terre",steak:"boeuf",viande:"boeuf",oeuf:"oeuf",creme:"creme",pate:"pate"};
+const ingItems=()=>(/[,;]/.test(q)?q.split(/[,;]+/).map(x=>x.trim()).filter(Boolean):qWords(q));
+function ingMatch(r){const names=r.ing.map(([id])=>I[id].n);return ingItems().every(it=>{const n=norm(it).replace(/(s|x)$/,"");const alt=ISYN[n];return names.some(nm=>qMatch(it,nm)||(alt&&qMatch(alt,nm)))})}
 // « Vider le frigo » : on tape ce qu'on a, les recettes qui en utilisent le plus remontent
 const frigoItems=()=>q.split(/[,;\n]+/).length>1?q.split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean):qWords(q);
 const _fs={};
@@ -2101,7 +2105,8 @@ function matches(r,ignoreRegion){
   for(const [id,v] of Object.entries(sel)){if(v===1&&!has(r,id))return false;if(v===-1&&has(r,id))return false}
   for(const k of quick){const f=QUICK.find(x=>x[0]===k);if(f&&!f[2](r))return false}
   if(q&&frigo){if(!frigoScore(r).n)return false}
-  else if(q&&!qMatch(q,r.n+" "+r.pays+" "+r.reg+" "+r.ing.map(([id])=>I[id].n).join(" ")))return false;
+  else if(q&&smode==="ing"){if(!ingMatch(r))return false}
+  else if(q&&!qMatch(q,r.n))return false;
   return true;
 }
 const SORTS={nom:(a,b)=>a.n.localeCompare(b.n,"fr"),note:(a,b)=>noteOf(b.id)-noteOf(a.id)||(isFav(b.id)-isFav(a.id))||a.n.localeCompare(b.n,"fr"),kcal:(a,b)=>kcal(a)-kcal(b),temps:(a,b)=>a.t-b.t||a.n.localeCompare(b.n,"fr"),region:(a,b)=>REGIONS.indexOf(a.reg)-REGIONS.indexOf(b.reg)||a.pays.localeCompare(b.pays,"fr")||a.n.localeCompare(b.n,"fr")};
@@ -2121,7 +2126,7 @@ function renderRegions(){
 function render(){
   let res=R.filter(r=>matches(r)).sort(SORTS[sort]||SORTS.nom);
   if(frigo&&q){const sc=new Map(res.map(r=>[r.id,frigoScore(r)]));res=res.sort((a,b)=>sc.get(b.id).n-sc.get(a.id).n||a.ing.length-b.ing.length);res.forEach(r=>_fs[r.id]=sc.get(r.id))}
-  const fb=document.getElementById("frigoBtn");if(fb){fb.setAttribute("aria-pressed",String(frigo));const qi=document.getElementById("q");qi.placeholder=frigo?"Ce que vous avez : courgettes, crème, jambon…":"Rechercher : curry, gratin, Mexique, saumon…"}
+  document.querySelectorAll("[data-smode]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.smode===smode)));{const qi=document.getElementById("q");qi.placeholder=smode==="frigo"?"Ce qu'il vous reste : courgettes, crème, jambon…":smode==="ing"?"Ingrédients : carotte poulet patate":"Nom de la recette : soupe pois cassé, gratin…"}
   renderRegions();
   document.getElementById("count").innerHTML=`<b>${res.length}</b> recette${res.length>1?"s":""}${region?" · "+region:""}`;
   const act=Object.entries(sel).map(([id,v])=>`<button type="button" class="pill ${v===1?"in":"out"}" data-rm="${id}" aria-label="Retirer ${esc(I[id].n)}">${v===1?"Avec":"Sans"} ${esc(I[id].n.toLowerCase())} ×</button>`).join("");
@@ -2307,9 +2312,9 @@ document.addEventListener("click",e=>{
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));render()}
 document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&ov.hidden){const c=e.target.closest&&e.target.closest('.card[data-r]');if(c&&e.target===c){e.preventDefault();openRecipe(c.dataset.r)}}});
 document.getElementById("q").addEventListener("input",e=>{q=e.target.value;render()});
-document.getElementById("frigoBtn").addEventListener("click",()=>{frigo=!frigo;render();document.getElementById("q").focus()});
-window.addEventListener("hashchange",()=>{if(location.hash==="#frigo"){frigo=true;render();document.getElementById("q").focus()}});
-if(location.hash==="#frigo"){frigo=true;setTimeout(()=>{render();document.getElementById("q").focus()},30)}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-smode]");if(!b)return;smode=b.dataset.smode;frigo=smode==="frigo";render();document.getElementById("q").focus()});
+window.addEventListener("hashchange",()=>{if(location.hash==="#frigo"){smode="frigo";frigo=true;render();document.getElementById("q").focus()}});
+if(location.hash==="#frigo"){smode="frigo";frigo=true;setTimeout(()=>{render();document.getElementById("q").focus()},30)}
 document.getElementById("sort").addEventListener("change",e=>{sort=e.target.value;save();render()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden&&!COOK.active)closeModal()});
 document.addEventListener("change",e=>{const c=e.target.closest("[data-tick]");if(c){cartTick(c.dataset.tick,c.checked);}});

@@ -2685,7 +2685,7 @@ function renderRecipes(){const cs=cooks();const el=document.getElementById("recl
 let catQ="",catF="all",catKey=null;
 const FILTERS=[["all","Tout"],["fav","♥ Favoris"],["top","Mes mieux notées"],["ok","Compatibles avec mes goûts"],["plaisir","Gourmand"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"],["simple","Tout simple"],["soupe","Soupes"],["saison","🌱 De saison"],["chaud","🔥 Chaud"],["froid","❄️ Froid"]].concat(REGIONS.map(g=>["reg:"+g,g]));
 function catMatches(r){
-  if(catQ&&!qMatch(catQ,r.n+" "+r.pays+" "+r.reg+" "+r.ing.map(([id])=>I[id].n).join(" ")))return false;
+  if(catQ&&!qMatch(catQ,r.n))return false;
   if(catF.startsWith("reg:"))return r.reg===catF.slice(4);
   return catF==="all"||(catF==="fav"&&isFav(r.id))||(catF==="top"&&noteOf(r.id)>=4)||(catF==="ok"&&allowed(r))||(catF==="plaisir"&&r.tag==="plaisir")||(catF==="vege"&&isVege(r))||(catF==="poisson"&&isFish(r))||(catF==="viande"&&!isVege(r)&&!isFish(r))||(catF==="rapide"&&r.t<=25)||(catF==="simple"&&r.simple)||(catF==="soupe"&&SOUP_RX.test(r.n))||(catF==="chaud"&&(r.temp||tempOf(r))==="chaud")||(catF==="froid"&&(r.temp||tempOf(r))==="froid")||(catF==="saison"&&seasonOf(r,MONTH()).s==="saison");
 }
