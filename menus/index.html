@@ -406,6 +406,7 @@ img.art.ready{opacity:1}
 .overlay{position:fixed;inset:0;background:rgba(10,20,14,.55);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
 .overlay .rcard{max-width:760px;width:100%;position:relative}
 .close{position:absolute;top:12px;right:12px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;font-weight:600}
+.toastbtn{margin-left:10px;background:none;border:0;color:inherit;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:0}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;z-index:30}
 @media (prefers-reduced-motion:no-preference){ .meal{transition:border-color .15s} .meal:hover{border-color:var(--accent)} }
 
@@ -649,23 +650,27 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .mp-lab{font-weight:700}.mp-sum{color:var(--muted);margin-left:4px}.mealpick.partial .mp-sum{color:var(--accent);font-weight:600}
 .mp-days-s{display:block;color:var(--muted);font-size:12px;margin-top:2px}.mp-chev{color:var(--muted)}
 .mealpick-b{padding:0 14px 12px}
-.mp-quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.chipbtn{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
-.chipbtn:disabled{opacity:.45;cursor:default}
-.mp-days{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:8px}@media(max-width:640px){.mp-days{grid-template-columns:1fr 1fr}.mp-w{width:auto}.mp-m{flex-wrap:wrap;gap:2px 6px}}
-.mp-day{border:1px solid var(--line);border-radius:12px;padding:6px;background:var(--bg)}
-.mp-day.off{opacity:.6}.mp-day.past .mp-dh b::after{content:" · passé";font-weight:400;color:var(--muted);font-size:12px}
-.mp-day ul{list-style:none;margin:0;padding:0}
-.mp-dh,.mp-m{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;font:inherit;text-align:left;cursor:pointer;color:var(--ink);border-radius:8px;padding:6px}
-.mp-dh:hover,.mp-m:hover{background:var(--surface,#fff)}.mp-dh:disabled,.mp-m:disabled{cursor:default}
-.mp-dh small{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
-.mp-box{flex:none;width:18px;height:18px;border-radius:5px;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;line-height:1;color:var(--accent-ink);background:var(--surface,#fff)}
-.mp-m.on .mp-box,.mp-day.on .mp-dh .mp-box{background:var(--accent);border-color:var(--accent)}
-.mp-m.on .mp-box::after,.mp-day.on .mp-dh .mp-box::after{content:"✓"}
-.mp-day.part .mp-dh .mp-box{border-color:var(--accent)}.mp-day.part .mp-dh .mp-box::after{content:"–";color:var(--accent);font-weight:700}
-.mp-m{font-size:13px;align-items:flex-start}.mp-m .mp-box{width:16px;height:16px;margin-top:1px}
-.mp-w{flex:none;color:var(--muted);font-size:12px;width:38px;margin-top:1px}.mp-n{min-width:0}
-.mp-m:not(.on) .mp-n{text-decoration:line-through;color:var(--muted)}
+.mp-quick{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:var(--bg);border:1px solid var(--line);margin-bottom:10px}
+.mp-quick button{border:0;background:none;border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+.mp-quick button:hover:not(:disabled){background:var(--surface,#fff)}.mp-quick button:disabled{color:var(--muted);opacity:.5;cursor:default}
+.mp-rows{display:flex;flex-direction:column}
+.mp-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.mp-row:first-child{border-top:0}
+.mp-day{flex:none;width:58px;display:flex;flex-direction:column;align-items:center;gap:0;padding:4px 0;border:0;border-radius:10px;background:none;font:inherit;cursor:pointer;color:var(--ink);line-height:1.15}
+.mp-day b{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
+.mp-day span{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.mp-day i{font-style:normal;font-size:10px;color:var(--muted)}
+.mp-day:hover:not(:disabled){background:var(--bg)}
+.mp-row.off .mp-day span{color:var(--muted);text-decoration:line-through}
+.mp-chips{display:flex;flex-wrap:wrap;gap:6px;min-width:0;flex:1;padding-top:2px}
+.mp-chip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:7px 12px 7px 9px;border-radius:999px;border:1px solid transparent;background:color-mix(in srgb,var(--accent) 12%,var(--surface,#fff));color:var(--ink);font:inherit;font-size:14px;cursor:pointer;transition:background .15s,opacity .15s}
+.mp-chip:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 20%,var(--surface,#fff))}
+.mp-chip .mp-ic{font-size:13px;line-height:1}
+.mp-chip .mp-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-chip:not(.on){background:none;border:1px dashed var(--line);color:var(--muted)}
+.mp-chip:not(.on) .mp-n{text-decoration:line-through}.mp-chip:not(.on) .mp-ic{filter:grayscale(1);opacity:.5}
+.mp-chip:disabled,.mp-day:disabled{cursor:default}
+.mp-help{font-size:12px;color:var(--muted);margin:6px 0 0}
 .mealsum{font-size:14px;color:var(--muted);margin:0 0 10px}
 .aisle.manual,.aisle.extra{background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px}
 .manadd{display:flex;gap:6px;margin:6px 0}.manadd input{flex:1;min-width:0;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
@@ -2848,11 +2853,11 @@ function mealPickHTML(ss,store,kid){
   const ro=kid?"disabled":"";
   const past=all.filter(c=>isPastDay(c.sl.day));
   const body=mealsOpen?`<div class="mealpick-b">
-    ${kid?"":`<div class="mp-quick"><button type="button" class="chipbtn" data-mp="all" ${nIn===nAll?"disabled":""}>Tout</button><button type="button" class="chipbtn" data-mp="none" ${!nIn?"disabled":""}>Rien</button>${past.length?`<button type="button" class="chipbtn" data-mp="future">À partir d'aujourd'hui</button>`:""}</div>`}
-    <div class="mp-days">${days.map(d=>{const k=d.items.filter(shopIn).length,st=k===d.items.length?"on":k?"part":"off";
-      return `<div class="mp-day ${st} ${isPastDay(d.day)?"past":""}"><button type="button" class="mp-dh" data-mpday="${d.day}" aria-pressed="${st==="on"}" ${ro}><span class="mp-box" aria-hidden="true"></span><b>${dLab(d.day)}</b><small>${k}/${d.items.length}</small></button>
-        <ul>${d.items.map(c=>{const on=shopIn(c);return `<li><button type="button" class="mp-m ${on?"on":""}" data-mpmeal="${esc(offKey(c))}" aria-pressed="${on}" ${ro}><span class="mp-box" aria-hidden="true"></span><span class="mp-w">${c.xi!=null?"+ ":""}${c.sl.when}</span><span class="mp-n">${esc(shortName(c.r))}</span></button></li>`}).join("")}</ul></div>`}).join("")}</div>
-    <p class="aisnote">${kid?"Seuls les adultes du groupe peuvent changer la sélection.":"Touchez un repas pour le retirer de la liste, ou le nom du jour pour retirer la journée. Le choix est partagé avec le groupe."}</p></div>`:"";
+    ${kid?"":`<div class="mp-quick" role="group" aria-label="Sélection rapide"><button type="button" data-mp="all" ${nIn===nAll?"disabled":""}>Tout</button><button type="button" data-mp="none" ${!nIn?"disabled":""}>Rien</button>${past.length?`<button type="button" data-mp="future">Dès aujourd'hui</button>`:""}</div>`}
+    <div class="mp-rows">${days.map(d=>{const k=d.items.filter(shopIn).length,st=k===d.items.length?"on":k?"part":"off";
+      return `<div class="mp-row ${st}"><button type="button" class="mp-day" data-mpday="${d.day}" aria-pressed="${st!=="off"}" title="${st==="off"?"Remettre":"Retirer"} toute la journée" ${ro}><b>${DAYS[d.day].slice(0,3)}.</b><span>${dayDate(S.cur,d.day).getDate()}</span>${isPastDay(d.day)?'<i>passé</i>':""}</button>
+        <div class="mp-chips">${d.items.map(c=>{const on=shopIn(c);return `<button type="button" class="mp-chip ${on?"on":""}" data-mpmeal="${esc(offKey(c))}" aria-pressed="${on}" ${ro}><span class="mp-ic" aria-hidden="true">${c.xi!=null?"＋":c.sl.when==="Midi"?"☀️":"🌙"}</span><span class="mp-n">${esc(shortName(c.r))}</span></button>`}).join("")}</div></div>`}).join("")}</div>
+    <p class="mp-help">${kid?"Seuls les adultes peuvent changer la sélection.":"Touchez un plat pour le retirer de la liste, ou le jour pour toute la journée. Partagé avec le groupe."}</p></div>`:"";
   return `<div class="mealpick ${partial?"partial":""}"><button type="button" class="mp-head" data-mptoggle aria-expanded="${mealsOpen}"><span>🍽️ <span class="mp-lab">Pour quels repas ?</span> <span class="mp-sum">${sum}</span>${partial&&!mealsOpen?`<small class="mp-days-s">${esc(daysTxt)}</small>`:""}</span><span class="mp-chev" aria-hidden="true">${mealsOpen?"▴":"▾"}</span></button>${body}</div>`;
 }
 function shopping(sess){
@@ -3189,6 +3194,8 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-hreuse]");
 
 // ---------- Interactions ----------
 let toastT;
+function toastUndo(m,fn){const t=document.getElementById("toast");t.innerHTML="";const sp=document.createElement("span");sp.textContent=m+" ";const b=document.createElement("button");b.type="button";b.className="toastbtn";b.textContent="Annuler";
+  b.onclick=()=>{clearTimeout(toastT);t.hidden=true;fn()};t.append(sp,b);t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,10000)}
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2400)}
 const ov=document.getElementById("overlay");
 function openRecipe(key){const c=findCook(key);if(!c)return;ov.innerHTML=recipeHTML(c,true);ov.hidden=false;ART.hydrate(ov);try{ov.querySelector("[data-close]").focus({preventScroll:true})}catch(e){}}
@@ -3341,7 +3348,11 @@ document.getElementById("helpBtn").addEventListener("click",e=>{const b=document
   ["1m","3m","4m"].forEach(k=>{if(W.mode[k]!=="skip")W.mode[k]="rest"});build("keep");renderAll();toast("Midis de mardi, jeudi et vendredi en restes de la veille");
 });
 document.getElementById("clearPrefs").addEventListener("click",()=>{S.prefs={};build("keep");renderAll()});
-document.getElementById("uncheck").addEventListener("click",()=>{const ss=W.shopSess??1;Object.keys(W.checked).forEach(k=>{if((ss===0?/^[012]:/.test(k):k.startsWith(ss+":"))||k.startsWith("m:"))delete W.checked[k]});save();renderShop()});
+document.getElementById("uncheck").addEventListener("click",e=>{const btn=e.currentTarget,ss=W.shopSess??1;
+  const keys=Object.keys(W.checked||{}).filter(k=>(ss===0?/^[012]:/.test(k):k.startsWith(ss+":"))||k.startsWith("m:"));
+  if(!keys.length){toast("Rien n'est coché");return}
+  askInline(btn,`Décocher ${keys.length} article${keys.length>1?"s":""} ?`,()=>{const wk=S.cur;keys.forEach(k=>delete W.checked[k]);save();renderShop();
+    toastUndo(`${keys.length} article${keys.length>1?"s":""} décoché${keys.length>1?"s":""}`,()=>{if(S.cur!==wk)return;keys.forEach(k=>W.checked[k]=1);save();renderShop();toast("Coches remises")})})});
 // Mode magasin : gros caractères, ce qui est pris descend, synchronisation plus fréquente
 document.getElementById("storeMode").addEventListener("click",()=>{document.body.classList.add("storemode");renderShop();window.scrollTo(0,0);try{navigator.wakeLock&&navigator.wakeLock.request("screen").then(l=>{window._storeLock=l}).catch(()=>{})}catch(e){}});
 document.addEventListener("click",e=>{
