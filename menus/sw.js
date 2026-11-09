@@ -1,5 +1,5 @@
 // Service worker du Semainier : fonctionne hors ligne et affiche les rappels.
-const VERSION = "semainier-2026-11-09g";
+const VERSION = "semainier-2026-11-09h";
 const CORE = ["./", "index.html", "recettes.html", "recevoir.html", "recettes-plus.js?v=20261109b", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {
@@ -14,7 +14,7 @@ self.addEventListener("fetch", (e) => {
   const isPage = req.mode === "navigate" || /\.html$|\/$/.test(url.pathname);
   if (isPage) {
     // les pages : le réseau d'abord (pour avoir la dernière version), le cache si hors ligne
-    e.respondWith(fetch(req).then((r) => { const cp = r.clone(); caches.open(VERSION).then((c) => c.put(req, cp)); return r; })
+    e.respondWith(fetch(req, { cache: "no-cache" }).then((r) => { const cp = r.clone(); caches.open(VERSION).then((c) => c.put(req, cp)); return r; })
       .catch(() => caches.match(req, { ignoreSearch: true }).then((r) => r || caches.match("index.html"))));
   } else {
     e.respondWith(caches.match(req).then((hit) => {
