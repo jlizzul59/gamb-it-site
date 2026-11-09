@@ -78,6 +78,8 @@ const SCHEMA = [
   `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS banned_at TIMESTAMPTZ`,
   `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS ban_reason TEXT`,
   `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS last_seen TIMESTAMPTZ`,
+  // rôle sur le site : 'admin' (tout gérer) ou 'moderateur' (suspendre, gérer les groupes)
+  `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS site_role TEXT`,
   // notifications (rappels planifiés, envoyés par le serveur)
   `CREATE TABLE IF NOT EXISTS menus_kv (k TEXT PRIMARY KEY, v TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS menus_push_subs (
@@ -275,7 +277,7 @@ async function auth(req) {
   const m = h.match(/^Bearer\s+([A-Za-z0-9_-]{20,})$/);
   if (!m) throw new HttpError(401, "Connexion requise.");
   const r = await q(
-    `SELECT u.id, u.username, u.username_key, u.name, u.banned_at, u.last_seen FROM menus_sessions s JOIN menus_users u ON u.id = s.user_id
+    `SELECT u.id, u.username, u.username_key, u.name, u.banned_at, u.last_seen, u.site_role FROM menus_sessions s JOIN menus_users u ON u.id = s.user_id
      WHERE s.token_hash = $1 AND s.expires_at > now()`,
     [sha256(m[1])]
   );
@@ -283,7 +285,8 @@ async function auth(req) {
   const u = r.rows[0];
   if (u.banned_at) throw new HttpError(403, "Ce compte est suspendu.");
   if (!u.last_seen || Date.now() - new Date(u.last_seen).getTime() > 300e3) q(`UPDATE menus_users SET last_seen = now() WHERE id = $1`, [u.id]).catch(() => {});
-  return { id: Number(u.id), username: u.username, name: u.name, superadmin: SUPER.has(u.username_key), tokenHash: sha256(m[1]) };
+  const superadmin = SUPER.has(u.username_key) || u.site_role === "admin";
+  return { id: Number(u.id), username: u.username, name: u.name, superadmin, moderator: !superadmin && u.site_role === "moderateur", tokenHash: sha256(m[1]) };
 }
 
 // ---------- État complet d'un compte ----------
@@ -331,7 +334,7 @@ async function stateOf(user) {
   }
   const p = pr.rows[0];
   return {
-    user: { username: user.username, name: user.name, role: g ? g.role : "adulte", admin: g ? isAdm(g) : false, superadmin: !!user.superadmin },
+    user: { username: user.username, name: user.name, role: g ? g.role : "adulte", admin: g ? isAdm(g) : false, superadmin: !!user.superadmin, moderator: !!user.moderator },
     group,
     groups,
     perso: p ? { data: p.data || {}, version: Number(p.version) } : { data: {}, version: 0 },
@@ -418,18 +421,28 @@ function steps(ins) {
 const isoMin = (d) => { const m = String(d || "").match(/P(?:T)?(?:(\d+)H)?(?:(\d+)M)?/i); return m ? (+(m[1] || 0)) * 60 + (+(m[2] || 0)) : 0; };
 
 // ---------- Administration générale ----------
-async function superAuth(req) {
+async function superAuth(req, modOk) {
   const user = await auth(req);
-  if (!user.superadmin) throw new HttpError(403, "Réservé à l'administrateur du site.");
+  if (!user.superadmin && !(modOk && user.moderator)) throw new HttpError(403, modOk ? "Réservé à l'équipe du site." : "Réservé aux administrateurs du site.");
   return user;
 }
+// un modérateur n'agit pas sur un administrateur ni sur un autre modérateur
+async function staffTarget(me, id) {
+  const t = (await q(`SELECT username_key, site_role FROM menus_users WHERE id = $1`, [id])).rows[0];
+  if (!t) throw new HttpError(404, "Compte inconnu.");
+  const staff = SUPER.has(t.username_key) || t.site_role === "admin" || t.site_role === "moderateur";
+  if (!me.superadmin && staff) throw new HttpError(403, "Un modérateur ne peut pas agir sur un membre de l'équipe.");
+  if (SUPER.has(t.username_key) && me.id !== id) throw new HttpError(403, "Ce compte est protégé.");
+  return t;
+}
 async function adminOverview() {
-  const users = (await q(`SELECT id, username, name, created_at, last_seen, banned_at, ban_reason FROM menus_users ORDER BY created_at`)).rows;
+  const users = (await q(`SELECT id, username, name, created_at, last_seen, banned_at, ban_reason, site_role FROM menus_users ORDER BY created_at`)).rows;
   const groups = (await q(`SELECT id, name, icon, invite_code, created_at, updated_at FROM menus_groups ORDER BY created_at`)).rows;
   const mem = (await q(`SELECT user_id, group_id, role, admin, joined_at FROM menus_members ORDER BY joined_at`)).rows;
   return {
     users: users.map((u) => ({ id: Number(u.id), username: u.username, name: u.name, created: u.created_at, seen: u.last_seen, banned: u.banned_at, reason: u.ban_reason,
-      super: SUPER.has(String(u.username).toLowerCase()),
+      super: SUPER.has(String(u.username).toLowerCase()), locked: SUPER.has(String(u.username).toLowerCase()),
+      siteRole: SUPER.has(String(u.username).toLowerCase()) ? "admin" : (u.site_role || ""),
       groups: mem.filter((m) => Number(m.user_id) === Number(u.id)).map((m) => Number(m.group_id)) })),
     groups: groups.map((g) => ({ id: Number(g.id), name: g.name, icon: g.icon, code: g.invite_code, created: g.created_at, updated: g.updated_at,
       members: mem.filter((m) => Number(m.group_id) === Number(g.id)).map((m) => ({ id: Number(m.user_id), role: m.role, admin: isAdm(m) })) })),
@@ -439,7 +452,19 @@ const uid = (v) => { const n = parseInt(v, 10); if (!n) throw new HttpError(400,
 
 // ---------- Routes ----------
 const routes = {
-  "GET /admin/overview": async (req) => { await superAuth(req); return adminOverview(); },
+  "GET /admin/overview": async (req) => { const me = await superAuth(req, true); return Object.assign(await adminOverview(), { me: { admin: !!me.superadmin, moderator: !!me.moderator } }); },
+
+  "POST /admin/siterole": async (req, body) => {
+    const me = await superAuth(req);
+    const id = uid(body.id);
+    const t = (await q(`SELECT username_key FROM menus_users WHERE id = $1`, [id])).rows[0];
+    if (!t) throw new HttpError(404, "Compte inconnu.");
+    if (SUPER.has(t.username_key)) throw new HttpError(403, "Ce compte est administrateur à vie.");
+    if (id === me.id) throw new HttpError(409, "Vous ne pouvez pas changer votre propre rôle.");
+    const role = body.role === "admin" || body.role === "moderateur" ? body.role : null;
+    await q(`UPDATE menus_users SET site_role = $1 WHERE id = $2`, [role, id]);
+    return Object.assign(await adminOverview(), { me: { admin: true, moderator: false } });
+  },
 
   "GET /push/key": async () => ({ key: VAPID ? VAPID.publicKey : null }),
 
@@ -494,33 +519,36 @@ const routes = {
   },
 
   "POST /admin/ban": async (req, body) => {
-    const me = await superAuth(req);
+    const me = await superAuth(req, true);
     const id = uid(body.id);
+    await staffTarget(me, id);
     if (id === me.id) throw new HttpError(409, "Vous ne pouvez pas vous suspendre vous-même.");
     if (body.ban === false) await q(`UPDATE menus_users SET banned_at = NULL, ban_reason = NULL WHERE id = $1`, [id]);
     else {
       await q(`UPDATE menus_users SET banned_at = now(), ban_reason = $2 WHERE id = $1`, [id, String(body.reason || "").slice(0, 200) || null]);
       await q(`DELETE FROM menus_sessions WHERE user_id = $1`, [id]);
     }
-    return adminOverview();
+    return Object.assign(await adminOverview(), { me: { admin: !!(await auth(req)).superadmin, moderator: !!(await auth(req)).moderator } });
   },
 
   "POST /admin/delete-user": async (req, body) => {
     const me = await superAuth(req);
     const id = uid(body.id);
     if (id === me.id) throw new HttpError(409, "Supprimez votre propre compte depuis « Mon compte ».");
+    await staffTarget(me, id);
     await q(
       `WITH g AS (
          DELETE FROM menus_groups g WHERE g.id IN (SELECT group_id FROM menus_members WHERE user_id = $1)
            AND NOT EXISTS (SELECT 1 FROM menus_members m WHERE m.group_id = g.id AND m.user_id <> $1) RETURNING id)
        DELETE FROM menus_users WHERE id = $1`, [id]);
     await q(FIX_ADMINS);
-    return adminOverview();
+    return Object.assign(await adminOverview(), { me: { admin: !!(await auth(req)).superadmin, moderator: !!(await auth(req)).moderator } });
   },
 
   "POST /admin/reset-password": async (req, body) => {
-    await superAuth(req);
+    const me = await superAuth(req);
     const id = uid(body.id);
+    await staffTarget(me, id);
     const words = ["tomate", "basilic", "crumble", "risotto", "paprika", "noisette", "cannelle", "brioche", "gratin", "citron"];
     const pw = words[crypto.randomInt(words.length)] + "-" + crypto.randomInt(1000, 9999) + "-" + words[crypto.randomInt(words.length)];
     await q(`UPDATE menus_users SET pass_hash = $1 WHERE id = $2`, [hashPassword(pw), id]);
@@ -530,7 +558,7 @@ const routes = {
 
   // Changer le profil, le rôle d'administrateur ou retirer un membre, dans n'importe quel groupe
   "POST /admin/member": async (req, body) => {
-    await superAuth(req);
+    await superAuth(req, true);
     const id = uid(body.user), gid = uid(body.group);
     if (body.remove) {
       await q(`DELETE FROM menus_members WHERE user_id = $1 AND group_id = $2`, [id, gid]);
@@ -542,7 +570,7 @@ const routes = {
       if (typeof body.admin === "boolean") await q(`UPDATE menus_members SET admin = $1 WHERE user_id = $2 AND group_id = $3 AND role = 'adulte'`, [body.admin, id, gid]);
     }
     await q(FIX_ADMINS);
-    return adminOverview();
+    return Object.assign(await adminOverview(), { me: { admin: !!(await auth(req)).superadmin, moderator: !!(await auth(req)).moderator } });
   },
 
   "POST /admin/delete-group": async (req, body) => {
@@ -550,7 +578,7 @@ const routes = {
     const gid = uid(body.id);
     await q(`UPDATE menus_users SET active_group = NULL WHERE active_group = $1`, [gid]);
     await q(`DELETE FROM menus_groups WHERE id = $1`, [gid]);
-    return adminOverview();
+    return Object.assign(await adminOverview(), { me: { admin: !!(await auth(req)).superadmin, moderator: !!(await auth(req)).moderator } });
   },
 
   "GET /health": async () => ({ ok: true }),
