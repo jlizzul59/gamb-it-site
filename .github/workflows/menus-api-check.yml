@@ -5,6 +5,12 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      - name: DNS du domaine
+        run: |
+          echo "NS:"; dig +short NS gamb-it-apps.fr
+          echo "A:"; dig +short A gamb-it-apps.fr
+          echo "api:"; dig +short CNAME api.gamb-it-apps.fr
+          whois gamb-it-apps.fr 2>/dev/null | grep -i -E "registrar|nserver" | head -5 || true
       - name: Santé du serveur (avec réveil)
         run: |
           for i in 1 2 3 4 5 6; do
