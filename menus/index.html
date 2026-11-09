@@ -735,7 +735,12 @@ body.storemode #shop .hint{font-size:13px}
 .admrow{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:10px 14px}
 .admrow.banned{background:#fbeeee;border-color:#e7b9b9}.admwho{flex:1 1 300px;min-width:0}.admwho small{display:block;margin-top:3px;overflow-wrap:anywhere}
 .admact{display:flex;gap:6px;flex-wrap:wrap}.btn.danger{color:#a12d2d;border-color:#e3b5b5}
-.mb.ban{background:#f6d5d5;color:#8f2020;font-weight:600}
+.mb.ban{background:#f6d5d5;color:#8f2020;font-weight:600}.mb.mod{background:#e3ecfb;color:#1f4f9a;font-weight:600}
+.ugroups{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+.ugchip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;padding:3px 4px 3px 10px;border-radius:999px;background:var(--bg);border:1px solid var(--line)}
+.ugchip small{color:var(--muted)}.ugchip button{border:0;background:none;cursor:pointer;font-size:15px;line-height:1;padding:0 6px;color:#a12d2d}
+.ugadd,.srole{font:inherit;font-size:12.5px;padding:4px 8px;border-radius:999px;border:1px dashed var(--line);background:var(--surface,#fff)}
+.srole{border-style:solid;font-weight:600}.admroles{margin-top:10px}
 .admg{background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 14px;margin-bottom:10px}
 .admg header{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.admg header b{font-size:16px}.admg header .muted{flex:1;font-size:13px}
 .admadd select{font:inherit;font-size:13px;padding:6px 8px;border-radius:10px;border:1px solid var(--line,#ddd);background:var(--bg,#fff)}
@@ -2830,12 +2835,13 @@ DIETUI.onChange=(k,soft)=>{if(k!=="foyer")return;const before=JSON.stringify(W.p
 function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules();renderHistory();try{MINE.render()}catch(e){console.warn(e)}try{renderRappels()}catch(e){console.warn(e)}try{rapUpload()}catch(e){}try{renderToday()}catch(e){console.warn(e)}const at=document.getElementById("adminTab");if(at)at.hidden=!isSuper()}
 
 // ---------- Administration générale (réservée à l'administrateur du site) ----------
-const isSuper=()=>{const a=meAcc();return !!(a&&a.user&&a.user.superadmin)};
+const isSuper=()=>{const a=meAcc();return !!(a&&a.user&&(a.user.superadmin||a.user.moderator))};
+const isSiteAdmin=()=>{const a=meAcc();return !!(a&&a.user&&a.user.superadmin)};
 const ADM=(()=>{
   let D=null,busy=false,err="",q="",arm={k:"",t:0},pw=null;
   const dt=t=>t?new Date(t).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"}):"—";
   const ago=t=>{if(!t)return "jamais";const m=(Date.now()-new Date(t))/6e4;if(m<60)return "il y a "+Math.max(1,Math.round(m))+" min";if(m<1440)return "il y a "+Math.round(m/60)+" h";return "il y a "+Math.round(m/1440)+" j"};
-  async function call(path,body){busy=true;err="";render();try{const r=await CLOUD.call(body?"POST":"GET",path,body);if(r.overview){D=r.overview;pw=r.password?{id:body.id,pw:r.password}:null}else D=r}catch(e){err=e.message}busy=false;render()}
+  async function call(path,body){busy=true;err="";render();try{const r=await CLOUD.call(body?"POST":"GET",path,body);if(r.overview){D=r.overview;pw=r.password?{id:body.id,pw:r.password}:null}else D=r;const a=meAcc();const mu=a&&a.user&&D.users.find(x=>x.username===a.user.username);D.meId=mu?mu.id:null}catch(e){err=e.message}busy=false;render()}
   const load=()=>call("/admin/overview");
   const confirmOnce=(k,msg)=>{if(arm.k===k&&Date.now()-arm.t<4000){arm={k:"",t:0};return true}arm={k,t:Date.now()};toast(msg);return false};
   function render(){
@@ -2845,19 +2851,24 @@ const ADM=(()=>{
     const U=Object.fromEntries(D.users.map(u=>[u.id,u])),G=Object.fromEntries(D.groups.map(g=>[g.id,g]));
     const match=u=>!q.trim()||qMatch(q,u.name+" "+u.username+" "+u.groups.map(g=>G[g]&&G[g].name).join(" "));
     const active=D.users.filter(u=>u.seen&&Date.now()-new Date(u.seen)<7*864e5).length,banned=D.users.filter(u=>u.banned).length;
-    el.innerHTML=`<div class="sechead"><h2>Administration</h2><p class="muted">Tous les comptes et tous les groupes du site. Visible par vous seul.</p></div>
+    el.innerHTML=`<div class="sechead"><h2>Administration</h2><p class="muted">Tous les comptes et tous les groupes du site. Visible seulement par les admins et modérateurs du site.</p></div>
       <div class="admstats"><div><b>${D.users.length}</b><span>comptes</span></div><div><b>${D.groups.length}</b><span>groupes</span></div><div><b>${active}</b><span>actifs cette semaine</span></div><div><b>${banned}</b><span>suspendus</span></div></div>
       ${err?`<p class="warnbox">${esc(err)}</p>`:""}
       ${pw?`<div class="admpw">Nouveau mot de passe de <b>${esc((U[pw.id]||{}).name||"")}</b> : <code>${esc(pw.pw)}</code> <span class="muted">Transmettez-le-lui ; il pourra le changer dans « Mon compte ».</span></div>`:""}
       <h3 class="admh">Comptes</h3>
       <input type="search" class="admsearch" id="admQ" placeholder="Rechercher un nom, un identifiant ou un groupe" value="${esc(q)}" aria-label="Rechercher un compte">
-      <div class="admlist">${D.users.filter(match).map(u=>`<div class="admrow${u.banned?" banned":""}">
-        <div class="admwho"><b>${esc(u.name)}</b> <span class="muted">@${esc(u.username)}</span>${u.super?' <span class="mb adm">Admin du site</span>':""}${u.banned?' <span class="mb ban">Suspendu</span>':""}
-          <small class="muted">Inscrit le ${dt(u.created)} · vu ${ago(u.seen)}${u.groups.length?" · "+u.groups.map(g=>G[g]?esc((G[g].icon||"")+" "+G[g].name):"").join(", "):" · aucun groupe"}${u.banned&&u.reason?" · motif : "+esc(u.reason):""}</small></div>
-        ${u.super?"":`<div class="admact"><button type="button" class="btn sm" data-adm="ban|${u.id}|${u.banned?0:1}">${u.banned?"Réactiver":"Suspendre"}</button><button type="button" class="btn sm" data-adm="pw|${u.id}">Nouveau mot de passe</button><button type="button" class="btn sm danger" data-adm="del|${u.id}">Supprimer</button></div>`}
-      </div>`).join("")||'<p class="muted">Aucun compte ne correspond.</p>'}</div>
+      <div class="admlist">${D.users.filter(match).map(u=>{const adm=isSiteAdmin(),staff=u.siteRole==="admin"||u.siteRole==="moderateur",canAct=!u.locked&&(adm||!staff);
+        const ug=D.groups.filter(g=>g.members.some(m=>m.id===u.id));
+        return `<div class="admrow${u.banned?" banned":""}">
+        <div class="admwho"><b>${esc(u.name)}</b> <span class="muted">@${esc(u.username)}</span>${u.siteRole==="admin"?' <span class="mb adm">Admin du site</span>':u.siteRole==="moderateur"?' <span class="mb mod">Modérateur</span>':""}${u.banned?' <span class="mb ban">Suspendu</span>':""}
+          <small class="muted">Inscrit le ${dt(u.created)} · vu ${ago(u.seen)}${u.banned&&u.reason?" · motif : "+esc(u.reason):""}</small>
+          <div class="ugroups">${ug.map(g=>{const m=g.members.find(x=>x.id===u.id);return `<span class="ugchip">${esc((g.icon||"")+" "+g.name)} <small>${m.admin?"👑 ":""}${m.role==="enfant"?"enfant":"adulte"}</small>${canAct||adm?`<button type="button" data-adm="out|${g.id}|${u.id}" aria-label="Retirer ${esc(u.name)} du groupe ${esc(g.name)}" title="Retirer de ce groupe">×</button>`:""}</span>`}).join("")||'<span class="muted small">Aucun groupe</span>'}
+            ${canAct||adm?`<select class="ugadd" data-ugadd="${u.id}" aria-label="Ajouter ${esc(u.name)} à un groupe"><option value="">＋ Ajouter à un groupe…</option>${D.groups.filter(g=>!g.members.some(m=>m.id===u.id)).map(g=>`<option value="${g.id}">${esc((g.icon||"")+" "+g.name)}</option>`).join("")}</select>`:""}</div></div>
+        <div class="admact">${adm&&!u.locked&&u.id!==D.meId?`<select class="srole" data-srole="${u.id}" aria-label="Rôle de ${esc(u.name)} sur le site"><option value="" ${!u.siteRole?"selected":""}>Membre</option><option value="moderateur" ${u.siteRole==="moderateur"?"selected":""}>Modérateur</option><option value="admin" ${u.siteRole==="admin"?"selected":""}>Admin du site</option></select>`:""}${canAct&&u.id!==D.meId?`<button type="button" class="btn sm" data-adm="ban|${u.id}|${u.banned?0:1}">${u.banned?"Réactiver":"Suspendre"}</button>`:""}${adm&&canAct&&u.id!==D.meId?`<button type="button" class="btn sm" data-adm="pw|${u.id}">Nouveau mot de passe</button><button type="button" class="btn sm danger" data-adm="del|${u.id}">Supprimer</button>`:""}</div>
+      </div>`}).join("")||'<p class="muted">Aucun compte ne correspond.</p>'}</div>
+      <p class="muted small admroles"><b>Admin du site</b> : tout gérer, y compris les rôles. <b>Modérateur</b> : suspendre des comptes et gérer les membres des groupes, sans toucher à l'équipe.</p>
       <h3 class="admh">Groupes</h3>
-      <div class="admgroups">${D.groups.map(g=>`<article class="admg"><header><b>${esc((g.icon||"")+" "+g.name)}</b><span class="muted">code ${esc(g.code)} · créé le ${dt(g.created)}</span><button type="button" class="btn sm danger" data-adm="gdel|${g.id}">Supprimer le groupe</button></header>
+      <div class="admgroups">${D.groups.map(g=>`<article class="admg"><header><b>${esc((g.icon||"")+" "+g.name)}</b><span class="muted">code ${esc(g.code)} · créé le ${dt(g.created)}</span>${isSiteAdmin()?`<button type="button" class="btn sm danger" data-adm="gdel|${g.id}">Supprimer le groupe</button>`:""}</header>
         <ul class="mlist">${g.members.map(m=>{const u=U[m.id]||{name:"?",username:"?"},kid=m.role==="enfant";return `<li class="mrow"><span class="mname">${esc(u.name)} <small class="muted">@${esc(u.username)}</small></span><span class="mbadges"><span class="mb ${m.admin?"adm":"mbr"}">${m.admin?"👑 Admin":"Membre"}</span><span class="mb ${kid?"kid":"adu"}">${kid?"Enfant":"Adulte"}</span></span>
           <span class="mact"><button type="button" class="rolebtn" data-adm="role|${g.id}|${m.id}|${kid?"adulte":"enfant"}">→ ${kid?"Adulte":"Enfant"}</button><button type="button" class="rolebtn" data-adm="gadm|${g.id}|${m.id}|${m.admin?0:1}" ${kid&&!m.admin?"disabled":""}>${m.admin?"Retirer admin":"→ Admin"}</button><button type="button" class="rolebtn" data-adm="out|${g.id}|${m.id}">Retirer du groupe</button></span></li>`}).join("")||'<li class="muted">Aucun membre.</li>'}</ul>
         <div class="admadd"><select data-admadd="${g.id}" aria-label="Ajouter un compte au groupe"><option value="">Ajouter un compte…</option>${D.users.filter(u=>!g.members.some(m=>m.id===u.id)).map(u=>`<option value="${u.id}">${esc(u.name)} (@${esc(u.username)})</option>`).join("")}</select></div>
@@ -2865,7 +2876,9 @@ const ADM=(()=>{
     el.classList.toggle("busy",busy);
   }
   document.addEventListener("input",e=>{if(e.target.id==="admQ"){q=e.target.value;const pos=e.target.selectionStart;render();const i=document.getElementById("admQ");i.focus();try{i.setSelectionRange(pos,pos)}catch(_){}}});
-  document.addEventListener("change",e=>{const s=e.target.closest("[data-admadd]");if(s&&s.value)call("/admin/member",{group:+s.dataset.admadd,user:+s.value,add:true})});
+  document.addEventListener("change",e=>{const s=e.target.closest("[data-admadd]");if(s&&s.value){call("/admin/member",{group:+s.dataset.admadd,user:+s.value,add:true});return}
+    const u=e.target.closest("[data-ugadd]");if(u&&u.value){call("/admin/member",{group:+u.value,user:+u.dataset.ugadd,add:true});return}
+    const r=e.target.closest("[data-srole]");if(r){const v=r.value,who=(D.users.find(x=>x.id===+r.dataset.srole)||{}).name||"";call("/admin/siterole",{id:+r.dataset.srole,role:v}).then(()=>toast(who+(v==="admin"?" est maintenant admin du site":v==="moderateur"?" est maintenant modérateur":" n'a plus de rôle sur le site")))}});
   document.addEventListener("click",e=>{const b=e.target.closest("[data-adm]");if(!b||busy)return;const [k,a,c,d]=b.dataset.adm.split("|");
     if(k==="ban"){if(c==="1"){const u=D.users.find(x=>x.id===+a);if(!confirmOnce("ban"+a,"Cliquez encore pour suspendre "+(u?u.name:"ce compte")+" : il sera déconnecté partout"))return}call("/admin/ban",{id:+a,ban:c==="1"});return}
     if(k==="pw"){if(!confirmOnce("pw"+a,"Cliquez encore pour remplacer son mot de passe"))return;call("/admin/reset-password",{id:+a});return}
@@ -3628,6 +3641,7 @@ function reloadFromStorage(){
   if(!S.def||S.def.midi==null){const o=S.def||{};S.def={midi:o.l2||2,soir:o.fam||4}}if(S.optN==null)S.optN=2;remapWeeks();
   migrateSunday();avLoad();loadFoy();useWeek(S.cur||0);renderAll();
   try{if(!UNDO.some(x=>x.w===S.cur))OPENV[S.cur]=JSON.stringify(W);paintHist()}catch(e){}
+  try{if(location.hash==="#admin"&&isSuper()&&document.getElementById("v-admin").hidden)route()}catch(e){}
   if(sig0&&S.cur===cur0&&weekSig(W)!==sig0){const ed=W.edit;toast(ed&&ed.by&&ed.by!==meName()?"Semainier mis à jour par "+ed.by:"Semainier mis à jour")}
 }
 CLOUD.init({apply:reloadFromStorage});
