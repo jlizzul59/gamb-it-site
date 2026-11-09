@@ -428,6 +428,23 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .ck-body{flex:1;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:18px;padding:28px max(20px,calc((100% - 860px)/2)) 24px;position:relative}
 .ck-body:has(.ck-ings:not([hidden])){grid-template-columns:minmax(0,1fr) 300px}
 .ck-count{grid-column:1/-1;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ck-gs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.ck-gs li{border-radius:16px}
+.ck-g{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;font:inherit;color:inherit;padding:10px 12px;border-radius:14px;cursor:pointer}
+.ck-gs li.now{background:var(--surface);border:1px solid var(--line);box-shadow:0 6px 24px rgba(0,0,0,.06);padding:8px 6px 16px}
+.ck-gs li.now .ck-g{cursor:default}
+.ck-gs li.done .ck-g{color:var(--muted);font-size:16px}.ck-gs li.done .ck-g>span:last-child{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}
+.ck-gs li.todo .ck-g{color:var(--muted);opacity:.7;font-size:16px}
+.ck-gs li.done .ck-g:hover,.ck-gs li.todo .ck-g:hover{background:var(--surface);opacity:1}
+.ck-dot{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);margin-top:3px;display:grid;place-items:center;font-size:12px;color:var(--accent-ink)}
+.ck-gs li.done .ck-dot{background:var(--accent);border-color:var(--accent)}.ck-gs li.done .ck-dot::after{content:"✓"}
+.ck-gs li.now .ck-dot{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent);margin-top:9px}
+.ck-gs li.now .ck-step{font-size:clamp(22px,3.4vw,30px)}
+.ck-q{display:inline-block;margin:0 .15em;padding:0 .4em;border-radius:8px;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:.92em}
+.ck-act{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:6px 12px 0 48px}
+.ck-act .ck-tbtn{margin:0}
+.ck-done{font-size:17px;padding:14px 24px}
+@media(max-width:640px){.ck-act{padding-left:12px}.ck-done{flex:1 1 100%}}
 .ck-step{font-size:clamp(22px,3.4vw,32px);line-height:1.4;margin:0;font-weight:500;text-wrap:pretty}
 .ck-opt{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--warm,#B85A14);background:var(--warm-soft,#F7E8DA);border-radius:999px;padding:2px 10px;margin-bottom:10px}
 .ck-need{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
@@ -2331,16 +2348,89 @@ const COOK=(()=>{
   const e=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const nz=s=>String(s).toLowerCase().replace(/œ/g,"oe").normalize("NFD").replace(/[̀-ͯ]/g,"");
   const STOP=new Set(["de","du","des","la","le","les","en","au","aux","et","ou","a","d","l","frais","fraiche","fraiches","boite","egouttes","surgeles","nature","seches","seche","sec","cuit","cuites","cuits","pc","tranches","extra","qualite","sashimi","moyenne","demi","ecreme","fine","fines"]);
-  let R=null,i=0,root=null,lock=null,timers=[],tick=null,showIng=false,done={},ac=null,sx=null;
-  // mots-clés d'un ingrédient pour le repérer dans une étape
+  let R=null,i=0,root=null,lock=null,timers=[],tick=null,showIng=false,done={},ac=null,sx=null,M=[];
+  // ---------- mots-clés d'un ingrédient pour le repérer dans une étape ----------
   function keys(name){
     const base=nz(name).replace(/\(.*?\)/g," ").replace(/[^a-z\s-]/g," ");
     const w=base.split(/[\s-]+/).filter(x=>x.length>2&&!STOP.has(x));
-    return w.slice(0,2).map(x=>x.replace(/(es|s|x)$/,"")).filter(x=>x.length>2);
+    return w.slice(0,3).map(x=>x.replace(/(es|s|x)$/,"")).filter(x=>x.length>2);
   }
-  function stepIngs(s){
-    const t=nz(s);
-    return R.ings.filter(g=>{const k=g.k||(g.k=keys(g.name));return k.length&&t.includes(k[0])});
+  // expression régulière insensible aux accents, sur le texte original
+  const ACC={a:"aàâä",e:"eéèêë",i:"iîï",o:"oôö",u:"uùûü",c:"cç"};
+  const krx=k=>new RegExp("(^|[^\\p{L}])("+k.split("").map(ch=>ACC[ch]?"["+ACC[ch]+"]":ch.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("").replace(/o\[eéèêë\]/g,"(?:o[eéèêë]|œ)")+"\\p{L}*)","iu");
+  // ---------- découpage des étapes en gestes simples ----------
+  const VERBS="ajouter|cuire|égoutter|enrober|faire|mélanger|verser|laisser|servir|couper|émincer|saler|poivrer|remuer|réserver|porter|retirer|mixer|incorporer|déglacer|mouiller|couvrir|découvrir|parsemer|napper|dorer|saisir|griller|rôtir|enfourner|assaisonner|arroser|garnir|étaler|rouler|plier|fermer|poser|disposer|répartir|monter|terminer|finir|préchauffer|chauffer|réchauffer|mijoter|frémir|bouillir|battre|fouetter|râper|hacher|peler|éplucher|rincer|tremper|écraser|presser|trancher|ciseler|tailler|détailler|remettre|sortir|retourner|badigeonner|mariner|lier|délayer|réduire|rectifier|goûter|dresser|enfiler|former|façonner|fariner|paner|sauter|poêler|blanchir|refroidir|essorer|effilocher|émietter|filtrer|recouvrir|piquer|inciser|frotter|huiler|beurrer|tartiner|toaster|plonger|pocher|préparer|mettre|placer|glisser|ouvrir|farcir|évider|remplir|gratiner|fondre|écaler|aplatir|abaisser|foncer|démouler|découper|réduire|rissoler|caraméliser|torréfier|concasser|zester|presser|décortiquer|dénoyauter|égrener|tamiser|détendre|réhydrater|cuisiner|lancer|allumer|écumer|ôter|enlever|jeter|vider|essuyer|sécher|tapisser|chemiser|répéter|recommencer|continuer|poursuivre|baisser|augmenter|vérifier|piler";
+  const PRON="(?:les |le |la |l'|l’|y |en |se |s'|s’|bien |le tout |tout )?";
+  const SPLIT=new RegExp("(?:,\\s*(?:puis\\s+)?|\\s+puis\\s+|\\s+et\\s+(?=(?:les |le |la |l'|l’|y |en )?(?:"+VERBS+")\\b))(?="+PRON+"(?:"+VERBS+")\\b)","giu");
+  const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+  const dot=s=>(s=s.replace(/[\s,;:]+$/,""),/[.!?…)]$/.test(s)?s:s+".");
+  function gestures(step){
+    // phrases
+    const sent=step.replace(/\s*;\s*(\p{L})/gu,(_,c)=>". "+c.toUpperCase()).replace(/\. (\p{Ll})/gu,(_,c)=>". "+c.toUpperCase()).split(/(?<=[.!?])\s+(?=[A-ZÉÈÀÂÔÎÇ«0-9])/u).map(x=>x.trim()).filter(Boolean);
+    const out=[];
+    sent.forEach(s=>{
+      // « Sauce : … » ou « Salade : … » : on garde l'étiquette sur le premier geste
+      const parts=[];let last=0,m;SPLIT.lastIndex=0;
+      while((m=SPLIT.exec(s))){const a=s.slice(last,m.index).trim();if(a.length>=10&&s.slice(m.index+m[0].length).trim().length>=8){parts.push(a);last=m.index+m[0].length}}
+      parts.push(s.slice(last).trim());
+      parts.filter(Boolean).forEach(p=>out.push(dot(cap(p.replace(/\.$/,"")))));
+    });
+    return out.length?out:[step];
+  }
+  // ---------- quantités dans le texte ----------
+  const PASTA=/\b(pâtes|coquillettes|spaghetti|penne|tagliatelles|macaronis|vermicelles|fusilli|linguine|rigatoni|conchiglioni|orzo|lasagnes|raviolis|tortellini|nouilles|udon|ramen|gnocchis)\b/iu;
+  function fracOf(txt,idx){
+    const before=nz(txt.slice(Math.max(0,idx-28),idx));
+    if(/moitie/.test(before))return .5;if(/tiers/.test(before))return 1/3;if(/quart/.test(before))return .25;
+    if(/rest(e|ant)/.test(before))return "rest";
+    if(/(un peu|pincee|filet|trait|soupcon|noix)\s*(de|d'|du)?\s*$/.test(before))return 0;
+    return 1;
+  }
+  const GEN=new Set(["pave","filet","blanc","do","escalope","haut","jeune","feuille","cerneau","tranche","gousse","cuisse","bouquet","brin","pot","boite","paquet","cube","grain","graine","pate","hache","rape","entier","concasse","fume","cru","doux","fort","gout","grille","grosse","petit","moyen","chinoise","oeuf","sauce"]);
+  const qtxt=(g,f)=>{if(g.v==null||typeof fmt!=="function")return f===1?g.q:"";const v=g.v*f;if(v<=0)return"";try{return fmt(v,g.u)}catch(x){return g.q}};
+  function withQty(text,used){
+    const hits=[];
+    R.ings.forEach((g,k)=>{const ks=g.k||(g.k=keys(g.name).filter(x=>!GEN.has(x)));if(!ks.length)return;
+      const m=krx(ks[0]).exec(text);if(!m)return;
+      const h={k,start:m.index+m[1].length,len:m[2].length};
+      // on prolonge sur les mots suivants qui font partie du nom (« pois » + « chiches », « huile » + « de sésame »)
+      const nw=new Set(nz(g.name).split(/[^a-z]+/).filter(x=>x.length>2).map(x=>x.replace(/(es|s|x)$/,"")));
+      let rest=text.slice(h.start+h.len),mm;
+      while((mm=/^(\s+(?:de |d'|d’|à |au )?|-)(\p{L}+)/u.exec(rest))&&nw.has(nz(mm[2]).replace(/(es|s|x)$/,""))){h.len+=mm[0].length;h.ext=1;rest=rest.slice(mm[0].length)}
+      // mot composé (« extra-frais ») : on va jusqu'au bout
+      while((mm=/^-\p{L}+/u.exec(rest))){h.len+=mm[0].length;rest=rest.slice(mm[0].length)}
+      hits.push(h);
+    });
+    // deux ingrédients sur le même mot : on garde le plus précis
+    const keep=hits.filter(h=>!hits.some(o=>o!==h&&o.start<=h.start&&o.start+o.len>=h.start+h.len&&(o.len>h.len||(o.len===h.len&&(o.ext||0)>(h.ext||0))||(o.len===h.len&&(o.ext||0)===(h.ext||0)&&o.k<h.k))));
+    keep.sort((a,b)=>a.start-b.start);
+    const ins=[];
+    keep.forEach(h=>{const g=R.ings[h.k],k=h.k,f=fracOf(text,h.start);let q="";
+      if(f==="rest"){const left=1-(used[k]||0);if(left>0.01){q=qtxt(g,left);used[k]=1}}
+      else if(f>0){if((used[k]||0)<1){const ff=Math.min(f,1-(used[k]||0));q=qtxt(g,ff);used[k]=(used[k]||0)+ff}}
+      if(q){if(/^\d+([,.]\d+)?$/.test(q.trim()))q="×"+q.trim();ins.push({at:h.start+h.len,q,k})}
+    });
+    const pieces=[];let end=text.length;
+    ins.slice().reverse().forEach(x=>{let tail=text.slice(x.at,end);if(/\.$/.test(x.q)&&tail.startsWith("."))tail=tail.slice(1);pieces.unshift(e(tail));pieces.unshift(`<span class="ck-q">${e(x.q)}</span>`);end=x.at});
+    pieces.unshift(e(text.slice(0,end)));
+    return {html:pieces.join(""),ks:ins.map(x=>x.k)};
+  }
+  // ---------- construction de la liste des gestes ----------
+  function build(){
+    M=[];const used={};
+    R.steps.forEach((st,si)=>{
+      let gs=gestures(st);
+      // les pâtes : on commence par l'eau
+      const px=gs.findIndex(g=>/^(faire )?cuire\b/i.test(g)&&PASTA.test(g));
+      if(px>=0&&!/eau/i.test(gs.slice(0,px+1).join(" "))){
+        const pg=R.ings.find(g=>g.u==="g"&&PASTA.test(g.name));
+        const L=pg&&pg.v?Math.max(1,Math.round(pg.v/100*2)/2):2;
+        gs.splice(px,0,`Porter à ébullition ${String(L).replace(".",",")} L d'eau salée dans une grande casserole.`);
+        const g1=gs[px+1];if(!/\d+\s*min/.test(g1))gs[px+1]=g1.replace(/\.$/,"")+" (temps indiqué sur le paquet).";
+      }
+      gs=gs.map(g=>{if(/^(faire )?cuire (le|du) riz\b/i.test(g)&&!/\d+\s*min/.test(g))return g.replace(/\.$/,"")+" (temps indiqué sur le paquet).";return g});
+      gs.forEach((g,j)=>{const w=withQty(g,used);M.push({si,j,n:gs.length,text:g,html:w.html,dur:durations(g),opt:R.opt&&R.opt.includes(si)})});
+    });
   }
   // durées repérées dans le texte : « 12 min », « 1 h 30 », « 20-25 min »
   function durations(s){
@@ -2351,7 +2441,7 @@ const COOK=(()=>{
       else{const a=+m[3],b=m[4]?+m[4]:a;sec=b*60;label=(m[4]?a+"-"+b:a)+" min";}
       if(sec>=60&&sec<=6*3600&&!out.some(o=>o.sec===sec))out.push({sec,label});
     }
-    return out.slice(0,3);
+    return out.slice(0,2);
   }
   const mmss=s=>{s=Math.max(0,Math.round(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0")};
   function beep(){
@@ -2376,49 +2466,56 @@ const COOK=(()=>{
     if(!timers.length){clearInterval(tick);tick=null}
   }
   function startTimer(sec,label){
-    timers.push({end:Date.now()+sec*1000,label:label+" · étape "+(i+1),rang:false});
+    const m=M[i];timers.push({end:Date.now()+sec*1000,label:label+(m?" · étape "+(m.si+1):""),rang:false});
     if(!tick)tick=setInterval(loop,500);
     try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume&&ac.resume()}catch(x){}
     paintTimers();
   }
   function paint(){
-    const n=R.steps.length,fin=i>=n,s=fin?"":R.steps[i];
-    const si=fin?[]:stepIngs(s),du=fin?[]:durations(s);
+    const n=M.length,fin=i>=n,cur=fin?null:M[i],ns=R.steps.length;
     root.querySelector(".ck-bar i").style.width=Math.round(Math.min(i,n)/n*100)+"%";
-    root.querySelector(".ck-count").textContent=fin?"Terminé":"Étape "+(i+1)+" sur "+n;
-    root.querySelector(".ck-main").innerHTML=fin
-      ?`<div class="ck-end"><div class="ck-big">Bon appétit !</div><p>Toutes les étapes sont faites.</p><button type="button" class="ck-btn" data-ckgo="0">Revoir depuis le début</button></div>`
-      :`${R.opt&&R.opt.includes(i)?'<span class="ck-opt">Optionnel</span>':""}<p class="ck-step">${e(s)}</p>
-        ${si.length?`<div class="ck-need"><b>Pour cette étape</b><ul>${si.map(g=>`<li><span class="num">${e(g.q)}</span> ${e(g.name)}</li>`).join("")}</ul></div>`:""}
-        ${du.length?`<div class="ck-dur">${du.map(d=>`<button type="button" class="ck-tbtn" data-cktimer="${d.sec}" data-cklab="${e(d.label)}"><span aria-hidden="true">⏱</span> Lancer ${e(d.label)}</button>`).join("")}</div>`:""}`;
+    root.querySelector(".ck-count").textContent=fin?"Terminé":"Étape "+(cur.si+1)+" sur "+ns;
+    if(fin){root.querySelector(".ck-main").innerHTML=`<div class="ck-end"><div class="ck-big">Bon appétit !</div><p>Toutes les étapes sont faites.</p><button type="button" class="ck-btn" data-ckgo="0">Revoir depuis le début</button></div>`}
+    else{
+      const grp=M.map((m,k)=>[m,k]).filter(([m])=>m.si===cur.si);
+      const lastOfStep=grp[grp.length-1][1]===i,lastAll=i===n-1;
+      const nextLab=lastAll?"C'est fait · Terminer ✓":lastOfStep?`C'est fait · Étape ${cur.si+2} →`:"C'est fait →";
+      root.querySelector(".ck-main").innerHTML=`${cur.opt?'<span class="ck-opt">Optionnel</span>':""}<ol class="ck-gs">${grp.map(([m,k])=>{
+        const st=k<i?"done":k===i?"now":"todo";
+        if(st!=="now")return `<li class="${st}"><button type="button" class="ck-g" data-ckgo="${k}"><span class="ck-dot" aria-hidden="true"></span><span>${m.html}</span></button></li>`;
+        return `<li class="now"><div class="ck-g"><span class="ck-dot" aria-hidden="true"></span><p class="ck-step">${m.html}</p></div>
+          <div class="ck-act">${m.dur.map(d=>`<button type="button" class="ck-tbtn" data-cktimer="${d.sec}" data-cklab="${e(d.label)}"><span aria-hidden="true">⏱</span> Lancer ${e(d.label)}</button>`).join("")}<button type="button" class="ck-btn ck-done" data-cknext>${nextLab}</button></div></li>`}).join("")}</ol>`;
+      setTimeout(()=>{const a=root.querySelector(".ck-gs .now");if(a&&a.scrollIntoView)a.scrollIntoView({block:"nearest",behavior:"smooth"})},0);
+    }
     root.querySelector("[data-ckprev]").disabled=i===0;
-    const nx=root.querySelector("[data-cknext]");nx.textContent=fin?"Fermer":i===n-1?"Terminer ✓":"Étape suivante →";
-    root.querySelector(".ck-dots").innerHTML=R.steps.map((_,k)=>`<button type="button" class="${k===i?"on":k<i?"past":""}" data-ckgo="${k}" aria-label="Aller à l'étape ${k+1}"></button>`).join("");
+    const nx=root.querySelector(".ck-nav [data-cknext]");nx.textContent="Fermer";nx.style.visibility=fin?"visible":"hidden";
+    const firstOf=s=>M.findIndex(m=>m.si===s);
+    root.querySelector(".ck-dots").innerHTML=R.steps.map((_,k)=>{const c=fin||k<(cur&&cur.si)?"past":cur&&k===cur.si?"on":"";return `<button type="button" class="${c}" data-ckgo="${firstOf(k)}" aria-label="Aller à l'étape ${k+1}"></button>`}).join("");
     const ing=root.querySelector(".ck-ings");ing.hidden=!showIng;
     root.querySelector("[data-ckings]").setAttribute("aria-expanded",showIng);
     ing.innerHTML=`<h4>Ingrédients</h4><ul>${R.ings.map((g,k)=>`<li class="${done[k]?"done":""}"><label><input type="checkbox" data-ckchk="${k}" ${done[k]?"checked":""}><span class="num">${e(g.q)}</span><span>${e(g.name)}</span></label></li>`).join("")}</ul><p class="ck-tip">Cochez ce qui est sorti et pesé.</p>`;
     paintTimers();
   }
   function open(rec){
-    R=rec;i=0;showIng=false;done={};
+    R=rec;i=0;showIng=false;done={};build();
     if(!root){root=document.createElement("div");root.className="ck";root.setAttribute("role","dialog");root.setAttribute("aria-modal","true");document.body.appendChild(root)}
     root.innerHTML=`<div class="ck-top"><div class="ck-tt"><small>${e(R.sub||"Mode cuisine")}</small><b>${e(R.title)}</b></div>
         <button type="button" class="ck-ib" data-ckings aria-expanded="false">Ingrédients</button><button type="button" class="ck-ib ck-x" data-ckclose aria-label="Quitter le mode cuisine">Quitter ×</button></div>
       <div class="ck-bar"><i></i></div>
       <div class="ck-body"><div class="ck-count"></div><div class="ck-main" aria-live="polite"></div><aside class="ck-ings" hidden></aside></div>
       <div class="ck-timers" hidden></div>
-      <div class="ck-nav"><button type="button" class="ck-btn ghost" data-ckprev>← Précédente</button><div class="ck-dots"></div><button type="button" class="ck-btn" data-cknext>Étape suivante →</button></div>`;
+      <div class="ck-nav"><button type="button" class="ck-btn ghost" data-ckprev>← Retour</button><div class="ck-dots"></div><button type="button" class="ck-btn ghost" data-cknext>Passer →</button></div>`;
     root.hidden=false;document.documentElement.classList.add("ck-on");wake(true);paint();
-    try{root.querySelector("[data-cknext]").focus({preventScroll:true})}catch(x){}
+    try{root.querySelector(".ck-done").focus({preventScroll:true})}catch(x){}
   }
   function close(){if(!root)return;root.hidden=true;document.documentElement.classList.remove("ck-on");wake(false)}
-  const go=k=>{i=Math.max(0,Math.min(R.steps.length,k));paint();root.querySelector(".ck-body").scrollTop=0};
+  const go=k=>{i=Math.max(0,Math.min(M.length,k));paint();try{const d=root.querySelector(".ck-done");d&&d.focus({preventScroll:true})}catch(x){}};
   document.addEventListener("click",ev=>{
     if(!root||root.hidden||!root.contains(ev.target))return;
     const t=ev.target;
     if(t.closest("[data-ckclose]")){close();return}
     if(t.closest("[data-ckprev]")){go(i-1);return}
-    if(t.closest("[data-cknext]")){if(i>=R.steps.length)close();else go(i+1);return}
+    if(t.closest("[data-cknext]")){if(i>=M.length)close();else go(i+1);return}
     const g=t.closest("[data-ckgo]");if(g){go(+g.dataset.ckgo);return}
     if(t.closest("[data-ckings]")){showIng=!showIng;paint();return}
     const tm=t.closest("[data-cktimer]");if(tm){startTimer(+tm.dataset.cktimer,tm.dataset.cklab);return}
@@ -2427,12 +2524,12 @@ const COOK=(()=>{
   document.addEventListener("change",ev=>{const c=ev.target.closest&&ev.target.closest("[data-ckchk]");if(c&&root&&root.contains(c)){done[c.dataset.ckchk]=c.checked;c.closest("li").classList.toggle("done",c.checked)}});
   document.addEventListener("keydown",ev=>{
     if(!root||root.hidden)return;
-    if(ev.key==="ArrowRight"){ev.preventDefault();if(i<R.steps.length)go(i+1)}
+    if(ev.key==="ArrowRight"){ev.preventDefault();if(i<M.length)go(i+1)}
     else if(ev.key==="ArrowLeft"){ev.preventDefault();go(i-1)}
     else if(ev.key==="Escape"){ev.stopImmediatePropagation();close()}
   },true);
   document.addEventListener("touchstart",ev=>{if(root&&!root.hidden&&root.contains(ev.target)&&!ev.target.closest(".ck-ings,.ck-timers"))sx=[ev.touches[0].clientX,ev.touches[0].clientY]},{passive:true});
-  document.addEventListener("touchend",ev=>{if(!sx)return;const dx=ev.changedTouches[0].clientX-sx[0],dy=ev.changedTouches[0].clientY-sx[1];sx=null;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(dx<0&&i<R.steps.length)go(i+1);else if(dx>0)go(i-1)}},{passive:true});
+  document.addEventListener("touchend",ev=>{if(!sx)return;const dx=ev.changedTouches[0].clientX-sx[0],dy=ev.changedTouches[0].clientY-sx[1];sx=null;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(dx<0&&i<M.length)go(i+1);else if(dx>0)go(i-1)}},{passive:true});
   return {open,close,get active(){return !!(root&&!root.hidden)}};
 })();
 
@@ -3205,7 +3302,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeMod
 function setMode(key,m){if(m==="cook")delete W.mode[key];else W.mode[key]=m}
 function goWeek(w){useWeek(w);save();renderAll();window.scrollTo(0,0)}
 document.addEventListener("click",e=>{
-  const cks=e.target.closest("[data-cookslot]");if(cks){const c=findCook(cks.dataset.cookslot);if(c){const r=c.r,pers=persOf(c),os=optSteps(r,pers);COOK.open({title:r.n,sub:slotLabel(c.sl)+" · "+pers+" portion"+(pers>1?"s":""),steps:r.st.concat(os),opt:os.map((_,k)=>r.st.length+k),ings:r.ing.map(([id,q])=>({q:fmt(qtyBase(c,id,q),I[id].u,false),name:I[id].n})).concat(optionsFor(r).map(([id,q])=>({q:fmt(q*pers,I[id].u,false),name:I[id].n+" (optionnel)"})))})}return}
+  const cks=e.target.closest("[data-cookslot]");if(cks){const c=findCook(cks.dataset.cookslot);if(c){const r=c.r,pers=persOf(c),os=optSteps(r,pers);COOK.open({title:r.n,sub:slotLabel(c.sl)+" · "+pers+" portion"+(pers>1?"s":""),steps:r.st.concat(os),opt:os.map((_,k)=>r.st.length+k),ings:r.ing.map(([id,q])=>({q:fmt(qtyBase(c,id,q),I[id].u,false),v:qtyBase(c,id,q),u:I[id].u,name:I[id].n})).concat(optionsFor(r).map(([id,q])=>({q:fmt(q*pers,I[id].u,false),name:I[id].n+" (optionnel)"})))})}return}
   if(!ov.hidden&&(e.target===ov||e.target.closest("[data-close]"))){closeModal();return}
   const o=e.target.closest("[data-open]");if(o)return openRecipe(o.dataset.open);
   const pk=e.target.closest("[data-pick]");if(pk)return openCatalog(pk.dataset.pick);
