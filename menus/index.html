@@ -609,6 +609,14 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .tag.froid{border-color:#9CC3DA;color:#2C6E91;background:#E7F2F8}
 .restfor{font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:3px 7px}
 .meal{overflow:hidden}
+.hweek{background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:16px;padding:14px 16px;margin:0 0 14px}
+.hweek header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}.hweek h3{margin:0;flex:1 1 auto;font-size:18px}
+.htab{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
+.htab th,.htab td{text-align:left;padding:6px 8px;border-top:1px solid var(--line,#eee);vertical-align:top;overflow-wrap:anywhere}
+.htab thead th{border-top:0;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted,#888)}
+.htab tbody th{width:110px;font-weight:600}.htab tbody th small{color:var(--muted,#888);font-weight:400}
+@media(max-width:560px){.htab tbody th{width:74px}.htab{font-size:13px}}
+.hempty{padding:20px 0}
 .mlist{list-style:none;margin:8px 0;padding:0;display:flex;flex-direction:column;gap:6px}
 .mrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 10px;border:1px solid var(--line,#e5e0d5);border-radius:12px;background:var(--card,#fff)}
 .mname{font-weight:600;flex:1 1 120px}
@@ -633,7 +641,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 <header class="top">
   <div class="wrap toprow">
     <div class="brand"><h1>Semainier</h1></div>
-    <div class="weeknav"><button class="wbtn" id="prevW" type="button" aria-label="Semaine précédente">‹</button><span id="weekLabel" aria-live="polite">Semaine 1</span><button class="wbtn" id="nextW" type="button" aria-label="Semaine suivante">›</button></div>
+    <div class="weeknav"><button class="wbtn" id="prevW" type="button" aria-label="Semaine précédente">‹</button><span id="weekLabel" aria-live="polite"></span><button class="wbtn" id="nextW" type="button" aria-label="Semaine suivante">›</button></div>
     <button type="button" class="accbtn" id="accBtn" hidden></button>
   </div>
   <div class="wrap tabrow">
@@ -645,6 +653,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
       <a href="#gouts">Mes goûts</a>
       <a href="#groupe">Groupe</a>
       <a href="#propositions">Propositions<span class="pbadge" id="propBadge" hidden></span></a>
+      <a href="#historique">Historique</a>
       <span class="tabsep" aria-hidden="true"></span>
       <a href="recettes.html" class="ext">Catalogue des recettes</a>
       <a href="recevoir.html" class="ext">On reçoit</a>
@@ -701,6 +710,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
   <section class="view" id="v-groupe" hidden><div id="cfgbox"></div></section>
 
   <section class="view" id="v-propositions" hidden><div id="propbox"></div></section>
+  <section class="view" id="v-historique" hidden><div id="histbox"></div></section>
 
   <section class="view" id="v-courses" hidden>
     <div class="shophead">
@@ -1877,8 +1887,12 @@ const CLOUD=(()=>{
   async function api(method,path,body){
     const h={"Content-Type":"application/json"};if(acc&&acc.token)h.Authorization="Bearer "+acc.token;
     let r;
-    try{r=await fetch(API+path,{method,headers:h,body:body?J(body):undefined})}
-    catch(e){throw Object.assign(new Error("Le serveur ne répond pas. Vérifiez votre connexion et réessayez."),{net:true})}
+    for(let i=0;i<3&&!r;i++){
+      try{r=await fetch(API+path,{method,headers:h,body:body?J(body):undefined})}
+      catch(e){if(i<2){await new Promise(z=>setTimeout(z,1500*(i+1)));continue}
+        const off=!/(^|\.)gamb-it-apps\.fr$|^localhost$|^127\./.test(location.hostname);
+        throw Object.assign(new Error(off?"La connexion au compte ne marche que sur le site : ouvrez gamb-it-apps.fr/menus/ dans votre navigateur.":"Le serveur ne répond pas. Vérifiez votre connexion et réessayez."),{net:true})}
+    }
     let j={};try{j=await r.json()}catch(e){}
     if(r.status===401&&acc&&!/^\/auth\//.test(path)){acc=null;keep();setStatus("idle");}
     if(!r.ok)throw Object.assign(new Error(j.error||"Erreur "+r.status),{status:r.status,body:j});
@@ -2238,7 +2252,11 @@ const cfgBanned=r=>{const b=CFG().ban;return r.ing.some(([id])=>b[id])};
 
 // ---------- Semaines ----------
 const DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
-const START=new Date(2026,10,2), MAXW=12;
+const START=new Date(2026,10,2), HORIZON=12, MAXW=9999;
+// Semaine en cours (celle qui contient aujourd'hui) : les semaines d'avant passent dans l'historique.
+const NOWW=()=>{const t=new Date();t.setHours(12,0,0,0);const s0=new Date(START);s0.setDate(s0.getDate()-1);s0.setHours(12,0,0,0);return Math.max(0,Math.floor(Math.round((t-s0)/864e5)/7))};
+const weekRange=w=>{const a=dayDate(w,6),b=dayDate(w,5),d=x=>x.getDate()===1?"1er":String(x.getDate()),m=x=>x.toLocaleDateString("fr-FR",{month:"long"});
+  return a.getMonth()===b.getMonth()?`du ${d(a)} au ${d(b)} ${m(b)}`:`du ${d(a)} ${m(a)} au ${d(b)} ${m(b)}`};
 // La semaine va du dimanche au samedi. Les jours gardent leur numéro (0 = lundi … 6 = dimanche),
 // mais le dimanche est affiché en premier et tombe la veille du lundi.
 const ORDER=[6,0,1,2,3,4,5];
@@ -2286,7 +2304,7 @@ function migrateSunday(){
 function save(){try{trackEdit()}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}cloudChanged()}
 let W;
 function useWeek(w){
-  S.cur=Math.max(0,Math.min(MAXW-1,w));
+  S.cur=Math.max(NOWW(),Math.min(NOWW()+HORIZON-1,w));
   if(!S.weeks[S.cur]){S.weeks[S.cur]={plan:{},mode:{},pin:{},checked:{},shopSess:1};W=S.weeks[S.cur];try{const E=CFG().eaters||{};Object.keys(E).forEach(k=>{if(E[k]&&E[k].skip)W.mode[k]="skip"})}catch(_){}build(S.cur===0?"default":"seed")}
   W=S.weeks[S.cur];W.pin=W.pin||{};W.mode=W.mode||{};W.checked=W.checked||{};W.plan=W.plan||{};if(SLOTS.some(s=>W.plan[s.key]===undefined))build("keep");
   try{_seen=weekSig(W)}catch(e){}
@@ -2393,11 +2411,10 @@ const dateOf=i=>dayDate(S.cur,i).toLocaleDateString("fr-FR",{day:"numeric",month
 
 // ---------- En-tête semaine ----------
 function renderWeekNav(){
-  const a=dayDate(S.cur,6),b=dayDate(S.cur,5);
-  const f=d=>d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"}).replace(/^1 /,"1er ");
-  document.getElementById("weekLabel").textContent="Semaine "+(S.cur+1)+" · du "+f(a)+" au "+f(b);
-  document.getElementById("prevW").disabled=S.cur===0;
-  document.getElementById("nextW").disabled=S.cur===MAXW-1;
+  const t=weekRange(S.cur);
+  document.getElementById("weekLabel").textContent=t[0].toUpperCase()+t.slice(1);
+  document.getElementById("prevW").disabled=S.cur<=NOWW();
+  document.getElementById("nextW").disabled=S.cur>=NOWW()+HORIZON-1;
 }
 
 // ---------- Validation du semainier (par repas et pour toute la semaine) ----------
@@ -2625,7 +2642,29 @@ function renderDefaults(){
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));if(catKey)renderCatList("m",catKey);renderWeek()}
 function renderFoyer(){const el=document.getElementById("foyer");if(el)el.innerHTML=peopleEditor("foyer",{empty:"Personne n'est encore indiqué. Ajoutez par exemple chaque membre de la famille.",addLabel:"+ Ajouter un membre du foyer"})}
 DIETUI.onChange=(k,soft)=>{if(k!=="foyer")return;const before=JSON.stringify(W.plan);loadFoy();build("keep");const n=Object.keys(W.plan).filter(x=>JSON.parse(before)[x]!==W.plan[x]).length;if(soft){renderWeek();return}renderAll();if(n)toast(n+" repas remplacé"+(n>1?"s":"")+" pour respecter le foyer")};
-function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules()}
+function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules();renderHistory()}
+
+// ---------- Historique des semaines passées ----------
+function renderHistory(){
+  const el=document.getElementById("histbox");if(!el)return;
+  const now=NOWW(),ws=[];for(let w=now-1;w>=0;w--){const x=S.weeks[w];if(x&&x.plan&&Object.values(x.plan).some(Boolean))ws.push(w)}
+  const head=`<div class="sechead"><h2>Historique</h2><p class="muted">Les semaines passées, en lecture seule. ${isKid()?"":"Un menu qui a plu ? Reprenez-le pour la semaine affichée dans le semainier."}</p></div>`;
+  if(!ws.length){el.innerHTML=head+`<p class="muted hempty">Rien pour l'instant : chaque semaine terminée viendra se ranger ici.</p>`;return}
+  el.innerHTML=head+ws.map(w=>{const x=S.weeks[w],t=weekRange(w),ok=x.valid&&x.valid.sig===weekSig(x);
+    const rows=ORDER.map(i=>{const cell=wh=>{const k=i+wh,m=(x.mode||{})[k]||"cook";if(m==="skip")return '<span class="muted">—</span>';
+        const r=RB[x.plan[k]];if(!r)return '<span class="muted">—</span>';
+        const xs=((x.extra||{})[k]||[]).map(e=>RB[e.id]).filter(Boolean);
+        return esc(shortName(r))+(xs.length?" + "+xs.map(e=>esc(shortName(e))).join(" + "):"")+(m==="rest"?' <span class="muted">(restes)</span>':"")};
+      return `<tr><th>${DAYS[i]} <small>${dayDate(w,i).getDate()}</small></th><td>${cell("m")}</td><td>${cell("s")}</td></tr>`}).join("");
+    return `<article class="hweek"><header><h3>${t[0].toUpperCase()+t.slice(1)}</h3>${ok?`<span class="mb adm">✅ Validé${x.valid.by?" par "+esc(x.valid.by):""}</span>`:""}${isKid()?"":`<button type="button" class="btn sm" data-hreuse="${w}">Reprendre ce menu</button>`}</header>
+      <table class="htab"><thead><tr><th></th><th>Midi</th><th>Soir</th></tr></thead><tbody>${rows}</tbody></table></article>`}).join("");
+}
+let _reuseArm={w:-1,t:0};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-hreuse]");if(!b||isKid())return;const w=+b.dataset.hreuse,x=S.weeks[w];if(!x)return;
+  if(_reuseArm.w!==w||Date.now()-_reuseArm.t>4000){_reuseArm={w,t:Date.now()};toast("Cliquez encore pour remplacer la semaine "+weekRange(S.cur)+" par ce menu");return}
+  _reuseArm={w:-1,t:0};const c=JSON.parse(JSON.stringify(x));
+  W.plan=c.plan||{};W.mode=c.mode||{};W.extra=c.extra||{};W.temp=c.temp||{};W.pin={};SLOTS.forEach(s=>{if(W.plan[s.key])W.pin[s.key]=1});delete W.valid;W.ok={};
+  build("keep");save();renderAll();location.hash="#semaine";toast("Menu repris pour la semaine "+weekRange(S.cur))});
 
 // ---------- Interactions ----------
 let toastT;
@@ -2701,14 +2740,14 @@ function slotOptions(w,sel,withAny){
 function openPropCatalog(){
   catKey="__prop";
   ov.innerHTML=`<article class="rcard catcard"><button class="close" type="button" data-close>Fermer</button>
-    <div class="rhead"><small>Semaine ${S.cur+1} · à valider par un adulte</small><h3>Proposer un plat</h3></div>${catalogShell("m","__prop")}</article>`;
+    <div class="rhead"><small>Semaine ${weekRange(S.cur)} · à valider par un adulte</small><h3>Proposer un plat</h3></div>${catalogShell("m","__prop")}</article>`;
   ov.hidden=false;renderCatList("m","__prop");
   const q=document.getElementById("catq-m");try{q.focus({preventScroll:true})}catch(e){}
 }
 function openPropForm(id,slot){
   const r=RB[id];if(!r)return;const cur=slot&&RB[W.plan[slot]];
   ov.innerHTML=`<article class="rcard propcard"><button class="close" type="button" data-close>Fermer</button>
-    <div class="rhead"><small>Proposition pour la semaine ${S.cur+1}</small><h3>${esc(r.n)}</h3></div>
+    <div class="rhead"><small>Proposition pour la semaine ${weekRange(S.cur)}</small><h3>${esc(r.n)}</h3></div>
     <div class="pform">
       ${slot?`<p>À la place de <b>${cur?esc(cur.n):"rien"}</b>, ${esc(slotLabel(SK[slot]))}.</p><input type="hidden" id="propSlot" value="${slot}">`
         :`<label class="pf"><span>Pour quel repas ?</span><select id="propSlot">${slotOptions(S.cur,"",true)}</select></label>`}
@@ -2964,7 +3003,7 @@ function renderCfg(){
     ${eatersHTML()}
     <section class="cfgcard wide"><h3>🩺 Allergies, intolérances et régimes</h3><p class="muted small">Chaque personne qui mange avec ce groupe et ce qu'elle doit éviter : les recettes à risque sont écartées et signalées partout (semainier, catalogue, réceptions).</p><div id="foyer"></div></section>
   </div>
-  <div class="cfgapply"><div><b>Appliquer à la semaine ${S.cur+1}</b><span class="muted">Recompose les repas non choisis à la main pour respecter vos règles.</span></div><button type="button" class="btn primary" data-cfgapply>Recomposer la semaine</button></div>`;
+  <div class="cfgapply"><div><b>Appliquer à la semaine ${weekRange(S.cur)}</b><span class="muted">Recompose les repas non choisis à la main pour respecter vos règles.</span></div><button type="button" class="btn primary" data-cfgapply>Recomposer la semaine</button></div>`;
   renderFoyer();
 }
 const PRESETS={
@@ -3040,7 +3079,7 @@ document.addEventListener("change",e=>{
   cfgWrite(C);save();build("keep");renderAll();toast(s.dataset.eqfill?"Semaine type mise à jour":"Repas mis à jour : "+(val?eaterLabel(val):"par défaut"));
 });
 
-const VIEWS=["groupe","semaine","batch","gouts","recettes","courses","propositions"];
+const VIEWS=["groupe","semaine","batch","gouts","recettes","courses","propositions","historique"];
 function route(){
   const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"semaine";
   VIEWS.forEach(x=>document.getElementById("v-"+x).hidden=x!==v);
