@@ -424,20 +424,66 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .mixname{flex-basis:100%;font-size:13px;color:var(--muted)}
 #results .mixbox{grid-column:1/-1;margin:0}
 .kidprop input{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 10px;font:inherit;font-size:14px;min-width:180px}
+
+/* Navigation commune aux trois pages */
+.mainnav{flex:1 1 auto}
+nav.tabs .plusbtn{white-space:nowrap;padding:7px 10px;border-radius:999px;color:var(--muted);font:inherit;font-weight:600;font-size:14px;border:0;background:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+nav.tabs .plusbtn[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+nav.tabs .plusbtn:hover:not([aria-current="page"]){background:var(--accent-soft);color:var(--ink)}
+.plusmenu{position:fixed;z-index:70;min-width:240px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column}
+.plusmenu[hidden]{display:none}
+.plusmenu a{padding:9px 12px;border-radius:10px;color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px}
+.plusmenu a:hover,.plusmenu a:focus-visible,.plusmenu a[aria-current="page"]{background:var(--accent-soft)}
+.plusmenu hr{border:0;border-top:1px solid var(--line);margin:4px 6px}
+.plusmenu .pbadge,.plusbtn .pbadge{margin-left:4px}
+.pbadge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#c2410c;color:#fff;font-size:11px;font-weight:700}
+.pbadge[hidden]{display:none}
+.subnav{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 14px;padding:4px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:999px;width:max-content;max-width:100%}
+.subnav a{padding:6px 12px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:600;font-size:13.5px;white-space:nowrap}
+.subnav a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.brandlink{text-decoration:none;color:inherit}
+@media (max-width:640px){
+  .top .tabrow{position:fixed;left:0;right:0;bottom:0;z-index:55;background:var(--surface,#fff);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom));margin:0;max-width:none}
+  nav.mainnav{justify-content:space-around;overflow:visible;margin:0;padding:0;gap:0}
+  nav.mainnav a,nav.mainnav .plusbtn{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;padding:5px 6px;border-radius:12px;min-width:58px}
+  nav.mainnav [data-nav]::before{font-size:19px;line-height:1}
+  nav.mainnav [data-nav="aujourdhui"]::before{content:"☀️"}nav.mainnav [data-nav="semaine"]::before{content:"🗓️"}nav.mainnav [data-nav="courses"]::before{content:"🛒"}nav.mainnav [data-nav="recettes"]::before{content:"📖"}nav.mainnav [data-nav="plus"]::before{content:"☰"}
+  nav.mainnav .plusbtn>span[aria-hidden]{display:none}
+  nav.mainnav .plusbtn .pbadge{position:absolute;margin:0 0 0 22px}
+  body{padding-bottom:76px}
+}
+
+
+.subwrap{padding-top:14px}
 </style>
 </head>
 <body>
 <header class="top">
-  <div class="wrap toprow"><a class="logo" href="#idees">On <i>reçoit</i></a><button type="button" class="accbtn" id="accBtn" hidden></button></div>
-  <div class="wrap tabrow"><nav class="tabs" aria-label="Pages">
-    <a href="#idees" id="lkIdees">Idées</a>
-    <a href="#mon-apero" id="lkPlan">Ma réception</a>
-    <a href="#invites" id="lkInv">Mes invités</a>
-    <span class="tabsep" aria-hidden="true"></span>
-    <a class="ext" href="index.html">Semainier</a>
-    <a class="ext" href="recettes.html">Catalogue des recettes</a>
-  </nav></div>
+  <div class="wrap toprow"><a class="logo brandlink" href="index.html#aujourdhui">Semainier</a><button type="button" class="accbtn" id="accBtn" hidden></button></div>
+  <div class="wrap tabrow">
+    <nav class="tabs mainnav" aria-label="Sections">
+      <a href="index.html#aujourdhui" data-nav="aujourdhui">Aujourd'hui</a>
+      <a href="index.html#semaine" data-nav="semaine">Semaine</a>
+      <a href="index.html#courses" data-nav="courses">Courses</a>
+      <a href="index.html#recettes" data-nav="recettes">Recettes</a>
+      <button type="button" class="plusbtn" id="plusBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="plusMenu" data-nav="plus">Plus<span class="pbadge" id="plusBadge" hidden></span> <span aria-hidden="true">▾</span></button>
+    </nav>
+    <div class="plusmenu" id="plusMenu" role="menu" hidden>
+      <a role="menuitem" href="index.html#groupe">👥 Groupe et règles</a>
+      <a role="menuitem" href="index.html#gouts">❤️ Mes goûts</a>
+      <a role="menuitem" href="index.html#propositions">💡 Propositions<span class="pbadge" id="propBadge" hidden></span></a>
+      <a role="menuitem" href="index.html#batch">🧑‍🍳 Batch cooking</a>
+      <a role="menuitem" href="index.html#historique">🗓️ Historique</a>
+      <hr>
+      <a role="menuitem" href="recettes.html">📖 Catalogue des recettes</a>
+      <a role="menuitem" href="recevoir.html">🥂 On reçoit</a>
+      <a role="menuitem" href="index.html#admin" id="adminTab" hidden>🛡️ Administration</a>
+    </div>
+  </div>
 </header>
+<div class="wrap subwrap"><nav class="subnav tabs" aria-label="On reçoit"><a href="#idees" id="lkIdees">Idées</a>
+    <a href="#mon-apero" id="lkPlan">Ma réception</a>
+    <a href="#invites" id="lkInv">Mes invités</a></nav></div>
 
 <main>
   <section id="v-idees">
@@ -1247,7 +1293,11 @@ const COOK=(()=>{
 
 // ---------- Outils ----------
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
+// Recherche « like » : chaque mot tapé doit se retrouver quelque part (accents, majuscules et pluriels ignorés)
+const QSTOP=new Set(["de","du","des","la","le","les","l","d","a","au","aux","et","en","un","une","the"]);
+const qWords=q=>norm(q).split(/[\s,;'’\-]+/).filter(w=>w&&!QSTOP.has(w)).map(w=>w.length>3?w.replace(/(s|x)$/,""):w);
+const qMatch=(q,text)=>{const t=norm(text),ws=qWords(q);return ws.every(w=>t.includes(w))};
 const frac=x=>{const w=Math.floor(x),h=x-w;return ((w?w:"")+(h>=0.25&&h<0.75?(w?" ½":"½"):""))||(h>=0.75?String(w+1):"0")};
 function fmt(q,u,shop){
   if(u==="g"||u==="ml"){
@@ -1358,7 +1408,7 @@ const QF=[["ok","Compatible avec mes invités"],["v","Végétarien"],["c","Sans 
 const match=r=>{
   if(cat&&r.cat!==cat)return false;
   for(const t of flt){if(t==="veille"){if(r.w!=="veille")return false}else if(t==="ok"){if(conf(r).length)return false}else if(!has(r,t))return false}
-  if(q){const t=norm(r.n+" "+CATS[r.cat].n+" "+r.ing.map(([id])=>I[id].n).join(" "));if(!norm(q).split(/\s+/).every(w=>t.includes(w)))return false}
+  if(q&&!qMatch(q,r.n+" "+CATS[r.cat].n+" "+r.ing.map(([id])=>I[id].n).join(" ")))return false;
   return true;
 };
 function hintText(pl){const m=M(),g=P.g;
@@ -1645,6 +1695,18 @@ window.addEventListener("hashchange",route);
 DIETUI.onChange=()=>renderAll();
 CLOUD.init({apply(){renderAll()}});
 renderAll();route();
+
+// ---------- Menu « Plus » de la navigation ----------
+(()=>{const b=document.getElementById("plusBtn"),m=document.getElementById("plusMenu");if(!b||!m)return;
+  const close=()=>{m.hidden=true;b.setAttribute("aria-expanded","false")};
+  const open=()=>{m.hidden=false;b.setAttribute("aria-expanded","true");const r=b.getBoundingClientRect(),w=m.offsetWidth;const h=m.offsetHeight;m.style.top=(r.bottom+h+12>window.innerHeight?Math.max(8,r.top-h-6):r.bottom+6)+"px";m.style.left=Math.max(8,Math.min(r.left,document.documentElement.clientWidth-w-8))+"px";const f=m.querySelector("a:not([hidden])");if(f)f.focus()};
+  b.addEventListener("click",e=>{e.stopPropagation();m.hidden?open():close()});
+  document.addEventListener("click",e=>{if(!m.hidden&&!e.target.closest("#plusMenu"))close();else if(e.target.closest("#plusMenu a"))close()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!m.hidden){close();b.focus()}});
+  window.addEventListener("resize",close);window.addEventListener("scroll",close,{passive:true});
+})();
+
+document.querySelectorAll("nav.mainnav [data-nav]").forEach(a=>{if(a.dataset.nav==="plus")a.setAttribute("aria-current","page")});
 </script>
 </body>
 </html>

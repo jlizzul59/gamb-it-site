@@ -7,6 +7,35 @@
 .tsel button{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:8px;padding:4px 6px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap}
 .tsel button[aria-pressed="true"][data-temp$="chaud"]{background:#FBEFE4;border-color:#E9B48A;color:#B85A14}
 .tsel button[aria-pressed="true"][data-temp$="froid"]{background:#E7F2F8;border-color:#9CC3DA;color:#2C6E91}
+
+/* Navigation commune aux trois pages */
+.mainnav{flex:1 1 auto}
+nav.tabs .plusbtn{white-space:nowrap;padding:7px 10px;border-radius:999px;color:var(--muted);font:inherit;font-weight:600;font-size:14px;border:0;background:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+nav.tabs .plusbtn[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+nav.tabs .plusbtn:hover:not([aria-current="page"]){background:var(--accent-soft);color:var(--ink)}
+.plusmenu{position:fixed;z-index:70;min-width:240px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column}
+.plusmenu[hidden]{display:none}
+.plusmenu a{padding:9px 12px;border-radius:10px;color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px}
+.plusmenu a:hover,.plusmenu a:focus-visible,.plusmenu a[aria-current="page"]{background:var(--accent-soft)}
+.plusmenu hr{border:0;border-top:1px solid var(--line);margin:4px 6px}
+.plusmenu .pbadge,.plusbtn .pbadge{margin-left:4px}
+.pbadge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#c2410c;color:#fff;font-size:11px;font-weight:700}
+.pbadge[hidden]{display:none}
+.subnav{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 14px;padding:4px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:999px;width:max-content;max-width:100%}
+.subnav a{padding:6px 12px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:600;font-size:13.5px;white-space:nowrap}
+.subnav a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.brandlink{text-decoration:none;color:inherit}
+@media (max-width:640px){
+  .top .tabrow{position:fixed;left:0;right:0;bottom:0;z-index:55;background:var(--surface,#fff);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom));margin:0;max-width:none}
+  nav.mainnav{justify-content:space-around;overflow:visible;margin:0;padding:0;gap:0}
+  nav.mainnav a,nav.mainnav .plusbtn{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;padding:5px 6px;border-radius:12px;min-width:58px}
+  nav.mainnav [data-nav]::before{font-size:19px;line-height:1}
+  nav.mainnav [data-nav="aujourdhui"]::before{content:"☀️"}nav.mainnav [data-nav="semaine"]::before{content:"🗓️"}nav.mainnav [data-nav="courses"]::before{content:"🛒"}nav.mainnav [data-nav="recettes"]::before{content:"📖"}nav.mainnav [data-nav="plus"]::before{content:"☰"}
+  nav.mainnav .plusbtn>span[aria-hidden]{display:none}
+  nav.mainnav .plusbtn .pbadge{position:absolute;margin:0 0 0 22px}
+  body{padding-bottom:76px}
+}
+
 </style>
 <title>Semainier en famille</title>
 <meta name="description" content="Les menus de la semaine pour toute la famille : des recettes du monde entier, le batch cooking et la liste de courses.">
@@ -609,6 +638,16 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .tag.froid{border-color:#9CC3DA;color:#2C6E91;background:#E7F2F8}
 .restfor{font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:3px 7px}
 .meal{overflow:hidden}
+.aisle.manual,.aisle.extra{background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px}
+.manadd{display:flex;gap:6px;margin:6px 0}.manadd input{flex:1;min-width:0;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.aisle.manual li{display:flex;align-items:center;gap:6px}.aisle.manual li label{flex:1}
+.panlist li{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}.panlist .linkish{flex:1;text-align:left;background:none;border:0;font:inherit;font-weight:600;cursor:pointer;color:var(--ink);padding:0}
+.panhint{margin:0 0 12px}
+body.storemode header.top,body.storemode #v-courses .shophead,body.storemode footer,body.storemode .manadd{display:none}
+body.storemode #shop{font-size:19px}body.storemode #shop li{padding-block:8px}body.storemode #shop input[type=checkbox]{width:24px;height:24px}
+body.storemode #shop .hint{font-size:13px}
+.storebar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;background:var(--bg);padding:10px 0;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.storebar .bar{flex:1;height:10px;border-radius:999px;background:var(--line);overflow:hidden}.storebar .bar i{display:block;height:100%;background:var(--accent)}
 .mbar{display:flex;gap:6px;margin-top:2px}
 .mbar .chg{flex:1;font:inherit;font-size:13px;font-weight:600;padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;min-width:0}
 .mbar .chg:hover,.mbar .more:hover{border-color:var(--accent);color:var(--accent)}
@@ -616,7 +655,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .ppill{font:inherit;font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
 .ppill.custom{border-color:var(--accent);color:var(--accent);background:#eef5ee}.ppill[disabled]{cursor:default;opacity:.8}
 .tpin{font-size:11px}
-.xcompact{display:flex;align-items:center;gap:6px}.xcompact .name{flex:1;min-width:0}
+.xcompact{display:flex;align-items:flex-start;gap:6px}.mainrec .xdel{margin-top:1px}.xcompact .name{flex:1;min-width:0}
 .cmenu{position:absolute;z-index:60;min-width:230px;max-width:min(320px,calc(100vw - 16px));background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column}
 .cmenu .cmh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:6px 10px 4px}
 .cmenu>button{font:inherit;font-size:14px;text-align:left;background:none;border:0;border-radius:10px;padding:9px 10px;cursor:pointer;color:var(--ink)}
@@ -637,6 +676,23 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .htab tbody th{width:110px;font-weight:600}.htab tbody th small{color:var(--muted,#888);font-weight:400}
 @media(max-width:560px){.htab tbody th{width:74px}.htab{font-size:13px}}
 .hempty{padding:20px 0}
+.todayhead h2{margin:0;font-size:30px}.todayhead p{margin:4px 0 16px}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tgrid.small .tmeal b{font-size:16px}
+@media(max-width:640px){.tgrid{grid-template-columns:1fr}}
+.tmeal{background:var(--surface,#fff);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.tmeal small{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.tmeal b{font-size:19px;line-height:1.3}.tmeal.off{background:transparent;border-style:dashed}
+.tmeta{font-size:13px;color:var(--muted)}.tacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.th3{margin:22px 0 8px;font-size:18px}
+.todo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.todo li{background:var(--surface,#fff);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:14.5px}
+.tfoot{margin-top:18px}
+.cfgtog{display:flex;align-items:flex-start;gap:10px}.cfgtog>.sw{flex:0 0 auto;margin-top:2px}
+#cfgbox .cfgcard>h3{cursor:pointer;display:flex;align-items:center;gap:8px;user-select:none}
+#cfgbox .cfgcard>h3::after{content:"▾";margin-left:auto;font-size:13px;color:var(--muted);transition:transform .15s}
+#cfgbox .cfgcard.closed>h3::after{transform:rotate(-90deg)}
+#cfgbox .cfgcard.closed>:not(h3){display:none!important}
+#cfgbox .cfgcard.closed{padding-bottom:12px}
 .admstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 16px}.admstats div{background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 14px}
 .admstats b{display:block;font-size:24px}.admstats span{font-size:12.5px;color:var(--muted,#777)}
 @media(max-width:600px){.admstats{grid-template-columns:repeat(2,1fr)}}
@@ -674,30 +730,35 @@ html.ck-on,html.ck-on body{overflow:hidden}
 
 <header class="top">
   <div class="wrap toprow">
-    <div class="brand"><h1>Semainier</h1></div>
+    <div class="brand"><h1><a class="brandlink" href="#aujourdhui">Semainier</a></h1></div>
     <div class="weeknav"><button class="wbtn" id="prevW" type="button" aria-label="Semaine précédente">‹</button><span id="weekLabel" aria-live="polite"></span><button class="wbtn" id="nextW" type="button" aria-label="Semaine suivante">›</button></div>
     <button type="button" class="accbtn" id="accBtn" hidden></button>
   </div>
   <div class="wrap tabrow">
-    <nav class="tabs" aria-label="Sections">
-      <a href="#semaine">Semaine</a>
-      <a href="#batch">Batch cooking</a>
-      <a href="#recettes">Recettes de la semaine</a>
-      <a href="#courses">Courses</a>
-      <a href="#gouts">Mes goûts</a>
-      <a href="#groupe">Groupe</a>
-      <a href="#propositions">Propositions<span class="pbadge" id="propBadge" hidden></span></a>
-      <a href="#historique">Historique</a>
-      <a href="#admin" id="adminTab" hidden>Administration</a>
-      <span class="tabsep" aria-hidden="true"></span>
-      <a href="recettes.html" class="ext">Catalogue des recettes</a>
-      <a href="recevoir.html" class="ext">On reçoit</a>
+    <nav class="tabs mainnav" aria-label="Sections">
+      <a href="#aujourdhui" data-nav="aujourdhui">Aujourd'hui</a>
+      <a href="#semaine" data-nav="semaine">Semaine</a>
+      <a href="#courses" data-nav="courses">Courses</a>
+      <a href="#recettes" data-nav="recettes">Recettes</a>
+      <button type="button" class="plusbtn" id="plusBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="plusMenu" data-nav="plus">Plus<span class="pbadge" id="plusBadge" hidden></span> <span aria-hidden="true">▾</span></button>
     </nav>
+    <div class="plusmenu" id="plusMenu" role="menu" hidden>
+      <a role="menuitem" href="#groupe">👥 Groupe et règles</a>
+      <a role="menuitem" href="#gouts">❤️ Mes goûts</a>
+      <a role="menuitem" href="#propositions">💡 Propositions<span class="pbadge" id="propBadge" hidden></span></a>
+      <a role="menuitem" href="#batch">🧑‍🍳 Batch cooking</a>
+      <a role="menuitem" href="#historique">🗓️ Historique</a>
+      <hr>
+      <a role="menuitem" href="recettes.html">📖 Catalogue des recettes</a>
+      <a role="menuitem" href="recevoir.html">🥂 On reçoit</a>
+      <a role="menuitem" href="#admin" id="adminTab" hidden>🛡️ Administration</a>
+    </div>
   </div>
 </header>
 
 <main class="wrap">
-  <section class="view" id="v-semaine">
+  <section class="view" id="v-aujourdhui" hidden><div id="todaybox"></div></section>
+  <section class="view" id="v-semaine" hidden>
     <div id="propBanner"></div>
     <div id="rulesbar"></div>
     <div class="toolbar">
@@ -723,6 +784,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
   </section>
 
   <section class="view" id="v-gouts" hidden>
+    <nav class="subnav" aria-label="Groupe"><a href="#groupe">Groupe et règles</a><a href="#gouts" aria-current="page">Mes goûts</a><a href="#propositions">Propositions</a></nav>
     <p class="muted" style="margin:0 0 18px">Les allergies, les aliments bannis et les règles de la semaine (poisson, végétarien, soirée pizza…) se règlent pour chaque groupe dans l'onglet <a href="#groupe">Groupe</a>. Ici, ce sont vos goûts personnels.</p>
     <div class="prefintro">
       <div>
@@ -739,21 +801,23 @@ html.ck-on,html.ck-on body{overflow:hidden}
   </section>
 
   <section class="view" id="v-recettes" hidden>
+    <nav class="subnav" aria-label="Recettes"><a href="#recettes" aria-current="page">Cette semaine</a><a href="recettes.html">Catalogue complet (<span class="ncat">1 000+</span>)</a></nav>
     <div class="shophead"><div><h2 style="font-size:30px">Les recettes de la semaine</h2><p>Quantités calculées pour le nombre de personnes de chaque repas.</p></div></div>
     <div class="reclist" id="reclist"></div>
   </section>
 
-  <section class="view" id="v-groupe" hidden><div id="cfgbox"></div></section>
+  <section class="view" id="v-groupe" hidden><nav class="subnav" aria-label="Groupe"><a href="#groupe" aria-current="page">Groupe et règles</a><a href="#gouts">Mes goûts</a><a href="#propositions">Propositions</a></nav><div id="cfgbox"></div></section>
 
-  <section class="view" id="v-propositions" hidden><div id="propbox"></div></section>
+  <section class="view" id="v-propositions" hidden><nav class="subnav" aria-label="Groupe"><a href="#groupe">Groupe et règles</a><a href="#gouts">Mes goûts</a><a href="#propositions" aria-current="page">Propositions</a></nav><div id="propbox"></div></section>
   <section class="view" id="v-historique" hidden><div id="histbox"></div></section>
   <section class="view" id="v-admin" hidden><div id="adminbox"></div></section>
 
   <section class="view" id="v-courses" hidden>
     <div class="shophead">
-      <div><h2>Liste de courses</h2><p>Deux courses, une par session, pour avoir viande et poisson frais. Le rayon « Placard » est à vérifier avant de partir.</p><div class="seg" role="group" aria-label="Choix de la liste"><button type="button" data-sess="1">Session 1 · dimanche</button><button type="button" data-sess="2">Session 2 · mercredi</button><button type="button" data-sess="0">Toute la semaine</button></div></div>
+      <div><h2>Liste de courses</h2><p>Une seule liste pour tout le groupe : ce que l'un coche, les autres le voient. Deux courses possibles, une par session, pour avoir viande et poisson frais.</p><div class="seg" role="group" aria-label="Choix de la liste"><button type="button" data-sess="1">Session 1 · dimanche</button><button type="button" data-sess="2">Session 2 · mercredi</button><button type="button" data-sess="0">Toute la semaine</button></div></div>
       <div class="toolbar">
-        <button class="btn primary" id="copyList" type="button">Copier la liste</button>
+        <button class="btn primary" id="storeMode" type="button">🛒 Mode magasin</button>
+        <button class="btn" id="copyList" type="button">Copier la liste</button>
         <button class="btn" id="uncheck" type="button">Tout décocher</button>
       </div>
     </div>
@@ -2448,7 +2512,11 @@ function fmt(q,u,shop){
   return frac(v);
 }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
+// Recherche « like » : chaque mot tapé doit se retrouver quelque part (accents, majuscules et pluriels ignorés)
+const QSTOP=new Set(["de","du","des","la","le","les","l","d","a","au","aux","et","en","un","une","the"]);
+const qWords=q=>norm(q).split(/[\s,;'’\-]+/).filter(w=>w&&!QSTOP.has(w)).map(w=>w.length>3?w.replace(/(s|x)$/,""):w);
+const qMatch=(q,text)=>{const t=norm(text),ws=qWords(q);return ws.every(w=>t.includes(w))};
 const shortName=r=>r.n.split(",")[0];
 const MONTH=()=>dayDate(S.cur||0,3).getMonth()+1;
 const tagAll=r=>(seasonOf(r,MONTH()).s==="saison"?'<span class="tag saison" title="Légumes ou fruits de saison">🌱 De saison</span>':"")+((r.temp||tempOf(r))==="froid"?'<span class="tag froid" title="Se mange froid">❄️ Froid</span>':'<span class="tag chaud" title="Se mange chaud">🔥 Chaud</span>')+(r.simple?'<span class="tag simple">Tout simple</span>':"")+(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"");
@@ -2526,7 +2594,7 @@ function renderWeek(){
       let body;
       if(mode==="skip")body=`<span class="off">Repas supprimé</span><button class="restore" type="button" data-unskip="${sl.key}">Rétablir</button>`;
       else if(!r)body=`<span class="empty">Aucune recette compatible</span>`;
-      else body=`${isRest?'<span class="restlab">Restes de '+slotLabel(SK[src])+'</span>':""}<button class="name" type="button" data-open="${src}">${esc(r.n)}${isFav(r.id)?' <span class="favdot" aria-label="Favori">♥</span>':""}</button>`+(!isRest?(()=>{const rs=SLOTS.filter(s=>s.key!==sl.key&&W.mode[s.key]==="rest"&&srcKey(s.key)===sl.key);return rs.length?`<span class="restfor">♻️ Faire plus : restes pour ${rs.map(s=>esc(slotLabel(s))).join(", ")} (${(n=>"+"+n+" portion"+(n>1?"s":""))(rs.reduce((t,s)=>t+ +PN(s),0))})</span>`:""})():"");
+      else body=`${isRest?'<span class="restlab">Restes de '+slotLabel(SK[src])+'</span>':""}<div class="xrec xcompact mainrec"><button class="name" type="button" data-open="${src}">${esc(r.n)}${isFav(r.id)?' <span class="favdot" aria-label="Favori">♥</span>':""}</button>${!isRest&&!isKid()?`<button type="button" class="xdel" data-maindel="${sl.key}" aria-label="Retirer ${esc(r.n)}" title="${XS(sl.key).length?"Retirer cette recette":"Retirer cette recette (le repas sera supprimé)"}">×</button>`:""}</div>`+(!isRest?(()=>{const rs=SLOTS.filter(s=>s.key!==sl.key&&W.mode[s.key]==="rest"&&srcKey(s.key)===sl.key);return rs.length?`<span class="restfor">♻️ Faire plus : restes pour ${rs.map(s=>esc(slotLabel(s))).join(", ")} (${(n=>"+"+n+" portion"+(n>1?"s":""))(rs.reduce((t,s)=>t+ +PN(s),0))})</span>`:""})():"");
       const tv=(W.temp||{})[sl.key],kid=isKid(),pc=W.pers&&W.pers[sl.key];
       return `<div class="meal ${mode==="skip"?"is-off":""} ${isRest?"is-rest":""}">
         <div class="when"><span>${sl.when}${tv?` <span class="tpin" title="Préférence pour ce repas">${tv==="chaud"?"🔥":"❄️"}</span>`:""}</span><span class="wr">${mode!=="skip"&&r&&slotOk(sl.key)?'<span class="okchip">✓ Validé</span>':""}${mode!=="skip"?`<button type="button" class="ppill${pc?" custom":""}" ${kid?"disabled":`data-cmenu="pers|${sl.key}"`} aria-label="${PN(sl)} ${XS(sl.key).length&&!isRest?"portions":"personnes"}, modifier" title="Nombre de personnes pour ce repas">👤 ${PN(sl)}</button>`:""}</span></div>
@@ -2564,7 +2632,7 @@ function renderRecipes(){const cs=cooks();const el=document.getElementById("recl
 let catQ="",catF="all",catKey=null;
 const FILTERS=[["all","Tout"],["fav","♥ Favoris"],["top","Mes mieux notées"],["ok","Compatibles avec mes goûts"],["plaisir","Gourmand"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"],["simple","Tout simple"],["soupe","Soupes"],["saison","🌱 De saison"],["chaud","🔥 Chaud"],["froid","❄️ Froid"]].concat(REGIONS.map(g=>["reg:"+g,g]));
 function catMatches(r){
-  if(catQ){const q=norm(catQ);if(!norm(r.n+" "+r.pays+" "+r.reg+" "+r.ing.map(([id])=>I[id].n).join(" ")).includes(q))return false}
+  if(catQ&&!qMatch(catQ,r.n+" "+r.pays+" "+r.reg+" "+r.ing.map(([id])=>I[id].n).join(" ")))return false;
   if(catF.startsWith("reg:"))return r.reg===catF.slice(4);
   return catF==="all"||(catF==="fav"&&isFav(r.id))||(catF==="top"&&noteOf(r.id)>=4)||(catF==="ok"&&allowed(r))||(catF==="plaisir"&&r.tag==="plaisir")||(catF==="vege"&&isVege(r))||(catF==="poisson"&&isFish(r))||(catF==="viande"&&!isVege(r)&&!isFish(r))||(catF==="rapide"&&r.t<=25)||(catF==="simple"&&r.simple)||(catF==="soupe"&&SOUP_RX.test(r.n))||(catF==="chaud"&&(r.temp||tempOf(r))==="chaud")||(catF==="froid"&&(r.temp||tempOf(r))==="froid")||(catF==="saison"&&seasonOf(r,MONTH()).s==="saison");
 }
@@ -2646,8 +2714,15 @@ function renderBatch(){
 
 // ---------- Courses ----------
 let OPTFOR={};
+// Recettes ajoutées depuis le catalogue (« panier » partagé) et articles libres
+const PANK="menus.panier";
+const panRead=()=>{try{return JSON.parse(localStorage.getItem(PANK)||"null")||{}}catch(e){return {}}};
+const panWrite=c=>{try{localStorage.setItem(PANK,JSON.stringify(c))}catch(e){}cloudChanged()};
+const panIds=()=>Object.keys(panRead()).filter(k=>k.startsWith("r:")&&RB[k.slice(2)]).map(k=>k.slice(2));
+let PANFOR={};
 function shopping(sess){
-  const tot={},opt={};OPTFOR={};
+  const tot={},opt={};OPTFOR={};PANFOR={};
+  if(sess!==2){const pc=panRead();panIds().forEach(id=>{const r=RB[id],n=pc["r:"+id]||1;r.ing.forEach(([i,q])=>{tot[i]=(tot[i]||0)+q*n;(PANFOR[i]=PANFOR[i]||new Set()).add(shortName(r))})})}
   cooks().filter(c=>!sess||sessionOf(c.sl.day).n===sess).forEach(c=>{c.r.ing.forEach(([id,q])=>{tot[id]=(tot[id]||0)+qtyCook(c,id,q)});optionsFor(c.r).forEach(([id])=>{const v=optQty(c,id);if(v){opt[id]=(opt[id]||0)+v;(OPTFOR[id]=OPTFOR[id]||new Set()).add(shortName(c.r))}})});
   const by={};
   Object.entries(tot).forEach(([id,q])=>{const r=I[id].r;(by[r]=by[r]||[]).push([id,q])});
@@ -2658,10 +2733,21 @@ const hint=(id,q)=>{const x=I[id];if(!x.w)return"";const n=Math.max(1,Math.ceil(
 function renderShop(){
   const ss=W.shopSess??1;
   document.querySelectorAll("[data-sess]").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.sess===ss)));
-  const list=shopping(ss);
-  document.getElementById("shop").innerHTML=list.length?list.map(([a,items])=>`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${items.map(([id,q])=>{
-    const k=(a==="op"?"op-":"")+id,ck=ss+":"+k,done=!!W.checked[ck];const h=a==="op"&&OPTFOR[id]?"avec : "+esc([...OPTFOR[id]].join(", ")):hint(id,q);
-    return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${ck}" id="ck-${ss}-${k}" ${done?"checked":""}><span>${esc(I[id].n)}${h?`<span class="hint">${h}</span>`:""}</span><span class="q">${fmt(q,I[id].u,true)}</span></label></li>`}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
+  const list=shopping(ss),store=document.body.classList.contains("storemode"),kid=isKid();
+  const li=(ck,label,h,q)=>{const done=!!W.checked[ck];return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${ck}" ${done?"checked":""}><span>${label}${h?`<span class="hint">${h}</span>`:""}</span><span class="q">${q}</span></label></li>`};
+  const sortDone=arr=>store?arr.slice().sort((a,b)=>(!!W.checked[a.ck])-(!!W.checked[b.ck])):arr;
+  // articles libres
+  const man=Object.entries(W.manual||{});
+  const manHTML=`<div class="aisle manual"><h3>✍️ À ajouter</h3>${kid?"":`<form class="manadd" data-manform><input type="text" id="manInput" maxlength="60" placeholder="Liquide vaisselle, yaourts, café…" aria-label="Ajouter un article à la liste" autocomplete="off"><button class="btn sm" type="submit">Ajouter</button></form>`}
+    <ul>${sortDone(man.map(([id,t])=>({ck:"m:"+id,id,t}))).map(x=>{const done=!!W.checked[x.ck];return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${x.ck}" ${done?"checked":""}><span>${esc(x.t)}</span></label>${kid?"":`<button type="button" class="xdel" data-mandel="${x.id}" aria-label="Retirer ${esc(x.t)}">×</button>`}</li>`}).join("")||(kid?'<li class="muted">Rien pour l\'instant.</li>':"")}</ul></div>`;
+  // recettes du catalogue
+  const pc=panRead(),pids=panIds();
+  const panHTML=ss===2?"":pids.length?`<div class="aisle extra"><h3>📖 En plus, depuis le catalogue</h3><ul class="panlist">${pids.map(id=>`<li><button type="button" class="linkish" data-panopen="${id}">${esc(shortName(RB[id]))}</button><span class="pstep"><button type="button" class="pm" data-pann="${id}" data-d="-1" aria-label="Une portion de moins" ${(pc["r:"+id]||1)<=1?"disabled":""}>−</button><b class="num">${pc["r:"+id]||1}</b><button type="button" class="pm" data-pann="${id}" data-d="1" aria-label="Une portion de plus">+</button></span><button type="button" class="xdel" data-panrm="${id}" aria-label="Retirer ${esc(shortName(RB[id]))}">×</button></li>`).join("")}</ul><p class="aisnote">Leurs ingrédients sont ajoutés aux rayons ci-dessous. <a href="recettes.html">Ajouter une recette du catalogue</a></p></div>`:`<p class="aisnote panhint">Pour acheter les ingrédients d'une recette hors semainier, cochez « Ajouter à ma liste de courses » dans le <a href="recettes.html">catalogue</a>.</p>`;
+  const aisles=list.length?list.map(([a,items])=>`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${sortDone(items.map(([id,q])=>({id,q,ck:ss+":"+(a==="op"?"op-":"")+id}))).map(({id,q,ck})=>{
+    const h=a==="op"&&OPTFOR[id]?"avec : "+esc([...OPTFOR[id]].join(", ")):[hint(id,q),PANFOR[id]?"dont "+esc([...PANFOR[id]].join(", ")):""].filter(Boolean).join(" · ");
+    return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true))}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
+  const n=list.reduce((t,[a,items])=>t+items.length,0)+man.length,d=list.reduce((t,[a,items])=>t+items.filter(([id])=>W.checked[ss+":"+(a==="op"?"op-":"")+id]).length,0)+man.filter(([id])=>W.checked["m:"+id]).length;
+  document.getElementById("shop").innerHTML=(store?`<div class="storebar"><div class="bar"><i style="width:${n?Math.round(d/n*100):0}%"></i></div><b class="num">${d} / ${n}</b><button type="button" class="btn sm" id="storeExit">Terminer</button></div>`:"")+manHTML+panHTML+aisles;
 }
 
 // ---------- Goûts ----------
@@ -2685,7 +2771,7 @@ function renderDefaults(){
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));if(catKey)renderCatList("m",catKey);renderWeek()}
 function renderFoyer(){const el=document.getElementById("foyer");if(el)el.innerHTML=peopleEditor("foyer",{empty:"Personne n'est encore indiqué. Ajoutez par exemple chaque membre de la famille.",addLabel:"+ Ajouter une personne du groupe"})}
 DIETUI.onChange=(k,soft)=>{if(k!=="foyer")return;const before=JSON.stringify(W.plan);loadFoy();build("keep");const n=Object.keys(W.plan).filter(x=>JSON.parse(before)[x]!==W.plan[x]).length;if(soft){renderWeek();return}renderAll();if(n)toast(n+" repas remplacé"+(n>1?"s":"")+" pour respecter le groupe")};
-function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules();renderHistory();const at=document.getElementById("adminTab");if(at)at.hidden=!isSuper()}
+function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules();renderHistory();try{renderToday()}catch(e){console.warn(e)}const at=document.getElementById("adminTab");if(at)at.hidden=!isSuper()}
 
 // ---------- Administration générale (réservée à l'administrateur du site) ----------
 const isSuper=()=>{const a=meAcc();return !!(a&&a.user&&a.user.superadmin)};
@@ -2701,7 +2787,7 @@ const ADM=(()=>{
     if(!isSuper()){el.innerHTML="";return}
     if(!D){el.innerHTML=`<div class="sechead"><h2>Administration</h2></div><p class="muted">${err?esc(err):"Chargement…"}</p>`;return}
     const U=Object.fromEntries(D.users.map(u=>[u.id,u])),G=Object.fromEntries(D.groups.map(g=>[g.id,g]));
-    const ql=q.trim().toLowerCase(),match=u=>!ql||(u.name+" "+u.username+" "+u.groups.map(g=>G[g]&&G[g].name).join(" ")).toLowerCase().includes(ql);
+    const match=u=>!q.trim()||qMatch(q,u.name+" "+u.username+" "+u.groups.map(g=>G[g]&&G[g].name).join(" "));
     const active=D.users.filter(u=>u.seen&&Date.now()-new Date(u.seen)<7*864e5).length,banned=D.users.filter(u=>u.banned).length;
     el.innerHTML=`<div class="sechead"><h2>Administration</h2><p class="muted">Tous les comptes et tous les groupes du site. Visible par vous seul.</p></div>
       <div class="admstats"><div><b>${D.users.length}</b><span>comptes</span></div><div><b>${D.groups.length}</b><span>groupes</span></div><div><b>${active}</b><span>actifs cette semaine</span></div><div><b>${banned}</b><span>suspendus</span></div></div>
@@ -2735,6 +2821,45 @@ const ADM=(()=>{
   });
   return {load,render};
 })();
+
+// ---------- Aujourd'hui : l'accueil ----------
+const todayIdx=()=>{const g=new Date().getDay();return g===0?6:g-1};
+function withWeek(w,fn){const sw=W,sc=S.cur;try{if(!S.weeks[w])return null;W=S.weeks[w];S.cur=w;return fn()}finally{W=sw;S.cur=sc}}
+function renderToday(){
+  const el=document.getElementById("todaybox");if(!el)return;
+  const now=NOWW(),d=todayIdx(),hr=new Date().getHours(),a=meAcc(),name=a&&a.user?a.user.name.split(" ")[0]:"";
+  const tomorrow=d===5?null:(d===6?0:d+1);  // samedi : la semaine suivante commence dimanche
+  const dl=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+  const meal=(w,key,label)=>withWeek(w,()=>{const sl=SK[key],m=W.mode[key]||"cook";if(m==="skip")return `<div class="tmeal off"><small>${label}</small><b>Pas de repas prévu</b></div>`;
+    const r=recipeAt(key);if(!r)return `<div class="tmeal off"><small>${label}</small><b>Rien de prévu</b></div>`;
+    const rest=srcKey(key)!==key,xs=rest?[]:XS(key).map(x=>RB[x.id]).filter(Boolean),fz=frozen(sl);
+    return `<div class="tmeal"><small>${label} · 👤 ${PN(sl)}${rest?" · restes":""}</small><b>${esc(r.n)}</b>${xs.length?`<span class="muted">+ ${xs.map(x=>esc(shortName(x))).join(" + ")}</span>`:""}
+      <span class="tmeta">${r.t} min${fz?' · <span class="tag gel">congelé</span>':""}</span>
+      <div class="tacts">${rest?"":`<button type="button" class="btn sm primary" data-todaycook="${w}|${key}">▶ Cuisiner</button>`}<button type="button" class="btn sm" data-todayopen="${w}|${srcKey(key)}">Voir la recette</button></div></div>`});
+  const hasNow=!!S.weeks[now];
+  let todo=[];
+  if(hasNow){
+    // sortir du congélateur pour demain
+    const tw=tomorrow===null?null:(d===6?now+1:now);
+    if(tw!==null&&S.weeks[tw])withWeek(tw,()=>{["m","s"].forEach(w=>{const sl=SK[tomorrow+w];if((W.mode[sl.key]||"cook")!=="skip"&&recipeAt(sl.key)&&frozen(sl))todo.push(`🧊 Sortir du congélateur pour demain ${sl.when.toLowerCase()} : <b>${esc(shortName(recipeAt(sl.key)))}</b>`)})});
+    const ses=SESSIONS.find(x=>POS(d)===x.ref||(x.ref===-1&&d===6));
+    if(ses)todo.push(`🧑‍🍳 Aujourd'hui, session de batch cooking : les repas du ${ses.cover}. <a href="#batch">Voir le déroulé</a>`);
+    withWeek(now,()=>{const ss=W.shopSess??1,left=shopping(ss).reduce((t,[,it])=>t+it.filter(([id])=>!W.checked[ss+":"+id]).length,0)+Object.keys(W.manual||{}).filter(id=>!W.checked["m:"+id]).length;if(left)todo.push(`🛒 Il reste <b>${left}</b> article${left>1?"s":""} dans la liste de courses. <a href="#courses">Ouvrir</a>`);
+      if(!weekOk()&&!isKid())todo.push(`📝 Le semainier de la semaine n'est pas encore validé. <a href="#semaine">Le voir</a>`)});
+  }
+  const pend=Object.values(read2("menus.propositions")||{}).filter(p=>p&&p.status==="attente").length;
+  if(pend&&!isKid())todo.push(`💡 ${pend} proposition${pend>1?"s":""} des enfants à regarder. <a href="#propositions">Voir</a>`);
+  el.innerHTML=`<div class="todayhead"><h2>${hr<5?"Bonne nuit":hr<18?"Bonjour":"Bonsoir"}${name?" "+esc(name):""} 👋</h2><p class="muted">${dl[0].toUpperCase()+dl.slice(1)}</p></div>
+    ${hasNow?`<div class="tgrid">${meal(now,d+"m","Ce midi")}${meal(now,d+"s","Ce soir")}</div>`:`<div class="tmeal off"><b>Le semainier de cette semaine n'est pas encore prêt.</b><a class="btn sm primary" href="#semaine">Le préparer</a></div>`}
+    ${todo.length?`<h3 class="th3">À faire</h3><ul class="todo">${todo.map(t=>`<li>${t}</li>`).join("")}</ul>`:""}
+    ${tomorrow!==null&&S.weeks[d===6?now+1:now]?`<h3 class="th3">Demain</h3><div class="tgrid small">${meal(d===6?now+1:now,tomorrow+"m","Demain midi")}${meal(d===6?now+1:now,tomorrow+"s","Demain soir")}</div>`:""}
+    <p class="tfoot"><a href="#semaine">Voir toute la semaine →</a></p>`;
+}
+function read2(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}}
+document.addEventListener("click",e=>{
+  const tc=e.target.closest("[data-todaycook]");if(tc){const [w,k]=tc.dataset.todaycook.split("|");if(S.cur!==+w){useWeek(+w);renderAll()}const b=document.createElement("button");b.dataset.cookslot=k;b.hidden=true;document.body.appendChild(b);b.click();b.remove();return}
+  const to=e.target.closest("[data-todayopen]");if(to){const [w,k]=to.dataset.todayopen.split("|");if(S.cur!==+w){useWeek(+w);renderAll()}openRecipe(k);return}
+});
 
 // ---------- Historique des semaines passées ----------
 function renderHistory(){
@@ -2797,7 +2922,7 @@ document.addEventListener("input",e=>{
 });
 document.addEventListener("change",e=>{
   const c=e.target.closest("[data-check]");
-  if(c){const id=c.dataset.check;if(c.checked)W.checked[id]=1;else delete W.checked[id];save();c.closest("li").classList.toggle("done",c.checked);return}
+  if(c){const id=c.dataset.check;if(c.checked)W.checked[id]=1;else delete W.checked[id];save();c.closest("li").classList.toggle("done",c.checked);if(document.body.classList.contains("storemode"))renderShop();return}
   const m=e.target.closest("[data-mode]");
   if(m){setMode(m.dataset.mode,m.value);build("keep");renderAll()}
 });
@@ -2854,6 +2979,20 @@ document.addEventListener("click",e=>{
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&CM.el){const b=CM.cur&&CM.cur.btn;CM.close();if(b)b.focus()}});
 window.addEventListener("resize",()=>CM.close());
 
+// ---------- Groupe : blocs repliables (état gardé sur l'appareil) ----------
+const FOLDK="menus.cfgfold";
+function foldState(){try{return JSON.parse(localStorage.getItem(FOLDK)||"null")||{}}catch(e){return {}}}
+function cfgFold(){const st=foldState();document.querySelectorAll("#cfgbox .cfgcard").forEach((c,i)=>{const h=c.querySelector("h3");if(!h)return;const k=h.textContent.trim().slice(0,24);c.dataset.fold=k;
+  const closed=k in st?st[k]:i>0;c.classList.toggle("closed",closed);h.setAttribute("role","button");h.setAttribute("tabindex","0");h.setAttribute("aria-expanded",String(!closed))})}
+function foldToggle(h){const c=h.closest(".cfgcard"),st=foldState(),closed=!c.classList.contains("closed");c.classList.toggle("closed",closed);h.setAttribute("aria-expanded",String(!closed));st[c.dataset.fold]=closed;try{localStorage.setItem(FOLDK,JSON.stringify(st))}catch(e){}}
+document.addEventListener("click",e=>{const h=e.target.closest("#cfgbox .cfgcard>h3");if(h)foldToggle(h)});
+document.addEventListener("keydown",e=>{const h=e.target.closest&&e.target.closest("#cfgbox .cfgcard>h3");if(h&&(e.key==="Enter"||e.key===" ")){e.preventDefault();foldToggle(h)}});
+
+// Retirer la recette principale d'un repas : la recette ajoutée suivante prend sa place
+document.addEventListener("click",e=>{const b=e.target.closest("[data-maindel]");if(!b||isKid())return;const k=b.dataset.maindel,sl=SK[k],xs=(W.extra||{})[k]||[],old=RB[W.plan[k]];
+  if(xs.length){const x=xs.shift();if(!xs.length)delete W.extra[k];W.plan[k]=x.id;W.pin[k]=1;W.pers=W.pers||{};if(x.n===S.def[WH(sl)])delete W.pers[k];else W.pers[k]=x.n;save();renderAll();toast((old?shortName(old):"Recette")+" retiré du repas · « Annuler » pour le remettre")}
+  else{setMode(k,"skip");build("keep");renderAll();toast("Repas du "+slotLabel(sl)+" supprimé · « Annuler » pour le remettre")}});
+
 // ---------- Annuler / version d'ouverture ----------
 const UNDO=[],OPENV={},OPENT=new Date();let _lastJ=null,_restoring=false;
 function histNote(){if(!W)return;const j=JSON.stringify(W);if(_lastJ!==null&&j!==_lastJ&&!_restoring){UNDO.push({w:S.cur,j:_lastJ});if(UNDO.length>40)UNDO.shift()}_lastJ=j;if(!(S.cur in OPENV))OPENV[S.cur]=j;paintHist()}
@@ -2871,11 +3010,23 @@ document.getElementById("helpBtn").addEventListener("click",e=>{const b=document
   ["1m","3m","4m"].forEach(k=>{if(W.mode[k]!=="skip")W.mode[k]="rest"});build("keep");renderAll();toast("Midis de mardi, jeudi et vendredi en restes de la veille");
 });
 document.getElementById("clearPrefs").addEventListener("click",()=>{S.prefs={};build("keep");renderAll()});
-document.getElementById("uncheck").addEventListener("click",()=>{const ss=W.shopSess??1;Object.keys(W.checked).forEach(k=>{if(k.startsWith(ss+":"))delete W.checked[k]});save();renderShop()});
+document.getElementById("uncheck").addEventListener("click",()=>{const ss=W.shopSess??1;Object.keys(W.checked).forEach(k=>{if(k.startsWith(ss+":")||k.startsWith("m:"))delete W.checked[k]});save();renderShop()});
+// Mode magasin : gros caractères, ce qui est pris descend, synchronisation plus fréquente
+document.getElementById("storeMode").addEventListener("click",()=>{document.body.classList.add("storemode");renderShop();window.scrollTo(0,0);try{navigator.wakeLock&&navigator.wakeLock.request("screen").then(l=>{window._storeLock=l}).catch(()=>{})}catch(e){}});
+document.addEventListener("click",e=>{
+  if(e.target.closest("#storeExit")){document.body.classList.remove("storemode");try{window._storeLock&&window._storeLock.release()}catch(_){}renderShop();return}
+  const md=e.target.closest("[data-mandel]");if(md&&!isKid()){if(W.manual)delete W.manual[md.dataset.mandel];delete W.checked["m:"+md.dataset.mandel];save();renderShop();return}
+  const pn=e.target.closest("[data-pann]");if(pn){const c=panRead(),k="r:"+pn.dataset.pann;c[k]=Math.max(1,Math.min(20,(c[k]||1)+ +pn.dataset.d));panWrite(c);renderShop();return}
+  const pr=e.target.closest("[data-panrm]");if(pr){const c=panRead();delete c["r:"+pr.dataset.panrm];panWrite(c);renderShop();toast("Recette retirée de la liste");return}
+  const po=e.target.closest("[data-panopen]");if(po){location.href="recettes.html#r="+encodeURIComponent(po.dataset.panopen);return}
+});
+document.addEventListener("submit",e=>{const f=e.target.closest("[data-manform]");if(!f)return;e.preventDefault();if(isKid())return;const inp=f.querySelector("input"),t=inp.value.trim();if(!t)return;W.manual=W.manual||{};W.manual[Date.now().toString(36)]=t.slice(0,60);save();renderShop();const i2=document.getElementById("manInput");if(i2)i2.focus()});
+setInterval(()=>{if(location.hash==="#courses"&&document.visibilityState==="visible")try{CLOUD.syncNow()}catch(e){}},5000);
 document.getElementById("copyList").addEventListener("click",()=>{
   const ss=W.shopSess??1;
   const title=(ss?"Courses session "+ss+" · ":"Courses · ")+"semaine du "+dateOf(0);
-  const txt=title+"\n\n"+shopping(ss).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,q])=>"- "+I[id].n+" : "+fmt(q,I[id].u,true)).join("\n")).join("\n\n");
+  const man=Object.values(W.manual||{});
+  const txt=title+"\n\n"+(man.length?"À AJOUTER\n"+man.map(t=>"- "+t).join("\n")+"\n\n":"")+shopping(ss).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,q])=>"- "+I[id].n+" : "+fmt(q,I[id].u,true)).join("\n")).join("\n\n");
   const done=()=>toast("Liste copiée");
   const fallback=()=>{const ta=document.getElementById("copyArea");ta.value=txt;ta.select();try{document.execCommand("copy");done()}catch(err){toast("Copie impossible, sélectionnez la liste à la main")}};
   try{navigator.clipboard.writeText(txt).then(done,fallback)}catch(err){fallback()}
@@ -3137,8 +3288,8 @@ function renderCfg(){
           <input type="range" min="0" max="${c.top}" step="1" value="${mx}" data-rmax="${c.k}" ${on?"":"disabled"} aria-label="${esc(c.lab)} : maximum par semaine">
           <span class="ticks" aria-hidden="true">${Array.from({length:c.top+1},(_,n)=>`<i>${n===c.top?n+"+":n}</i>`).join("")}</span></span>
         <output class="rval" id="rv-${c.k}">${on?rangeTxt(mn,mx,c.top):"désactivée"}</output></div>`}).join("")}
-      <label class="cfgtog"><input type="checkbox" data-cfgtog="starch" ${C.starch!==0?"checked":""}><span><b>🍝 Féculents variés</b><small class="muted">Jamais le même féculent midi et soir (pas de pâtes deux fois dans la journée). On évite aussi d'enchaîner le même du soir au lendemain midi. Sur la semaine, pas de limite.</small></span></label>
-      <label class="cfgtog"><input type="checkbox" data-cfgtog="nosouplunch" ${C.nosouplunch?"checked":""}><span><b>🥣 Pas de soupe ni de velouté le midi</b><small class="muted">Les soupes et veloutés ne sont proposés que le soir. Vous pouvez toujours en choisir un à la main pour un midi.</small></span></label>
+      <label class="cfgtog"><span class="sw"><input type="checkbox" data-cfgtog="starch" ${C.starch!==0?"checked":""}><span class="swt" aria-hidden="true"></span></span><span><b>🍝 Féculents variés</b><small class="muted">Jamais le même féculent midi et soir (pas de pâtes deux fois dans la journée). On évite aussi d'enchaîner le même du soir au lendemain midi. Sur la semaine, pas de limite.</small></span></label>
+      <label class="cfgtog"><span class="sw"><input type="checkbox" data-cfgtog="nosouplunch" ${C.nosouplunch?"checked":""}><span class="swt" aria-hidden="true"></span></span><span><b>🥣 Pas de soupe ni de velouté le midi</b><small class="muted">Les soupes et veloutés ne sont proposés que le soir. Vous pouvez toujours en choisir un à la main pour un midi.</small></span></label>
       <div class="cfgrow seasonrow"><span><b>🌱 Légumes et fruits de saison</b><small class="muted">En ${MOIS[MONTH()-1]} : ${esc(seasonNow(MONTH()).join(", ").toLowerCase())}.</small></span><select data-cfgsel="saison" aria-label="Légumes et fruits de saison">${[[0,"Peu importe"],[1,"Les privilégier"],[2,"Uniquement de saison"]].map(([v,l])=>`<option value="${v}" ${(+C.saison||0)===v?"selected":""}>${l}</option>`).join("")}</select></div>
       <p class="muted small">Activez une règle, puis glissez les deux poignées : le minimum et le maximum de fois par semaine (tout à droite = pas de maximum). Viande rouge : bœuf, agneau, veau. « Tout simple » ne compte que du lundi au vendredi, la soupe que le soir.</p></section>
     <section class="cfgcard"><h3>📅 Nos rendez-vous</h3><p class="muted small">Un repas qui revient chaque semaine : la soirée pizza du vendredi, le poisson du mardi…</p>
@@ -3146,8 +3297,8 @@ function renderCfg(){
       <div class="thadd"><select id="thD">${ORDER.map(i=>`<option value="${i}" ${i===4?"selected":""}>${DAYS[i]}</option>`).join("")}</select><select id="thW"><option value="s">soir</option><option value="m">midi</option></select><select id="thT">${Object.entries(THEMES).map(([k,t])=>`<option value="${k}">${t[0]} ${t[1]}</option>`).join("")}</select><button type="button" class="btn sm primary" data-thadd>Ajouter</button></div></section>
     <section class="cfgcard"><h3>⏱️ Le soir en semaine</h3>
       <div class="cfgrow"><span>Temps de préparation maximum</span><select data-cfgsel="tmax">${[[0,"Pas de limite"],[20,"20 min"],[30,"30 min"],[45,"45 min"],[60,"1 h"]].map(([v,l])=>`<option value="${v}" ${C.tmax==v?"selected":""}>${l}</option>`).join("")}</select></div>
-      <label class="cfgtog"><input type="checkbox" data-cfgtog="light" ${C.light?"checked":""}><span><b>Dîners plutôt légers</b><small class="muted">Privilégie les plats de moins de 600 kcal par portion le soir.</small></span></label>
-      <label class="cfgtog"><input type="checkbox" data-cfgtog="neu" ${C.neu?"checked":""}><span><b>Une touche de nouveauté</b><small class="muted">Glisse des plats jamais faits dans vos semaines.</small></span></label>
+      <label class="cfgtog"><span class="sw"><input type="checkbox" data-cfgtog="light" ${C.light?"checked":""}><span class="swt" aria-hidden="true"></span></span><span><b>Dîners plutôt légers</b><small class="muted">Privilégie les plats de moins de 600 kcal par portion le soir.</small></span></label>
+      <label class="cfgtog"><span class="sw"><input type="checkbox" data-cfgtog="neu" ${C.neu?"checked":""}><span class="swt" aria-hidden="true"></span></span><span><b>Une touche de nouveauté</b><small class="muted">Glisse des plats jamais faits dans vos semaines.</small></span></label>
       <div class="cfgrow"><span>Pas le même plat avant</span><select data-cfgsel="norepeat">${[1,2,3,4,6].map(v=>`<option value="${v}" ${C.norepeat==v?"selected":""}>${v} semaine${v>1?"s":""}</option>`).join("")}</select></div></section>
     <section class="cfgcard"><h3>🚫 Jamais au menu</h3><p class="muted small">Ce que personne ne mange dans ce groupe : les recettes qui en contiennent ne sont plus proposées. (Les goûts de chacun restent dans « Mes goûts ».)</p>
       <div class="banchips">${bans.map(id=>`<button type="button" class="chip no" data-banrm="${id}" aria-label="Retirer ${esc(I[id].n)}">${esc(I[id].n)} ×</button>`).join("")||'<span class="muted small">Rien pour l\'instant.</span>'}</div>
@@ -3157,6 +3308,7 @@ function renderCfg(){
   </div>
   <div class="cfgapply"><div><b>Appliquer à la semaine ${weekRange(S.cur)}</b><span class="muted">Recompose les repas non choisis à la main pour respecter vos règles.</span></div><button type="button" class="btn primary" data-cfgapply>Recomposer la semaine</button></div>`;
   renderFoyer();
+  try{cfgFold()}catch(e){}
 }
 const PRESETS={
  equilibre:{i:"⚖️",n:"Équilibré",d:"Poisson 2 fois, végétarien 2 fois, viande rouge 2 fois maximum, dîners légers.",c:{q:{fish:2,vege:2,redmax:2,soup:1,simple:2,fav:0},light:1,tmax:45,neu:1,norepeat:2}},
@@ -3231,12 +3383,14 @@ document.addEventListener("change",e=>{
   cfgWrite(C);save();build("keep");renderAll();toast(s.dataset.eqfill?"Semaine type mise à jour":"Repas mis à jour : "+(val?eaterLabel(val):"par défaut"));
 });
 
-const VIEWS=["groupe","semaine","batch","gouts","recettes","courses","propositions","historique","admin"];
+const VIEWS=["aujourdhui","groupe","semaine","batch","gouts","recettes","courses","propositions","historique","admin"];
 function route(){
-  let v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"semaine";
+  let v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"aujourdhui";
   if(v==="admin"&&!isSuper())v="semaine";if(v==="admin")ADM.load();
   VIEWS.forEach(x=>document.getElementById("v-"+x).hidden=x!==v);
-  document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.getAttribute("href")==="#"+v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  const top=["aujourdhui","semaine","courses","recettes"].includes(v)?v:"plus";
+  document.querySelectorAll("nav.mainnav [data-nav]").forEach(a=>{if(a.dataset.nav===top)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  document.querySelectorAll("#plusMenu a").forEach(a=>{if(a.getAttribute("href")==="#"+v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
@@ -3250,6 +3404,16 @@ function reloadFromStorage(){
   if(sig0&&S.cur===cur0&&weekSig(W)!==sig0){const ed=W.edit;toast(ed&&ed.by&&ed.by!==meName()?"Semainier mis à jour par "+ed.by:"Semainier mis à jour")}
 }
 CLOUD.init({apply:reloadFromStorage});
+
+// ---------- Menu « Plus » de la navigation ----------
+(()=>{const b=document.getElementById("plusBtn"),m=document.getElementById("plusMenu");if(!b||!m)return;
+  const close=()=>{m.hidden=true;b.setAttribute("aria-expanded","false")};
+  const open=()=>{m.hidden=false;b.setAttribute("aria-expanded","true");const r=b.getBoundingClientRect(),w=m.offsetWidth;const h=m.offsetHeight;m.style.top=(r.bottom+h+12>window.innerHeight?Math.max(8,r.top-h-6):r.bottom+6)+"px";m.style.left=Math.max(8,Math.min(r.left,document.documentElement.clientWidth-w-8))+"px";const f=m.querySelector("a:not([hidden])");if(f)f.focus()};
+  b.addEventListener("click",e=>{e.stopPropagation();m.hidden?open():close()});
+  document.addEventListener("click",e=>{if(!m.hidden&&!e.target.closest("#plusMenu"))close();else if(e.target.closest("#plusMenu a"))close()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!m.hidden){close();b.focus()}});
+  window.addEventListener("resize",close);window.addEventListener("scroll",close,{passive:true});
+})();
 </script>
 
 </html>
