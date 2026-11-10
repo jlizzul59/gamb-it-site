@@ -103,6 +103,10 @@ const SCHEMA = [
   `ALTER TABLE menus_users ADD COLUMN IF NOT EXISTS consent_version TEXT`,
   // offre du groupe : tout est gratuit aujourd'hui ; prêt pour une offre payante
   `ALTER TABLE menus_groups ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'gratuit'`,
+  // journal des consultations du contenu d'un groupe par l'équipe du site (traçabilité RGPD)
+  `CREATE TABLE IF NOT EXISTS menus_admin_log (
+     id BIGSERIAL PRIMARY KEY, at TIMESTAMPTZ NOT NULL DEFAULT now(),
+     admin_id BIGINT, admin_name TEXT, action TEXT NOT NULL, group_id BIGINT, group_name TEXT, reason TEXT)`,
 ];
 const TERMS_VERSION = "2026-11-10";
 // Administrateurs généraux du site (identifiants)
@@ -460,6 +464,26 @@ const uid = (v) => { const n = parseInt(v, 10); if (!n) throw new HttpError(400,
 // ---------- Routes ----------
 const routes = {
   "GET /admin/overview": async (req) => { const me = await superAuth(req, true); return Object.assign(await adminOverview(), { me: { admin: !!me.superadmin, moderator: !!me.moderator } }); },
+
+  // Consultation en lecture seule du semainier d'un groupe : réservée aux administrateurs, motif obligatoire, journalisée
+  "POST /admin/group-view": async (req, body) => {
+    const me = await superAuth(req, false);
+    limit(req, "groupview", 60, 3600e3);
+    const id = Number(body.id), reason = String(body.reason || "").trim().slice(0, 200);
+    if (!reason) throw new HttpError(400, "Indiquez le motif de la consultation.");
+    const g = (await q(`SELECT id, name, icon, data, updated_at FROM menus_groups WHERE id = $1`, [id])).rows[0];
+    if (!g) throw new HttpError(404, "Groupe introuvable.");
+    await q(`INSERT INTO menus_admin_log (admin_id, admin_name, action, group_id, group_name, reason) VALUES ($1, $2, 'voir-semainier', $3, $4, $5)`,
+      [me.id, me.name || me.username, g.id, g.name, reason]);
+    let d = g.data; if (typeof d === "string") { try { d = JSON.parse(d); } catch (e) { d = {}; } }
+    d = d || {};
+    // uniquement ce qui sert à comprendre le semainier : pas les votes, propositions ni recettes de famille
+    return { id: g.id, name: g.name, icon: g.icon, updated: g.updated_at, weeks: d.weeks || {}, foyer: d.foyer || null, config: d.config || null };
+  },
+  "GET /admin/log": async (req) => {
+    await superAuth(req, false);
+    return { log: (await q(`SELECT at, admin_name, action, group_name, reason FROM menus_admin_log ORDER BY at DESC LIMIT 200`)).rows };
+  },
 
   "POST /admin/siterole": async (req, body) => {
     const me = await superAuth(req);
