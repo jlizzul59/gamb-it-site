@@ -316,6 +316,8 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 .cartb.on{border-style:solid;border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
 .cartb.big{align-self:flex-start;padding:10px 18px;border-radius:999px;font-size:14px}
 .addcart{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.shareb{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:9px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}.shareb:hover{border-color:var(--accent);color:var(--accent)}
+.sharebox{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 14px;border:1px solid var(--accent);border-radius:14px;background:#eef5ee}.sharebox p{flex-basis:100%;margin:0}.cookb.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
 .cartbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:15;display:flex;align-items:center;gap:12px;border:0;background:var(--ink);color:var(--bg);border-radius:999px;padding:8px 10px 8px 8px;box-shadow:0 10px 30px rgba(10,20,14,.35);font:inherit;cursor:pointer;max-width:calc(100% - 32px)}
 .cartbar .cbn{display:grid;place-items:center;min-width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:16px}
 .cartbar .cbt{display:flex;flex-direction:column;text-align:left;line-height:1.2}
@@ -2483,14 +2485,15 @@ function openRecipe(id){
     <div class="in">
       <div class="facts"><span>${r.t} min</span>${r.w?`<span>+ ${esc(r.w)}</span>`:""}<span class="num">≈ ${kcal(r)} kcal / portion</span>${r.dessert?(DLEV(r)==="dl"?'<span class="tag leger">🪶 Léger</span>':DLEV(r)==="dg"?'<span class="tag plaisir">🧁 Gourmand</span>':"")+(r.nc?'<span class="tag froid">❄️ Sans cuisson</span>':""):(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"")}
         <span class="serv">Portions <button type="button" class="sb" data-s="-1" aria-label="Une portion de moins">−</button><b class="num" id="servN">${servings}</b><button type="button" class="sb" data-s="1" aria-label="Une portion de plus">+</button></span></div>
-      <div class="avis" data-avis="${r.id}">${avisInner(r.id)}</div>
+      ${r.shared?"":`<div class="avis" data-avis="${r.id}">${avisInner(r.id)}</div>`}
       ${(()=>{const m=new Date().getMonth()+1,ss=seasonOf(r,m);return ss.s==="saison"?`<p class="seasonnote" style="color:#3F7A1F;background:#EEF6E6">🌱 De saison en ${MOIS[m-1]}.</p>`:ss.s==="hors"?`<p class="seasonnote">Hors saison en ${MOIS[m-1]} : ${esc(seasonOutTxt(r,m))}.</p>`:""})()}
       ${foyConf(r).length?`<div class="warnbox">Attention, contient : ${esc(conflictText(foyConf(r)))}</div>`:""}
       <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings" id="ings"></ul></div>
         <div><h4>Préparation</h4><ol class="steps" id="steps"></ol></div></div>
       ${r.dessert?(r.w?`<div class="bcnote"><b>À prévoir :</b> ${esc(r.w)} avant de servir.</div>`:""):`<div class="bcnote"><b>En batch cooking :</b> ${bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc.j)}</div>`}
-      <div class="addcart"><button type="button" class="cookb" data-cook="${r.id}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button>${cartBtn(r.id,true)}</div>
-      ${r.dessert?"":isKid()?`<div class="addmenu kidprop"><strong>Proposer ce plat aux adultes</strong>
+      ${r.shared?`<div class="sharebox"><p>📩 ${r.by?"<b>"+esc(r.by)+"</b> vous partage cette recette.":"On vous partage cette recette."}${r.src?` <a href="${esc(r.src)}" target="_blank" rel="noopener">Voir la source</a>`:""}</p><button type="button" class="cookb" data-shareadd>＋ Ajouter à mes recettes</button><button type="button" class="cookb ghost" data-cook="${r.id}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button></div>`:
+      `<div class="addcart"><button type="button" class="cookb" data-cook="${r.id}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button>${cartBtn(r.id,true)}<button type="button" class="shareb" data-sharer="${r.id}" title="Envoyer cette recette à quelqu'un, même hors de votre groupe">📤 Partager</button></div>`}
+      ${r.dessert||r.shared?"":isKid()?`<div class="addmenu kidprop"><strong>Proposer ce plat aux adultes</strong>
         <select id="addDay" aria-label="Jour"><option value="">Peu importe le jour</option>${[6,0,1,2,3,4,5].map(i=>`<option value="${i}">${DAYS[i]}</option>`).join("")}</select>
         <select id="addWhen" aria-label="Repas"><option>Soir</option><option>Midi</option></select>
         <input id="propMsg" maxlength="200" placeholder="Un petit mot ? (facultatif)" aria-label="Un petit mot">
@@ -2510,7 +2513,7 @@ function fillIngs(){
   document.getElementById("steps").innerHTML=r.st.map(s=>`<li><span>${esc(s)}</span></li>`).join("")+optStepHTML(r,servings);
   document.getElementById("ings").innerHTML+=optionsFor(r).map(([id,qq])=>`<li class="opt"><span class="num">${fmt(qq*servings,I[id].u)}</span><span>${esc(I[id].n)} <em>(optionnel)</em></span></li>`).join("");
 }
-function closeModal(){ov.hidden=true;ov.innerHTML="";current=null;cartOpen=false;paintCartBar()}
+function closeModal(){if(current==="partage"){delete RB.partage;SHARED=null;try{history.replaceState(null,"",location.pathname)}catch(e){}}ov.hidden=true;ov.innerHTML="";current=null;cartOpen=false;paintCartBar()}
 let tT;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(tT);tT=setTimeout(()=>t.hidden=true,2600)}
 
 document.addEventListener("click",e=>{
@@ -2522,6 +2525,8 @@ document.addEventListener("click",e=>{
   const sb=e.target.closest("[data-s]");if(sb){servings=Math.max(1,Math.min(12,servings+ +sb.dataset.s));save();fillIngs();return}
   const fv=e.target.closest("[data-fav]");if(fv){const id=fv.dataset.fav;toggleFav(id);refreshAvis();toast(isFav(id)?RB[id].n+" ajouté aux favoris":"Retiré des favoris");return}
   const rt=e.target.closest("[data-rate]");if(rt){setNote(rt.dataset.rate,+rt.dataset.v);refreshAvis();return}
+  const shr=e.target.closest("[data-sharer]");if(shr){const r=RB[shr.dataset.sharer],a=meAcc();if(r)SHARE.send(r,a&&a.user?a.user.name:"");return}
+  if(e.target.closest("[data-shareadd]")){addShared();return}
   if(cartClick(e))return;
   const ck=e.target.closest("[data-cook]");if(ck){const r=RB[ck.dataset.cook],os=optSteps(r,servings);COOK.open({title:r.n,sub:r.pays+" · "+servings+" portion"+(servings>1?"s":""),steps:r.st.concat(os),opt:os.map((_,k)=>r.st.length+k),ings:r.ing.map(([id,q])=>({q:fmt(q*servings,I[id].u),v:q*servings,u:I[id].u,name:I[id].n})).concat(optionsFor(r).map(([id,q])=>({q:fmt(q*servings,I[id].u),name:I[id].n+" (optionnel)"})))});return}
   if(!ov.hidden)return;
@@ -2545,7 +2550,7 @@ document.getElementById("sort").addEventListener("change",e=>{sort=e.target.valu
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden&&!COOK.active)closeModal()});
 document.addEventListener("change",e=>{const c=e.target.closest("[data-tick]");if(c){cartTick(c.dataset.tick,c.checked);}});
 function setModeFromHash(){const h=location.hash,m=h.match(/^#desserts(?:-(\w+))?$/);const was=mode;
-  if(m){mode="desserts";const t=m[1];if(t==="chocolat"){dquick.add("choc")}else if(t&&DTL[t])dtype=t}else if(h!=="#frigo")mode="plats";
+  if(m){mode="desserts";const t=m[1];if(t==="chocolat"){dquick.add("choc")}else if(t&&DTL[t])dtype=t}else if(h!=="#frigo"&&!/^#(r|c|partage)=/.test(h))mode="plats";
   if(was!==mode){sel={};q="";const qi=document.getElementById("q");if(qi)qi.value=""}renderHero();render()}
 window.addEventListener("hashchange",setModeFromHash);
 if(/^#desserts/.test(location.hash))mode="desserts";
@@ -2564,9 +2569,47 @@ CLOUD.init({apply(){try{loadMine()}catch(e){}avLoad();loadFoy();render();paintCa
 
 document.querySelectorAll("nav.mainnav [data-nav]").forEach(a=>{if(a.dataset.nav==="recettes")a.setAttribute("aria-current","page")});
 
+
+// ---------- Partage d'une recette ----------
+// Catalogue : lien vers la fiche (#r=). Recette maison : la recette voyage dans le lien (#partage=), le destinataire peut l'ajouter à ses recettes.
+const SHARE={
+  base:()=>location.origin+location.pathname.replace(/[^/]*$/,"")+"recettes.html",
+  enc(o){const b=new TextEncoder().encode(JSON.stringify(o));let s="";b.forEach(c=>s+=String.fromCharCode(c));return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")},
+  dec(t){const s=atob(t.replace(/-/g,"+").replace(/_/g,"/"));return JSON.parse(new TextDecoder().decode(Uint8Array.from(s,c=>c.charCodeAt(0))))},
+  // ce qui part dans le lien : la recette, ses ingrédients « maison » et le prénom de l'expéditeur
+  pack(x,who){const used=new Set((x.ing||[]).map(([id])=>id)),custom={};Object.entries(x.custom||{}).forEach(([k,v])=>{if(used.has(k))custom[k]=v});
+    return {v:1,n:x.n,t:x.t,p:x.p,f:x.for,pays:x.pays,dt:x.dt,ing:x.ing,st:x.st,simple:x.simple,tag:x.tag,src:x.src,custom,by:who||""}},
+  url(r,who){if(!r.mine)return SHARE.base()+"#r="+encodeURIComponent(r.id);return SHARE.base()+"#partage="+SHARE.enc(SHARE.pack(r,who))},
+  async send(r,who){const u=SHARE.url(r,who),title=r.n,text=(who?who+" vous partage une recette : ":"Une recette à essayer : ")+r.n;
+    if(navigator.share){try{await navigator.share({title,text,url:u});return}catch(e){if(e&&e.name==="AbortError")return}}
+    try{await navigator.clipboard.writeText(text+"\n"+u);toast("Lien copié : collez-le dans un message, un mail…")}catch(e){prompt("Copiez ce lien et envoyez-le :",u)}}
+};
+
+// Réception d'une recette partagée : aperçu, puis « Ajouter à mes recettes »
+let SHARED=null;
+function openShared(tok){let o;try{o=SHARE.dec(tok)}catch(e){toast("Ce lien de recette est abîmé ou incomplet");return}
+  if(!o||typeof o.n!=="string"||!Array.isArray(o.ing)){toast("Ce lien ne contient pas de recette");return}
+  const custom={};Object.entries(o.custom||{}).forEach(([k,v])=>{if(/^c_[a-z0-9]{1,40}$/.test(k)&&v&&typeof v.n==="string")custom[k]={n:String(v.n).slice(0,80),r:["bo","fl","cr","co","pa","pl"].includes(v.r)?v.r:"co",u:["g","ml","pc","cs","cc","gousse","bouquet"].includes(v.u)?v.u:"g",k:0,c:"Maison",custom:1}});
+  Object.entries(custom).forEach(([k,v])=>{if(!I[k])I[k]=v});
+  const r={id:"partage",n:o.n.slice(0,120),t:Math.max(5,Math.min(600,+o.t||30)),p:typeof o.p==="string"?o.p:"vege",for:Array.isArray(o.f)?o.f.filter(x=>x==="l2"||x==="fam"):["l2","fam"],pays:String(o.pays||"France").slice(0,40),
+    ing:o.ing.filter(a=>Array.isArray(a)&&I[a[0]]&&isFinite(+a[1])).map(([id,q])=>[id,+q]).slice(0,60),st:(Array.isArray(o.st)?o.st:[]).map(x=>String(x).slice(0,600)).slice(0,40),simple:o.simple?1:undefined,tag:o.tag==="plaisir"?"plaisir":undefined,
+    src:/^https?:\/\//.test(o.src||"")?String(o.src).slice(0,400):undefined,custom,by:String(o.by||"").slice(0,40),shared:1,reg:"France"};
+  if(!r.st.length)r.st=["Suivre la recette."];
+  if(r.p==="dessert"){r.dt=DTL[o.dt]?o.dt:guessDt(r);dPrep(r)}else r.reg=(R.find(z=>z.pays===r.pays)||{}).reg||"France";
+  r.temp=typeof tempOf==="function"?tempOf(r):"chaud";
+  SHARED=r;RB.partage=r;BC.partage={t:[],j:"Réchauffer doucement avant de servir."};openRecipe("partage")}
+function addShared(){const r=SHARED;if(!r)return;if(isKid()){toast("Demandez à un adulte d'ajouter cette recette");return}
+  const M=mineRead(),a=meAcc(),id="u"+norm(r.n).replace(/[^a-z0-9]+/g,"").slice(0,24)+Date.now().toString(36).slice(-4);
+  M[id]={id,n:r.n,for:r.for,p:r.p,t:r.t,pays:r.dessert?"France":r.pays,reg:r.dessert?"France":r.reg,dt:r.dessert?r.dt:undefined,ing:r.ing,st:r.st,simple:r.simple,tag:r.tag,custom:r.custom,src:r.src,from:r.by||undefined,
+    by:a&&a.user?a.user.username:"",byName:a&&a.user?a.user.name:"",at:Date.now()};
+  try{localStorage.setItem(MRK,JSON.stringify(M))}catch(e){}cloudChanged();delete RB.partage;SHARED=null;loadMine();
+  try{history.replaceState(null,"",location.pathname+(M[id].p==="dessert"?"#desserts":""))}catch(e){}
+  closeModal();if(M[id].p==="dessert")mode="desserts";renderHero();render();setTimeout(()=>openRecipe(id),30);toast("Ajoutée à vos recettes"+(a&&a.group?" et à celles de votre groupe":""))}
 // Lien direct vers une recette : recettes.html#r=identifiant
 document.getElementById("dice").addEventListener("click",()=>{const L=LIST().filter(r=>!r.id.startsWith("mix:"));openRecipe(L[Math.floor(Math.random()*L.length)].id)});
-(()=>{const m=location.hash.match(/^#([rc])=(.+)$/);if(m){const id=decodeURIComponent(m[2]);if(RB[id])setTimeout(()=>{try{openRecipe(id);if(m[1]==="c"){const b=document.querySelector("[data-cook]");b&&b.click()}}catch(e){}},50)}})();
+function openFromHash(){const sh=location.hash.match(/^#partage=(.*)$/);if(sh){setTimeout(()=>openShared(sh[1]),60);return}
+  const m=location.hash.match(/^#([rc])=(.+)$/);if(m){const id=decodeURIComponent(m[2]);if(RB[id]&&RB[id].dessert&&!isDes()){mode="desserts";renderHero();render()}if(RB[id])setTimeout(()=>{try{openRecipe(id);if(m[1]==="c"){const b=document.querySelector("[data-cook]");b&&b.click()}}catch(e){}},50)}}
+openFromHash();window.addEventListener("hashchange",openFromHash);
 
 // ---------- Appli installable : service worker et bouton « Installer » ----------
 if("serviceWorker" in navigator&&location.protocol==="https:")window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));

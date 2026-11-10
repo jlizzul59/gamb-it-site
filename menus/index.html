@@ -3492,6 +3492,22 @@ document.addEventListener("click",e=>{
   const to=e.target.closest("[data-todayopen]");if(to){const [w,k]=to.dataset.todayopen.split("|");if(S.cur!==+w){useWeek(+w);renderAll()}openRecipe(k);return}
 });
 
+
+// ---------- Partage d'une recette ----------
+// Catalogue : lien vers la fiche (#r=). Recette maison : la recette voyage dans le lien (#partage=), le destinataire peut l'ajouter à ses recettes.
+const SHARE={
+  base:()=>location.origin+location.pathname.replace(/[^/]*$/,"")+"recettes.html",
+  enc(o){const b=new TextEncoder().encode(JSON.stringify(o));let s="";b.forEach(c=>s+=String.fromCharCode(c));return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")},
+  dec(t){const s=atob(t.replace(/-/g,"+").replace(/_/g,"/"));return JSON.parse(new TextDecoder().decode(Uint8Array.from(s,c=>c.charCodeAt(0))))},
+  // ce qui part dans le lien : la recette, ses ingrédients « maison » et le prénom de l'expéditeur
+  pack(x,who){const used=new Set((x.ing||[]).map(([id])=>id)),custom={};Object.entries(x.custom||{}).forEach(([k,v])=>{if(used.has(k))custom[k]=v});
+    return {v:1,n:x.n,t:x.t,p:x.p,f:x.for,pays:x.pays,dt:x.dt,ing:x.ing,st:x.st,simple:x.simple,tag:x.tag,src:x.src,custom,by:who||""}},
+  url(r,who){if(!r.mine)return SHARE.base()+"#r="+encodeURIComponent(r.id);return SHARE.base()+"#partage="+SHARE.enc(SHARE.pack(r,who))},
+  async send(r,who){const u=SHARE.url(r,who),title=r.n,text=(who?who+" vous partage une recette : ":"Une recette à essayer : ")+r.n;
+    if(navigator.share){try{await navigator.share({title,text,url:u});return}catch(e){if(e&&e.name==="AbortError")return}}
+    try{await navigator.clipboard.writeText(text+"\n"+u);toast("Lien copié : collez-le dans un message, un mail…")}catch(e){prompt("Copiez ce lien et envoyez-le :",u)}}
+};
+
 // ---------- Mes recettes : saisie ou import depuis un lien ----------
 const MINE=(()=>{
   let edit=null,busy=false,err="",url="",arm="";
@@ -3529,7 +3545,7 @@ const MINE=(()=>{
     if(edit){el.innerHTML=editor();return}
     el.innerHTML=`<div class="sechead"><h2>Ajouter une recette</h2><p class="muted">Collez le lien d'une recette trouvée sur internet (Marmiton, 750g, un blog…) ou écrivez la vôtre. Elle est partagée avec le groupe, rejoint le catalogue et le semainier peut la proposer.</p></div>
       ${kid?"":`<div class="mineadd"><button type="button" class="btn primary" data-mine="new">＋ Nouvelle recette</button><form class="mineimp" data-mineimp><input type="url" id="mineUrl" placeholder="Coller le lien d'une recette (Marmiton, 750g, blog…)" value="${esc(url)}" aria-label="Lien d'une recette à importer"><button class="btn" type="submit" ${busy?"disabled":""}>${busy?"Import…":"🔗 Importer"}</button></form></div>${err?`<p class="warnbox">${esc(err)}</p>`:""}`}
-      ${list.length?`<ul class="minelist">${list.map(x=>`<li><button type="button" class="linkish" data-open-mine="${x.id}"><b>${esc(x.n)}</b></button><small class="muted">${esc(x.byName||"")}${x.src?` · <a href="${esc(x.src)}" target="_blank" rel="noopener">source</a>`:""}</small>${kid?"":`<span class="mineact"><button type="button" class="btn sm" data-mine="edit|${x.id}">Modifier</button><button type="button" class="btn sm danger" data-mine="del|${x.id}">Supprimer</button></span>`}</li>`).join("")}</ul>`:`<p class="muted hempty">Aucune recette pour l'instant. Ajoutez la recette de mamie, ou importez celle d'un site en collant son lien.</p>`}`;
+      ${list.length?`<ul class="minelist">${list.map(x=>`<li><button type="button" class="linkish" data-open-mine="${x.id}"><b>${esc(x.n)}</b></button><small class="muted">${esc(x.byName||"")}${x.src?` · <a href="${esc(x.src)}" target="_blank" rel="noopener">source</a>`:""}</small>${kid?"":`<span class="mineact"><button type="button" class="btn sm" data-minesh="${x.id}" title="Envoyer cette recette à quelqu'un, même hors de votre groupe">📤 Partager</button><button type="button" class="btn sm" data-mine="edit|${x.id}">Modifier</button><button type="button" class="btn sm danger" data-mine="del|${x.id}">Supprimer</button></span>`}</li>`).join("")}</ul>`:`<p class="muted hempty">Aucune recette pour l'instant. Ajoutez la recette de mamie, ou importez celle d'un site en collant son lien.</p>`}`;
   }
   function editor(){const x=edit;return `<div class="sechead"><h2>${x.id?"Modifier la recette":"Nouvelle recette"}</h2>${x.src?`<p class="muted">Importée de <a href="${esc(x.src)}" target="_blank" rel="noopener">${esc(new URL(x.src).hostname)}</a> : vérifiez les ingrédients, puis enregistrez.</p>`:""}</div>
     <form class="mineform" data-mineform>
@@ -3564,6 +3580,7 @@ const MINE=(()=>{
   async function doImport(u){busy=true;err="";url=u;render();try{const x=await CLOUD.call("POST","/import",{url:u});edit=Object.assign(blank(),{n:x.name,t:x.time||30,st:x.steps,src:u,pays:x.cuisine||"France"});if(SWEET.test(x.name||""))edit.p="dessert";edit.rows=x.ingredients.filter(l=>!/^\s*(sel|poivre|sel,?\s*(et\s*)?poivre|eau)\b[^a-z]*$/i.test(l)&&!/^\s*(sel|poivre)\s*(,|et)\s*(sel|poivre)/i.test(l)).map(l=>parseLine(l,x.yield));url=""}catch(e){err=e.net?"Import impossible sans connexion au serveur (connectez-vous à votre compte).":e.message}busy=false;render()}
   document.addEventListener("click",e=>{
     const om=e.target.closest("[data-open-mine]");if(om){openRecipeAny(om.dataset.openMine);return}
+    const sh=e.target.closest("[data-minesh]");if(sh){const x=mineRead()[sh.dataset.minesh],a=meAcc();if(x)SHARE.send(Object.assign({mine:1},x),a&&a.user?a.user.name:"");return}
     const b=e.target.closest("[data-mine]");if(!b||isKid())return;const [k,a]=b.dataset.mine.split("|");
     if(k==="new"){edit=blank();edit.rows=[{id:"",q:100,name:"",u:"g"}];render();return}
     if(k==="edit"){const x=mineRead()[a];if(!x)return;edit=Object.assign(blank(),JSON.parse(JSON.stringify(x)));Object.entries(x.custom||{}).forEach(([cid,v])=>{I[cid]=I[cid]||Object.assign({k:0,custom:1},v)});edit.rows=toRows(x);render();return}
