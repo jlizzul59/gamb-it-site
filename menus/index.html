@@ -897,7 +897,7 @@ body.storemode #shop .hint{font-size:13px}
       <a role="menuitem" href="#propositions">💡 Propositions<span class="pbadge" id="propBadge" hidden></span></a>
       <a role="menuitem" href="#batch">🧑‍🍳 Batch cooking</a>
       <a role="menuitem" href="#historique">🗓️ Historique</a>
-      <a role="menuitem" href="#mesrecettes">📝 Mes recettes</a>
+      <a role="menuitem" href="#mesrecettes">📝 Mes recettes et import</a>
       <a role="menuitem" href="#rappels">🔔 Rappels</a>
       <hr>
       <a role="menuitem" href="recettes.html">📖 Catalogue des recettes</a>
@@ -955,7 +955,7 @@ body.storemode #shop .hint{font-size:13px}
   </section>
 
   <section class="view" id="v-recettes" hidden>
-    <nav class="subnav" aria-label="Recettes"><a href="#recettes" aria-current="page">Cette semaine</a><a href="recettes.html">Catalogue complet (<span class="ncat">1 000+</span>)</a></nav>
+    <nav class="subnav" aria-label="Recettes"><a href="#recettes" aria-current="page">Cette semaine</a><a href="recettes.html">Catalogue complet (<span class="ncat">1 000+</span>)</a><a href="#mesrecettes">＋ Ajouter une recette</a></nav>
     <div class="shophead"><div><h2 style="font-size:30px">Les recettes de la semaine</h2><p>Quantités calculées pour le nombre de personnes de chaque repas.</p></div></div>
     <div class="reclist" id="reclist"></div>
   </section>
@@ -965,7 +965,7 @@ body.storemode #shop .hint{font-size:13px}
   <section class="view" id="v-propositions" hidden><nav class="subnav" aria-label="Groupe"><a href="#groupe">Groupe et règles</a><a href="#gouts">Mes goûts</a><a href="#propositions" aria-current="page">Propositions</a></nav><div id="propbox"></div></section>
   <section class="view" id="v-historique" hidden><div id="histbox"></div></section>
   <section class="view" id="v-rappels" hidden><div id="rapbox"></div></section>
-  <section class="view" id="v-mesrecettes" hidden><div id="minebox"></div></section>
+  <section class="view" id="v-mesrecettes" hidden><nav class="subnav" aria-label="Recettes"><a href="#recettes">Cette semaine</a><a href="recettes.html">Catalogue complet</a><a href="#mesrecettes" aria-current="page">＋ Ajouter une recette</a></nav><div id="minebox"></div></section>
   <section class="view" id="v-admin" hidden><div id="adminbox"></div></section>
 
   <section class="view" id="v-courses" hidden>
@@ -3508,7 +3508,7 @@ const MINE=(()=>{
   function toRows(x){return (x.ing||[]).map(([id,q])=>({id,q,name:I[id]?I[id].n:id,u:I[id]?I[id].u:"g",r:I[id]?I[id].r:"co"}))}
   function render(){const el=document.getElementById("minebox");if(!el)return;const M=mineRead(),kid=isKid(),list=Object.values(M).sort((a,b)=>a.n.localeCompare(b.n,"fr"));
     if(edit){el.innerHTML=editor();return}
-    el.innerHTML=`<div class="sechead"><h2>Mes recettes</h2><p class="muted">Vos recettes à vous, partagées avec le groupe. Elles apparaissent dans le catalogue et le semainier peut les proposer.</p></div>
+    el.innerHTML=`<div class="sechead"><h2>Ajouter une recette</h2><p class="muted">Collez le lien d'une recette trouvée sur internet (Marmiton, 750g, un blog…) ou écrivez la vôtre. Elle est partagée avec le groupe, rejoint le catalogue et le semainier peut la proposer.</p></div>
       ${kid?"":`<div class="mineadd"><button type="button" class="btn primary" data-mine="new">＋ Nouvelle recette</button><form class="mineimp" data-mineimp><input type="url" id="mineUrl" placeholder="Coller le lien d'une recette (Marmiton, 750g, blog…)" value="${esc(url)}" aria-label="Lien d'une recette à importer"><button class="btn" type="submit" ${busy?"disabled":""}>${busy?"Import…":"🔗 Importer"}</button></form></div>${err?`<p class="warnbox">${esc(err)}</p>`:""}`}
       ${list.length?`<ul class="minelist">${list.map(x=>`<li><button type="button" class="linkish" data-open-mine="${x.id}"><b>${esc(x.n)}</b></button><small class="muted">${esc(x.byName||"")}${x.src?` · <a href="${esc(x.src)}" target="_blank" rel="noopener">source</a>`:""}</small>${kid?"":`<span class="mineact"><button type="button" class="btn sm" data-mine="edit|${x.id}">Modifier</button><button type="button" class="btn sm danger" data-mine="del|${x.id}">Supprimer</button></span>`}</li>`).join("")}</ul>`:`<p class="muted hempty">Aucune recette pour l'instant. Ajoutez la recette de mamie, ou importez celle d'un site en collant son lien.</p>`}`;
   }
@@ -3551,7 +3551,7 @@ const MINE=(()=>{
   });
   document.addEventListener("change",e=>{if(e.target.closest(".ingrow .iname")&&edit){readForm();render()}});
   document.addEventListener("submit",e=>{if(e.target.closest("[data-mineform]")){e.preventDefault();save()}else if(e.target.closest("[data-mineimp]")){e.preventDefault();const u=document.getElementById("mineUrl").value.trim();if(u)doImport(u)}});
-  return {render,parseLine};
+  return {render,parseLine,doImport};
 })();
 function openRecipeAny(id){const r=RB[id];if(!r)return;ov.innerHTML=`<article class="rcard"><button class="close" type="button" data-close>Fermer ×</button><div class="rhead"><small>${esc(r.pays||"")} · ${r.t} min</small><h3>${esc(r.n)}</h3><div class="rfacts"><span class="num">≈ ${kcal(r)} kcal / portion</span><span class="num">≈ ${euro(costPortion(r))} / portion</span>${tagHTML(r)}</div></div>
   <div class="rbody"><div><h4>Ingrédients (1 personne)</h4><ul class="ing">${r.ing.map(([i,q])=>`<li><span class="num">${fmt(q,I[i].u,false)}</span><span>${esc(I[i].n)}</span></li>`).join("")}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(t=>`<li>${esc(t)}</li>`).join("")}</ol></div></div></article>`;ov.hidden=false}
@@ -4198,6 +4198,11 @@ CLOUD.init({apply:reloadFromStorage});
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!m.hidden){close();b.focus()}});
   window.addEventListener("resize",close);window.addEventListener("scroll",close,{passive:true});
 })();
+
+// Lien d'import venu du catalogue : index.html?import=<adresse>#mesrecettes
+(()=>{let u="";try{u=new URLSearchParams(location.search).get("import")||""}catch(e){}if(!/^https?:\/\//i.test(u))return;
+  try{history.replaceState(null,"",location.pathname+"#mesrecettes")}catch(e){}
+  setTimeout(()=>{if(location.hash!=="#mesrecettes")location.hash="#mesrecettes";if(isKid()){toast("Seuls les adultes peuvent importer une recette");return}MINE.doImport(u)},60)})();
 
 // ---------- Appli installable : service worker et bouton « Installer » ----------
 if("serviceWorker" in navigator&&location.protocol==="https:")window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));

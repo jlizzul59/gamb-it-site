@@ -100,6 +100,10 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 .hero-compact .stats b{font-family:inherit;font-weight:700;font-size:14px;color:var(--ink)}
 .dice{margin-left:auto;align-self:center;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .dice:hover{border-color:var(--accent);color:var(--accent)}
+.impform{display:flex;gap:6px;margin-left:auto;align-self:center;flex:0 1 380px;min-width:240px}.impform+.dice{margin-left:0}
+.impform input{flex:1;min-width:0;font:inherit;font-size:14px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink)}
+.impform button{border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink,#fff);border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+@media(max-width:640px){.impform{flex-basis:100%;margin-left:0}}
 @media(max-width:640px){.hero.hero-compact{padding-block:12px 6px}.dice{margin-left:0}}
 .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:36px;align-items:center;padding-block:36px 28px}
 .eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--warm)}
@@ -569,12 +573,13 @@ html.ck-on,html.ck-on body{overflow:hidden}
     </div>
   </div>
 </header>
-<div class="wrap subwrap"><nav class="subnav" aria-label="Recettes"><a href="index.html#recettes">Cette semaine</a><a href="recettes.html" aria-current="page">Catalogue complet</a></nav></div>
+<div class="wrap subwrap"><nav class="subnav" aria-label="Recettes"><a href="index.html#recettes">Cette semaine</a><a href="recettes.html" aria-current="page">Catalogue complet</a><a href="index.html#mesrecettes">＋ Ajouter une recette</a></nav></div>
 
 <main class="wrap">
   <section class="hero hero-compact">
     <h1>Catalogue</h1>
     <div class="stats" id="stats"></div>
+    <form class="impform" id="impForm" action="index.html" method="get"><input type="url" name="import" required placeholder="🔗 Lien d'une recette (Marmiton, 750g…)" aria-label="Ajouter une recette depuis son lien" autocomplete="off"><button type="submit">Ajouter</button></form>
     <button type="button" class="dice" id="dice" title="Ouvrir une recette au hasard">🎲 Une idée au hasard</button>
     <div id="mosaic" hidden></div>
   </section>
@@ -2492,6 +2497,7 @@ document.getElementById("q").addEventListener("input",e=>{q=e.target.value;rende
 document.addEventListener("click",e=>{const b=e.target.closest("[data-smode]");if(!b)return;smode=b.dataset.smode;frigo=smode==="frigo";render();document.getElementById("q").focus()});
 window.addEventListener("hashchange",()=>{if(location.hash==="#frigo"){smode="frigo";frigo=true;render();document.getElementById("q").focus()}});
 if(location.hash==="#frigo"){smode="frigo";frigo=true;setTimeout(()=>{render();document.getElementById("q").focus()},30)}
+document.getElementById("impForm").addEventListener("submit",e=>{e.preventDefault();const u=(e.target.import.value||"").trim();if(/^https?:\/\//i.test(u))location.href="index.html?import="+encodeURIComponent(u)+"#mesrecettes";else toast("Collez l'adresse complète de la recette (https://…)")});
 document.getElementById("sort").addEventListener("change",e=>{sort=e.target.value;save();render()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden&&!COOK.active)closeModal()});
 document.addEventListener("change",e=>{const c=e.target.closest("[data-tick]");if(c){cartTick(c.dataset.tick,c.checked);}});
