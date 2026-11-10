@@ -94,6 +94,13 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 .recv:hover{background:var(--accent-soft)}
 .back{text-decoration:none;font-weight:700;font-size:14px;color:var(--accent-ink);background:var(--accent);padding:8px 16px;border-radius:999px}
 
+.hero.hero-compact{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 16px;padding-block:8px 6px}
+.hero.hero-compact h1{font-size:clamp(22px,2.6vw,28px);margin:0;line-height:1.1}
+.hero-compact .stats{display:flex;gap:14px;margin:0;color:var(--muted);font-size:14px}
+.hero-compact .stats b{font-family:inherit;font-weight:700;font-size:14px;color:var(--ink)}
+.dice{margin-left:auto;align-self:center;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.dice:hover{border-color:var(--accent);color:var(--accent)}
+@media(max-width:640px){.hero.hero-compact{padding-block:12px 6px}.dice{margin-left:0}}
 .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:36px;align-items:center;padding-block:36px 28px}
 .eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--warm)}
 .hero h1{font-size:clamp(34px,5vw,58px);margin:10px 0 14px}
@@ -358,7 +365,7 @@ body.hascart main{padding-bottom:80px}
 .cempty p{color:var(--muted);max-width:46ch;margin:8px auto 16px}
 
 @media (max-width:980px){
-  .hero{grid-template-columns:1fr;gap:22px;padding-block:24px 18px}
+  .hero:not(.hero-compact){grid-template-columns:1fr;gap:22px;padding-block:24px 18px}
   .layout{grid-template-columns:1fr}
   .side{position:static;max-height:none;overflow:visible;padding:0;display:none}
   .side.open{display:block}
@@ -564,14 +571,11 @@ html.ck-on,html.ck-on body{overflow:hidden}
 <div class="wrap subwrap"><nav class="subnav" aria-label="Recettes"><a href="index.html#recettes">Cette semaine</a><a href="recettes.html" aria-current="page">Catalogue complet</a></nav></div>
 
 <main class="wrap">
-  <section class="hero">
-    <div>
-      <span class="eyebrow">Recettes du semainier</span>
-      <h1>De Lille à Lima, un plat différent chaque soir</h1>
-      <p>Des recettes de tous les continents, simples à préparer à l'avance et que toute la famille aime. Choisissez vos ingrédients, le catalogue se resserre au fur et à mesure.</p>
-      <div class="stats" id="stats"></div>
-    </div>
-    <div class="picks" id="mosaic"></div>
+  <section class="hero hero-compact">
+    <h1>Catalogue</h1>
+    <div class="stats" id="stats"></div>
+    <button type="button" class="dice" id="dice" title="Ouvrir une recette au hasard">🎲 Une idée au hasard</button>
+    <div id="mosaic" hidden></div>
   </section>
 
   <nav class="regions" id="regions" aria-label="Régions du monde"></nav>
@@ -2286,7 +2290,7 @@ const SORTS={nom:(a,b)=>a.n.localeCompare(b.n,"fr"),note:(a,b)=>noteOf(b.id)-not
 // ---------- ouverture ----------
 function renderHero(){
   const countries=new Set(R.map(r=>r.pays)).size;
-  document.getElementById("stats").innerHTML=`<div><b>${R.length}</b><span>recettes</span></div><div><b>${countries}</b><span>pays et régions</span></div><div><b>${REGIONS.length}</b><span>coins du monde</span></div>`;
+  document.getElementById("stats").innerHTML=`<span><b>${R.length.toLocaleString("fr-FR")}</b> recettes</span><span><b>${countries}</b> pays</span>`;
   const picks=["bibimbap","tajineagneau","moqueca","khachapuri","pho"].filter(id=>RB[id]);
   document.getElementById("mosaic").innerHTML=`<h2>Pour commencer le voyage</h2>`+picks.map(id=>{const r=RB[id];return `<button type="button" class="pick" data-r="${id}"><i style="background:${ART.BG[r.reg]}"></i><span><b>${esc(r.n)}</b><small>${esc(r.pays)} · ${r.t} min</small></span><em>${esc(r.reg)}</em></button>`}).join("");
 }
@@ -2506,6 +2510,7 @@ CLOUD.init({apply(){try{loadMine()}catch(e){}avLoad();loadFoy();render();paintCa
 document.querySelectorAll("nav.mainnav [data-nav]").forEach(a=>{if(a.dataset.nav==="recettes")a.setAttribute("aria-current","page")});
 
 // Lien direct vers une recette : recettes.html#r=identifiant
+document.getElementById("dice").addEventListener("click",()=>{const L=R.filter(r=>!r.id.startsWith("mix:"));openRecipe(L[Math.floor(Math.random()*L.length)].id)});
 (()=>{const m=location.hash.match(/^#([rc])=(.+)$/);if(m){const id=decodeURIComponent(m[2]);if(RB[id])setTimeout(()=>{try{openRecipe(id);if(m[1]==="c"){const b=document.querySelector("[data-cook]");b&&b.click()}}catch(e){}},50)}})();
 
 // ---------- Appli installable : service worker et bouton « Installer » ----------
