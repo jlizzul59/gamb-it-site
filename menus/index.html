@@ -135,6 +135,7 @@ main{padding-block:28px 64px}
 .swap:hover{text-decoration:underline}
 .daytotal{font-size:12px;color:var(--muted);padding:0 2px}
 .tag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.leger{border-color:transparent;background:#E6F0F7;color:#245A80}@media(prefers-color-scheme:dark){.tag.leger{background:#1D2E3A;color:#9CC8E8}}
 .tag.plaisir{border-color:transparent;background:var(--warm-soft);color:var(--warm)}
 .tag.vege{border-color:transparent;background:var(--accent-soft);color:var(--accent)}
 .empty{color:var(--bad);font-size:13px}
@@ -2697,6 +2698,7 @@ function useWeek(w){
 
 function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 const kcal=r=>Math.round(r.ing.reduce((a,[id,q])=>a+q*I[id].k,0));
+const LIGHT=400,isLight=r=>kcal(r)<=LIGHT;
 let FOY=[];function loadFoy(){FOY=Object.values(dread("foyer")).filter(p=>(p.r||[]).length)}
 const foyConf=r=>conflicts(r,I,FOY);
 const allowed=r=>r.ing.every(([id])=>S.prefs[id]!==-1)&&!foyConf(r).length&&!cfgBanned(r);
@@ -2795,9 +2797,9 @@ const qWords=q=>norm(q).split(/[\s,;'’\-]+/).filter(w=>w&&!QSTOP.has(w)).map(w
 const qMatch=(q,text)=>{const t=norm(text),ws=qWords(q);return ws.every(w=>t.includes(w))};
 const shortName=r=>r.n.split(",")[0];
 const MONTH=()=>dayDate(S.cur||0,3).getMonth()+1;
-const tagAll=r=>(r.mine?'<span class="tag maison" title="Recette ajoutée par votre groupe">🏠 Maison</span>':"")+(seasonOf(r,MONTH()).s==="saison"?'<span class="tag saison" title="Légumes ou fruits de saison">🌱 De saison</span>':"")+((r.temp||tempOf(r))==="froid"?'<span class="tag froid" title="Se mange froid">❄️ Froid</span>':'<span class="tag chaud" title="Se mange chaud">🔥 Chaud</span>')+(r.simple?'<span class="tag simple">Tout simple</span>':"")+(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"");
+const tagAll=r=>(r.mine?'<span class="tag maison" title="Recette ajoutée par votre groupe">🏠 Maison</span>':"")+(seasonOf(r,MONTH()).s==="saison"?'<span class="tag saison" title="Légumes ou fruits de saison">🌱 De saison</span>':"")+((r.temp||tempOf(r))==="froid"?'<span class="tag froid" title="Se mange froid">❄️ Froid</span>':'<span class="tag chaud" title="Se mange chaud">🔥 Chaud</span>')+(r.simple?'<span class="tag simple">Tout simple</span>':"")+(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"");
 // Carte compacte : les étiquettes les plus utiles d'abord (« chaud » est la règle, on ne l'affiche pas)
-const TAGPRIO=["maison","froid","simple","vege","plaisir","saison"];
+const TAGPRIO=["maison","froid","leger","simple","vege","plaisir","saison"];
 const tagHTML=(r,max)=>{const h=tagAll(r);if(!max)return h;const m=(h.match(/<span class="tag[^>]*>.*?<\/span>/g)||[]).map(x=>[TAGPRIO.indexOf((x.match(/class="tag (\w+)/)||[])[1]),x]).filter(x=>x[0]>=0).sort((a,b)=>a[0]-b[0]);return m.slice(0,max).map(x=>x[1]).join("")};
 const dateOf=i=>dayDate(S.cur,i).toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
 
@@ -2917,11 +2919,11 @@ function renderRecipes(){const cs=cooks();const el=document.getElementById("recl
 
 // ---------- Catalogue ----------
 let catQ="",catF="all",catKey=null;
-const FILTERS=[["all","Tout"],["fav","♥ Favoris"],["top","Mes mieux notées"],["ok","Compatibles avec mes goûts"],["plaisir","Gourmand"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"],["simple","Tout simple"],["soupe","Soupes"],["saison","🌱 De saison"],["chaud","🔥 Chaud"],["froid","❄️ Froid"]].concat(REGIONS.map(g=>["reg:"+g,g]));
+const FILTERS=[["all","Tout"],["fav","♥ Favoris"],["top","Mes mieux notées"],["ok","Compatibles avec mes goûts"],["plaisir","Gourmand"],["leger","🪶 Léger"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"],["simple","Tout simple"],["soupe","Soupes"],["saison","🌱 De saison"],["chaud","🔥 Chaud"],["froid","❄️ Froid"]].concat(REGIONS.map(g=>["reg:"+g,g]));
 function catMatches(r){
   if(catQ&&!qMatch(catQ,r.n))return false;
   if(catF.startsWith("reg:"))return r.reg===catF.slice(4);
-  return catF==="all"||(catF==="fav"&&isFav(r.id))||(catF==="top"&&noteOf(r.id)>=4)||(catF==="ok"&&allowed(r))||(catF==="plaisir"&&r.tag==="plaisir")||(catF==="vege"&&isVege(r))||(catF==="poisson"&&isFish(r))||(catF==="viande"&&!isVege(r)&&!isFish(r))||(catF==="rapide"&&r.t<=25)||(catF==="simple"&&r.simple)||(catF==="soupe"&&SOUP_RX.test(r.n))||(catF==="chaud"&&(r.temp||tempOf(r))==="chaud")||(catF==="froid"&&(r.temp||tempOf(r))==="froid")||(catF==="saison"&&seasonOf(r,MONTH()).s==="saison");
+  return catF==="all"||(catF==="fav"&&isFav(r.id))||(catF==="top"&&noteOf(r.id)>=4)||(catF==="ok"&&allowed(r))||(catF==="plaisir"&&r.tag==="plaisir")||(catF==="leger"&&isLight(r))||(catF==="vege"&&isVege(r))||(catF==="poisson"&&isFish(r))||(catF==="viande"&&!isVege(r)&&!isFish(r))||(catF==="rapide"&&r.t<=25)||(catF==="simple"&&r.simple)||(catF==="soupe"&&SOUP_RX.test(r.n))||(catF==="chaud"&&(r.temp||tempOf(r))==="chaud")||(catF==="froid"&&(r.temp||tempOf(r))==="froid")||(catF==="saison"&&seasonOf(r,MONTH()).s==="saison");
 }
 function catalogShell(sfx,key){
   return `<div class="catbar"><input type="search" id="catq-${sfx}" data-catq="${sfx}" placeholder="Rechercher un plat ou un ingrédient" value="${esc(catQ)}" autocomplete="off">
@@ -3702,6 +3704,7 @@ const THEMES={
  pates:["🍝","Pâtes",r=>r.ing.some(([i])=>PASTA.has(i))],
  simple:["🍳","Tout simple",r=>!!r.simple],
  gourmand:["😋","Gourmand",r=>r.tag==="plaisir"],
+ leger:["🪶","Léger",r=>isLight(r)],
  monde:["🌍","Tour du monde",r=>!!r.reg&&r.reg!=="France"],
  asie:["🥢","Asiatique",r=>r.reg==="Asie"],
  mexique:["🌮","Mexicain",r=>r.pays==="Mexique"],
@@ -3714,6 +3717,7 @@ const CATS2=[
  {k:"vege",ic:"🥦",lab:"Végétarien",min:"vege",max:"vegemax",top:7,pred:r=>isVege(r)},
  {k:"red",ic:"🥩",lab:"Viande rouge",min:"redmin",max:"redmax",top:7,pred:r=>isRed(r),note:"bœuf, agneau, veau"},
  {k:"soup",ic:"🥣",lab:"Soupe le soir",min:"soup",max:"soupmax",top:7,pred:r=>isSoup(r)},
+ {k:"leger",ic:"🪶",lab:"Repas léger",min:"leger",max:"legermax",top:14,pred:r=>isLight(r),note:"400 kcal ou moins par portion"},
  {k:"simple",ic:"🍳",lab:"Tout simple en semaine",min:"simple",max:"simplemax",top:10,pred:r=>!!r.simple},
  {k:"froid",ic:"❄️",lab:"Repas froid",min:"froid",max:"froidmax",top:7,pred:r=>(r.temp||tempOf(r))==="froid"},
  {k:"fav",ic:"♥",lab:"Favoris",min:"fav",max:"favmax",top:7,pred:r=>isFav(r.id)}
