@@ -573,11 +573,11 @@ html.ck-on,html.ck-on body{overflow:hidden}
     </div>
   </div>
 </header>
-<div class="wrap subwrap"><nav class="subnav" aria-label="Recettes"><a href="index.html#recettes">Cette semaine</a><a href="recettes.html" aria-current="page">Catalogue complet</a><a href="index.html#mesrecettes">＋ Ajouter une recette</a></nav></div>
+<div class="wrap subwrap"><nav class="subnav" aria-label="Recettes"><a href="index.html#recettes">Cette semaine</a><a href="recettes.html" id="navPlats" aria-current="page">Catalogue complet</a><a href="recettes.html#desserts" id="navDes">🍰 Desserts</a><a href="index.html#mesrecettes">＋ Ajouter une recette</a></nav></div>
 
 <main class="wrap">
   <section class="hero hero-compact">
-    <h1>Catalogue</h1>
+    <h1 id="catTitle">Catalogue</h1>
     <div class="stats" id="stats"></div>
     <form class="impform" id="impForm" action="index.html" method="get"><input type="url" name="import" required placeholder="🔗 Lien d'une recette (Marmiton, 750g…)" aria-label="Ajouter une recette depuis son lien" autocomplete="off"><button type="submit">Ajouter</button></form>
     <button type="button" class="dice" id="dice" title="Ouvrir une recette au hasard">🎲 Une idée au hasard</button>
@@ -610,6 +610,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 <div class="overlay" id="overlay" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <script src="recettes-plus.js?v=20261109b"></script>
+<script src="desserts.js?v=20261110a"></script>
 <script>
 
 // ---------- Ingrédients ----------
@@ -1526,6 +1527,14 @@ QNEW.forEach(o=>{const r=Object.assign({},o);delete r.j;if(RB[r.id])Object.assig
 // Recettes ajoutées (fichier partagé recettes-plus.js)
 (()=>{const X=window.MENUS_PLUS;if(!X)return;Object.assign(I,X.I);if(X.IREN)for(const k in X.IREN)if(I[k])Object.assign(I[k],X.IREN[k]);if(X.FIX)for(const id in X.FIX)if(RB[id])Object.assign(RB[id],X.FIX[id]);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:"Réchauffer doucement avant de servir."}})})();
 Object.assign(BC,QBC);
+// ---------- Desserts (desserts.js) : rayon à part du catalogue ----------
+const DS=window.MENUS_DESSERTS||{I:{},S:{},T:[],R:[]};Object.assign(I,DS.I);
+const DTYPES=DS.T,DTL=Object.fromEntries(DTYPES),D=[];
+const DBG={fruit:"#F2C9B9",creme:"#F1E2C2",gateau:"#E3C29A",biscuit:"#E8D6AE",glace:"#CDE4EA"};
+const dPrep=r=>{r.dessert=1;r.dt=r.dt||"gateau";r.pays=DTL[r.dt]||"Dessert";r.reg="Dessert";if(!r.for)r.for=[];return r};
+DS.R.forEach(r=>{dPrep(r);D.push(r);RB[r.id]=r;BC[r.id]={t:[],j:""}});
+const DES_RX=[["glace",/glac|sorbet|granit|esquimau/i],["creme",/cr[èe]me|mousse|panna|tiramisu|riz au lait|flan|verrine|entremets|île|ile flottante|fromage blanc/i],["biscuit",/cookie|biscuit|cr[êe]pe|gaufre|madeleine|sabl[ée]|financier|pain perdu|beignet|pancake|muffin|rocher|tuile/i],["gateau",/g[âa]teau|tarte|cake|crumble|clafoutis|brownie|fondant|cheesecake|charlotte|b[ûu]che|galette|quatre-quarts|far\b|kouign|baba|savarin/i]];
+const guessDt=r=>{const n=r.n||"";for(const [t,rx] of DES_RX)if(rx.test(n))return t;return (r.ing||[]).some(([id])=>I[id]&&I[id].c==="Fruits")?"fruit":"gateau"};
 const SIMPLE=new Set(["ssoupecourgette","ssoupecarotte","ssoupepoireau","ssoupetomate","ssoupebrocoli","ssoupepois","ssoupepotiron","ssoupechampi","ssoupevermicelle","scordonbleu","spoissonpane","ssteakfrites","spoulethv","spouletcreme","spatesbeurre","spatesthon","spatestomate","sjambonpuree","sknackis","somelette","soeufscoque","soeufsdurs","stomatesfarcies","sgratincourgette","sraviolis","srizpoulet","ssteakcarottes","spoireauxvinaigrette","squichesimple","spurrecabillaud","spatesbolo","sgratinpdt","wsteak","wsaumon","wpoulettenders","wcurry","whoumous","wjambonchaud","woeuf","ppouletfrites","ppouletpatates","ppouletpatatesdouces","psaucissesplaque","psaumonplaque","pgnocchisfour","ppatesfour","prizfour","pfajitasplaque","pboulettesfour","pcabillaudfour","pcurryfour","ppatatesfarcies","sailesfour","ssaucissesfrites","spateslardons","spouletcurryriz","sescalopepanee","soeufsbrouilles","srizsaute","spoeleepoulet","ssteakhvpdt","sgratinchoufleurs","ssaladecomposee","pouletroti","steakpuree","ksteakhache","kjambonpuree","kcotesporc","saucissepuree","coquillettes","croques","kcroquemadame","komelettejambon","ksoupelegumes","kchoufleursoupe","kcourgettesoupe","kpoiscasses","kwrapjambon","ksaladepates","ksaladeriz","galettes","kcrepessalees","kpetitspoissoupe","ktomatesoupe"]);R.forEach(r=>{if(SIMPLE.has(r.id))r.simple=1});
 // ---------- Assiette toute simple : viande ou poisson + accompagnement + légume ----------
 const MIXP={
@@ -1593,6 +1602,7 @@ const tempOf=r=>COLD_RX.test(r.n.split(",")[0])?"froid":"chaud";
 // Mois de début et de fin (une plage peut chevaucher la fin d'année). Les légumes en conserve,
 // surgelés ou disponibles toute l'année (carottes, champignons, salade…) ne comptent pas.
 const SEASON={courgette:[6,9],tomate:[6,9],tomcerise:[6,9],aubergine:[6,9],poivron:[7,10],concombre:[5,9],haricotsverts:[6,9],fenouil:[6,10],radis:[4,7],roquette:[4,10],celeri:[6,11],brocoli:[6,11],epinards:[[3,6],[9,11]],choufleur:[9,4],poireau:[9,4],potiron:[9,1],chou:[10,3],chourouge:[10,3],endive:[10,4],betterave:[9,3],navet:[10,3],panais:[10,3],cresson:[10,4],pakchoi:[9,12],choucroute:[10,3],pomme:[9,4],orange:[12,4],asperges:[4,6],blettes:[6,11],celerirave:[9,3],topinambour:[10,3],choubxl:[10,2]};
+Object.assign(SEASON,DS.S);
 const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 const inRange=(m,[a,b])=>a<=b?m>=a&&m<=b:m>=a||m<=b;
 const inSeason=(id,m)=>{const s=SEASON[id];if(!s)return true;return (Array.isArray(s[0])?s:[s]).some(x=>inRange(m,x))};
@@ -1608,10 +1618,11 @@ R.forEach(r=>{r.temp=tempOf(r)});
 const MRK="menus.mesrecettes";
 const mineRead=()=>{try{return JSON.parse(localStorage.getItem(MRK)||"null")||{}}catch(e){return {}}};
 function loadMine(){const M=mineRead();
-  for(let i=R.length-1;i>=0;i--){const r=R[i];if(r.mine&&!M[r.id]){R.splice(i,1);delete RB[r.id];delete BC[r.id]}}
+  [R,D].forEach(A=>{for(let i=A.length-1;i>=0;i--){const r=A[i];if(r.mine&&(!M[r.id]||(A===R)!==(M[r.id].p!=="dessert"))){A.splice(i,1);delete RB[r.id];delete BC[r.id]}}});
   Object.values(M).forEach(x=>{if(!x||!x.id||!x.n)return;Object.entries(x.custom||{}).forEach(([k,v])=>{if(!I[k]||I[k].custom)I[k]=Object.assign({k:0,custom:1},v)});
     const r=Object.assign({for:["l2","fam"],p:"vege",t:30,pays:"France",reg:"France",st:[]},x,{mine:1});r.ing=(x.ing||[]).filter(([id])=>I[id]);r.temp=tempOf(r);
-    if(RB[r.id]){Object.keys(RB[r.id]).forEach(k=>delete RB[r.id][k]);Object.assign(RB[r.id],r)}else{R.push(r);RB[r.id]=r}
+    if(r.p==="dessert"){r.dt=x.dt||guessDt(r);dPrep(r)}
+    if(RB[r.id]){Object.keys(RB[r.id]).forEach(k=>delete RB[r.id][k]);Object.assign(RB[r.id],r)}else{(r.p==="dessert"?D:R).push(r);RB[r.id]=r}
     BC[r.id]={t:[],j:"Réchauffer doucement avant de servir."}});
 }
 loadMine();
@@ -1629,6 +1640,7 @@ Object.assign(I.creme,{n:"Crème fraîche 15 %"});I.mozza.n="Mozzarella";I.lardo
 // Options facultatives par recette : un accompagnement en plus, par personne
 const SOUPLIKE=/velouté|soupe|ramen|pho|laksa|harira|bortsch|minestrone|pozole|salade/i;
 function optionsFor(r){
+  if(r.dessert)return [];
   // uniquement des ingrédients absents de la recette
   const has=id=>r.ing.some(([x])=>x===id);
   const bread=["baguette","painmie","pita","tortillas","painburger","galette","patepizza","brick","farinemais"].some(has);
@@ -1655,7 +1667,7 @@ function optSteps(r,n){
 const optStepHTML=(r,n)=>optSteps(r,n).map(s=>`<li class="optstep"><span><em class="optb">Optionnel</em> ${esc(s)}</span></li>`).join("");
 const optLabel=(id,q)=>{const u=I[id].u;const v=u==="g"?Math.round(q)+" g":q+"";return v+" de "+I[id].n.toLowerCase()+" par personne"};
 // Images retirées : seules les couleurs de région restent pour les repères visuels
-const ART={hydrate(){},BG:{"France":"#E9E1D2","Europe":"#CDB08A","Moyen-Orient":"#C97D55","Afrique":"#D49A3C","Asie":"#2E3B3A","Amériques":"#3D8987","Océanie":"#E6D3AE"}};
+const ART={hydrate(){},BG:{"Dessert":"#F1DCC9","France":"#E9E1D2","Europe":"#CDB08A","Moyen-Orient":"#C97D55","Afrique":"#D49A3C","Asie":"#2E3B3A","Amériques":"#3D8987","Océanie":"#E6D3AE"}};
 const DARKREG=new Set(["Asie","Amériques"]);
 const artImg=()=>"";
 
@@ -2263,9 +2275,14 @@ function fmt(q,u){
 }
 const groupOf=id=>I[id].c||"Autres";
 const facetIds=[...new Set(R.flatMap(r=>r.ing.map(([id])=>id)))].filter(id=>I[id].r!=="pl"&&!BASICS.has(id));
+const facetsOf=()=>isDes()?[...new Set(D.flatMap(r=>r.ing.map(([id])=>id)))].filter(id=>I[id]&&I[id].r!=="pl"&&id!=="citron"):facetIds;
 const DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 
 let sel={},quick=new Set(),q="",servings=4,region="",sort="nom",frigo=false,smode="nom";
+let mode="plats",dtype="",dquick=new Set();
+const isDes=()=>mode==="desserts";
+const LIST=()=>isDes()?D:R;
+const curQ=()=>isDes()?dquick:quick;
 // Recherche par ingrédients : chaque mot (ou chaque élément séparé par une virgule) doit être un ingrédient de la recette
 const ISYN={patate:"pomme de terre",pdt:"pomme de terre",steak:"boeuf",viande:"boeuf",oeuf:"oeuf",creme:"creme",pate:"pate"};
 const ingItems=()=>(/[,;]/.test(q)?q.split(/[,;]+/).map(x=>x.trim()).filter(Boolean):qWords(q));
@@ -2274,18 +2291,29 @@ function ingMatch(r){const names=r.ing.map(([id])=>I[id].n);return ingItems().ev
 const frigoItems=()=>q.split(/[,;\n]+/).length>1?q.split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean):qWords(q);
 const _fs={};
 function frigoScore(r){const items=frigoItems();if(!items.length)return {n:0,hit:[]};const names=r.ing.map(([id])=>I[id].n);const hit=items.filter(it=>names.some(nm=>qMatch(it,nm)));return {n:hit.length,hit,of:items.length}}
-try{const s=JSON.parse(localStorage.getItem("recettes.filtres")||"null");if(s){sel=s.sel||{};quick=new Set(s.quick||[]);servings=s.servings||4;region=s.region||"";sort=s.sort||"nom"}}catch(e){}
+try{const s=JSON.parse(localStorage.getItem("recettes.filtres")||"null");if(s){sel=s.sel||{};quick=new Set(s.quick||[]);servings=s.servings||4;region=s.region||"";sort=s.sort||"nom";dquick=new Set(s.dquick||[]);dtype=s.dtype||""}}catch(e){}
 Object.keys(sel).forEach(k=>{if(!I[k])delete sel[k]});
-function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,quick:[...quick],servings,region,sort}))}catch(e){}}
+function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,quick:[...quick],servings,region,sort,dquick:[...dquick],dtype}))}catch(e){}}
 
 let FOY=[];function loadFoy(){FOY=Object.values(dread("foyer")).filter(p=>(p.r||[]).length)}loadFoy();
 const foyConf=r=>conflicts(r,I,FOY);
 const QUICK=[["foyer","Compatible avec le groupe",r=>!foyConf(r).length&&!cfgBanned(r)],["fav","♥ Favoris",r=>isFav(r.id)],["top","Mes notes ≥ 4",r=>noteOf(r.id)>=4],["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["leger","🪶 Léger",r=>isLight(r)],["simple","Tout simple",r=>r.simple],["soupe","Soupes",r=>SOUP_RX.test(r.n)],["saison","🌱 De saison",r=>seasonOf(r,new Date().getMonth()+1).s==="saison"],["chaud","🔥 Chaud",r=>(r.temp||tempOf(r))==="chaud"],["froid","❄️ Froid",r=>(r.temp||tempOf(r))==="froid"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
 const has=(r,id)=>r.ing.some(([x])=>x===id);
+// Desserts : fruits, saison, chocolat, niveau de calories (un seul à la fois)
+const isFruitD=r=>r.ing.some(([id])=>I[id].c==="Fruits")||/fruit|pomme|poire|fraise|framboise|banane|cerise|abricot|p[êe]che|citron|orange|mangue|ananas|figue|prune|rhubarbe|myrtille|kiwi|melon/i.test(r.n);
+const isChocD=r=>r.ing.some(([id])=>id==="chocolat"||id==="cacao"||/chocolat|cacao/i.test(I[id].n))||/chocolat/i.test(r.n);
+const DLEV=r=>{const k=kcal(r);return k<=180?"dl":k<=320?"dm":"dg"};
+const LEVEL={dl:["🪶 Léger","180 kcal ou moins par portion"],dm:["Moyen","de 180 à 320 kcal par portion"],dg:["🧁 Gourmand","plus de 320 kcal par portion"]};
+const QUICK_D=[["foyer","Compatible avec le groupe",r=>!foyConf(r).length&&!cfgBanned(r)],["fav","♥ Favoris",r=>isFav(r.id)],["top","Mes notes ≥ 4",r=>noteOf(r.id)>=4],
+  ["fruits","🍎 Aux fruits",isFruitD],["saison","🌱 Fruits de saison",r=>isFruitD(r)&&seasonOf(r,new Date().getMonth()+1).s==="saison"],["choc","🍫 Chocolat",isChocD],
+  ["dl","🪶 Léger",r=>DLEV(r)==="dl"],["dm","Moyen",r=>DLEV(r)==="dm"],["dg","🧁 Gourmand",r=>DLEV(r)==="dg"],
+  ["nc","❄️ Sans cuisson",r=>!!r.nc],["rapide","≤ 20 min",r=>r.t<=20],["nowait","À manger tout de suite",r=>!r.w]];
+const curQUICK=()=>isDes()?QUICK_D:QUICK;
 function matches(r,ignoreRegion){
-  if(!ignoreRegion&&region&&r.reg!==region)return false;
+  if(isDes()){if(!ignoreRegion&&dtype&&r.dt!==dtype)return false}
+  else if(!ignoreRegion&&region&&r.reg!==region)return false;
   for(const [id,v] of Object.entries(sel)){if(v===1&&!has(r,id))return false;if(v===-1&&has(r,id))return false}
-  for(const k of quick){const f=QUICK.find(x=>x[0]===k);if(f&&!f[2](r))return false}
+  for(const k of curQ()){const f=curQUICK().find(x=>x[0]===k);if(f&&!f[2](r))return false}
   if(q&&frigo){if(!frigoScore(r).n)return false}
   else if(q&&smode==="ing"){if(!ingMatch(r))return false}
   else if(q&&!qMatch(q,r.n))return false;
@@ -2296,28 +2324,35 @@ const SORTS={nom:(a,b)=>a.n.localeCompare(b.n,"fr"),note:(a,b)=>noteOf(b.id)-not
 // ---------- ouverture ----------
 function renderHero(){
   const countries=new Set(R.map(r=>r.pays)).size;
-  document.getElementById("stats").innerHTML=`<span><b>${R.length.toLocaleString("fr-FR")}</b> recettes</span><span><b>${countries}</b> pays</span>`;
+  document.getElementById("catTitle").textContent=isDes()?"Desserts":"Catalogue";
+  document.getElementById("navPlats").toggleAttribute("aria-current",!isDes());document.getElementById("navDes").toggleAttribute("aria-current",isDes());
+  if(isDes()){document.getElementById("navDes").setAttribute("aria-current","page")}else document.getElementById("navPlats").setAttribute("aria-current","page");
+  document.getElementById("stats").innerHTML=isDes()?`<span><b>${D.length}</b> desserts</span>`:`<span><b>${R.length.toLocaleString("fr-FR")}</b> recettes</span><span><b>${countries}</b> pays</span>`;
   const picks=["bibimbap","tajineagneau","moqueca","khachapuri","pho"].filter(id=>RB[id]);
   document.getElementById("mosaic").innerHTML=`<h2>Pour commencer le voyage</h2>`+picks.map(id=>{const r=RB[id];return `<button type="button" class="pick" data-r="${id}"><i style="background:${ART.BG[r.reg]}"></i><span><b>${esc(r.n)}</b><small>${esc(r.pays)} · ${r.t} min</small></span><em>${esc(r.reg)}</em></button>`}).join("");
 }
 function renderRegions(){
+  if(isDes()){const base=D.filter(r=>matches(r,true));
+    const opts=[["","Tous les desserts",base.length,"linear-gradient(135deg,"+Object.values(DBG).join(",")+")"]].concat(DTYPES.map(([t,l])=>[t,l,base.filter(r=>r.dt===t).length,DBG[t]]));
+    document.getElementById("regions").innerHTML=opts.map(([v,l,n,bg])=>`<button type="button" class="reg" data-dt="${v}" aria-pressed="${dtype===v}"><i style="background:${bg}"></i>${l} <small>${n}</small></button>`).join("");return}
   const base=R.filter(r=>matches(r,true));
   const opts=[["","Tout le monde",base.length,"linear-gradient(135deg,"+REGIONS.map(g=>ART.BG[g]).join(",")+")"]].concat(REGIONS.map(g=>[g,g,base.filter(r=>r.reg===g).length,ART.BG[g]]));
   document.getElementById("regions").innerHTML=opts.map(([v,l,n,bg])=>`<button type="button" class="reg" data-reg="${v}" aria-pressed="${region===v}"><i style="background:${bg}"></i>${l} <small>${n}</small></button>`).join("");
 }
 function render(){
-  let res=R.filter(r=>matches(r)).sort(SORTS[sort]||SORTS.nom);
+  let res=LIST().filter(r=>matches(r)).sort(SORTS[sort]||SORTS.nom);
   if(frigo&&q){const sc=new Map(res.map(r=>[r.id,frigoScore(r)]));res=res.sort((a,b)=>sc.get(b.id).n-sc.get(a.id).n||a.ing.length-b.ing.length);res.forEach(r=>_fs[r.id]=sc.get(r.id))}
-  document.querySelectorAll("[data-smode]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.smode===smode)));{const qi=document.getElementById("q");qi.placeholder=smode==="frigo"?"Ce qu'il vous reste : courgettes, crème, jambon…":smode==="ing"?"Ingrédients : carotte poulet patate":"Nom de la recette : soupe pois cassé, gratin…"}
+  document.querySelectorAll("[data-smode]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.smode===smode)));{const qi=document.getElementById("q");qi.placeholder=isDes()?(smode==="frigo"?"Ce qu'il vous reste : pommes, yaourt, chocolat…":smode==="ing"?"Ingrédients : pomme cannelle":"Nom du dessert : crumble, mousse, tarte…"):smode==="frigo"?"Ce qu'il vous reste : courgettes, crème, jambon…":smode==="ing"?"Ingrédients : carotte poulet patate":"Nom de la recette : soupe pois cassé, gratin…"}
   renderRegions();
-  document.getElementById("count").innerHTML=`<b>${res.length}</b> recette${res.length>1?"s":""}${region?" · "+region:""}`;
+  document.getElementById("count").innerHTML=isDes()?`<b>${res.length}</b> dessert${res.length>1?"s":""}${dtype?" · "+DTL[dtype]:""}`:`<b>${res.length}</b> recette${res.length>1?"s":""}${region?" · "+region:""}`;
   const act=Object.entries(sel).map(([id,v])=>`<button type="button" class="pill ${v===1?"in":"out"}" data-rm="${id}" aria-label="Retirer ${esc(I[id].n)}">${v===1?"Avec":"Sans"} ${esc(I[id].n.toLowerCase())} ×</button>`).join("");
-  document.getElementById("active").innerHTML=act||region||quick.size||q?act+`<button type="button" class="clear" data-clearall>Tout effacer</button>`:"";
-  document.getElementById("quick").innerHTML=QUICK.filter(([k])=>k!=="foyer"||FOY.length).map(([k,l])=>`<button type="button" class="qf" data-q="${k}" aria-pressed="${quick.has(k)}">${l}</button>`).join("");
+  document.getElementById("active").innerHTML=act||(isDes()?dtype||dquick.size:region||quick.size)||q?act+`<button type="button" class="clear" data-clearall>Tout effacer</button>`:"";
+  document.getElementById("quick").innerHTML=curQUICK().filter(([k])=>k!=="foyer"||FOY.length).map(([k,l])=>`<button type="button" class="qf" data-q="${k}" aria-pressed="${curQ().has(k)}" ${LEVEL[k]&&isDes()?`title="${LEVEL[k][1]}"`:""}>${l}</button>`).join("");
+  {const so=document.querySelector('#sort option[value="region"]');if(so)so.hidden=isDes();if(isDes()&&sort==="region")sort="nom"}
   document.getElementById("sort").value=sort;
   const n=Object.keys(sel).length;document.getElementById("toggleFacets").textContent="Ingrédients"+(n?" ("+n+")":"");
   const groups={};
-  facetIds.forEach(id=>(groups[groupOf(id)]=groups[groupOf(id)]||[]).push(id));
+  facetsOf().forEach(id=>(groups[groupOf(id)]=groups[groupOf(id)]||[]).push(id));
   document.getElementById("facets").innerHTML=GROUP_ORDER.filter(g=>groups[g]).map(g=>{
     const chips=groups[g].sort((a,b)=>I[a].n.localeCompare(I[b].n,"fr")).map(id=>{
       const v=sel[id],cnt=res.filter(r=>has(r,id)).length,dis=!v&&cnt===0;
@@ -2325,14 +2360,21 @@ function render(){
     }).join("");
     return `<div class="fgroup"><h3>${g}</h3><div class="fchips">${chips}</div></div>`;
   }).join("");
-  const mixHTML=quick.has("simple")?mixSel("mixc",`<span class="mixname" id="mixc-name">${esc(RB["mix:steak.pates.ppc"].n)}</span><button class="btn" type="button" data-mixgo="mixc" data-r="mix:steak.pates.ppc">Voir la recette</button>`):"";
+  const mixHTML=!isDes()&&quick.has("simple")?mixSel("mixc",`<span class="mixname" id="mixc-name">${esc(RB["mix:steak.pates.ppc"].n)}</span><button class="btn" type="button" data-mixgo="mixc" data-r="mix:steak.pates.ppc">Voir la recette</button>`):"";
   document.getElementById("results").innerHTML=mixHTML+(res.length?res.map(r=>{
+    if(r.dessert)return dCard(r);
     const main=r.ing.filter(([id])=>I[id].r!=="pl"&&!BASICS.has(id)).map(([id])=>sel[id]===1?`<mark>${esc(I[id].n.toLowerCase())}</mark>`:esc(I[id].n.toLowerCase())).join(", ");
     return `<div class="card" role="button" tabindex="0" data-r="${r.id}" aria-label="${esc(r.n)}"><div class="ph" style="background:${ART.BG[r.reg]}"></div>
       <div class="bd"><div class="ctop"><span class="where tag">${esc(r.pays)}</span>${favBtn(r.id)}</div><span class="cname">${esc(r.n)}</span>${frigo&&q&&_fs[r.id]?`<span class="frigohit">🧊 Utilise ${_fs[r.id].n}/${_fs[r.id].of} : ${esc(_fs[r.id].hit.join(", "))}</span>`:""}${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}<span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${seasonOf(r,new Date().getMonth()+1).s==="saison"?'<span class="tag saison">🌱 De saison</span>':""}${(r.temp||tempOf(r))==="froid"?'<span class="tag froid">❄️ Froid</span>':'<span class="tag chaud">🔥 Chaud</span>'}${r.simple?'<span class="tag vege">Tout simple</span>':""}${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span>${cartBtn(r.id)}</div></div>`;
   }).join(""):`<div class="none"><b>Aucune recette avec cette combinaison.</b><br>Retirez un ingrédient, un filtre ou changez de région.</div>`);
   ART.hydrate(document.getElementById("results"));
 }
+
+// Carte d'un dessert
+function dCard(r){const main=r.ing.filter(([id])=>I[id].r!=="pl").map(([id])=>sel[id]===1?`<mark>${esc(I[id].n.toLowerCase())}</mark>`:esc(I[id].n.toLowerCase())).join(", "),lv=DLEV(r);
+  return `<div class="card" role="button" tabindex="0" data-r="${r.id}" aria-label="${esc(r.n)}"><div class="ph" style="background:${DBG[r.dt]||ART.BG.Dessert}"></div>
+    <div class="bd"><div class="ctop"><span class="where tag">${esc(DTL[r.dt]||"Dessert")}</span>${favBtn(r.id)}</div><span class="cname">${esc(r.n)}</span>${frigo&&q&&_fs[r.id]?`<span class="frigohit">🧊 Utilise ${_fs[r.id].n}/${_fs[r.id].of} : ${esc(_fs[r.id].hit.join(", "))}</span>`:""}${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}
+    <span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${r.w?`<span title="Temps de repos en plus">+ ${esc(r.w)}</span>`:""}${isFruitD(r)&&seasonOf(r,new Date().getMonth()+1).s==="saison"?'<span class="tag saison">🌱 De saison</span>':""}${r.nc?'<span class="tag froid">❄️ Sans cuisson</span>':""}${lv==="dl"?'<span class="tag leger" title="180 kcal ou moins par portion">🪶 Léger</span>':lv==="dg"?'<span class="tag plaisir" title="Plus de 320 kcal par portion">🧁 Gourmand</span>':""}${r.mine?'<span class="tag vege">Maison</span>':""}</span><span class="cing">${main}</span>${cartBtn(r.id)}</div></div>`}
 
 // ---------- semainier partagé (même site) ----------
 function planner(){try{return JSON.parse(localStorage.getItem("semainier.v3")||"null")}catch(e){return null}}
@@ -2437,18 +2479,18 @@ function openRecipe(id){
   const S=planner(),wk=Math.max((S&&S.cur)||0,(()=>{const t=new Date();t.setHours(12,0,0,0);return Math.max(0,Math.floor(Math.round((t-new Date(2026,10,1,12))/864e5)/7))})());
   ov.innerHTML=`<article class="sheet" role="dialog" aria-modal="true" aria-label="${esc(r.n)}">
     <button class="close" type="button" data-close>Fermer ×</button>
-    <div class="hd" style="background:${ART.BG[r.reg]};color:${DARKREG.has(r.reg)?"#fff":"#1C2A20"}"><div class="tt"><small>${esc(r.pays)} · ${esc(r.reg)}</small><h3>${esc(r.n)}</h3></div></div>
+    <div class="hd" style="background:${r.dessert?DBG[r.dt]||ART.BG.Dessert:ART.BG[r.reg]};color:${DARKREG.has(r.reg)?"#fff":"#1C2A20"}"><div class="tt"><small>${r.dessert?"Dessert · "+esc(DTL[r.dt]||""):esc(r.pays)+" · "+esc(r.reg)}</small><h3>${esc(r.n)}</h3></div></div>
     <div class="in">
-      <div class="facts"><span>${r.t} min</span><span class="num">≈ ${kcal(r)} kcal / portion</span>${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}
+      <div class="facts"><span>${r.t} min</span>${r.w?`<span>+ ${esc(r.w)}</span>`:""}<span class="num">≈ ${kcal(r)} kcal / portion</span>${r.dessert?(DLEV(r)==="dl"?'<span class="tag leger">🪶 Léger</span>':DLEV(r)==="dg"?'<span class="tag plaisir">🧁 Gourmand</span>':"")+(r.nc?'<span class="tag froid">❄️ Sans cuisson</span>':""):(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"")}
         <span class="serv">Portions <button type="button" class="sb" data-s="-1" aria-label="Une portion de moins">−</button><b class="num" id="servN">${servings}</b><button type="button" class="sb" data-s="1" aria-label="Une portion de plus">+</button></span></div>
       <div class="avis" data-avis="${r.id}">${avisInner(r.id)}</div>
       ${(()=>{const m=new Date().getMonth()+1,ss=seasonOf(r,m);return ss.s==="saison"?`<p class="seasonnote" style="color:#3F7A1F;background:#EEF6E6">🌱 De saison en ${MOIS[m-1]}.</p>`:ss.s==="hors"?`<p class="seasonnote">Hors saison en ${MOIS[m-1]} : ${esc(seasonOutTxt(r,m))}.</p>`:""})()}
       ${foyConf(r).length?`<div class="warnbox">Attention, contient : ${esc(conflictText(foyConf(r)))}</div>`:""}
       <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings" id="ings"></ul></div>
         <div><h4>Préparation</h4><ol class="steps" id="steps"></ol></div></div>
-      <div class="bcnote"><b>En batch cooking :</b> ${bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc.j)}</div>
+      ${r.dessert?(r.w?`<div class="bcnote"><b>À prévoir :</b> ${esc(r.w)} avant de servir.</div>`:""):`<div class="bcnote"><b>En batch cooking :</b> ${bc.t.length?bc.t.map(t=>esc(t[1])).join(" ; ")+".":"rien à préparer à l'avance."} <b>Le jour J :</b> ${esc(bc.j)}</div>`}
       <div class="addcart"><button type="button" class="cookb" data-cook="${r.id}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button>${cartBtn(r.id,true)}</div>
-      ${isKid()?`<div class="addmenu kidprop"><strong>Proposer ce plat aux adultes</strong>
+      ${r.dessert?"":isKid()?`<div class="addmenu kidprop"><strong>Proposer ce plat aux adultes</strong>
         <select id="addDay" aria-label="Jour"><option value="">Peu importe le jour</option>${[6,0,1,2,3,4,5].map(i=>`<option value="${i}">${DAYS[i]}</option>`).join("")}</select>
         <select id="addWhen" aria-label="Repas"><option>Soir</option><option>Midi</option></select>
         <input id="propMsg" maxlength="200" placeholder="Un petit mot ? (facultatif)" aria-label="Un petit mot">
@@ -2485,8 +2527,9 @@ document.addEventListener("click",e=>{
   if(!ov.hidden)return;
   const f=e.target.closest("[data-f]");if(f){const id=f.dataset.f,v=sel[id];if(!v)sel[id]=1;else if(v===1)sel[id]=-1;else delete sel[id];save();render();return}
   const rm=e.target.closest("[data-rm]");if(rm){delete sel[rm.dataset.rm];save();render();return}
-  if(e.target.closest("[data-clearall]")){sel={};quick.clear();q="";region="";document.getElementById("q").value="";save();render();return}
-  const qf=e.target.closest("[data-q]");if(qf){const k=qf.dataset.q;quick.has(k)?quick.delete(k):quick.add(k);save();render();return}
+  if(e.target.closest("[data-clearall]")){sel={};curQ().clear();q="";if(isDes())dtype="";else region="";document.getElementById("q").value="";save();render();return}
+  const qf=e.target.closest("[data-q]");if(qf){const k=qf.dataset.q,Q=curQ();if(Q.has(k))Q.delete(k);else{if(isDes()&&LEVEL[k])Object.keys(LEVEL).forEach(x=>Q.delete(x));Q.add(k)}save();render();return}
+  const dtb=e.target.closest("[data-dt]");if(dtb){dtype=dtb.dataset.dt;save();render();return}
   const rg=e.target.closest("[data-reg]");if(rg){region=rg.dataset.reg;save();render();return}
   const tf=e.target.closest("#toggleFacets");if(tf){const p=document.getElementById("side");p.classList.toggle("open");tf.setAttribute("aria-expanded",p.classList.contains("open"));return}
   const c=e.target.closest("[data-r]");if(c){openRecipe(c.dataset.r);return}
@@ -2501,7 +2544,12 @@ document.getElementById("impForm").addEventListener("submit",e=>{e.preventDefaul
 document.getElementById("sort").addEventListener("change",e=>{sort=e.target.value;save();render()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden&&!COOK.active)closeModal()});
 document.addEventListener("change",e=>{const c=e.target.closest("[data-tick]");if(c){cartTick(c.dataset.tick,c.checked);}});
-renderHero();render();paintCartBar();
+function setModeFromHash(){const h=location.hash,m=h.match(/^#desserts(?:-(\w+))?$/);const was=mode;
+  if(m){mode="desserts";const t=m[1];if(t==="chocolat"){dquick.add("choc")}else if(t&&DTL[t])dtype=t}else if(h!=="#frigo")mode="plats";
+  if(was!==mode){sel={};q="";const qi=document.getElementById("q");if(qi)qi.value=""}renderHero();render()}
+window.addEventListener("hashchange",setModeFromHash);
+if(/^#desserts/.test(location.hash))mode="desserts";
+setModeFromHash();paintCartBar();
 CLOUD.init({apply(){try{loadMine()}catch(e){}avLoad();loadFoy();render();paintCartBar();if(cartOpen)renderCart();document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis))}});
 
 // ---------- Menu « Plus » de la navigation ----------
@@ -2517,7 +2565,7 @@ CLOUD.init({apply(){try{loadMine()}catch(e){}avLoad();loadFoy();render();paintCa
 document.querySelectorAll("nav.mainnav [data-nav]").forEach(a=>{if(a.dataset.nav==="recettes")a.setAttribute("aria-current","page")});
 
 // Lien direct vers une recette : recettes.html#r=identifiant
-document.getElementById("dice").addEventListener("click",()=>{const L=R.filter(r=>!r.id.startsWith("mix:"));openRecipe(L[Math.floor(Math.random()*L.length)].id)});
+document.getElementById("dice").addEventListener("click",()=>{const L=LIST().filter(r=>!r.id.startsWith("mix:"));openRecipe(L[Math.floor(Math.random()*L.length)].id)});
 (()=>{const m=location.hash.match(/^#([rc])=(.+)$/);if(m){const id=decodeURIComponent(m[2]);if(RB[id])setTimeout(()=>{try{openRecipe(id);if(m[1]==="c"){const b=document.querySelector("[data-cook]");b&&b.click()}}catch(e){}},50)}})();
 
 // ---------- Appli installable : service worker et bouton « Installer » ----------

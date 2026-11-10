@@ -751,7 +751,7 @@ body.storemode #shop .hint{font-size:13px}
 .xrec.xcompact{display:flex;flex-direction:row;align-items:flex-start;gap:6px}.xrec.mainrec{border-top:0;padding-top:0}.mainrec .xdel{margin-top:1px}.xcompact .name{flex:1;min-width:0}
 .cmenu{position:absolute;z-index:60;min-width:230px;max-width:min(320px,calc(100vw - 16px));background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column}
 .cmenu .cmh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:6px 10px 4px}
-.cmenu>button{font:inherit;font-size:14px;text-align:left;background:none;border:0;border-radius:10px;padding:9px 10px;cursor:pointer;color:var(--ink)}
+.cmenu>button{font:inherit;font-size:14px;text-align:left;background:none;border:0;border-radius:10px;padding:9px 10px;cursor:pointer;color:var(--ink)}.cmenu>a{font-size:14px;border-radius:10px;padding:9px 10px;color:var(--accent);text-decoration:none;font-weight:600;border-top:1px solid var(--line);margin-top:4px}.cmenu>a:hover{background:var(--bg)}
 .cmenu>button:hover:not([disabled]),.cmenu>button:focus-visible{background:var(--bg)}
 .cmenu>button[disabled]{opacity:.45;cursor:not-allowed}.cmenu>button.danger{color:#a12d2d}
 .cmstep{display:flex;align-items:center;justify-content:center;gap:16px;padding:6px 0 8px}
@@ -955,7 +955,7 @@ body.storemode #shop .hint{font-size:13px}
   </section>
 
   <section class="view" id="v-recettes" hidden>
-    <nav class="subnav" aria-label="Recettes"><a href="#recettes" aria-current="page">Cette semaine</a><a href="recettes.html">Catalogue complet (<span class="ncat">1 000+</span>)</a><a href="#mesrecettes">＋ Ajouter une recette</a></nav>
+    <nav class="subnav" aria-label="Recettes"><a href="#recettes" aria-current="page">Cette semaine</a><a href="recettes.html">Catalogue complet (<span class="ncat">1 000+</span>)</a><a href="recettes.html#desserts">🍰 Desserts</a><a href="#mesrecettes">＋ Ajouter une recette</a></nav>
     <div class="shophead"><div><h2 style="font-size:30px">Les recettes de la semaine</h2><p>Quantités calculées pour le nombre de personnes de chaque repas.</p></div></div>
     <div class="reclist" id="reclist"></div>
   </section>
@@ -965,7 +965,7 @@ body.storemode #shop .hint{font-size:13px}
   <section class="view" id="v-propositions" hidden><nav class="subnav" aria-label="Groupe"><a href="#groupe">Groupe et règles</a><a href="#gouts">Mes goûts</a><a href="#propositions" aria-current="page">Propositions</a></nav><div id="propbox"></div></section>
   <section class="view" id="v-historique" hidden><div id="histbox"></div></section>
   <section class="view" id="v-rappels" hidden><div id="rapbox"></div></section>
-  <section class="view" id="v-mesrecettes" hidden><nav class="subnav" aria-label="Recettes"><a href="#recettes">Cette semaine</a><a href="recettes.html">Catalogue complet</a><a href="#mesrecettes" aria-current="page">＋ Ajouter une recette</a></nav><div id="minebox"></div></section>
+  <section class="view" id="v-mesrecettes" hidden><nav class="subnav" aria-label="Recettes"><a href="#recettes">Cette semaine</a><a href="recettes.html">Catalogue complet</a><a href="recettes.html#desserts">🍰 Desserts</a><a href="#mesrecettes" aria-current="page">＋ Ajouter une recette</a></nav><div id="minebox"></div></section>
   <section class="view" id="v-admin" hidden><div id="adminbox"></div></section>
 
   <section class="view" id="v-courses" hidden>
@@ -988,6 +988,7 @@ body.storemode #shop .hint{font-size:13px}
 <textarea id="copyArea" style="position:fixed;left:-9999px;top:0" aria-hidden="true" tabindex="-1"></textarea>
 
 <script src="recettes-plus.js?v=20261109b"></script>
+<script src="desserts.js?v=20261110a"></script>
 <script>
 // ---------- Ingrédients ----------
 // u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
@@ -1903,6 +1904,7 @@ QNEW.forEach(o=>{const r=Object.assign({},o);delete r.j;if(RB[r.id])Object.assig
 // Recettes ajoutées (fichier partagé recettes-plus.js)
 (()=>{const X=window.MENUS_PLUS;if(!X)return;Object.assign(I,X.I);if(X.IREN)for(const k in X.IREN)if(I[k])Object.assign(I[k],X.IREN[k]);if(X.FIX)for(const id in X.FIX)if(RB[id])Object.assign(RB[id],X.FIX[id]);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:"Réchauffer doucement avant de servir."}})})();
 Object.assign(BC,QBC);
+(()=>{const X=window.MENUS_DESSERTS;if(!X)return;Object.assign(I,X.I);const T=Object.fromEntries(X.T);X.R.forEach(r=>{r.dessert=1;r.pays=T[r.dt]||"Dessert";r.reg="Dessert";r.for=[];RB[r.id]=r;BC[r.id]={t:[],j:""}})})();
 const SIMPLE=new Set(["ssoupecourgette","ssoupecarotte","ssoupepoireau","ssoupetomate","ssoupebrocoli","ssoupepois","ssoupepotiron","ssoupechampi","ssoupevermicelle","scordonbleu","spoissonpane","ssteakfrites","spoulethv","spouletcreme","spatesbeurre","spatesthon","spatestomate","sjambonpuree","sknackis","somelette","soeufscoque","soeufsdurs","stomatesfarcies","sgratincourgette","sraviolis","srizpoulet","ssteakcarottes","spoireauxvinaigrette","squichesimple","spurrecabillaud","spatesbolo","sgratinpdt","wsteak","wsaumon","wpoulettenders","wcurry","whoumous","wjambonchaud","woeuf","ppouletfrites","ppouletpatates","ppouletpatatesdouces","psaucissesplaque","psaumonplaque","pgnocchisfour","ppatesfour","prizfour","pfajitasplaque","pboulettesfour","pcabillaudfour","pcurryfour","ppatatesfarcies","sailesfour","ssaucissesfrites","spateslardons","spouletcurryriz","sescalopepanee","soeufsbrouilles","srizsaute","spoeleepoulet","ssteakhvpdt","sgratinchoufleurs","ssaladecomposee","pouletroti","steakpuree","ksteakhache","kjambonpuree","kcotesporc","saucissepuree","coquillettes","croques","kcroquemadame","komelettejambon","ksoupelegumes","kchoufleursoupe","kcourgettesoupe","kpoiscasses","kwrapjambon","ksaladepates","ksaladeriz","galettes","kcrepessalees","kpetitspoissoupe","ktomatesoupe"]);R.forEach(r=>{if(SIMPLE.has(r.id))r.simple=1});
 // ---------- Assiette toute simple : viande ou poisson + accompagnement + légume ----------
 const MIXP={
@@ -1998,10 +2000,12 @@ R.forEach(r=>{r.temp=tempOf(r)});
 const MRK="menus.mesrecettes";
 const mineRead=()=>{try{return JSON.parse(localStorage.getItem(MRK)||"null")||{}}catch(e){return {}}};
 function loadMine(){const M=mineRead();
-  for(let i=R.length-1;i>=0;i--){const r=R[i];if(r.mine&&!M[r.id]){R.splice(i,1);delete RB[r.id];delete BC[r.id]}}
+  for(let i=R.length-1;i>=0;i--){const r=R[i];if(r.mine&&(!M[r.id]||M[r.id].p==="dessert")){R.splice(i,1);delete RB[r.id];delete BC[r.id]}}
+  Object.keys(RB).forEach(id=>{if(RB[id].mine&&RB[id].dessert&&(!M[id]||M[id].p!=="dessert"))delete RB[id]});
   Object.values(M).forEach(x=>{if(!x||!x.id||!x.n)return;Object.entries(x.custom||{}).forEach(([k,v])=>{if(!I[k]||I[k].custom)I[k]=Object.assign({k:0,custom:1},v)});
     const r=Object.assign({for:["l2","fam"],p:"vege",t:30,pays:"France",reg:"France",st:[]},x,{mine:1});r.ing=(x.ing||[]).filter(([id])=>I[id]);r.temp=tempOf(r);
-    if(RB[r.id]){Object.keys(RB[r.id]).forEach(k=>delete RB[r.id][k]);Object.assign(RB[r.id],r)}else{R.push(r);RB[r.id]=r}
+    if(r.p==="dessert"){r.dessert=1;r.reg="Dessert";r.for=[]}
+    if(RB[r.id]){Object.keys(RB[r.id]).forEach(k=>delete RB[r.id][k]);Object.assign(RB[r.id],r)}else{if(!r.dessert)R.push(r);RB[r.id]=r}
     BC[r.id]={t:[],j:"Réchauffer doucement avant de servir."}});
 }
 loadMine();
@@ -2019,6 +2023,7 @@ Object.assign(I.creme,{n:"Crème fraîche 15 %"});I.mozza.n="Mozzarella";I.lardo
 // Options facultatives par recette : un accompagnement en plus, par personne
 const SOUPLIKE=/velouté|soupe|ramen|pho|laksa|harira|bortsch|minestrone|pozole|salade/i;
 function optionsFor(r){
+  if(r.dessert)return [];
   // uniquement des ingrédients absents de la recette
   const has=id=>r.ing.some(([x])=>x===id);
   const bread=["baguette","painmie","pita","tortillas","painburger","galette","patepizza","brick","farinemais"].some(has);
@@ -3490,7 +3495,8 @@ document.addEventListener("click",e=>{
 // ---------- Mes recettes : saisie ou import depuis un lien ----------
 const MINE=(()=>{
   let edit=null,busy=false,err="",url="",arm="";
-  const PROTS=[["poulet","Poulet"],["dinde","Dinde"],["boeuf","Bœuf"],["porc","Porc"],["jambon","Jambon"],["agneau","Agneau"],["colin","Poisson"],["saumon","Saumon"],["crevettes","Crevettes"],["oeuf","Œufs"],["vege","Végétarien"]];
+  const PROTS=[["poulet","Poulet"],["dinde","Dinde"],["boeuf","Bœuf"],["porc","Porc"],["jambon","Jambon"],["agneau","Agneau"],["colin","Poisson"],["saumon","Saumon"],["crevettes","Crevettes"],["oeuf","Œufs"],["vege","Végétarien"],["dessert","🍰 Dessert"]];
+  const SWEET=/g[âa]teau|tarte(?! flamb)|cake|crumble|clafoutis|brownie|fondant|mousse au|cr[èe]me (br[ûu]l|caramel|dessert|anglaise|vanille|chocolat)|tiramisu|panna|cookie|biscuit|cr[êe]pe|gaufre|madeleine|financier|sabl[ée]|muffin|cheesecake|glace|sorbet|granit|compote|riz au lait|flan|pain perdu|charlotte|b[ûu]che|macaron|meringue|beignet|chocolat|caramel|pancake|far breton|quatre-quarts|kouign|pavlova|profiterole|[ée]clair/i;
   const UNITS={g:"g",ml:"ml",pc:"pièce(s)",cs:"c. à soupe",cc:"c. à café",bouquet:"bouquet",gousse:"gousse"};
   // Unités proposées dans l'éditeur (chaque ingrédient peut avoir la sienne)
   const UOPT=[["g","g"],["kg","kg"],["ml","ml"],["cl","cl"],["l","L"],["pc","pièce(s)"],["cs","c. à soupe"],["cc","c. à café"],["pincee","pincée(s)"],["gousse","gousse(s)"],["bouquet","bouquet(s)"]];
@@ -3529,7 +3535,7 @@ const MINE=(()=>{
     <form class="mineform" data-mineform>
       <label class="fl wide">Nom de la recette<input name="n" required maxlength="120" value="${esc(x.n)}" placeholder="Gratin de mamie"></label>
       <label class="fl">Temps (min)<input name="t" type="number" min="5" max="600" value="${x.t||30}"></label>
-      <label class="fl">Plat principal<select name="p">${PROTS.map(([v,l])=>`<option value="${v}" ${x.p===v?"selected":""}>${l}</option>`).join("")}</select></label>
+      <label class="fl">Type de plat<select name="p">${PROTS.map(([v,l])=>`<option value="${v}" ${x.p===v?"selected":""}>${l}</option>`).join("")}</select></label>
       <label class="fl">Pour<select name="for"><option value="lf" ${x.for.length===2?"selected":""}>Midi et soir</option><option value="l" ${x.for.length===1&&x.for[0]==="l2"?"selected":""}>Plutôt le midi</option><option value="f" ${x.for.length===1&&x.for[0]==="fam"?"selected":""}>Plutôt le soir</option></select></label>
       <label class="fl">Origine<input name="pays" maxlength="40" value="${esc(x.pays||"France")}"></label>
       <fieldset class="fl wide"><legend>Ingrédients <small class="muted">(quantités pour 1 personne)</small></legend>
@@ -3555,7 +3561,7 @@ const MINE=(()=>{
       ing.push([iid,Math.round(q*100)/100])});
     const a=meAcc();M[id]={id,n:edit.n,for:edit.for,p:edit.p,t:edit.t,pays:edit.pays,reg:(R.find(z=>z.pays===edit.pays)||{}).reg||"France",ing,st:edit.st.length?edit.st:["Suivre la recette."],simple:edit.simple||undefined,tag:edit.tag||undefined,custom,src:edit.src||undefined,by:a&&a.user?a.user.username:"",byName:a&&a.user?a.user.name:"",at:Date.now()};
     try{localStorage.setItem(MRK,JSON.stringify(M))}catch(e){}cloudChanged();loadMine();edit=null;render();toast("Recette enregistrée : elle est dans le catalogue")}
-  async function doImport(u){busy=true;err="";url=u;render();try{const x=await CLOUD.call("POST","/import",{url:u});edit=Object.assign(blank(),{n:x.name,t:x.time||30,st:x.steps,src:u,pays:x.cuisine||"France"});edit.rows=x.ingredients.filter(l=>!/^\s*(sel|poivre|sel,?\s*(et\s*)?poivre|eau)\b[^a-z]*$/i.test(l)&&!/^\s*(sel|poivre)\s*(,|et)\s*(sel|poivre)/i.test(l)).map(l=>parseLine(l,x.yield));url=""}catch(e){err=e.net?"Import impossible sans connexion au serveur (connectez-vous à votre compte).":e.message}busy=false;render()}
+  async function doImport(u){busy=true;err="";url=u;render();try{const x=await CLOUD.call("POST","/import",{url:u});edit=Object.assign(blank(),{n:x.name,t:x.time||30,st:x.steps,src:u,pays:x.cuisine||"France"});if(SWEET.test(x.name||""))edit.p="dessert";edit.rows=x.ingredients.filter(l=>!/^\s*(sel|poivre|sel,?\s*(et\s*)?poivre|eau)\b[^a-z]*$/i.test(l)&&!/^\s*(sel|poivre)\s*(,|et)\s*(sel|poivre)/i.test(l)).map(l=>parseLine(l,x.yield));url=""}catch(e){err=e.net?"Import impossible sans connexion au serveur (connectez-vous à votre compte).":e.message}busy=false;render()}
   document.addEventListener("click",e=>{
     const om=e.target.closest("[data-open-mine]");if(om){openRecipeAny(om.dataset.openMine);return}
     const b=e.target.closest("[data-mine]");if(!b||isKid())return;const [k,a]=b.dataset.mine.split("|");
@@ -3710,7 +3716,8 @@ const CM=(()=>{let el=null,cur=null;
     if(kind==="des"){const cur=(W.dessert||{})[k];return `<div class="cmh">Dessert · ${esc(slotLabel(sl))}</div>
       ${desTypes().map(t=>`<button type="button" role="menuitem" class="${cur===t.id?"cur":""}" data-mact="des|${k}" data-des="${esc(t.id)}">${t.ic} ${esc(t.n)}${cur===t.id?" ✓":""}</button>`).join("")}
       <button type="button" role="menuitem" data-mact="des|${k}" data-des="rand">🎲 Un autre au hasard</button>
-      <button type="button" role="menuitem" class="${cur==="none"?"cur":""}" data-mact="des|${k}" data-des="none">🚫 Pas de dessert${cur==="none"?" ✓":""}</button>`}
+      <button type="button" role="menuitem" class="${cur==="none"?"cur":""}" data-mact="des|${k}" data-des="none">🚫 Pas de dessert${cur==="none"?" ✓":""}</button>
+      <a role="menuitem" href="recettes.html#desserts${{gateau:"-gateau",creme:"-creme",glace:"-glace",biscuit:"-biscuit",fruit:"-fruit",compote:"-fruit",chocolat:"-chocolat",yaourt:"-creme",fromageblanc:"-creme"}[cur]||""}">📖 Idées de recettes</a>`}
     if(kind==="pers"){const n=PN(sl),def=S.def[WH(sl)];return `<div class="cmh">Personnes · ${esc(slotLabel(sl))}</div>
       <div class="cmstep"><button type="button" data-mact="p-|${k}" ${n<=1?"disabled":""} aria-label="Une personne de moins">−</button><b class="num">${n}</b><button type="button" data-mact="p+|${k}" ${n>=12?"disabled":""} aria-label="Une personne de plus">+</button></div>
       ${n!==def?`<button type="button" role="menuitem" data-mact="pdef|${k}">↺ Revenir à ${def}, le nombre habituel</button>`:`<small class="muted cmnote">Nombre habituel : ${def}. Il se règle dans Groupe › Qui mange quand ?</small>`}`}
