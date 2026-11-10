@@ -738,6 +738,10 @@ body.storemode #shop .hint{font-size:13px}
 .mbar .more{font:inherit;font-size:16px;line-height:1;width:36px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
 .ppill{font:inherit;font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
 .ppill.custom{border-color:var(--accent);color:var(--accent);background:#eef5ee}.ppill[disabled]{cursor:default;opacity:.8}
+.dpill{align-self:flex-start;max-width:100%;font:inherit;font-size:12px;line-height:1.3;text-align:left;padding:3px 9px;border-radius:999px;border:1px dashed var(--line);background:none;color:var(--ink);cursor:pointer}
+.dpill.none{color:var(--muted)}.dpill[disabled]{cursor:default}.dpill:hover:not([disabled]),.dpill[aria-expanded="true"]{border-color:var(--accent);border-style:solid}
+.cmenu>button.cur{font-weight:700;color:var(--accent)}
+.desrow .xdel{margin-left:auto}.desadd{margin-top:10px}.desadd input{flex:1;min-width:0;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--ink)}
 .tpin{font-size:11px}
 .xrec.xcompact{display:flex;flex-direction:row;align-items:flex-start;gap:6px}.xrec.mainrec{border-top:0;padding-top:0}.mainrec .xdel{margin-top:1px}.xcompact .name{flex:1;min-width:0}
 .cmenu{position:absolute;z-index:60;min-width:230px;max-width:min(320px,calc(100vw - 16px));background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column}
@@ -2651,6 +2655,73 @@ const CFGK="menus.config";
 const CFG_DEF={q:{fish:1,fishmax:14,vege:1,redmax:3,soup:0,simple:3,fav:0},nosouplunch:1,saison:1,starch:1,neu:1,tmax:0,light:0,norepeat:2,ban:{},themes:{}};
 function CFG(){let c={};try{c=JSON.parse(localStorage.getItem(CFGK)||"null")||{}}catch(e){}return Object.assign({},CFG_DEF,c,{q:Object.assign({},CFG_DEF.q,c.q||{}),ban:c.ban||{},themes:c.themes||{}})}
 function cfgWrite(c){try{localStorage.setItem(CFGK,JSON.stringify(c))}catch(e){}try{CLOUD.changed()}catch(e){}}
+// ---------- Desserts : une catégorie par repas (fromage, yaourt, gâteau…) ----------
+// Réglage du groupe : config.dessert = {on, f:{type:0 jamais | 1 de temps en temps | 2 souvent}, x:{id:nom ajouté}}
+// Semaine : W.dessert[repas] = type (ou "none"), W.dpin[repas] = 1 si choisi à la main.
+const DES=[["fruit","🍎","Fruit",2],["yaourt","🥛","Yaourt",2],["fromage","🧀","Fromage",2],["fromageblanc","🥄","Fromage blanc",1],["compote","🍐","Compote",1],["chocolat","🍫","Carré de chocolat",1],["gateau","🍰","Gâteau",1],["creme","🍮","Crème dessert",1],["glace","🍨","Glace",1],["biscuit","🍪","Biscuits",0]];
+function desCfg(){const d=CFG().dessert||{};return {on:d.on!==0,f:d.f||{},x:d.x||{}}}
+function desTypes(){const c=desCfg();return DES.map(([id,ic,n,df])=>({id,ic,n,f:id in c.f?+c.f[id]:df})).concat(Object.entries(c.x).map(([id,n])=>({id,ic:"🍽️",n:String(n),f:id in c.f?+c.f[id]:1,custom:1})))}
+function desInfo(id){return desTypes().find(t=>t.id===id)}
+function desLine(k){if(!desCfg().on)return "";const id=(W.dessert||{})[k],t=id&&id!=="none"&&desInfo(id);return t?t.ic+" "+t.n:""}
+function desPick(k,rand,not){
+  const ok=desTypes().filter(t=>t.f>0);if(!ok.length)return null;
+  const act=SLOTS.filter(s=>W.mode[s.key]!=="skip"||s.key===k),i=act.findIndex(s=>s.key===k),D=W.dessert||{};
+  const av=new Set([not,act[i-1]&&D[act[i-1].key],act[i+1]&&D[act[i+1].key]]);
+  let pool=ok.filter(t=>!av.has(t.id));if(!pool.length)pool=ok.filter(t=>t.id!==not);if(!pool.length)pool=ok;
+  const wt=t=>t.f>=2?3:1;let x=rand()*pool.reduce((a,t)=>a+wt(t),0);
+  for(const t of pool){x-=wt(t);if(x<0)return t.id}return pool[pool.length-1].id;
+}
+// Complète les desserts manquants (tirage stable par semaine) ; « random » et « cfg » retirent ceux qui n'ont pas été choisis à la main.
+function fillDesserts(mode){
+  if(!W||!desCfg().on)return;const T=desTypes();if(!T.some(t=>t.f>0))return;
+  const redo=mode==="random"||mode==="cfg",D=W.dessert=W.dessert||{},P=W.dpin||{};
+  SLOTS.forEach((s,i)=>{const k=s.key;if((W.mode||{})[k]==="skip")return;
+    const cur=D[k],t=T.find(x=>x.id===cur),valid=cur==="none"||!!(t&&(t.f>0||P[k]));
+    if(valid&&(P[k]||!redo))return;
+    if(!valid)delete P[k];
+    const n=desPick(k,redo?Math.random:rng(7000+S.cur*31+i),redo?cur:undefined);if(n)D[k]=n;else delete D[k]});
+  if(W.dpin&&!Object.keys(W.dpin).length)delete W.dpin;
+}
+function setDessert(k,id){
+  W.dessert=W.dessert||{};W.dpin=W.dpin||{};
+  if(id==="rand"){delete W.dpin[k];const n=desPick(k,Math.random,W.dessert[k]);if(n)W.dessert[k]=n}
+  else{W.dessert[k]=id;W.dpin[k]=1}
+  if(!Object.keys(W.dpin).length)delete W.dpin;
+  save();renderWeek();renderToday();
+  const t=desInfo(W.dessert[k]);toast(t?t.ic+" "+t.n+" en dessert · "+slotLabel(SK[k]):"Pas de dessert · "+slotLabel(SK[k]));
+}
+function desHTML(k){
+  if(!desCfg().on)return "";const id=(W.dessert||{})[k];if(!id)return "";
+  const t=id==="none"?null:desInfo(id);if(id!=="none"&&!t)return "";const kid=isKid();
+  return `<button type="button" class="dpill${t?"":" none"}" ${kid?"disabled":`data-cmenu="des|${k}" aria-haspopup="menu"`} title="Dessert de ce repas${kid?"":" : toucher pour le changer"}">${t?`<span aria-hidden="true">${t.ic}</span> ${esc(t.n)}`:"Pas de dessert"}</button>`;
+}
+function desCfgHTML(){
+  const c=desCfg(),T=desTypes();
+  return `<section class="cfgcard"><h3>🍮 Les desserts</h3>
+      <label class="cfgtog"><span class="sw"><input type="checkbox" data-destog ${c.on?"checked":""}><span class="swt" aria-hidden="true"></span></span><span><b>Un dessert à chaque repas</b><small class="muted">Le semainier alterne entre les desserts ci-dessous, sans servir le même deux repas de suite. Sur chaque repas, touchez le dessert pour le changer.</small></span></label>
+      ${c.on?T.map(t=>`<div class="cfgrow desrow"><span><span aria-hidden="true">${t.ic}</span> ${esc(t.n)}</span>${t.custom?`<button type="button" class="xdel" data-desdel="${esc(t.id)}" aria-label="Retirer ${esc(t.n)}" title="Retirer ce dessert de la liste">×</button>`:""}<select data-desf="${esc(t.id)}" aria-label="${esc(t.n)} : à quelle fréquence">${[[0,"Jamais"],[1,"De temps en temps"],[2,"Souvent"]].map(([v,l])=>`<option value="${v}" ${t.f===v?"selected":""}>${l}</option>`).join("")}</select></div>`).join("")+`<div class="thadd desadd"><input type="text" id="desNew" maxlength="30" placeholder="Un autre dessert : tiramisu, salade de fruits…" autocomplete="off" aria-label="Ajouter un dessert à la liste"><button type="button" class="btn sm primary" data-desadd>Ajouter</button></div>`:""}</section>`;
+}
+function desWrite(fn){
+  const C=CFG(),d=C.dessert=Object.assign({},C.dessert||{});d.f=Object.assign({},d.f||{});d.x=Object.assign({},d.x||{});
+  fn(d);cfgWrite(C);try{fillDesserts("keep")}catch(e){}save();renderCfg();renderWeek();renderToday();
+}
+document.addEventListener("change",e=>{
+  const s=e.target.closest("[data-destog],[data-desf]");if(!s)return;
+  if(isKid()){toast("Seuls les adultes peuvent changer les règles du groupe.");renderCfg();return}
+  if(s.hasAttribute("data-destog")){const on=s.checked;desWrite(d=>{d.on=on?1:0});toast(on?"Un dessert est proposé à chaque repas":"Les desserts ne sont plus affichés")}
+  else{const id=s.dataset.desf,v=+s.value;desWrite(d=>{d.f[id]=v})}
+});
+document.addEventListener("click",e=>{
+  const a=e.target.closest("[data-desadd],[data-desdel]");if(!a)return;
+  if(isKid()){toast("Seuls les adultes peuvent changer les règles du groupe.");return}
+  if(a.hasAttribute("data-desdel")){const id=a.dataset.desdel;desWrite(d=>{delete d.x[id];delete d.f[id]});return}
+  const inp=document.getElementById("desNew"),n=((inp&&inp.value)||"").trim().replace(/\s+/g," ").slice(0,30);
+  if(!n){toast("Écrivez d'abord le nom du dessert");if(inp)inp.focus();return}
+  const low=x=>String(x).toLowerCase();
+  if(desTypes().some(t=>low(t.n)===low(n))){toast("Ce dessert est déjà dans la liste");return}
+  const name=n[0].toUpperCase()+n.slice(1);desWrite(d=>{d.x["x"+Date.now().toString(36)]=name});toast(name+" ajouté aux desserts");
+});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="desNew"){e.preventDefault();const b=document.querySelector("[data-desadd]");if(b)b.click()}});
 const cfgBanned=r=>{const b=CFG().ban;return r.ing.some(([id])=>b[id])};
 
 // ---------- Semaines ----------
@@ -2710,6 +2781,7 @@ function useWeek(w){
   S.cur=Math.max(NOWW(),Math.min(NOWW()+HORIZON-1,w));
   if(!S.weeks[S.cur]){S.weeks[S.cur]={plan:{},mode:{},pin:{},checked:{},shopSess:1};W=S.weeks[S.cur];try{const E=CFG().eaters||{};Object.keys(E).forEach(k=>{if(E[k]&&E[k].skip)W.mode[k]="skip"})}catch(_){}build(S.cur===0?"default":"seed")}
   W=S.weeks[S.cur];W.pin=W.pin||{};W.mode=W.mode||{};W.checked=W.checked||{};W.plan=W.plan||{};if(SLOTS.some(s=>W.plan[s.key]===undefined))build("keep");
+  try{fillDesserts("keep")}catch(e){}
   try{_seen=weekSig(W)}catch(e){}
   try{histReset()}catch(e){}
 }
@@ -2754,7 +2826,7 @@ function pick(slot,used,plan,exclude,rand,avoid){
   c=c.map(r=>[r,famBoost(r)+likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?2.5:0)+(isFav(r.id)?2:0)+(noteOf(r.id)?(noteOf(r.id)-3)*1.2:0)-(noteOf(r.id)===1?6:0)+(r.simple&&slot.day<5?(CLASSIC.has(r.id)?0.2:0.9):0)+(CLASSIC.has(r.id)?1:0)]).sort((a,b)=>b[1]-a[1]);
   return c[0][0].id;
 }
-function build(mode){return buildCfg(mode)}
+function build(mode){try{fillDesserts(mode)}catch(e){}return buildCfg(mode)}
 function buildOld(mode){ // keep | default | seed | random
   const plan={},used=new Set();
   const rand=mode==="seed"?rng(1000+S.cur):mode==="random"?Math.random:null;
@@ -2927,7 +2999,7 @@ const DND=(()=>{
   }
   document.addEventListener("pointerdown",e=>{
     if(e.button!==0)return;const m=meal(e.target);if(!m||!m.dataset.dragkey||m.classList.contains("is-off"))return;
-    if(e.target.closest(".mbar,.xdel,.ppill,.restore,.cmenu,input,select,textarea"))return;
+    if(e.target.closest(".mbar,.xdel,.ppill,.dpill,.restore,.cmenu,input,select,textarea"))return;
     st={src:m,x:e.clientX,y:e.clientY,id:e.pointerId,touch:e.pointerType!=="mouse",on:false};
     if(st.touch)st.lp=setTimeout(()=>{if(st&&!st.on)begin()},380);
   });
@@ -2973,6 +3045,7 @@ function renderWeek(){
         <div class="when"><span>${dk&&mode!=="skip"?'<span class="grip" aria-hidden="true" title="Glisser sur un autre repas pour les échanger">⠿</span>':""}${sl.when}${tv?` <span class="tpin" title="Préférence pour ce repas">${tv==="chaud"?"🔥":"❄️"}</span>`:""}</span><span class="wr">${mode!=="skip"&&r&&slotOk(sl.key)?'<span class="okchip">✓ Validé</span>':""}${mode!=="skip"?`<button type="button" class="ppill${pc?" custom":""}" ${kid?"disabled":`data-cmenu="pers|${sl.key}"`} aria-label="${PN(sl)} ${XS(sl.key).length&&!isRest?"portions":"personnes"}, modifier" title="Nombre de personnes pour ce repas">👤 ${PN(sl)}</button>`:""}</span></div>
         ${body}
         ${mode!=="skip"&&!isRest?extraHTML(sl):""}
+        ${mode!=="skip"&&r?desHTML(sl.key):""}
         ${mode!=="skip"&&r?`<div class="meta"><span class="num">≈ ${kcal(r)} kcal</span>${!isRest?tagHTML(r,2):""}</div>`:""}${r&&mode!=="skip"&&foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}
         ${mode==="skip"?"":kid?(isRest?"":`<div class="mbar"><button class="chg" type="button" data-pick="${sl.key}">Proposer un autre plat</button></div>`):`<div class="mbar">${isRest?`<button class="chg" type="button" data-setmode="${sl.key}|cook">Cuisiner un plat</button>`:`<button class="chg" type="button" data-cmenu="chg|${sl.key}" aria-haspopup="menu">Changer <span aria-hidden="true">▾</span></button>`}<button class="more" type="button" data-cmenu="more|${sl.key}" aria-haspopup="menu" aria-label="Plus d'options pour ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" title="Plus d'options">⋯</button></div>`}</div>`;
     }).join("");
@@ -3353,11 +3426,11 @@ function renderToday(){
   const now=NOWW(),d=todayIdx(),hr=new Date().getHours(),a=meAcc(),name=a&&a.user?a.user.name.split(" ")[0]:"";
   const tomorrow=d===5?null:(d===6?0:d+1);  // samedi : la semaine suivante commence dimanche
   const dl=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
-  const meal=(w,key,label)=>withWeek(w,()=>{const sl=SK[key],m=W.mode[key]||"cook";if(m==="skip")return `<div class="tmeal off"><small>${label}</small><b>Pas de repas prévu</b></div>`;
+  const meal=(w,key,label)=>withWeek(w,()=>{try{fillDesserts("keep")}catch(e){}const sl=SK[key],m=W.mode[key]||"cook";if(m==="skip")return `<div class="tmeal off"><small>${label}</small><b>Pas de repas prévu</b></div>`;
     const r=recipeAt(key);if(!r)return `<div class="tmeal off"><small>${label}</small><b>Rien de prévu</b></div>`;
     const rest=srcKey(key)!==key,xs=rest?[]:XS(key).map(x=>RB[x.id]).filter(Boolean),fz=frozen(sl);
     return `<div class="tmeal"><small>${label} · 👤 ${PN(sl)}${rest?" · restes":""}</small><b>${esc(r.n)}</b>${xs.length?`<span class="muted">+ ${xs.map(x=>esc(shortName(x))).join(" + ")}</span>`:""}
-      <span class="tmeta">${r.t} min${fz?' · <span class="tag gel">congelé</span>':""}</span>
+      <span class="tmeta">${r.t} min${fz?' · <span class="tag gel">congelé</span>':""}</span>${desLine(key)?`<span class="tmeta">Dessert : ${esc(desLine(key))}</span>`:""}
       <div class="tacts">${rest?"":`<button type="button" class="btn sm primary" data-todaycook="${w}|${key}">▶ Cuisiner</button>`}<button type="button" class="btn sm" data-todayopen="${w}|${srcKey(key)}">Voir la recette</button></div></div>`});
   const hasNow=!!S.weeks[now];
   let todo=[];
@@ -3592,6 +3665,10 @@ const CM=(()=>{let el=null,cur=null;
       ${r?`<button type="button" role="menuitem" data-mact="ok|${k}">${slotOk(k)?"✓ Retirer la validation":"✓ Valider ce repas"}</button>`:""}
       ${r?`<button type="button" role="menuitem" data-open="${srcKey(k)}">📄 Voir la recette</button>`:""}
       <button type="button" role="menuitem" class="danger" data-mact="skip|${k}">🗑 Supprimer ce repas</button>`}
+    if(kind==="des"){const cur=(W.dessert||{})[k];return `<div class="cmh">Dessert · ${esc(slotLabel(sl))}</div>
+      ${desTypes().map(t=>`<button type="button" role="menuitem" class="${cur===t.id?"cur":""}" data-mact="des|${k}" data-des="${esc(t.id)}">${t.ic} ${esc(t.n)}${cur===t.id?" ✓":""}</button>`).join("")}
+      <button type="button" role="menuitem" data-mact="des|${k}" data-des="rand">🎲 Un autre au hasard</button>
+      <button type="button" role="menuitem" class="${cur==="none"?"cur":""}" data-mact="des|${k}" data-des="none">🚫 Pas de dessert${cur==="none"?" ✓":""}</button>`}
     if(kind==="pers"){const n=PN(sl),def=S.def[WH(sl)];return `<div class="cmh">Personnes · ${esc(slotLabel(sl))}</div>
       <div class="cmstep"><button type="button" data-mact="p-|${k}" ${n<=1?"disabled":""} aria-label="Une personne de moins">−</button><b class="num">${n}</b><button type="button" data-mact="p+|${k}" ${n>=12?"disabled":""} aria-label="Une personne de plus">+</button></div>
       ${n!==def?`<button type="button" role="menuitem" data-mact="pdef|${k}">↺ Revenir à ${def}, le nombre habituel</button>`:`<small class="muted cmnote">Nombre habituel : ${def}. Il se règle dans Groupe › Qui mange quand ?</small>`}`}
@@ -3612,6 +3689,7 @@ document.addEventListener("click",e=>{
     if(a==="p-"||a==="p+"){setPers(k,PN(sl)+(a==="p+"?1:-1));CM.refresh();return}
     if(a==="pdef"){setPers(k,S.def[WH(sl)]);CM.refresh();return}
     CM.close();
+    if(a==="des"){setDessert(k,ma.dataset.des);return}
     if(a==="swap")return swap(k);
     if(a==="xchg"){swapMeals(k,k.slice(0,-1)+(k.endsWith("m")?"s":"m"));return}
     if(a==="hot"||a==="cold"){const t=a==="hot"?"chaud":"froid";W.temp=W.temp||{};W.temp[k]=t;delete W.pin[k];swap(k);toast((t==="chaud"?"🔥 Plat chaud":"❄️ Plat froid")+" pour "+slotLabel(sl)+" : gardé pour les prochains tirages");return}
@@ -3641,8 +3719,8 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-maindel]")
   else{setMode(k,"skip");build("keep");renderAll();toast("Repas du "+slotLabel(sl)+" supprimé · « Annuler » pour le remettre")}});
 
 // ---------- Partager le menu de la semaine (texte, WhatsApp, image, impression) ----------
-function weekLines(){return ORDER.map(i=>{const m=["m","s"].map(w=>{const k=i+w,mode=W.mode[k]||"cook";if(mode==="skip")return null;const r=recipeAt(k);if(!r)return null;const xs=srcKey(k)===k?XS(k).map(x=>RB[x.id]).filter(Boolean):[];return [w==="m"?"Midi":"Soir",shortName(r)+(xs.length?" + "+xs.map(shortName).join(" + "):"")+(srcKey(k)!==k?" (restes)":"")]}).filter(Boolean);return [DAYS[i]+" "+dayDate(S.cur,i).getDate(),m]})}
-function weekText(){const t=weekRange(S.cur);return "🍽️ Nos menus "+t+"\n\n"+weekLines().map(([d,m])=>"• "+d+"\n"+(m.length?m.map(([w,n])=>"   "+w+" : "+n).join("\n"):"   —")).join("\n")}
+function weekLines(){return ORDER.map(i=>{const m=["m","s"].map(w=>{const k=i+w,mode=W.mode[k]||"cook";if(mode==="skip")return null;const r=recipeAt(k);if(!r)return null;const xs=srcKey(k)===k?XS(k).map(x=>RB[x.id]).filter(Boolean):[];return [w==="m"?"Midi":"Soir",shortName(r)+(xs.length?" + "+xs.map(shortName).join(" + "):"")+(srcKey(k)!==k?" (restes)":""),desLine(k)]}).filter(Boolean);return [DAYS[i]+" "+dayDate(S.cur,i).getDate(),m]})}
+function weekText(){const t=weekRange(S.cur);return "🍽️ Nos menus "+t+"\n\n"+weekLines().map(([d,m])=>"• "+d+"\n"+(m.length?m.map(([w,n,d])=>"   "+w+" : "+n+(d?" · "+d:"")).join("\n"):"   —")).join("\n")}
 function weekCanvas(){const L=weekLines(),W2=1080,pad=56,lh=40,rows=L.reduce((t,[,m])=>t+1+Math.max(1,m.length),0);const H=pad*2+110+rows*lh+L.length*14;const c=document.createElement("canvas");c.width=W2;c.height=H;const x=c.getContext("2d");
   x.fillStyle="#f3f1ea";x.fillRect(0,0,W2,H);x.fillStyle="#1f3d2b";x.font="bold 46px Georgia, serif";x.fillText("Nos menus",pad,pad+40);x.font="28px system-ui, sans-serif";x.fillStyle="#5b5648";x.fillText(weekRange(S.cur),pad,pad+84);
   let y=pad+150;L.forEach(([d,m])=>{x.fillStyle="#2f6b3a";x.font="bold 28px system-ui, sans-serif";x.fillText(d,pad,y);y+=lh;x.font="26px system-ui, sans-serif";x.fillStyle="#22201b";(m.length?m:[["","—"]]).forEach(([w,n])=>{const s=(w?w+" : ":"")+n;let t=s;while(x.measureText(t).width>W2-pad*2-30&&t.length>4)t=t.slice(0,-2);if(t!==s)t=t.slice(0,-1)+"…";x.fillText(t,pad+24,y);y+=lh});y+=14});return c}
@@ -3979,6 +4057,7 @@ function renderCfg(){
     <section class="cfgcard"><h3>🚫 Jamais au menu</h3><p class="muted small">Ce que personne ne mange dans ce groupe : les recettes qui en contiennent ne sont plus proposées. (Les goûts de chacun restent dans « Mes goûts ».)</p>
       <div class="banchips">${bans.map(id=>`<button type="button" class="chip no" data-banrm="${id}" aria-label="Retirer ${esc(I[id].n)}">${esc(I[id].n)} ×</button>`).join("")||'<span class="muted small">Rien pour l\'instant.</span>'}</div>
       <div class="bansearch"><input type="search" id="banQ" data-banq placeholder="Rechercher un aliment : champignons, poivron, coriandre…" autocomplete="off" value="${esc(banQ)}"><div class="bansug" id="banSug">${banSuggest()}</div></div></section>
+    ${desCfgHTML()}
     ${eatersHTML()}
     <section class="cfgcard wide"><h3>🩺 Allergies, intolérances et régimes</h3><p class="muted small">Chaque personne qui mange avec ce groupe et ce qu'elle doit éviter : les recettes à risque sont écartées et signalées partout (semainier, catalogue, réceptions).</p><div id="foyer"></div></section>
   </div>
