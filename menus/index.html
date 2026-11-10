@@ -270,6 +270,11 @@ body.dnd-on,body.dnd-on *{cursor:grabbing!important}
 @media (max-width:860px){.sesbody{grid-template-columns:1fr}}
 
 /* Navigation semaines */
+.weekbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0}
+#propBanner:empty{display:none}
+.weekbar .weeknav{background:var(--surface)}
+.weekbar .weeknav span{font-size:15px;min-width:13ch;text-align:center}
+.wnow{border:0;background:none;color:var(--accent);font:inherit;font-size:14px;font-weight:600;text-decoration:underline;cursor:pointer;padding:4px}
 .weeknav{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px}
 .weeknav span{font-weight:600;font-size:14px;padding:0 6px;font-variant-numeric:tabular-nums}
 .wbtn{width:32px;height:32px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);font-size:20px;line-height:1;display:grid;place-items:center}
@@ -862,7 +867,6 @@ body.storemode #shop .hint{font-size:13px}
 <header class="top">
   <div class="wrap toprow">
     <div class="brand"><h1><a class="brandlink" href="#aujourdhui">Semainier</a></h1></div>
-    <div class="weeknav"><button class="wbtn" id="prevW" type="button" aria-label="Semaine précédente">‹</button><span id="weekLabel" aria-live="polite"></span><button class="wbtn" id="nextW" type="button" aria-label="Semaine suivante">›</button></div>
     <button type="button" class="accbtn" id="accBtn" hidden></button>
   </div>
   <div class="wrap tabrow">
@@ -890,6 +894,7 @@ body.storemode #shop .hint{font-size:13px}
   </div>
 </header>
 
+<div class="weekbar" id="weekbar" hidden><div class="weeknav"><button class="wbtn" id="prevW" type="button" aria-label="Semaine précédente">‹</button><span id="weekLabel" aria-live="polite"></span><button class="wbtn" id="nextW" type="button" aria-label="Semaine suivante">›</button></div><button type="button" class="wnow" id="weekNow" hidden>Revenir à cette semaine</button></div>
 <main class="wrap">
   <section class="view" id="v-aujourdhui" hidden><div id="todaybox"></div></section>
   <section class="view" id="v-semaine" hidden>
@@ -2817,6 +2822,16 @@ function renderWeekNav(){
   document.getElementById("weekLabel").textContent=t[0].toUpperCase()+t.slice(1);
   document.getElementById("prevW").disabled=S.cur<=NOWW();
   document.getElementById("nextW").disabled=S.cur>=NOWW()+HORIZON-1;
+  const wn=document.getElementById("weekNow");if(wn)wn.hidden=S.cur===NOWW();
+}
+document.getElementById("weekNow").addEventListener("click",()=>goWeek(NOWW()));
+// Vues qui dépendent de la semaine choisie : la barre de semaine s'y place en haut
+const WEEKV=["semaine","courses","recettes","batch"];
+function placeWeekbar(v){
+  const wb=document.getElementById("weekbar");if(!wb)return;
+  if(!WEEKV.includes(v)){wb.hidden=true;return}
+  const sec=document.getElementById("v-"+v),sub=sec.querySelector(":scope > .subnav");
+  if(sub)sub.after(wb);else sec.prepend(wb);wb.hidden=false;
 }
 
 // ---------- Validation du semainier (par repas et pour toute la semaine) ----------
@@ -4021,6 +4036,7 @@ function route(){
   let v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"aujourdhui";
   if(v==="admin"&&!isSuper())v="semaine";if(v==="admin")ADM.load();
   VIEWS.forEach(x=>document.getElementById("v-"+x).hidden=x!==v);
+  placeWeekbar(v);
   const top=["aujourdhui","semaine","courses","recettes"].includes(v)?v:"plus";
   document.querySelectorAll("nav.mainnav [data-nav]").forEach(a=>{if(a.dataset.nav===top)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   document.querySelectorAll("#plusMenu a").forEach(a=>{if(a.getAttribute("href")==="#"+v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
