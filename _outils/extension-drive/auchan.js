@@ -102,7 +102,7 @@
   }
 
   // ---------- Déroulé ----------
-  let run = null, prods = {}, busy = false, host = null, root = null, choice = null, msg = "";
+  let run = null, prods = {}, busy = false, adding = false, host = null, root = null, choice = null, msg = "";
 
   async function load() { run = await get(RUN); prods = (await get(PROD)) || {}; }
   async function save() { await set(RUN, run); }
@@ -142,16 +142,16 @@
   }
 
   async function pick(k) {
-    if (!choice || !choice.list || busy) return;
+    if (!choice || !choice.list || adding) return;
     const it = run.items[choice.i], o = choice.list[k]; if (!it || !o) return;
-    busy = true; msg = "Ajout de « " + o.name + " »…"; render();
+    adding = true; msg = "Ajout de « " + o.name + " »…"; render();
     try {
       const pack = packOf(o.attr), label = clean(o.name + " " + o.attr);
       const r = await addFor(it, o, pack);
       prods = (await get(PROD)) || {}; prods[it.key] = { id: o.productId, path: o.path, label, pack }; await set(PROD, prods);
       it.status = "ok"; it.n = r.n; it.prod = label; delete it.note; choice = null; await save();
-    } catch (e) { msg = "L'ajout n'a pas marché : " + e.message; busy = false; render(); return; }
-    busy = false; tick();
+    } catch (e) { msg = "L'ajout n'a pas marché : " + e.message; adding = false; render(); return; }
+    adding = false; tick();
   }
 
   // ---------- Panneau ----------
@@ -199,7 +199,7 @@
     } else if (choice) {
       const it = run.items[choice.i];
       const list = choice.list == null ? `<div class="m">Recherche de « ${esc(choice.q)} »…</div>`
-        : choice.list.length ? `<ul class="res">${choice.list.map((o, k) => `<li>${o.img ? `<img src="${esc(o.img)}" alt="">` : `<span class="ph"></span>`}<span><b>${esc(o.name)}</b><small>${esc(o.attr)}${o.price ? " · " + esc(o.price) : ""}</small></span><button class="pri" data-pick="${k}" ${busy ? "disabled" : ""}>Ajouter</button></li>`).join("")}</ul>`
+        : choice.list.length ? `<ul class="res">${choice.list.map((o, k) => `<li>${o.img ? `<img src="${esc(o.img)}" alt="">` : `<span class="ph"></span>`}<span><b>${esc(o.name)}</b><small>${esc(o.attr)}${o.price ? " · " + esc(o.price) : ""}</small></span><button class="pri" data-pick="${k}" ${adding ? "disabled" : ""}>Ajouter</button></li>`).join("")}</ul>`
         : `<div class="m">Aucun produit trouvé. Essayez d'autres mots.</div>`;
       body = `<div class="n">${esc(it.label)}</div>${it.need ? `<div class="q">Il en faut : ${esc(it.need)}</div>` : ""}${it.note ? `<div class="note">${esc(it.note)}</div>` : ""}
         <div class="m">Choisissez le produit : il sera ajouté et retenu pour les prochaines fois.</div>
