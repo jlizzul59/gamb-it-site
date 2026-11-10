@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Semainier → Drive Auchan",
+  "version": "1.0.0",
+  "description": "Remplit le panier auchan.fr à partir de la liste de courses du Semainier (gamb-it-apps.fr/menus).",
+  "permissions": ["storage"],
+  "content_scripts": [
+    { "matches": ["https://gamb-it-apps.fr/menus/*"], "js": ["site.js"], "run_at": "document_start" },
+    { "matches": ["https://www.auchan.fr/*"], "js": ["auchan.js"], "run_at": "document_idle" }
+  ]
+}

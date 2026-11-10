@@ -222,6 +222,7 @@ body.dnd-on,body.dnd-on *{cursor:grabbing!important}
 .aisle li.hasdrv{display:flex;align-items:center;gap:8px}.aisle li.hasdrv label{flex:1;min-width:0}
 .drv{flex:none;font-size:12px;font-weight:600;white-space:nowrap;text-decoration:none;color:var(--accent);border:1px solid var(--line);border-radius:999px;padding:3px 9px;background:var(--bg)}
 .drv:hover,.drv:focus-visible{border-color:var(--accent)}.aisle li.done .drv{opacity:.45}
+.driveext{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
 .drivenote{margin:0 0 12px;padding:10px 12px;border:1px dashed var(--line);border-radius:12px;font-size:13.5px}
 .aisle li.done label{color:var(--muted);text-decoration:line-through}
 
@@ -3233,10 +3234,15 @@ const hint=(id,q)=>{const x=I[id];if(!x.w)return"";const n=Math.max(1,Math.ceil(
 const DRVK="menus.drive",DRV={n:"Auchan",u:"https://www.auchan.fr/recherche?text="};
 const driveOn=()=>{try{return localStorage.getItem(DRVK)==="1"}catch(e){return false}};
 const driveQ=name=>{const fz=/surgel/i.test(name);return (String(name).replace(/\s*\([^)]*\)/g,"").replace(/\s+/g," ").trim()+(fz?" surgelés":"")).toLowerCase()};
+const driveExt=()=>document.documentElement.hasAttribute("data-semainier-ext");
 const driveLink=name=>{const q=driveQ(name);return q?`<a class="drv" data-drive href="${DRV.u+encodeURIComponent(q)}" target="semainier-drive" title="Chercher « ${esc(q)} » sur le site ${DRV.n}" aria-label="Chercher ${esc(q)} chez ${DRV.n}">${DRV.n} ↗</a>`:""};
 document.addEventListener("click",e=>{
   const a=e.target.closest("a[data-drive]");
   if(a){e.preventDefault();const w=window.open(a.href,"semainier-drive");try{if(w)w.opener=null}catch(_){}return}
+  if(e.target.closest("[data-drivesend]")){const items=window._driveItems||[];if(!items.length){toast("Rien à envoyer : tout est déjà coché");return}
+    window.postMessage({source:"semainier",type:"drive-list",items},location.origin);
+    const w=window.open("https://www.auchan.fr/","semainier-drive");try{if(w)w.opener=null}catch(_){}
+    toast("🚗 "+items.length+" article"+(items.length>1?"s":"")+" envoyé"+(items.length>1?"s":"")+" : la suite se passe dans l'onglet Auchan");return}
   if(e.target.closest("#driveMode")){const on=!driveOn();try{localStorage.setItem(DRVK,on?"1":"0")}catch(_){}renderShop();toast(on?"🚗 Liens "+DRV.n+" affichés sur chaque article":"Liens "+DRV.n+" masqués")}
 });
 function renderShop(){
@@ -3260,7 +3266,10 @@ function renderShop(){
   const bud=list.filter(([a])=>a!=="op").reduce((t,[,items])=>t+items.reduce((u,[id,q])=>u+unitPrice(id)*q,0),0)+0;
   const meals=shopCooks(ss).filter(c=>c.xi==null).reduce((t,c)=>t+persOf(c),0);
   const budHTML=store||!bud?"":`<div class="budget"><b>💶 Budget estimé : ≈ ${euro(bud)}</b>${meals?`<span class="muted"> · ≈ ${euro(bud/meals)} par repas et par personne</span>`:""}<small class="muted">Prix moyens en supermarché, hors placard. Pour dépenser moins : Groupe › règle « Semaine économique ».</small></div>`;
-  document.getElementById("shop").innerHTML=mealPickHTML(ss,store,kid)+(drv?`<p class="drivenote">🚗 <b>Commander au drive ${DRV.n}</b> : touchez « ${DRV.n} ↗ » à côté d'un article pour le chercher sur auchan.fr (toujours dans le même onglet), ajoutez-le au panier là-bas, puis cochez-le ici.</p>`:"")+budHTML+(store?`<div class="storebar"><div class="bar"><i style="width:${n?Math.round(d/n*100):0}%"></i></div><b class="num">${d} / ${n}</b><button type="button" class="btn sm" id="storeExit">Terminer</button></div>`:"")+manHTML+panHTML+aisles;
+  // articles restant à acheter, pour l'extension « Semainier → Drive Auchan »
+  window._driveItems=drv?list.filter(([a])=>a!=="op").flatMap(([a,items])=>items.map(([id,q])=>({id,...SS.st(a,id,q)})).filter(x=>!x.done&&x.q>0).map(x=>({key:x.id,q:driveQ(I[x.id].n),label:I[x.id].n,need:fmt(x.q,I[x.id].u,true),amt:x.q,u:I[x.id].u}))).concat(man.filter(([id])=>!W.checked["m:"+id]).map(([id,t])=>({key:"m:"+norm(t),q:driveQ(t),label:t,need:"",amt:0,u:""}))):[];
+  const drvHTML=drv?`<div class="drivenote">🚗 <b>Commander au drive ${DRV.n}</b> : touchez « ${DRV.n} ↗ » à côté d'un article pour le chercher sur auchan.fr (toujours dans le même onglet), ajoutez-le au panier là-bas, puis cochez-le ici.${driveExt()?`<div class="driveext"><button type="button" class="btn sm primary" data-drivesend ${window._driveItems.length?"":"disabled"}>▶ Remplir mon panier Auchan</button><span class="muted small">${window._driveItems.length} article${window._driveItems.length>1?"s":""} non coché${window._driveItems.length>1?"s":""} · avec l'extension installée sur ce navigateur</span></div>`:""}</div>`:"";
+  document.getElementById("shop").innerHTML=mealPickHTML(ss,store,kid)+drvHTML+budHTML+(store?`<div class="storebar"><div class="bar"><i style="width:${n?Math.round(d/n*100):0}%"></i></div><b class="num">${d} / ${n}</b><button type="button" class="btn sm" id="storeExit">Terminer</button></div>`:"")+manHTML+panHTML+aisles;
 }
 
 // ---------- Goûts ----------
