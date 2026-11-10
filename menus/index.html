@@ -784,7 +784,7 @@ body.storemode #shop .hint{font-size:13px}
 .mineform .fl{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:13.5px;min-width:0}.mineform .fl.wide{grid-column:1/-1}.mineform .fl.chk{flex-direction:row;align-items:center;gap:8px;font-weight:500}
 .mineform input,.mineform select,.mineform textarea{font:inherit;font-weight:400;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);min-width:0}
 .mineform fieldset{border:1px solid var(--line);border-radius:12px;padding:10px}.ingrows{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
-.ingrow{display:grid;grid-template-columns:minmax(0,1fr) 90px 110px auto auto;gap:6px;align-items:center}.ingrow .iu{font-weight:400;font-size:13px;color:var(--muted)}.newi{font-size:11px;color:#a0522d;font-weight:600}
+.ingrow{display:grid;grid-template-columns:minmax(0,1fr) 90px 110px auto auto;gap:6px;align-items:center}.ingrow .iu{font-weight:400;font-size:13px;color:var(--muted)}.ingrow .iunit{width:100%;font:inherit;font-size:13px;padding:7px 6px;border:1px solid var(--line);border-radius:8px;background:var(--surface,#fff);color:var(--ink)}.newi{font-size:11px;color:#a0522d;font-weight:600}
 .mineformbtns{flex-direction:row!important;gap:8px}
 @media(max-width:640px){.mineform{grid-template-columns:1fr 1fr}.ingrow{grid-template-columns:minmax(0,1fr) 70px auto}.ingrow .iu,.ingrow .newi{grid-column:2/4}}
 .votes{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -3492,6 +3492,19 @@ const MINE=(()=>{
   let edit=null,busy=false,err="",url="",arm="";
   const PROTS=[["poulet","Poulet"],["dinde","Dinde"],["boeuf","Bœuf"],["porc","Porc"],["jambon","Jambon"],["agneau","Agneau"],["colin","Poisson"],["saumon","Saumon"],["crevettes","Crevettes"],["oeuf","Œufs"],["vege","Végétarien"]];
   const UNITS={g:"g",ml:"ml",pc:"pièce(s)",cs:"c. à soupe",cc:"c. à café",bouquet:"bouquet",gousse:"gousse"};
+  // Unités proposées dans l'éditeur (chaque ingrédient peut avoir la sienne)
+  const UOPT=[["g","g"],["kg","kg"],["ml","ml"],["cl","cl"],["l","L"],["pc","pièce(s)"],["cs","c. à soupe"],["cc","c. à café"],["pincee","pincée(s)"],["gousse","gousse(s)"],["bouquet","bouquet(s)"]];
+  // kg, cl, L et pincée sont ramenés à g, ml et c. à café
+  const baseU=(q,u)=>u==="kg"?[q*1000,"g"]:u==="cl"?[q*10,"ml"]:u==="l"?[q*1000,"ml"]:u==="pincee"?[q*0.25,"cc"]:[q,u];
+  // Conversion vers l'unité de l'ingrédient du catalogue (null si impossible)
+  function toCanon(q,u,id){const x=I[id],cu=x.u;let [v,b]=baseU(q,u);if(b===cu)return v;
+    const vol={g:1,ml:1,cs:15,cc:5},cnt=new Set(["pc","gousse","bouquet"]);
+    if(vol[b]&&vol[cu]){if((b==="g"||b==="ml")&&(cu==="g"||cu==="ml"))return v;return Math.round(v*vol[b]/vol[cu]*100)/100}
+    if(cnt.has(b)&&cnt.has(cu))return v;
+    if(cnt.has(b)&&(cu==="g"||cu==="ml")&&x.w)return v*x.w;
+    if((b==="g"||b==="ml")&&cnt.has(cu)&&x.w)return Math.round(v/x.w*100)/100;
+    return null}
+  const unitSel=r=>`<select class="iunit" aria-label="Unité">${UOPT.map(([k,l])=>`<option value="${k}" ${(r.u||"g")===k?"selected":""}>${l}</option>`).join("")}</select>`;
   const slug=t=>norm(t).replace(/[^a-z0-9]+/g,"").slice(0,24)||"x";
   const blank=()=>({id:"",n:"",for:["l2","fam"],p:"vege",t:30,pays:"France",ing:[],st:[],simple:0,tag:""});
   const ingRows=()=>edit.rows;
@@ -3521,7 +3534,7 @@ const MINE=(()=>{
       <label class="fl">Origine<input name="pays" maxlength="40" value="${esc(x.pays||"France")}"></label>
       <fieldset class="fl wide"><legend>Ingrédients <small class="muted">(quantités pour 1 personne)</small></legend>
         <datalist id="ingList">${Object.values(I).filter(v=>!v.custom).map(v=>`<option value="${esc(v.n)}">`).join("")}</datalist>
-        <div class="ingrows">${x.rows.map((r,i)=>`<div class="ingrow" data-row="${i}"><input class="iname" list="ingList" value="${esc(r.name)}" aria-label="Ingrédient"><input class="iq" type="number" step="any" min="0" value="${r.q}" aria-label="Quantité"><span class="iu">${r.id?esc(UNITS[I[r.id].u]||I[r.id].u):`<select class="iunit" aria-label="Unité">${Object.entries({g:"g",ml:"ml",pc:"pièce(s)"}).map(([k,l])=>`<option value="${k}" ${r.u===k?"selected":""}>${l}</option>`).join("")}</select>`}</span>${r.id?"":'<small class="newi" title="Pas encore dans notre liste : il sera créé pour votre groupe">nouveau</small>'}<button type="button" class="xdel" data-mine="rowdel|${i}" aria-label="Retirer">×</button></div>`).join("")}</div>
+        <div class="ingrows">${x.rows.map((r,i)=>`<div class="ingrow" data-row="${i}"><input class="iname" list="ingList" value="${esc(r.name)}" aria-label="Ingrédient"><input class="iq" type="number" step="any" min="0" value="${r.q}" aria-label="Quantité"><span class="iu">${unitSel(r)}</span>${r.id?"":'<small class="newi" title="Pas encore dans notre liste : il sera créé pour votre groupe">nouveau</small>'}<button type="button" class="xdel" data-mine="rowdel|${i}" aria-label="Retirer">×</button></div>`).join("")}</div>
         <button type="button" class="btn sm" data-mine="rowadd">＋ Ingrédient</button></fieldset>
       <label class="fl wide">Étapes <small class="muted">(une par ligne)</small><textarea name="st" rows="7">${esc((x.st||[]).join("\n"))}</textarea></label>
       <label class="fl chk"><input type="checkbox" name="simple" ${x.simple?"checked":""}> Tout simple (pour la semaine)</label>
@@ -3532,10 +3545,14 @@ const MINE=(()=>{
     edit.n=g("n").value.trim();edit.t=Math.max(5,Math.min(600,+g("t").value||30));edit.p=g("p").value;edit.for={lf:["l2","fam"],l:["l2"],f:["fam"]}[g("for").value];edit.pays=g("pays").value.trim()||"France";
     edit.st=g("st").value.split(/\n+/).map(z=>z.trim()).filter(Boolean);edit.simple=g("simple").checked?1:0;edit.tag=g("tag").checked?"plaisir":"";
     edit.rows=[...f.querySelectorAll(".ingrow")].map(row=>{const name=row.querySelector(".iname").value.trim(),q=+row.querySelector(".iq").value||0;const known=Object.entries(I).find(([,v])=>!v.custom&&norm(v.n)===norm(name));const un=row.querySelector(".iunit");
-      return known?{id:known[0],q,name,u:known[1].u}:{id:"",q,name,u:un?un.value:"g",r:"co"}}).filter(r=>r.name)}
+      const u=un?un.value:(known?known[1].u:"g");
+      return known?{id:known[0],q,name,u}:{id:"",q,name,u,r:"co"}}).filter(r=>r.name)}
   function save(){readForm();if(!edit.n){toast("Donnez un nom à la recette");return}if(!edit.rows.length){toast("Ajoutez au moins un ingrédient");return}
     const M=mineRead(),id=edit.id||("u"+slug(edit.n)+Date.now().toString(36).slice(-4)),custom={},ing=[];
-    edit.rows.forEach(r=>{let iid=r.id;if(!iid){iid="c_"+slug(r.name);custom[iid]={n:r.name.charAt(0).toUpperCase()+r.name.slice(1),r:r.r||"co",u:r.u||"g",k:0,c:"Maison"}}ing.push([iid,r.q])});
+    edit.rows.forEach(r=>{let iid=r.id,q=r.q;
+      if(iid){const v=toCanon(q,r.u||I[iid].u,iid);if(v!=null)q=v;else{const [bq,bu]=baseU(q,r.u);iid="c_"+slug(r.name)+bu;custom[iid]={n:I[r.id].n,r:I[r.id].r||"co",u:bu,k:0,c:I[r.id].c||"Maison"};q=bq}}
+      else{const [bq,bu]=baseU(q,r.u||"g");iid="c_"+slug(r.name);custom[iid]={n:r.name.charAt(0).toUpperCase()+r.name.slice(1),r:r.r||"co",u:bu,k:0,c:"Maison"};q=bq}
+      ing.push([iid,Math.round(q*100)/100])});
     const a=meAcc();M[id]={id,n:edit.n,for:edit.for,p:edit.p,t:edit.t,pays:edit.pays,reg:(R.find(z=>z.pays===edit.pays)||{}).reg||"France",ing,st:edit.st.length?edit.st:["Suivre la recette."],simple:edit.simple||undefined,tag:edit.tag||undefined,custom,src:edit.src||undefined,by:a&&a.user?a.user.username:"",byName:a&&a.user?a.user.name:"",at:Date.now()};
     try{localStorage.setItem(MRK,JSON.stringify(M))}catch(e){}cloudChanged();loadMine();edit=null;render();toast("Recette enregistrée : elle est dans le catalogue")}
   async function doImport(u){busy=true;err="";url=u;render();try{const x=await CLOUD.call("POST","/import",{url:u});edit=Object.assign(blank(),{n:x.name,t:x.time||30,st:x.steps,src:u,pays:x.cuisine||"France"});edit.rows=x.ingredients.filter(l=>!/^\s*(sel|poivre|sel,?\s*(et\s*)?poivre|eau)\b[^a-z]*$/i.test(l)&&!/^\s*(sel|poivre)\s*(,|et)\s*(sel|poivre)/i.test(l)).map(l=>parseLine(l,x.yield));url=""}catch(e){err=e.net?"Import impossible sans connexion au serveur (connectez-vous à votre compte).":e.message}busy=false;render()}
@@ -3549,7 +3566,7 @@ const MINE=(()=>{
     if(k==="rowadd"){readForm();edit.rows.push({id:"",q:0,name:"",u:"g"});render();const r=document.querySelectorAll(".iname");if(r.length)r[r.length-1].focus();return}
     if(k==="rowdel"){readForm();edit.rows.splice(+a,1);render();return}
   });
-  document.addEventListener("change",e=>{if(e.target.closest(".ingrow .iname")&&edit){readForm();render()}});
+  document.addEventListener("change",e=>{const nm=e.target.closest(".ingrow .iname");if(nm&&edit){const i=+nm.closest(".ingrow").dataset.row;readForm();const r=edit.rows[i];if(r&&r.id)r.u=I[r.id].u;render()}});
   document.addEventListener("submit",e=>{if(e.target.closest("[data-mineform]")){e.preventDefault();save()}else if(e.target.closest("[data-mineimp]")){e.preventDefault();const u=document.getElementById("mineUrl").value.trim();if(u)doImport(u)}});
   return {render,parseLine,doImport};
 })();
