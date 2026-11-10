@@ -219,6 +219,10 @@ body.dnd-on,body.dnd-on *{cursor:grabbing!important}
 .aisle input{accent-color:var(--accent);margin:0;transform:translateY(2px)}
 .aisle .q{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
 .aisle .hint{display:block;font-size:12px;color:var(--muted)}
+.aisle li.hasdrv{display:flex;align-items:center;gap:8px}.aisle li.hasdrv label{flex:1;min-width:0}
+.drv{flex:none;font-size:12px;font-weight:600;white-space:nowrap;text-decoration:none;color:var(--accent);border:1px solid var(--line);border-radius:999px;padding:3px 9px;background:var(--bg)}
+.drv:hover,.drv:focus-visible{border-color:var(--accent)}.aisle li.done .drv{opacity:.45}
+.drivenote{margin:0 0 12px;padding:10px 12px;border:1px dashed var(--line);border-radius:12px;font-size:13.5px}
 .aisle li.done label{color:var(--muted);text-decoration:line-through}
 
 /* Modes de repas */
@@ -968,6 +972,7 @@ body.storemode #shop .hint{font-size:13px}
       <div><h2>Liste de courses</h2><p>Une seule liste pour tout le groupe : ce que l'un coche, les autres le voient. Deux courses possibles, une par session, pour avoir viande et poisson frais.</p><div class="seg" role="group" aria-label="Choix de la liste"><button type="button" data-sess="1">Session 1 · dimanche</button><button type="button" data-sess="2">Session 2 · mercredi</button><button type="button" data-sess="0">Toute la semaine</button></div></div>
       <div class="toolbar">
         <button class="btn primary" id="storeMode" type="button">🛒 Mode magasin</button>
+        <button class="btn" id="driveMode" type="button" aria-pressed="false" title="Afficher, pour chaque article, un lien qui le cherche sur auchan.fr">🚗 Drive Auchan</button>
         <button class="btn" id="copyList" type="button">Copier la liste</button>
         <button class="btn" id="uncheck" type="button">Tout décocher</button>
       </div>
@@ -3224,27 +3229,38 @@ function shopping(sess){
   return Object.keys(AISLES).filter(a=>by[a]).map(a=>[a,by[a].sort((x,y)=>I[x[0]].n.localeCompare(I[y[0]].n,"fr"))]);
 }
 const hint=(id,q)=>{const x=I[id];if(!x.w)return"";const n=Math.max(1,Math.ceil(q/x.w-0.05));return "≈ "+n+" "+x.wl+(n>1&&!x.wl.includes(" ")?"s":"")};
+// ---------- Drive : un lien par article vers la recherche du site de l'enseigne (réglage gardé sur l'appareil) ----------
+const DRVK="menus.drive",DRV={n:"Auchan",u:"https://www.auchan.fr/recherche?text="};
+const driveOn=()=>{try{return localStorage.getItem(DRVK)==="1"}catch(e){return false}};
+const driveQ=name=>{const fz=/surgel/i.test(name);return (String(name).replace(/\s*\([^)]*\)/g,"").replace(/\s+/g," ").trim()+(fz?" surgelés":"")).toLowerCase()};
+const driveLink=name=>{const q=driveQ(name);return q?`<a class="drv" data-drive href="${DRV.u+encodeURIComponent(q)}" target="semainier-drive" title="Chercher « ${esc(q)} » sur le site ${DRV.n}" aria-label="Chercher ${esc(q)} chez ${DRV.n}">${DRV.n} ↗</a>`:""};
+document.addEventListener("click",e=>{
+  const a=e.target.closest("a[data-drive]");
+  if(a){e.preventDefault();const w=window.open(a.href,"semainier-drive");try{if(w)w.opener=null}catch(_){}return}
+  if(e.target.closest("#driveMode")){const on=!driveOn();try{localStorage.setItem(DRVK,on?"1":"0")}catch(_){}renderShop();toast(on?"🚗 Liens "+DRV.n+" affichés sur chaque article":"Liens "+DRV.n+" masqués")}
+});
 function renderShop(){
   const ss=W.shopSess??1;
   document.querySelectorAll("[data-sess]").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.sess===ss)));
-  const SS=shopState(ss),list=SS.list,store=document.body.classList.contains("storemode"),kid=isKid();
-  const li=(ck,label,h,q,dn)=>{const done=dn!=null?dn:!!W.checked[ck];return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${ck}" ${done?"checked":""}><span>${label}${h?`<span class="hint">${h}</span>`:""}</span><span class="q">${q}</span></label></li>`};
+  const SS=shopState(ss),list=SS.list,store=document.body.classList.contains("storemode"),kid=isKid(),drv=driveOn()&&!store;
+  {const db=document.getElementById("driveMode");if(db){db.setAttribute("aria-pressed",String(driveOn()));db.classList.toggle("primary",driveOn())}}
+  const li=(ck,label,h,q,dn,dq)=>{const done=dn!=null?dn:!!W.checked[ck];return `<li class="${done?"done":""}${drv&&dq?" hasdrv":""}"><label><input type="checkbox" data-check="${ck}" ${done?"checked":""}><span>${label}${h?`<span class="hint">${h}</span>`:""}</span><span class="q">${q}</span></label>${drv&&dq?driveLink(dq):""}</li>`};
   const sortDone=arr=>store?arr.slice().sort((a,b)=>(a.done!=null?a.done:!!W.checked[a.ck])-(b.done!=null?b.done:!!W.checked[b.ck])):arr;
   // articles libres
   const man=Object.entries(W.manual||{});
   const manHTML=`<div class="aisle manual"><h3>✍️ À ajouter</h3>${kid?"":`<form class="manadd" data-manform><input type="text" id="manInput" maxlength="60" placeholder="Liquide vaisselle, yaourts, café…" aria-label="Ajouter un article à la liste" autocomplete="off"><button class="btn sm" type="submit">Ajouter</button></form>`}
-    <ul>${sortDone(man.map(([id,t])=>({ck:"m:"+id,id,t}))).map(x=>{const done=!!W.checked[x.ck];return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${x.ck}" ${done?"checked":""}><span>${esc(x.t)}</span></label>${kid?"":`<button type="button" class="xdel" data-mandel="${x.id}" aria-label="Retirer ${esc(x.t)}">×</button>`}</li>`}).join("")||(kid?'<li class="muted">Rien pour l\'instant.</li>':"")}</ul></div>`;
+    <ul>${sortDone(man.map(([id,t])=>({ck:"m:"+id,id,t}))).map(x=>{const done=!!W.checked[x.ck];return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${x.ck}" ${done?"checked":""}><span>${esc(x.t)}</span></label>${drv?driveLink(x.t):""}${kid?"":`<button type="button" class="xdel" data-mandel="${x.id}" aria-label="Retirer ${esc(x.t)}">×</button>`}</li>`}).join("")||(kid?'<li class="muted">Rien pour l\'instant.</li>':"")}</ul></div>`;
   // recettes du catalogue
   const pc=panRead(),pids=panIds();
   const panHTML=ss===2?"":pids.length?`<div class="aisle extra"><h3>📖 En plus, depuis le catalogue</h3><ul class="panlist">${pids.map(id=>`<li><button type="button" class="linkish" data-panopen="${id}">${esc(shortName(RB[id]))}</button><span class="pstep"><button type="button" class="pm" data-pann="${id}" data-d="-1" aria-label="Une portion de moins" ${(pc["r:"+id]||1)<=1?"disabled":""}>−</button><b class="num">${pc["r:"+id]||1}</b><button type="button" class="pm" data-pann="${id}" data-d="1" aria-label="Une portion de plus">+</button></span><button type="button" class="xdel" data-panrm="${id}" aria-label="Retirer ${esc(shortName(RB[id]))}">×</button></li>`).join("")}</ul><p class="aisnote">Leurs ingrédients sont ajoutés aux rayons ci-dessous. <a href="recettes.html">Ajouter une recette du catalogue</a></p></div>`:`<p class="aisnote panhint">Pour acheter les ingrédients d'une recette hors semainier, cochez « Ajouter à ma liste de courses » dans le <a href="recettes.html">catalogue</a>.</p>`;
   const aisles=list.length?list.map(([a,items])=>`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${sortDone(items.map(([id,q])=>({id,...SS.st(a,id,q)}))).map(({id,q,ck,done,got,from})=>{
     const h=[a==="op"&&OPTFOR[id]?"avec : "+esc([...OPTFOR[id]].join(", ")):"",a!=="op"?hint(id,q):"",a!=="op"&&PANFOR[id]?"dont "+esc([...PANFOR[id]].join(", ")):"",got?`✓ déjà acheté : ${fmt(got,I[id].u,true)} (courses du ${from})`:""].filter(Boolean).join(" · ");
-    return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true),done)}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
+    return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true),done,I[id].n)}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
   const n=list.reduce((t,[a,items])=>t+items.length,0)+man.length,d=list.reduce((t,[a,items])=>t+items.filter(([id,q])=>SS.st(a,id,q).done).length,0)+man.filter(([id])=>W.checked["m:"+id]).length;
   const bud=list.filter(([a])=>a!=="op").reduce((t,[,items])=>t+items.reduce((u,[id,q])=>u+unitPrice(id)*q,0),0)+0;
   const meals=shopCooks(ss).filter(c=>c.xi==null).reduce((t,c)=>t+persOf(c),0);
   const budHTML=store||!bud?"":`<div class="budget"><b>💶 Budget estimé : ≈ ${euro(bud)}</b>${meals?`<span class="muted"> · ≈ ${euro(bud/meals)} par repas et par personne</span>`:""}<small class="muted">Prix moyens en supermarché, hors placard. Pour dépenser moins : Groupe › règle « Semaine économique ».</small></div>`;
-  document.getElementById("shop").innerHTML=mealPickHTML(ss,store,kid)+budHTML+(store?`<div class="storebar"><div class="bar"><i style="width:${n?Math.round(d/n*100):0}%"></i></div><b class="num">${d} / ${n}</b><button type="button" class="btn sm" id="storeExit">Terminer</button></div>`:"")+manHTML+panHTML+aisles;
+  document.getElementById("shop").innerHTML=mealPickHTML(ss,store,kid)+(drv?`<p class="drivenote">🚗 <b>Commander au drive ${DRV.n}</b> : touchez « ${DRV.n} ↗ » à côté d'un article pour le chercher sur auchan.fr (toujours dans le même onglet), ajoutez-le au panier là-bas, puis cochez-le ici.</p>`:"")+budHTML+(store?`<div class="storebar"><div class="bar"><i style="width:${n?Math.round(d/n*100):0}%"></i></div><b class="num">${d} / ${n}</b><button type="button" class="btn sm" id="storeExit">Terminer</button></div>`:"")+manHTML+panHTML+aisles;
 }
 
 // ---------- Goûts ----------
