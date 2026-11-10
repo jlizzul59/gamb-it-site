@@ -117,6 +117,13 @@ main{padding-block:28px 64px}
 
 /* Semaine */
 .week{display:grid;grid-template-columns:var(--wcols,repeat(7,minmax(0,1fr)));gap:10px}
+.meal[data-dragkey]:not(.is-off){-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.grip{display:inline-block;margin-right:5px;color:var(--muted);cursor:grab;font-size:13px;letter-spacing:-1px;opacity:.55}
+.meal[data-dragkey]:hover .grip{opacity:1}
+.dndghost{position:fixed;z-index:9999;pointer-events:none;transform:rotate(-2deg) scale(1.03);box-shadow:0 18px 40px rgba(0,0,0,.22);opacity:.95;margin:0}
+.dndsrc{opacity:.35;outline:2px dashed var(--line);outline-offset:-2px}
+.dndover{outline:3px solid var(--accent);outline-offset:-1px;background:color-mix(in srgb,var(--accent) 8%,var(--surface))!important}
+body.dnd-on,body.dnd-on *{cursor:grabbing!important}
 .daypast{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;padding:10px 4px;border:1px dashed var(--line);border-radius:14px;background:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;writing-mode:vertical-rl;min-height:160px}
 .daypast:hover{color:var(--ink);border-color:var(--accent)}
 .pasthide{grid-column:1/-1;justify-self:start;background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:0}
@@ -2859,6 +2866,62 @@ let _seen=null;
 function trackEdit(){if(!W||isKid())return;const sg=weekSig(W);if(_seen!==null&&sg!==_seen)W.edit={by:meName(),at:Date.now()};_seen=sg}
 
 // ---------- Semaine ----------
+// ---------- Échanger deux repas (glisser-déposer ou menu) ----------
+// Le plat, ses recettes ajoutées et ses préférences suivent ; le nombre de personnes reste attaché au créneau.
+function swapMeals(a,b){
+  if(!a||!b||a===b||isKid()||!SK[a]||!SK[b])return;
+  if(W.mode[a]==="rest"||W.mode[b]==="rest"){toast("Impossible d'échanger avec un repas « restes »");return}
+  const pa=PN(SK[a]),pb=PN(SK[b]);
+  ["plan","pin","temp","extra","mode"].forEach(f=>{W[f]=W[f]||{};const x=W[f][a],y=W[f][b];if(y===undefined)delete W[f][a];else W[f][a]=y;if(x===undefined)delete W[f][b];else W[f][b]=x});
+  // les recettes ajoutées prennent le nombre de personnes de leur nouveau créneau
+  [[a,pb,pa],[b,pa,pb]].forEach(([k,from,to])=>(W.extra[k]||[]).forEach(x=>{if(x.n===from)x.n=to}));
+  if(W.ok){delete W.ok[a];delete W.ok[b]}
+  save();renderAll();
+  const ra=RB[W.plan[a]],rb=RB[W.plan[b]];
+  toast(ra&&rb?`⇅ ${ra.n} ↔ ${rb.n}`:`⇅ Repas déplacé vers ${slotLabel(SK[ra?a:b])}`);
+}
+const DND=(()=>{
+  let st=null;
+  const meal=el=>el&&el.closest&&el.closest("#week .meal");
+  function begin(){
+    st.on=true;const r=st.src.getBoundingClientRect();
+    const g=st.src.cloneNode(true);g.classList.add("dndghost");g.style.width=r.width+"px";g.style.left=r.left+"px";g.style.top=r.top+"px";
+    st.dx=st.x-r.left;st.dy=st.y-r.top;document.body.appendChild(g);st.g=g;st.src.classList.add("dndsrc");document.body.classList.add("dnd-on");
+    try{navigator.vibrate&&navigator.vibrate(15)}catch(_){}
+  }
+  function move(x,y){
+    st.g.style.left=(x-st.dx)+"px";st.g.style.top=(y-st.dy)+"px";
+    st.g.hidden=true;const t=meal(document.elementFromPoint(x,y));st.g.hidden=false;
+    const ok=t&&t!==st.src&&t.dataset.dragkey&&!t.dataset.nodrop?t:null;
+    if(st.over&&st.over!==ok)st.over.classList.remove("dndover");
+    if(ok)ok.classList.add("dndover");st.over=ok;
+    const H=window.innerHeight;if(y<70)window.scrollBy(0,-14);else if(y>H-90)window.scrollBy(0,14);
+  }
+  function end(drop){
+    if(!st)return;const s=st;st=null;clearTimeout(s.lp);
+    if(s.on){s.g.remove();s.src.classList.remove("dndsrc");document.body.classList.remove("dnd-on");if(s.over)s.over.classList.remove("dndover");
+      // empêche le clic qui suit le relâchement
+      const kill=e=>{e.stopPropagation();e.preventDefault()};document.addEventListener("click",kill,{capture:true,once:true});setTimeout(()=>document.removeEventListener("click",kill,true),50);
+      if(drop&&s.over)swapMeals(s.src.dataset.dragkey,s.over.dataset.dragkey)}
+  }
+  document.addEventListener("pointerdown",e=>{
+    if(e.button!==0)return;const m=meal(e.target);if(!m||!m.dataset.dragkey||m.classList.contains("is-off"))return;
+    if(e.target.closest(".mbar,.xdel,.ppill,.restore,.cmenu,input,select,textarea"))return;
+    st={src:m,x:e.clientX,y:e.clientY,id:e.pointerId,touch:e.pointerType!=="mouse",on:false};
+    if(st.touch)st.lp=setTimeout(()=>{if(st&&!st.on)begin()},380);
+  });
+  document.addEventListener("pointermove",e=>{
+    if(!st||e.pointerId!==st.id)return;
+    if(!st.on){const d=Math.hypot(e.clientX-st.x,e.clientY-st.y);if(st.touch){if(d>10){clearTimeout(st.lp);st=null}return}if(d<6)return;begin()}
+    e.preventDefault();move(e.clientX,e.clientY);
+  });
+  document.addEventListener("touchmove",e=>{if(st&&st.on)e.preventDefault()},{passive:false});
+  document.addEventListener("pointerup",e=>{if(st&&e.pointerId===st.id)end(true)});
+  document.addEventListener("pointercancel",()=>end(false));
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&st)end(false)});
+  document.addEventListener("contextmenu",e=>{if(st&&st.touch&&meal(e.target))e.preventDefault()});
+  return {};
+})();
 let showPast=false;
 document.addEventListener("click",e=>{if(e.target.closest("[data-showpast]")){showPast=true;renderWeek()}else if(e.target.closest("[data-hidepast]")){showPast=false;renderWeek()}});
 function renderWeek(){
@@ -2884,8 +2947,9 @@ function renderWeek(){
       else if(!r)body=`<span class="empty">Aucune recette compatible</span>`;
       else body=`${isRest?'<span class="restlab">Restes de '+slotLabel(SK[src])+'</span>':""}<div class="xrec xcompact mainrec"><button class="name" type="button" data-open="${src}">${esc(r.n)}${isFav(r.id)?' <span class="favdot" aria-label="Favori">♥</span>':""}</button>${!isRest&&!isKid()?`<button type="button" class="xdel" data-maindel="${sl.key}" aria-label="Retirer ${esc(r.n)}" title="${XS(sl.key).length?"Retirer cette recette":"Retirer cette recette (le repas sera supprimé)"}">×</button>`:""}</div>`+(!isRest?(()=>{const rs=SLOTS.filter(s=>s.key!==sl.key&&W.mode[s.key]==="rest"&&srcKey(s.key)===sl.key);return rs.length?`<span class="restfor">♻️ Faire plus : restes pour ${rs.map(s=>esc(slotLabel(s))).join(", ")} (${(n=>"+"+n+" portion"+(n>1?"s":""))(rs.reduce((t,s)=>t+ +PN(s),0))})</span>`:""})():"");
       const tv=(W.temp||{})[sl.key],kid=isKid(),pc=W.pers&&W.pers[sl.key];
-      return `<div class="meal ${mode==="skip"?"is-off":""} ${isRest?"is-rest":""}">
-        <div class="when"><span>${sl.when}${tv?` <span class="tpin" title="Préférence pour ce repas">${tv==="chaud"?"🔥":"❄️"}</span>`:""}</span><span class="wr">${mode!=="skip"&&r&&slotOk(sl.key)?'<span class="okchip">✓ Validé</span>':""}${mode!=="skip"?`<button type="button" class="ppill${pc?" custom":""}" ${kid?"disabled":`data-cmenu="pers|${sl.key}"`} aria-label="${PN(sl)} ${XS(sl.key).length&&!isRest?"portions":"personnes"}, modifier" title="Nombre de personnes pour ce repas">👤 ${PN(sl)}</button>`:""}</span></div>
+      const dk=!kid&&!isRest&&(mode==="skip"||r);
+      return `<div class="meal ${mode==="skip"?"is-off":""} ${isRest?"is-rest":""}" ${dk?`data-dragkey="${sl.key}"`:""} ${isRest?`data-nodrop="1"`:""}>
+        <div class="when"><span>${dk&&mode!=="skip"?'<span class="grip" aria-hidden="true" title="Glisser sur un autre repas pour les échanger">⠿</span>':""}${sl.when}${tv?` <span class="tpin" title="Préférence pour ce repas">${tv==="chaud"?"🔥":"❄️"}</span>`:""}</span><span class="wr">${mode!=="skip"&&r&&slotOk(sl.key)?'<span class="okchip">✓ Validé</span>':""}${mode!=="skip"?`<button type="button" class="ppill${pc?" custom":""}" ${kid?"disabled":`data-cmenu="pers|${sl.key}"`} aria-label="${PN(sl)} ${XS(sl.key).length&&!isRest?"portions":"personnes"}, modifier" title="Nombre de personnes pour ce repas">👤 ${PN(sl)}</button>`:""}</span></div>
         ${body}
         ${mode!=="skip"&&!isRest?extraHTML(sl):""}
         ${mode!=="skip"&&r?`<div class="meta"><span class="num">≈ ${kcal(r)} kcal</span>${!isRest?tagHTML(r,2):""}</div>`:""}${r&&mode!=="skip"&&foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}
@@ -2918,12 +2982,15 @@ function recipeHTML(c,modal){
 function renderRecipes(){const cs=cooks();const el=document.getElementById("reclist");el.innerHTML=cs.length?cs.map(c=>recipeHTML(c,false)).join(""):'<p class="muted">Aucun repas prévu cette semaine.</p>';ART.hydrate(el)}
 
 // ---------- Catalogue ----------
-let catQ="",catF="all",catKey=null;
+let catQ="",catF=new Set(),catKey=null;
 const FILTERS=[["all","Tout"],["fav","♥ Favoris"],["top","Mes mieux notées"],["ok","Compatibles avec mes goûts"],["plaisir","Gourmand"],["leger","🪶 Léger"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"],["simple","Tout simple"],["soupe","Soupes"],["saison","🌱 De saison"],["chaud","🔥 Chaud"],["froid","❄️ Froid"]].concat(REGIONS.map(g=>["reg:"+g,g]));
+// Filtres cumulables : ET entre familles, OU dans une même famille (Végétarien ou Poisson, Asie ou Italie…)
+const CATPRED={fav:r=>isFav(r.id),top:r=>noteOf(r.id)>=4,ok:r=>allowed(r),plaisir:r=>r.tag==="plaisir",leger:r=>isLight(r),vege:r=>isVege(r),poisson:r=>isFish(r),viande:r=>!isVege(r)&&!isFish(r),rapide:r=>r.t<=25,simple:r=>!!r.simple,soupe:r=>SOUP_RX.test(r.n),chaud:r=>(r.temp||tempOf(r))==="chaud",froid:r=>(r.temp||tempOf(r))==="froid",saison:r=>seasonOf(r,MONTH()).s==="saison"};
+const catFam=v=>v.startsWith("reg:")?"reg":["vege","poisson","viande"].includes(v)?"prot":["chaud","froid"].includes(v)?"temp":v;
 function catMatches(r){
   if(catQ&&!qMatch(catQ,r.n))return false;
-  if(catF.startsWith("reg:"))return r.reg===catF.slice(4);
-  return catF==="all"||(catF==="fav"&&isFav(r.id))||(catF==="top"&&noteOf(r.id)>=4)||(catF==="ok"&&allowed(r))||(catF==="plaisir"&&r.tag==="plaisir")||(catF==="leger"&&isLight(r))||(catF==="vege"&&isVege(r))||(catF==="poisson"&&isFish(r))||(catF==="viande"&&!isVege(r)&&!isFish(r))||(catF==="rapide"&&r.t<=25)||(catF==="simple"&&r.simple)||(catF==="soupe"&&SOUP_RX.test(r.n))||(catF==="chaud"&&(r.temp||tempOf(r))==="chaud")||(catF==="froid"&&(r.temp||tempOf(r))==="froid")||(catF==="saison"&&seasonOf(r,MONTH()).s==="saison");
+  const fam={};catF.forEach(v=>(fam[catFam(v)]=fam[catFam(v)]||[]).push(v));
+  return Object.values(fam).every(vs=>vs.some(v=>v.startsWith("reg:")?r.reg===v.slice(4):(CATPRED[v]||(()=>true))(r)));
 }
 function catalogShell(sfx,key){
   return `<div class="catbar"><input type="search" id="catq-${sfx}" data-catq="${sfx}" placeholder="Rechercher un plat ou un ingrédient" value="${esc(catQ)}" autocomplete="off">
@@ -2934,7 +3001,7 @@ function catalogShell(sfx,key){
 function renderCatList(sfx,key){
   const fEl=document.getElementById("catf-"+sfx),lEl=document.getElementById("catlist-"+sfx);
   if(!fEl||!lEl)return;
-  fEl.innerHTML=FILTERS.map(([v,l])=>`<button type="button" data-catf="${v}" data-sfx="${sfx}" aria-pressed="${catF===v}">${l}</button>`).join("");
+  fEl.innerHTML=FILTERS.map(([v,l])=>`<button type="button" data-catf="${v}" data-sfx="${sfx}" aria-pressed="${v==="all"?!catF.size:catF.has(v)}">${l}</button>`).join("");
   const inWeek=new Set(cooks().map(c=>c.r.id));
   const list=R.filter(catMatches).sort((a,b)=>(allowed(b)-allowed(a))||(isFav(b.id)-isFav(a.id))||(noteOf(b.id)-noteOf(a.id))||(likes(b)-likes(a))||a.n.localeCompare(b.n,"fr"));
   lEl.innerHTML=list.length?list.map(r=>{
@@ -3432,7 +3499,7 @@ document.addEventListener("click",e=>{
   if(ch&&catKey){const id=ch.dataset.choose,k=catKey;W.plan[k]=id;W.pin[k]=1;delete W.mode[k];build("keep");closeModal();renderAll();toast(RB[id].n+" au menu de "+slotLabel(SK[k]));return}
   const vw=e.target.closest("[data-view]");
   if(vw){const d=vw.closest(".citem").querySelector(".cdet");d.hidden=!d.hidden;vw.textContent=d.hidden?"Voir":"Masquer";return}
-  const cf=e.target.closest("[data-catf]");if(cf){catF=cf.dataset.catf;renderCatList(cf.dataset.sfx,cf.dataset.sfx==="m"?catKey:null);return}
+  const cf=e.target.closest("[data-catf]");if(cf){const v=cf.dataset.catf;if(v==="all")catF.clear();else if(catF.has(v))catF.delete(v);else catF.add(v);renderCatList(cf.dataset.sfx,cf.dataset.sfx==="m"?catKey:null);return}
   const fv=e.target.closest("[data-fav]");if(fv){const id=fv.dataset.fav;toggleFav(id);refreshAvis();toast(isFav(id)?RB[id].n+" ajouté aux favoris":"Retiré des favoris");return}
   const rt=e.target.closest("[data-rate]");if(rt){setNote(rt.dataset.rate,+rt.dataset.v);refreshAvis();return}
   const pp=e.target.closest("[data-pers]");if(pp){const k=pp.dataset.pers,sl=SK[k];W.pers=W.pers||{};const n=Math.max(1,Math.min(12,PN(sl)+ +pp.dataset.d));if(n===S.def[WH(sl)])delete W.pers[k];else W.pers[k]=n;save();renderAll();if(!ov.hidden){const c=cooks().find(c=>c.sl.key===k);if(c){ov.innerHTML=recipeHTML(c,true)}}return}
@@ -3476,6 +3543,7 @@ const CM=(()=>{let el=null,cur=null;
     if(kind==="more"){const restOK=!!prevActive(k);return `<div class="cmh">${esc(slotLabel(sl))}</div>
       ${mode==="rest"?`<button type="button" role="menuitem" data-mact="cook|${k}">🍳 Cuisiner un plat à la place des restes</button>`:`<button type="button" role="menuitem" data-mact="rest|${k}" ${restOK?"":"disabled"}>♻️ Manger les restes du repas d'avant</button>`}
       ${mode!=="rest"?`<button type="button" role="menuitem" data-xadd="${k}">➕ Ajouter une recette à ce repas</button>`:""}
+      ${r&&mode!=="rest"&&SK[k.slice(0,-1)+(k.endsWith("m")?"s":"m")]&&W.mode[k.slice(0,-1)+(k.endsWith("m")?"s":"m")]!=="rest"?`<button type="button" role="menuitem" data-mact="xchg|${k}">⇅ Échanger avec le ${k.endsWith("m")?"soir":"midi"}</button>`:""}
       ${r?`<button type="button" role="menuitem" data-mact="ok|${k}">${slotOk(k)?"✓ Retirer la validation":"✓ Valider ce repas"}</button>`:""}
       ${r?`<button type="button" role="menuitem" data-open="${srcKey(k)}">📄 Voir la recette</button>`:""}
       <button type="button" role="menuitem" class="danger" data-mact="skip|${k}">🗑 Supprimer ce repas</button>`}
@@ -3500,6 +3568,7 @@ document.addEventListener("click",e=>{
     if(a==="pdef"){setPers(k,S.def[WH(sl)]);CM.refresh();return}
     CM.close();
     if(a==="swap")return swap(k);
+    if(a==="xchg"){swapMeals(k,k.slice(0,-1)+(k.endsWith("m")?"s":"m"));return}
     if(a==="hot"||a==="cold"){const t=a==="hot"?"chaud":"froid";W.temp=W.temp||{};W.temp[k]=t;delete W.pin[k];swap(k);toast((t==="chaud"?"🔥 Plat chaud":"❄️ Plat froid")+" pour "+slotLabel(sl)+" : gardé pour les prochains tirages");return}
     if(a==="anytemp"){if(W.temp)delete W.temp[k];save();renderAll();toast("Chaud ou froid : peu importe");return}
     if(a==="rest"||a==="cook"){setMode(k,a);build("keep");renderAll();return}
