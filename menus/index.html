@@ -809,6 +809,11 @@ body.storemode #shop .hint{font-size:13px}
 #cfgbox .cfgcard.closed>h3::after{transform:rotate(-90deg)}
 #cfgbox .cfgcard.closed>:not(h3){display:none!important}
 #cfgbox .cfgcard.closed{padding-bottom:12px}
+.gview{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.gview h5{margin:0 0 8px;font-size:15px}.gvform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.gvform select{font:inherit;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.gvnav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+.gvtab{width:100%;border-collapse:collapse;font-size:14px}.gvtab th,.gvtab td{text-align:left;vertical-align:top;padding:7px 8px;border-bottom:1px solid var(--line)}.gvtab thead th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.gvtab tbody th{white-space:nowrap;font-weight:600;width:70px}.gvp{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 .growth h3{font-family:inherit;font-size:15px;margin:22px 0 10px}
 .gbars{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;height:170px;align-items:end;padding-bottom:30px}
 .gbar{position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
@@ -3206,7 +3211,28 @@ function askInline(btn,msg,yes){if(!btn||btn.dataset.asking)return;btn.dataset.a
 const isSuper=()=>{const a=meAcc();return !!(a&&a.user&&(a.user.superadmin||a.user.moderator))};
 const isSiteAdmin=()=>{const a=meAcc();return !!(a&&a.user&&a.user.superadmin)};
 const ADM=(()=>{
-  let D=null,busy=false,err="",q="",gq="",tab="users",gopen=null,uopen=null,arm={k:"",t:0},pw=null;
+  let D=null,busy=false,err="",q="",gq="",tab="users",gopen=null,uopen=null,arm={k:"",t:0},pw=null,gv=null,LOG=null;
+  // Lecture seule du semainier d'un groupe (administrateurs du site, motif obligatoire, consultation journalisée)
+  function gviewHTML(g){
+    if(!gv||gv.gid!==g.id)return `<div class="gview"><h5>👁 Semainier du groupe</h5><div class="gvform"><select id="gvReason" aria-label="Motif de la consultation"><option value="">Motif de la consultation…</option><option>Demande d'aide de l'utilisateur</option><option>Problème technique signalé</option><option>Modération</option></select><button type="button" class="btn sm" data-gv="${g.id}">Voir en lecture seule</button></div><p class="muted small">Chaque consultation est enregistrée avec son motif (onglet 🧾 Journal). Seules les semaines et les réglages du foyer sont affichés : ni votes, ni propositions, ni recettes de famille.</p></div>`;
+    const ks=Object.keys(gv.weeks||{}).map(Number).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
+    if(!ks.length)return `<div class="gview"><h5>👁 Semainier du groupe</h5><p class="muted">Ce groupe n'a encore aucun semainier.</p><button type="button" class="btn sm" data-gvclose>Fermer</button></div>`;
+    if(gv.wk==null||!ks.includes(gv.wk))gv.wk=ks.includes(NOWW())?NOWW():ks[ks.length-1];
+    const w=gv.weeks[gv.wk]||{},plan=w.plan||{},mode=w.mode||{},ex=w.extra||{},pers=w.pers||{},ok=w.ok||{};
+    const nm=id=>RB[id]?RB[id].n:(id?"Recette « "+id+" »":"");
+    const cell=k=>{const m=mode[k];if(m==="skip")return '<span class="muted">Repas supprimé</span>';if(m==="rest")return '<span class="muted">Restes</span>';
+      const r=plan[k];if(!r)return '<span class="muted">–</span>';
+      return `${esc(nm(r))}${(ex[k]||[]).map(x=>`<br><small>+ ${esc(nm(x.id))}</small>`).join("")}<small class="gvp">👤 ${pers[k]||SK[k].pers}${ok[k]?" · ✓":""}</small>`};
+    const i=ks.indexOf(gv.wk);
+    return `<div class="gview"><h5>👁 Semainier du groupe <small class="muted">· lecture seule · motif : ${esc(gv.reason)}</small></h5>
+      <div class="gvnav"><button type="button" class="wbtn" data-gvw="${ks[i-1]}" ${i<=0?"disabled":""} aria-label="Semaine précédente">‹</button><b>${esc(weekRange(gv.wk))}</b><button type="button" class="wbtn" data-gvw="${ks[i+1]}" ${i>=ks.length-1?"disabled":""} aria-label="Semaine suivante">›</button>${w.edit&&w.edit.by?`<span class="muted small">modifié par ${esc(w.edit.by)}${w.edit.at?" le "+new Date(w.edit.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""}</span>`:""}<button type="button" class="btn sm" data-gvclose>Fermer</button></div>
+      <table class="gvtab"><thead><tr><th></th><th>Midi</th><th>Soir</th></tr></thead><tbody>${ORDER.map(d=>`<tr><th>${DAYS[d].slice(0,3)}. ${dayDate(gv.wk,d).getDate()}</th><td>${cell(d+"m")}</td><td>${cell(d+"s")}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  async function gvOpen(id){const sel=document.getElementById("gvReason"),reason=sel&&sel.value;if(!reason){toast("Choisissez d'abord le motif de la consultation");sel&&sel.focus();return}
+    try{busy=true;render();const d=await CLOUD.call("POST","/admin/group-view",{id,reason});gv={gid:id,reason,weeks:d.weeks||{},wk:null};LOG=null}catch(x){toast(x.message||"Consultation impossible")}finally{busy=false;render()}}
+  async function logLoad(){try{LOG=(await CLOUD.call("GET","/admin/log")).log||[]}catch(x){LOG=[];toast(x.message||"Journal indisponible")}render()}
+  function logHTML(){if(LOG===null){logLoad();return '<p class="muted">Chargement du journal…</p>'}
+    return `<p class="muted small">Toutes les consultations du contenu d'un groupe par l'équipe du site, avec leur motif (200 dernières).</p>${LOG.length?`<table class="gvtab"><thead><tr><th>Quand</th><th>Qui</th><th>Groupe</th><th>Motif</th></tr></thead><tbody>${LOG.map(l=>`<tr><td>${new Date(l.at).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</td><td>${esc(l.admin_name||"")}</td><td>${esc(l.group_name||"")}</td><td>${esc(l.reason||"")}</td></tr>`).join("")}</tbody></table>`:'<p class="muted">Aucune consultation pour l\'instant.</p>'}`}
   const dt=t=>t?new Date(t).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"}):"—";
   const ago=t=>{if(!t)return "jamais";const m=(Date.now()-new Date(t))/6e4;if(m<60)return "il y a "+Math.max(1,Math.round(m))+" min";if(m<1440)return "il y a "+Math.round(m/60)+" h";return "il y a "+Math.round(m/1440)+" j"};
   async function call(path,body){busy=true;err="";render();try{const r=await CLOUD.call(body?"POST":"GET",path,body);if(r.overview){D=r.overview;pw=r.password?{id:body.id,pw:r.password}:null}else D=r;const a=meAcc();const mu=a&&a.user&&D.users.find(x=>x.username===a.user.username);D.meId=mu?mu.id:null}catch(e){err=e.message}busy=false;render()}
@@ -3245,7 +3271,7 @@ const ADM=(()=>{
       <div class="admstats"><div><b>${D.users.length}</b><span>comptes</span></div><div><b>${D.groups.length}</b><span>groupes</span></div><div><b>${active}</b><span>actifs cette semaine</span></div><div><b>${banned}</b><span>suspendus</span></div></div>
       ${err?`<p class="warnbox">${esc(err)}</p>`:""}
       ${pw?`<div class="admpw">Nouveau mot de passe de <b>${esc((U[pw.id]||{}).name||"")}</b> : <code>${esc(pw.pw)}</code> <span class="muted">Transmettez-le-lui ; il pourra le changer dans « Mon compte ».</span></div>`:""}
-      <nav class="subnav admtabs" aria-label="Administration"><a href="#admin" data-admtab="users" ${tab==="users"?'aria-current="page"':""}>👤 Comptes (${D.users.length})</a><a href="#admin" data-admtab="groups" ${tab==="groups"?'aria-current="page"':""}>👥 Groupes (${D.groups.length})</a><a href="#admin" data-admtab="growth" ${tab==="growth"?'aria-current="page"':""}>📈 Croissance</a></nav>
+      <nav class="subnav admtabs" aria-label="Administration"><a href="#admin" data-admtab="users" ${tab==="users"?'aria-current="page"':""}>👤 Comptes (${D.users.length})</a><a href="#admin" data-admtab="groups" ${tab==="groups"?'aria-current="page"':""}>👥 Groupes (${D.groups.length})</a><a href="#admin" data-admtab="growth" ${tab==="growth"?'aria-current="page"':""}>📈 Croissance</a>${isSiteAdmin()?`<a href="#admin" data-admtab="log" ${tab==="log"?'aria-current="page"':""}>🧾 Journal</a>`:""}</nav>
       ${tab==="users"?`<input type="search" class="admsearch" id="admQ" placeholder="Rechercher un nom, un identifiant ou un groupe" value="${esc(q)}" aria-label="Rechercher un compte">`:`<input type="search" class="admsearch" id="admGQ" placeholder="Rechercher un groupe ou un de ses membres" value="${esc(gq)}" aria-label="Rechercher un groupe">`}
       ${tab==="users"?`<div class="admlist">${D.users.filter(match).map(u=>{const adm=isSiteAdmin(),staff=u.siteRole==="admin"||u.siteRole==="moderateur",canAct=!u.locked&&(adm||!staff);
         const ug=D.groups.filter(g=>g.members.some(m=>m.id===u.id));
@@ -3258,16 +3284,19 @@ const ADM=(()=>{
         <div class="admact">${adm&&!u.locked&&u.id!==D.meId?`<select class="srole" data-srole="${u.id}" aria-label="Rôle de ${esc(u.name)} sur le site"><option value="" ${!u.siteRole?"selected":""}>Membre</option><option value="moderateur" ${u.siteRole==="moderateur"?"selected":""}>Modérateur</option><option value="admin" ${u.siteRole==="admin"?"selected":""}>Admin du site</option></select>`:""}${canAct&&u.id!==D.meId?`<button type="button" class="btn sm" data-adm="ban|${u.id}|${u.banned?0:1}">${u.banned?"Réactiver":"Suspendre"}</button>`:""}${adm&&canAct&&u.id!==D.meId?`<button type="button" class="btn sm" data-adm="pw|${u.id}">Nouveau mot de passe</button><button type="button" class="btn sm danger" data-adm="del|${u.id}">Supprimer</button>`:""}</div>
       </div>`}).join("")||'<p class="muted">Aucun compte ne correspond.</p>'}</div>
       <p class="muted small admroles"><b>Admin du site</b> : tout gérer, y compris les rôles. <b>Modérateur</b> : suspendre des comptes et gérer les membres des groupes, sans toucher à l'équipe.</p>`:""}
-      ${tab==="growth"?growthHTML():""}
+      ${tab==="growth"?growthHTML():""}${tab==="log"&&isSiteAdmin()?logHTML():""}
       ${tab==="groups"?`<div class="admgroups">${D.groups.filter(g=>!gq.trim()||qMatch(gq,g.name+" "+g.members.map(m=>{const u=U[m.id];return u?u.name+" "+u.username:""}).join(" "))).map(g=>gopen!==g.id?`<button type="button" class="admgrow" data-gopen="${g.id}"><b>${esc((g.icon||"")+" "+g.name)}</b><span class="muted">${g.members.length} membre${g.members.length>1?"s":""} · ${esc(g.members.slice(0,4).map(m=>(U[m.id]||{}).name||"?").join(", "))}${g.members.length>4?"…":""}</span><span class="chev" aria-hidden="true">›</span></button>`:`<article class="admg open"><header><button type="button" class="linkish" data-gopen="0" aria-label="Refermer">‹</button><b>${esc((g.icon||"")+" "+g.name)}</b><span class="muted">code ${esc(g.code)} · créé le ${dt(g.created)}</span>${isSiteAdmin()?`<button type="button" class="btn sm danger" data-adm="gdel|${g.id}">Supprimer le groupe</button>`:""}</header>
         <ul class="mlist">${g.members.map(m=>{const u=U[m.id]||{name:"?",username:"?"},kid=m.role==="enfant";return `<li class="mrow"><span class="mname">${esc(u.name)} <small class="muted">@${esc(u.username)}</small></span><span class="mbadges"><span class="mb ${m.admin?"adm":"mbr"}">${m.admin?"👑 Admin":"Membre"}</span><span class="mb ${kid?"kid":"adu"}">${kid?"Enfant":"Adulte"}</span></span>
           <span class="mact"><button type="button" class="rolebtn" data-adm="role|${g.id}|${m.id}|${kid?"adulte":"enfant"}">→ ${kid?"Adulte":"Enfant"}</button><button type="button" class="rolebtn" data-adm="gadm|${g.id}|${m.id}|${m.admin?0:1}" ${kid&&!m.admin?"disabled":""}>${m.admin?"Retirer admin":"→ Admin"}</button><button type="button" class="rolebtn" data-adm="out|${g.id}|${m.id}">Retirer du groupe</button></span></li>`}).join("")||'<li class="muted">Aucun membre.</li>'}</ul>
-        <div class="admadd"><select data-admadd="${g.id}" aria-label="Ajouter un compte au groupe"><option value="">Ajouter un compte…</option>${D.users.filter(u=>!g.members.some(m=>m.id===u.id)).map(u=>`<option value="${u.id}">${esc(u.name)} (@${esc(u.username)})</option>`).join("")}</select></div>
+        <div class="admadd"><select data-admadd="${g.id}" aria-label="Ajouter un compte au groupe"><option value="">Ajouter un compte…</option>${D.users.filter(u=>!g.members.some(m=>m.id===u.id)).map(u=>`<option value="${u.id}">${esc(u.name)} (@${esc(u.username)})</option>`).join("")}</select></div>${isSiteAdmin()?gviewHTML(g):""}
       </article>`).join("")||'<p class="muted">Aucun groupe ne correspond.</p>'}</div>`:""}`;
     el.classList.toggle("busy",busy);
   }
   document.addEventListener("input",e=>{const id=e.target.id;if(id==="admQ"||id==="admGQ"){if(id==="admQ")q=e.target.value;else gq=e.target.value;const pos=e.target.selectionStart;render();const i=document.getElementById(id);i.focus();try{i.setSelectionRange(pos,pos)}catch(_){}}});
-  document.addEventListener("click",e=>{const t=e.target.closest("[data-admtab]");if(t){e.preventDefault();tab=t.dataset.admtab;render();return}
+  document.addEventListener("click",e=>{const t=e.target.closest("[data-admtab]");if(t){e.preventDefault();tab=t.dataset.admtab;if(tab==="log")LOG=null;render();return}
+    const gb=e.target.closest("[data-gv]");if(gb){gvOpen(+gb.dataset.gv);return}
+    const gw=e.target.closest("[data-gvw]");if(gw&&gv){gv.wk=+gw.dataset.gvw;render();return}
+    if(e.target.closest("[data-gvclose]")){gv=null;render();return}
     const uo=e.target.closest("[data-uopen]");if(uo&&D){uopen=+uo.dataset.uopen||null;render();return}
     const g=e.target.closest("[data-gopen]");if(g&&D){const id=+g.dataset.gopen;tab="groups";gopen=id||null;render();if(id){const el=document.querySelector(".admg.open");if(el)el.scrollIntoView({block:"start",behavior:"smooth"})}}});
   document.addEventListener("change",e=>{const s=e.target.closest("[data-admadd]");if(s&&s.value){call("/admin/member",{group:+s.dataset.admadd,user:+s.value,add:true});return}
