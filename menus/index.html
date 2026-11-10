@@ -197,8 +197,9 @@ body.dnd-on,body.dnd-on *{cursor:grabbing!important}
 .rfacts{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);margin-top:8px;align-items:center}
 .rbody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px}
 .rbody h4{margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.ings{list-style:none;margin:0;padding:0;font-size:14px}
-.ings li{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.ings{list-style:none;margin:0;padding:0;font-size:14px;display:grid;grid-template-columns:max-content minmax(0,1fr);column-gap:10px}
+.ings .num{white-space:nowrap;text-align:right}
+.ings li{display:grid;grid-column:1/-1;grid-template-columns:subgrid;gap:8px;padding:3px 0;border-bottom:1px dotted var(--line)}
 .ings .num{color:var(--accent);text-align:right}
 .steps{margin:0;padding-left:20px;font-size:14px}
 .steps li{margin-bottom:6px}
