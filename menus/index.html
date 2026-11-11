@@ -3181,6 +3181,9 @@ const panRead=()=>{try{return JSON.parse(localStorage.getItem(PANK)||"null")||{}
 const panWrite=c=>{try{localStorage.setItem(PANK,JSON.stringify(c))}catch(e){}cloudChanged()};
 const panIds=()=>Object.keys(panRead()).filter(k=>k.startsWith("r:")&&RB[k.slice(2)]).map(k=>k.slice(2));
 let PANFOR={};
+// Jours de cuisine par ingrédient (clé « op-id » pour les accompagnements)
+let DAYFOR={};
+const dayTag=k=>DAYFOR[k]?[6,0,1,2,3,4,5].filter(d=>DAYFOR[k].has(d)).map(d=>DAYS[d].slice(0,3).toLowerCase()).join(", "):"";
 // Repas retenus pour les courses : on peut en retirer un, ou un jour entier (W.shopOff, commun au groupe)
 const offKey=c=>c.sl.key+":"+c.r.id;
 const shopIn=c=>!(W.shopOff&&W.shopOff[offKey(c)]);
@@ -3226,9 +3229,9 @@ function mealPickHTML(ss,store,kid){
   return `<div class="mealpick ${partial?"partial":""}"><button type="button" class="mp-head" data-mptoggle aria-expanded="${mealsOpen}"><span>🍽️ <span class="mp-lab">Pour quels repas ?</span> <span class="mp-sum">${sum}</span>${partial&&!mealsOpen?`<small class="mp-days-s">${esc(daysTxt)}</small>`:""}</span><span class="mp-chev" aria-hidden="true">${mealsOpen?"▴":"▾"}</span></button>${body}</div>`;
 }
 function shopping(sess){
-  const tot={},opt={};OPTFOR={};PANFOR={};
+  const tot={},opt={};OPTFOR={};PANFOR={};DAYFOR={};
   if(sess!==2){const pc=panRead();panIds().forEach(id=>{const r=RB[id],n=pc["r:"+id]||1;r.ing.forEach(([i,q])=>{tot[i]=(tot[i]||0)+q*n;(PANFOR[i]=PANFOR[i]||new Set()).add(shortName(r))})})}
-  shopCooks(sess).forEach(c=>{c.r.ing.forEach(([id,q])=>{tot[id]=(tot[id]||0)+qtyCook(c,id,q)});optionsFor(c.r).forEach(([id])=>{const v=optQty(c,id);if(v){opt[id]=(opt[id]||0)+v;(OPTFOR[id]=OPTFOR[id]||new Set()).add(shortName(c.r))}})});
+  shopCooks(sess).forEach(c=>{c.r.ing.forEach(([id,q])=>{tot[id]=(tot[id]||0)+qtyCook(c,id,q);(DAYFOR[id]=DAYFOR[id]||new Set()).add(c.sl.day)});optionsFor(c.r).forEach(([id])=>{const v=optQty(c,id);if(v){opt[id]=(opt[id]||0)+v;(OPTFOR[id]=OPTFOR[id]||new Set()).add(shortName(c.r));(DAYFOR["op-"+id]=DAYFOR["op-"+id]||new Set()).add(c.sl.day)}})});
   const by={};
   Object.entries(tot).forEach(([id,q])=>{const r=I[id].r;(by[r]=by[r]||[]).push([id,q])});
   if(Object.keys(opt).length)by.op=Object.entries(opt);
@@ -3265,7 +3268,7 @@ function renderShop(){
   const pc=panRead(),pids=panIds();
   const panHTML=ss===2?"":pids.length?`<div class="aisle extra"><h3>📖 En plus, depuis le catalogue</h3><ul class="panlist">${pids.map(id=>`<li><button type="button" class="linkish" data-panopen="${id}">${esc(shortName(RB[id]))}</button><span class="pstep"><button type="button" class="pm" data-pann="${id}" data-d="-1" aria-label="Une portion de moins" ${(pc["r:"+id]||1)<=1?"disabled":""}>−</button><b class="num">${pc["r:"+id]||1}</b><button type="button" class="pm" data-pann="${id}" data-d="1" aria-label="Une portion de plus">+</button></span><button type="button" class="xdel" data-panrm="${id}" aria-label="Retirer ${esc(shortName(RB[id]))}">×</button></li>`).join("")}</ul><p class="aisnote">Leurs ingrédients sont ajoutés aux rayons ci-dessous. <a href="recettes.html">Ajouter une recette du catalogue</a></p></div>`:`<p class="aisnote panhint">Pour acheter les ingrédients d'une recette hors semainier, cochez « Ajouter à ma liste de courses » dans le <a href="recettes.html">catalogue</a>.</p>`;
   const aisles=list.length?list.map(([a,items])=>`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${sortDone(items.map(([id,q])=>({id,...SS.st(a,id,q)}))).map(({id,q,ck,done,got,from})=>{
-    const h=[a==="op"&&OPTFOR[id]?"avec : "+esc([...OPTFOR[id]].join(", ")):"",a!=="op"?hint(id,q):"",a!=="op"&&PANFOR[id]?"dont "+esc([...PANFOR[id]].join(", ")):"",got?`✓ déjà acheté : ${fmt(got,I[id].u,true)} (courses du ${from})`:""].filter(Boolean).join(" · ");
+    const h=[dayTag(baseOf(a,id)),a==="op"&&OPTFOR[id]?"avec : "+esc([...OPTFOR[id]].join(", ")):"",a!=="op"?hint(id,q):"",a!=="op"&&PANFOR[id]?"dont "+esc([...PANFOR[id]].join(", ")):"",got?`✓ déjà acheté : ${fmt(got,I[id].u,true)} (courses du ${from})`:""].filter(Boolean).join(" · ");
     return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true),done,I[id].n)}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
   const n=list.reduce((t,[a,items])=>t+items.length,0)+man.length,d=list.reduce((t,[a,items])=>t+items.filter(([id,q])=>SS.st(a,id,q).done).length,0)+man.filter(([id])=>W.checked["m:"+id]).length;
   const bud=list.filter(([a])=>a!=="op").reduce((t,[,items])=>t+items.reduce((u,[id,q])=>u+unitPrice(id)*q,0),0)+0;
@@ -3842,7 +3845,7 @@ document.getElementById("copyList").addEventListener("click",()=>{
   const ss=W.shopSess??1;
   const title=(ss?"Courses session "+ss+" · ":"Courses · ")+"semaine du "+dateOf(0);
   const man=Object.values(W.manual||{});
-  const txt=title+"\n\n"+(man.length?"À AJOUTER\n"+man.map(t=>"- "+t).join("\n")+"\n\n":"")+(()=>{const SS=shopState(ss);return SS.list.map(([a,items])=>[a,items.map(([id,q])=>[id,SS.st(a,id,q)]).filter(([,x])=>!x.done)]).filter(([,it])=>it.length).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,x])=>"- "+I[id].n+" : "+fmt(x.q,I[id].u,true)).join("\n")).join("\n\n")})();
+  const txt=title+"\n\n"+(man.length?"À AJOUTER\n"+man.map(t=>"- "+t).join("\n")+"\n\n":"")+(()=>{const SS=shopState(ss);return SS.list.map(([a,items])=>[a,items.map(([id,q])=>[id,SS.st(a,id,q)]).filter(([,x])=>!x.done)]).filter(([,it])=>it.length).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,x])=>{const d=dayTag(baseOf(a,id));return "- "+I[id].n+" : "+fmt(x.q,I[id].u,true)+(d?" ("+d+")":"")}).join("\n")).join("\n\n")})();
   const done=()=>toast("Liste copiée");
   const fallback=()=>{const ta=document.getElementById("copyArea");ta.value=txt;ta.select();try{document.execCommand("copy");done()}catch(err){toast("Copie impossible, sélectionnez la liste à la main")}};
   try{navigator.clipboard.writeText(txt).then(done,fallback)}catch(err){fallback()}
