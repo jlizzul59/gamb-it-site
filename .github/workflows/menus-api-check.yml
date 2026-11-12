@@ -22,3 +22,6 @@ jobs:
             grep -q '"ok"' body.txt 2>/dev/null && break
             sleep 20
           done
+      - name: Adresse à notre nom (api.gamb-it-apps.fr)
+        run: |
+          curl -sS -m 70 -w "\nHTTP %{http_code}\n" https://api.gamb-it-apps.fr/health || echo "pas encore active"

@@ -1769,10 +1769,12 @@ document.addEventListener("change",e=>{
 // Sans compte, tout reste dans ce navigateur. Avec un compte, les données sont
 // synchronisées avec le serveur ; dans un groupe, le semainier et les favoris sont partagés.
 const CLOUD=(()=>{
-  const DEFAULT_API="https://menus-api-oemz.onrender.com";
-  let API=DEFAULT_API;try{API=localStorage.getItem("menus.api")||DEFAULT_API}catch(e){}
+  // Le serveur répond à deux adresses : la nôtre (api.gamb-it-apps.fr) et celle de l'hébergeur ; bascule automatique si l'une ne répond pas.
+  const APIS=["https://api.gamb-it-apps.fr","https://menus-api-oemz.onrender.com"],DEFAULT_API=APIS[1];
+  let API=APIS[0];try{const o=localStorage.getItem("menus.api"),ok=localStorage.getItem("menus.apiok");API=o||(APIS.includes(ok)?ok:APIS[0])}catch(e){}
+  const custom=(()=>{try{return !!localStorage.getItem("menus.api")}catch(e){return false}})();
   API=API.replace(/\/+$/,"");
-  const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
+  const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||custom;
   const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
   const PERSO_KEYS=["prefs","kid","cur","def","optN","note","rappels"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions","config","votes","mesrecettes"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions","config","votes","mesrecettes"];
   let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
@@ -1788,8 +1790,10 @@ const CLOUD=(()=>{
   async function api(method,path,body){
     const h={"Content-Type":"application/json"};if(acc&&acc.token)h.Authorization="Bearer "+acc.token;
     let r;
-    try{r=await fetch(API+path,{method,headers:h,body:body?J(body):undefined})}
-    catch(e){throw Object.assign(new Error("Le serveur ne répond pas. Vérifiez votre connexion et réessayez."),{net:true})}
+    for(const base of [API,...(custom?[]:APIS.filter(x=>x!==API))]){
+      try{r=await fetch(base+path,{method,headers:h,body:body?J(body):undefined});API=base;try{localStorage.setItem("menus.apiok",base)}catch(_){}break}catch(e){}
+    }
+    if(!r)throw Object.assign(new Error("Le serveur ne répond pas. Vérifiez votre connexion et réessayez."),{net:true});
     let j={};try{j=await r.json()}catch(e){}
     if(r.status===401&&acc&&!/^\/auth\//.test(path)){acc=null;keep();setStatus("idle");}
     if(!r.ok)throw Object.assign(new Error(j.error||"Erreur "+r.status),{status:r.status,body:j});

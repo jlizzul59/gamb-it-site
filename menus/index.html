@@ -2150,10 +2150,13 @@ document.addEventListener("change",e=>{
 // Sans compte, tout reste dans ce navigateur. Avec un compte, les données sont
 // synchronisées avec le serveur ; dans un groupe, le semainier et les favoris sont partagés.
 const CLOUD=(()=>{
-  const DEFAULT_API="https://menus-api-oemz.onrender.com";
-  let API=DEFAULT_API;try{API=localStorage.getItem("menus.api")||DEFAULT_API}catch(e){}
+  // Le serveur répond à deux adresses : la nôtre (api.gamb-it-apps.fr) et celle de l'hébergeur.
+  // On essaie la nôtre d'abord ; si elle ne répond pas (réseau qui la bloque, adresse pas encore active), on bascule et on s'en souvient.
+  const APIS=["https://api.gamb-it-apps.fr","https://menus-api-oemz.onrender.com"],DEFAULT_API=APIS[1];
+  let API=APIS[0];try{const o=localStorage.getItem("menus.api"),ok=localStorage.getItem("menus.apiok");API=o||(APIS.includes(ok)?ok:APIS[0])}catch(e){}
+  const custom=(()=>{try{return !!localStorage.getItem("menus.api")}catch(e){return false}})();
   API=API.replace(/\/+$/,"");
-  const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||API!==DEFAULT_API;
+  const enabled=/(^|\.)gamb-it-apps\.fr$/.test(location.hostname)||custom;
   const TK="menus.compte",LP="semainier.v3",LA="recettes.avis";
   const PERSO_KEYS=["prefs","kid","cur","def","optN","note","rappels"],SHARED_KEYS=["weeks","fav","foyer","invites","receptions","panier","propositions","config","votes","mesrecettes"],MAPS=["prefs","note","weeks","fav","foyer","invites","receptions","panier","propositions","config","votes","mesrecettes"];
   let acc=null;try{acc=JSON.parse(localStorage.getItem(TK)||"null")}catch(e){}
@@ -2168,10 +2171,11 @@ const CLOUD=(()=>{
     const r=P.get("ref")||P.get("utm_source")||(h&&!/gamb-it-apps\.fr$/.test(h)?"web:"+h.replace(/^www\./,""):"direct");localStorage.setItem("menus.ref",r.slice(0,40))}}catch(_){}
   async function api(method,path,body){
     const h={"Content-Type":"application/json"};if(acc&&acc.token)h.Authorization="Bearer "+acc.token;
-    let r;
+    let r,tried=false;
     for(let i=0;i<3&&!r;i++){
-      try{r=await fetch(API+path,{method,headers:h,body:body?J(body):undefined})}
-      catch(e){if(i<2){await new Promise(z=>setTimeout(z,1500*(i+1)));continue}
+      try{r=await fetch(API+path,{method,headers:h,body:body?J(body):undefined});try{localStorage.setItem("menus.apiok",API)}catch(_){}}
+      catch(e){if(!custom){const alt=APIS.find(x=>x!==API);if(alt&&!tried){tried=true;API=alt;i--;continue}}
+        if(i<2){await new Promise(z=>setTimeout(z,1500*(i+1)));continue}
         const off=!/(^|\.)gamb-it-apps\.fr$|^localhost$|^127\./.test(location.hostname);
         throw Object.assign(new Error(off?"La connexion au compte ne marche que sur le site : ouvrez gamb-it-apps.fr/menus/ dans votre navigateur.":"Le serveur ne répond pas. Vérifiez votre connexion et réessayez."),{net:true})}
     }
