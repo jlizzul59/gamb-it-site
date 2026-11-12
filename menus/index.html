@@ -537,6 +537,31 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .kidban span{flex:1;min-width:200px;color:var(--ink)}
 .kidban.adult{background:var(--accent-soft)}
 .kidban.adult b{color:var(--accent)}
+.plist li .pdecide{flex:1 1 100%;display:flex;flex-direction:column;gap:8px}
+.pbtns{display:flex;flex-wrap:wrap;gap:8px}
+.spick{display:flex;flex-direction:column;gap:8px}
+.sptabs{display:inline-flex;gap:4px;padding:3px;border-radius:12px;background:var(--bg);border:1px solid var(--line);align-self:flex-start;flex-wrap:wrap}
+.sptabs button{border:0;background:none;font:inherit;font-size:13px;font-weight:700;color:var(--muted);padding:6px 12px;border-radius:9px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+.sptabs button small{font-weight:500;font-size:11px}
+.sptabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.spgrid{display:grid;grid-template-columns:44px repeat(7,minmax(0,1fr));gap:4px;align-items:stretch}
+.sph{font-size:12px;color:var(--muted);text-align:center;line-height:1.2;padding-bottom:2px}.sph b{display:block;color:var(--ink);font-size:12px}
+.sph.today b{color:var(--accent)}.sph.today{color:var(--accent);font-weight:700}
+.spw{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);align-self:center}
+.spc{min-height:52px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:5px 6px;font:inherit;font-size:12px;line-height:1.25;color:var(--ink);text-align:left;cursor:pointer;overflow:hidden}
+.spc span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.spc.empty{color:var(--muted);font-style:italic;border-style:dashed}
+.spc:hover:not(:disabled){border-color:var(--accent)}
+.spc.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-style:normal;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.spc:disabled{opacity:.35;cursor:default;background:transparent}
+.spany{align-self:flex-start;border:1px dashed var(--line);background:none;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;color:var(--muted);cursor:pointer}.spany.on{border-style:solid;border-color:var(--accent);color:var(--accent);font-weight:700}
+@media(max-width:640px){.spgrid{grid-template-columns:34px repeat(7,minmax(0,1fr));gap:3px}.spc{min-height:44px;font-size:10px;padding:3px}.spc span{-webkit-line-clamp:3}.sph{font-size:10px}.sph b{font-size:10px}.spw{font-size:9px}}
+.wishbar{position:sticky;bottom:0;margin:12px -4px 0;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 -6px 18px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:10px}
+.wishbar .muted{margin:0;font-size:14px}
+.wishchips{display:flex;flex-wrap:wrap;gap:6px;max-height:96px;overflow:auto}
+.wchip{display:inline-flex;align-items:center;gap:4px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--ink);border-radius:999px;padding:4px 4px 4px 12px;font-size:13px;font-weight:600}
+.wchip button{border:0;background:none;width:24px;height:24px;border-radius:50%;cursor:pointer;color:var(--muted);font-size:16px;line-height:1}.wchip button:hover{background:var(--surface);color:var(--ink)}
+.wishsend{display:flex;gap:8px;flex-wrap:wrap}.wishsend input{flex:1 1 200px;font:inherit;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .plist li{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:15px}
 .plist li>div:first-child{flex:1;min-width:240px}
@@ -3118,7 +3143,7 @@ function renderCatList(sfx,key){
     const cur=key&&W.plan[key]===r.id;
     return `<div class="citem ${bad.length?"is-bad":""}">
       <div class="cmain"><b>${esc(r.n)}</b> ${favBtn(r.id)}<div class="cmeta">${starsShow(r.id)}<span>${esc(r.pays)}</span><span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${tagHTML(r)}${cur?'<span class="tag">Plat actuel</span>':inWeek.has(r.id)?'<span class="tag">Déjà au menu</span>':""}${bad.length?'<span class="tag no">Contient : '+esc(bad.join(", "))+'</span>':""}</div></div>
-      <div class="cbtns"><button class="btn sm" type="button" data-view>Voir</button>${key&&!cur?`<button class="btn primary sm" type="button" data-choose="${r.id}">Choisir</button>`:""}</div>
+      <div class="cbtns"><button class="btn sm" type="button" data-view>Voir</button>${key&&!cur?(key==="__prop"?`<button class="btn sm ${WISH.has(r.id)?"primary":""}" type="button" data-choose="${r.id}" aria-pressed="${WISH.has(r.id)}">${WISH.has(r.id)?"✓ Dans ma liste":"+ Ma liste"}</button>`:`<button class="btn primary sm" type="button" data-choose="${r.id}">Choisir</button>`):""}</div>
       <div class="cdet" hidden><div class="rbody"><div><h4>Pour 1 personne</h4><ul class="ings">${r.ing.map(([id,q])=>`<li><span class="num">${fmt(q,I[id].u,false)}</span><span>${esc(I[id].n)}</span></li>`).join("")}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div></div></div>
     </div>`;
   }).join(""):'<p class="muted">Aucune recette ne correspond. Essayez un autre mot ou un autre filtre.</p>';
@@ -3860,15 +3885,53 @@ const KIDBLOCK="[data-cmenu],[data-mact],[data-setmode],[data-okslot],[data-wval
 const KIDMSG="Profil Enfant : propose plutôt un plat, un adulte validera.";
 document.addEventListener("click",e=>{if(isKid()&&e.target.closest(KIDBLOCK)&&!e.target.closest(".ck")){e.preventDefault();e.stopImmediatePropagation();toast(KIDMSG)}},true);
 document.addEventListener("change",e=>{if(isKid()&&e.target.closest("[data-mode],[data-pname],[data-pnote]")){e.stopImmediatePropagation();toast(KIDMSG);renderAll()}},true);
+// ---------- Choisir un repas : mini-calendrier (semaine en cours / prochaine), dates visibles, jours passés grisés ----------
+const PICK={};
+const ddmm=d=>String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0");
+const slotDate=(w,key)=>{const sl=SK[key];if(!sl)return "";return DAYS[sl.day].toLowerCase()+" "+ddmm(dayDate(w,sl.day))+" "+sl.when.toLowerCase()};
+const slotPast=(w,key)=>{const sl=SK[key];const d=dayDate(w,sl.day),t=new Date();d.setHours(sl.when==="Midi"?14:21,0,0,0);return d<t};
+function pickWeeks(extra){const n=NOWW(),ws=[n,n+1];if(extra!=null&&extra>=n&&!ws.includes(extra))ws.push(extra);return ws.sort((a,b)=>a-b)}
+function pickerHTML(id,w0,key0,any){
+  let st=PICK[id];
+  if(!st){let w=pickWeeks(w0).includes(w0)?w0:NOWW(),k=key0||"";if(k&&SK[k]&&slotPast(w,k)){k="";}st=PICK[id]={w,key:k}}
+  const ws=pickWeeks(w0),w=st.w,plan=(S.weeks[w]&&S.weeks[w].plan)||{},mode=(S.weeks[w]&&S.weeks[w].mode)||{};
+  const lab=x=>x===NOWW()?"Cette semaine":x===NOWW()+1?"Semaine prochaine":"Semaine "+weekRange(x);
+  const cell=(d,when)=>{const k=d+(when==="Midi"?"m":"s"),r=RB[plan[k]],past=slotPast(w,k),on=st.key===k;
+    const what=mode[k]==="skip"?"Pas de repas":mode[k]==="rest"?"Restes":r?shortName(r):"Libre";
+    return `<button type="button" class="spc ${on?"on":""} ${r?"":"empty"}" data-spick="${id}|${w}|${k}" ${past?"disabled":""} aria-pressed="${on}" title="${esc(DAYS[d]+" "+ddmm(dayDate(w,d))+" "+when.toLowerCase()+" : "+what)}"><span>${esc(what)}</span></button>`};
+  return `<div class="spick" data-spid="${id}">
+    <div class="sptabs" role="tablist">${ws.map(x=>`<button type="button" role="tab" aria-selected="${x===w}" data-spweek="${id}|${x}">${lab(x)}<small>${esc(weekRange(x))}</small></button>`).join("")}</div>
+    <div class="spgrid"><span></span>${ORDER.map(d=>{const dt=dayDate(w,d),t=new Date();t.setHours(0,0,0,0);const today=dt.toDateString()===t.toDateString();return `<span class="sph ${today?"today":""}">${DAYS[d].slice(0,3)}.<b>${ddmm(dt)}</b></span>`}).join("")}
+      <span class="spw">Midi</span>${ORDER.map(d=>cell(d,"Midi")).join("")}
+      <span class="spw">Soir</span>${ORDER.map(d=>cell(d,"Soir")).join("")}</div>
+    ${any?`<button type="button" class="spany ${st.key?"":"on"}" data-spick="${id}|${w}|">Peu importe, les adultes choisiront</button>`:""}
+  </div>`;
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-spick]");if(b){const [id,w,k]=b.dataset.spick.split("|");PICK[id]={w:+w,key:k};refreshPicker(id);return}
+  const t=e.target.closest("[data-spweek]");if(t){const [id,w]=t.dataset.spweek.split("|");const st=PICK[id]||{};PICK[id]={w:+w,key:st.w===+w?st.key:""};refreshPicker(id);return}
+});
+function refreshPicker(id){const el=document.querySelector(`[data-spid="${CSS.escape(id)}"]`);if(!el)return;const st=PICK[id];
+  const box=el.closest("[data-spbox]");el.outerHTML=pickerHTML(id,st.w,st.key,el.querySelector(".spany")!=null);
+  if(box){const go=box.querySelector("[data-propok]");if(go){go.disabled=!PICK[id].key;go.textContent=PICK[id].key?"Mettre au menu : "+slotDate(PICK[id].w,PICK[id].key):"Choisissez un repas"}}}
 function slotOptions(w,sel,withAny){
   const wk=S.weeks[w],plan=wk&&wk.plan||{};
   return (withAny?`<option value="">Peu importe</option>`:"")+SLOTS.map(s=>{const r=RB[plan[s.key]];return `<option value="${s.key}" ${sel===s.key?"selected":""}>${DAYS[s.day]} ${s.when.toLowerCase()}${r?" — "+esc(shortName(r)):""}</option>`}).join("");
 }
+// Liste d'envies des enfants : on pioche plusieurs plats, puis on envoie tout d'un coup
+const WISHK="menus.wish";
+const WISH=new Set((()=>{try{return JSON.parse(localStorage.getItem(WISHK)||"[]")}catch(e){return []}})());
+const wishSave=()=>{try{localStorage.setItem(WISHK,JSON.stringify([...WISH]))}catch(e){}};
+function wishBar(){const el=document.getElementById("wishbar");if(!el)return;const L=[...WISH].filter(id=>RB[id]);
+  el.innerHTML=L.length?`<div class="wishchips">${L.map(id=>`<span class="wchip">${esc(shortName(RB[id]))}<button type="button" data-wishdel="${id}" aria-label="Retirer ${esc(RB[id].n)}">×</button></span>`).join("")}</div>
+    <div class="wishsend"><input id="wishMsg" maxlength="200" placeholder="Un petit mot pour les adultes ? (facultatif)"><button type="button" class="btn primary" data-wishsend>Envoyer ma liste (${L.length})</button></div>`
+    :`<p class="muted">Touche « + Ma liste » sur tous les plats qui te font envie, puis envoie ta liste aux adultes : ils choisiront les jours.</p>`;
+  el.classList.toggle("has",!!L.length)}
 function openPropCatalog(){
   catKey="__prop";
   ov.innerHTML=`<article class="rcard catcard"><button class="close" type="button" data-close>Fermer</button>
-    <div class="rhead"><small>Semaine ${weekRange(S.cur)} · à valider par un adulte</small><h3>Proposer un plat</h3></div>${catalogShell("m","__prop")}</article>`;
-  ov.hidden=false;renderCatList("m","__prop");
+    <div class="rhead"><small>À valider par un adulte</small><h3>Ma liste d'envies</h3></div>${catalogShell("m","__prop")}<div class="wishbar" id="wishbar"></div></article>`;
+  ov.hidden=false;renderCatList("m","__prop");wishBar();
   const q=document.getElementById("catq-m");try{q.focus({preventScroll:true})}catch(e){}
 }
 function openPropForm(id,slot){
@@ -3877,27 +3940,27 @@ function openPropForm(id,slot){
     <div class="rhead"><small>Proposition pour la semaine ${weekRange(S.cur)}</small><h3>${esc(r.n)}</h3></div>
     <div class="pform">
       ${slot?`<p>À la place de <b>${cur?esc(cur.n):"rien"}</b>, ${esc(slotLabel(SK[slot]))}.</p><input type="hidden" id="propSlot" value="${slot}">`
-        :`<label class="pf"><span>Pour quel repas ?</span><select id="propSlot">${slotOptions(S.cur,"",true)}</select></label>`}
+        :`<div class="pf"><span>Pour quel repas ?</span></div>${(delete PICK.prop,pickerHTML("prop",S.cur,"",true))}`}
       <label class="pf"><span>Un petit mot pour convaincre ? (facultatif)</span><textarea id="propMsg" maxlength="200" rows="2" placeholder="J'adore ça et on n'en a pas mangé depuis longtemps !"></textarea></label>
       <div class="row"><button type="button" class="btn primary" data-propsend="${id}">Envoyer aux adultes</button><button type="button" class="btn" data-close>Annuler</button></div>
     </div></article>`;
   ov.hidden=false;
 }
-const statusHTML=p=>p.status==="ok"?`<span class="pst ok">✓ Validé${p.assigned&&SK[p.assigned.key]?" : "+esc(slotLabel(SK[p.assigned.key]))+", semaine "+(p.assigned.w+1):""}</span>`
+const statusHTML=p=>p.status==="ok"?`<span class="pst ok">✓ Validé${p.assigned&&SK[p.assigned.key]?" : "+esc(slotDate(p.assigned.w,p.assigned.key)):""}</span>`
   :p.status==="non"?`<span class="pst no">Refusé${p.reason?" : "+esc(p.reason):""}</span>`:`<span class="pst wait">En attente</span>`;
 function propLine(p){const r=RB[p.recipe];if(!r)return "";const repl=p.slot&&S.weeks[p.week]&&RB[S.weeks[p.week].plan[p.slot]];
-  return `<b>${esc(p.byName||p.by||"Un enfant")}</b> propose <button type="button" class="linkbtn" data-propview="${p.recipe}">${esc(r.n)}</button>${p.slot&&SK[p.slot]?` ${p.type==="modif"?"à la place de "+(repl?"<i>"+esc(shortName(repl))+"</i>, ":""):"pour "}${esc(slotLabel(SK[p.slot]))} (semaine ${(p.week||0)+1})`:""}`}
+  return `<b>${esc(p.byName||p.by||"Un enfant")}</b> propose <button type="button" class="linkbtn" data-propview="${p.recipe}">${esc(r.n)}</button>${p.slot&&SK[p.slot]?` ${p.type==="modif"?"à la place de "+(repl?"<i>"+esc(shortName(repl))+"</i>, ":""):"pour "}${esc(slotDate(p.week||0,p.slot))}`:""}`}
 function renderProps(){
   const el=document.getElementById("propbox");if(!el)return;
   const all=Object.entries(propsRead()).sort((a,b)=>b[1].t-a[1].t),pend=all.filter(([,p])=>p.status==="attente"),kid=isKid(),me=meUser();
   const badge=document.getElementById("propBadge");if(badge){const n=kid?all.filter(([,p])=>p.by===me&&p.status==="attente").length:pend.length;badge.textContent=n?n:"";badge.hidden=!n}
   document.body.classList.toggle("kidmode",kid);kidLabels();
   const ban=document.getElementById("propBanner");
-  if(ban){ban.innerHTML=kid?`<div class="kidban"><b>Profil Enfant</b><span>Tu peux proposer des plats ou un changement de repas : un adulte validera et choisira le jour.</span><button type="button" class="btn sm primary" data-propnew>+ Proposer un plat</button></div>`
+  if(ban){ban.innerHTML=kid?`<div class="kidban"><b>Profil Enfant</b><span>Tu peux proposer des plats ou un changement de repas : un adulte validera et choisira le jour.</span><button type="button" class="btn sm primary" data-propnew>+ Ma liste d'envies</button></div>`
     :pend.length?`<div class="kidban adult"><b>${pend.length} proposition${pend.length>1?"s":""} à valider</b><span>${pend.slice(0,3).map(([,p])=>esc((p.byName||"Un enfant")+" : "+(RB[p.recipe]?shortName(RB[p.recipe]):""))).join(" · ")}</span><a class="btn sm primary" href="#propositions">Voir et valider</a></div>`:"";}
   if(kid){
     const mine=all.filter(([,p])=>p.by===me);
-    el.innerHTML=`<div class="shophead"><div><h2>Mes propositions</h2><p>Choisis un plat dans le catalogue, dis pour quel repas, et envoie-le aux adultes. Tu verras ici s'il est validé.</p></div><div class="toolbar"><button type="button" class="btn primary" data-propnew>+ Proposer un plat</button></div></div>
+    el.innerHTML=`<div class="shophead"><div><h2>Mes propositions</h2><p>Choisis un plat dans le catalogue, dis pour quel repas, et envoie-le aux adultes. Tu verras ici s'il est validé.</p></div><div class="toolbar"><button type="button" class="btn primary" data-propnew>+ Ma liste d'envies</button></div></div>
       ${mine.length?`<ul class="plist">${mine.map(([id,p])=>`<li><div>${propLine(p)}${p.msg?`<q>${esc(p.msg)}</q>`:""}</div><div class="pact">${statusHTML(p)}${p.status==="attente"?`<button type="button" class="btn sm ghost" data-propdel="${id}">Annuler</button>`:""}</div></li>`).join("")}</ul>`:`<p class="muted">Aucune proposition pour l'instant. Tu peux aussi toucher « Proposer un autre plat » sur un repas de la semaine.</p>`}`;
     return;
   }
@@ -3905,20 +3968,20 @@ function renderProps(){
   el.innerHTML=`<div class="shophead"><div><h2>Propositions des enfants</h2><p>Les enfants proposent, vous validez : choisissez le repas, le plat est mis au menu automatiquement.</p></div></div>
     ${pend.length?`<ul class="plist">${pend.map(([id,p])=>{const w=p.week!=null&&S.weeks[p.week]?p.week:S.cur;
       return `<li><div>${propLine(p)}${p.msg?`<q>${esc(p.msg)}</q>`:""}</div>
-        <div class="pact"><label class="pf"><span>Mettre au menu (semaine ${w+1})</span><select id="pa-${id}">${slotOptions(w,p.slot||"",false)}</select></label>
-          <button type="button" class="btn primary sm" data-propok="${id}" data-w="${w}">Valider</button><button type="button" class="btn sm ghost" data-propno="${id}">Refuser</button></div></li>`}).join("")}</ul>`
+        <div class="pdecide" data-spbox><p class="pf"><span>Quel repas ?</span></p>${pickerHTML("pa-"+id,w,p.slot||"",false)}
+          <div class="pbtns">${(()=>{const st=PICK["pa-"+id];return `<button type="button" class="btn primary" data-propok="${id}" ${st.key?"":"disabled"}>${st.key?"Mettre au menu : "+esc(slotDate(st.w,st.key)):"Choisissez un repas"}</button>`})()}<button type="button" class="btn ghost" data-propno="${id}">Refuser</button></div></div></li>`}).join("")}</ul>`
       :`<p class="muted">Aucune proposition en attente.${Object.keys(propsRead()).length?"":" Pour que les enfants puissent proposer, passez leur profil en « Enfant » dans Mon compte, rubrique Groupe."}</p>`}
     ${done.length?`<h3 class="phist">Déjà traitées</h3><ul class="plist done">${done.map(([id,p])=>`<li><div>${propLine(p)}</div><div class="pact">${statusHTML(p)}</div></li>`).join("")}</ul>`:""}`;
 }
 document.addEventListener("click",e=>{
   if(e.target.closest("[data-propnew]")){openPropCatalog();return}
   const pv=e.target.closest("[data-propview]");if(pv){openRecipeById(pv.dataset.propview);return}
-  const ps=e.target.closest("[data-propsend]");if(ps){const slot=(document.getElementById("propSlot")||{}).value||"";const msg=((document.getElementById("propMsg")||{}).value||"").trim().slice(0,200);
-    propose({type:slot&&W.plan[slot]?"modif":"plat",recipe:ps.dataset.propsend,week:S.cur,slot:slot||null,msg});closeModal();renderProps();toast("Proposition envoyée aux adultes");return}
+  const ps=e.target.closest("[data-propsend]");if(ps){const fixed=document.getElementById("propSlot"),pk=PICK.prop||{},slot=fixed?fixed.value:(pk.key||""),pw=fixed?S.cur:(pk.w!=null?pk.w:S.cur);const msg=((document.getElementById("propMsg")||{}).value||"").trim().slice(0,200);
+    const pwk=S.weeks[pw]&&S.weeks[pw].plan||{};propose({type:slot&&pwk[slot]?"modif":"plat",recipe:ps.dataset.propsend,week:pw,slot:slot||null,msg});closeModal();renderProps();toast("Proposition envoyée aux adultes");return}
   const pd=e.target.closest("[data-propdel]");if(pd){const all=propsRead();delete all[pd.dataset.propdel];propsWrite(all);renderProps();return}
-  const ok=e.target.closest("[data-propok]");if(ok){const id=ok.dataset.propok,all=propsRead(),p=all[id];if(!p)return;const w=+ok.dataset.w,key=document.getElementById("pa-"+id).value;
+  const ok=e.target.closest("[data-propok]");if(ok){const id=ok.dataset.propok,all=propsRead(),p=all[id];if(!p)return;const st=PICK["pa-"+id];if(!st||!st.key)return;const w=st.w,key=st.key;delete PICK["pa-"+id];
     useWeek(w);W.plan[key]=p.recipe;W.pin[key]=1;delete W.mode[key];build("keep");save();
-    p.status="ok";p.assigned={w,key};p.decidedBy=meUser();p.decidedAt=Date.now();propsWrite(all);renderAll();toast(RB[p.recipe].n+" au menu : "+slotLabel(SK[key]));return}
+    p.status="ok";p.assigned={w,key};p.decidedBy=meUser();p.decidedAt=Date.now();propsWrite(all);renderAll();toast(RB[p.recipe].n+" au menu : "+slotDate(w,key));return}
   const no=e.target.closest("[data-propno]");if(no){const id=no.dataset.propno,all=propsRead(),p=all[id];if(!p)return;const reason=(prompt("Une raison pour "+(p.byName||"l'enfant")+" ? (facultatif)")||"").trim().slice(0,140);
     p.status="non";p.reason=reason;p.decidedBy=meUser();p.decidedAt=Date.now();propsWrite(all);renderProps();toast("Proposition refusée");return}
 });
@@ -3926,7 +3989,16 @@ function openRecipeById(id){const r=RB[id];if(!r)return;
   ov.innerHTML=`<article class="rcard"><button class="close" type="button" data-close>Fermer ×</button><div class="rhead"><small>${esc(r.pays)} · ${r.t} min · ≈ ${kcal(r)} kcal</small><h3>${esc(r.n)}</h3></div>
     <div class="rbody"><div><h4>Pour 1 personne</h4><ul class="ings">${r.ing.map(([i,q])=>`<li><span class="num">${fmt(q,I[i].u,false)}</span><span>${esc(I[i].n)}</span></li>`).join("")}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div></div></article>`;
   ov.hidden=false}
-document.addEventListener("click",e=>{const ch=e.target.closest("[data-choose]");if(ch&&(catKey==="__prop"||isKid())){e.stopImmediatePropagation();const k=catKey==="__prop"?null:catKey;openPropForm(ch.dataset.choose,k)}},true);
+document.addEventListener("click",e=>{const ch=e.target.closest("[data-choose]");if(ch&&(catKey==="__prop"||isKid())){e.stopImmediatePropagation();
+  if(catKey==="__prop"){const id=ch.dataset.choose;if(WISH.has(id))WISH.delete(id);else WISH.add(id);wishSave();
+    const on=WISH.has(id);ch.classList.toggle("primary",on);ch.setAttribute("aria-pressed",on);ch.textContent=on?"✓ Dans ma liste":"+ Ma liste";wishBar();return}
+  openPropForm(ch.dataset.choose,catKey)}},true);
+document.addEventListener("click",e=>{
+  const d=e.target.closest("[data-wishdel]");if(d){WISH.delete(d.dataset.wishdel);wishSave();wishBar();const b=document.querySelector(`[data-choose="${CSS.escape(d.dataset.wishdel)}"]`);if(b){b.classList.remove("primary");b.setAttribute("aria-pressed","false");b.textContent="+ Ma liste"}return}
+  if(e.target.closest("[data-wishsend]")){const L=[...WISH].filter(id=>RB[id]);if(!L.length)return;const msg=((document.getElementById("wishMsg")||{}).value||"").trim().slice(0,200);
+    L.forEach(id=>propose({type:"plat",recipe:id,week:NOWW(),slot:null,msg}));WISH.clear();wishSave();closeModal();renderProps();
+    toast(L.length>1?L.length+" envies envoyées aux adultes 🎉":"Envie envoyée aux adultes 🎉");return}
+});
 function kidLabels(){if(!isKid())return;document.querySelectorAll(".week [data-pick]").forEach(b=>b.textContent="Proposer un autre plat")}
 
 // ---------- Plusieurs recettes par repas ----------
