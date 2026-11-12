@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#2f6b3a">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#1E5B5E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Semainier">
+<meta name="apple-mobile-web-app-title" content="Think’n’Cook">
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.tsel{display:flex;gap:4px}
 .tsel button{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:8px;padding:4px 6px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap}
 .tsel button[aria-pressed="true"][data-temp$="chaud"]{background:#FBEFE4;border-color:#E9B48A;color:#B85A14}
@@ -29,7 +29,7 @@ nav.tabs .plusbtn:hover:not([aria-current="page"]){background:var(--accent-soft)
 .subnav{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 14px;padding:4px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:999px;width:max-content;max-width:100%}
 .subnav a{padding:6px 12px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:600;font-size:13.5px;white-space:nowrap}
 .subnav a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
-.brandlink{text-decoration:none;color:inherit}
+.brandlink{text-decoration:none;color:inherit}.brandlink{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-body);font-weight:800;letter-spacing:-.02em}.brandlink img{width:30px;height:30px;border-radius:8px;flex:none}.brandlink .bw,.brand .brandlink .bw{color:inherit;font-size:inherit;display:inline!important;gap:0!important;background:none!important;border:0!important;padding:0!important;box-shadow:none!important}a.brandlink{font-family:var(--f-body)!important;font-weight:800!important}.brandlink .bq,.brand .brandlink .bq{color:#E8761A;font-size:inherit;display:inline!important}
 @media (max-width:640px){
   .top .tabrow{position:fixed;left:0;right:0;bottom:0;z-index:55;background:var(--surface,#fff);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom));margin:0;max-width:none}
   nav.mainnav{justify-content:space-around;overflow:visible;margin:0;padding:0;gap:0}
@@ -42,22 +42,22 @@ nav.tabs .plusbtn:hover:not([aria-current="page"]){background:var(--accent-soft)
 }
 
 </style>
-<title>Semainier en famille</title>
+<title>Think’n’Cook</title>
 <meta name="description" content="Les menus de la semaine pour toute la famille : des recettes du monde entier, le batch cooking et la liste de courses.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="gamb-it-apps.fr">
-<meta property="og:title" content="Semainier en famille">
+<meta property="og:image" content="https://gamb-it-apps.fr/menus/og-image.png"><meta property="og:title" content="Think’n’Cook">
 <meta property="og:description" content="Les menus de la semaine pour toute la famille : des recettes du monde entier, le batch cooking et la liste de courses.">
 <meta property="og:url" content="https://gamb-it-apps.fr/menus/">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout : en-tête collant + onglets, semaine en 7 colonnes (desktop) → lignes jour par jour (tablette) → pile (mobile) */
 :root{
-  --bg:#F2F5EF; --surface:#FFFFFF; --ink:#1C2A20; --muted:#5B6A5F; --line:#D6DFD3;
-  --accent:#2D6A42; --accent-ink:#FFFFFF; --accent-soft:#E2EEE4;
+  --bg:#F2F6F5; --surface:#FFFFFF; --ink:#16292B; --muted:#56696A; --line:#D2DEDC;
+  --accent:#1E5B5E; --accent-ink:#FFFFFF; --accent-soft:#DFEDEB;
   --warm:#B85A14; --warm-soft:#F7E8DA;
   --bad:#A2372A; --bad-soft:#F6E2DE;
   --f-display:"Young Serif", Georgia, "Times New Roman", serif;
@@ -65,12 +65,12 @@ nav.tabs .plusbtn:hover:not([aria-current="page"]){background:var(--accent-soft)
   --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#121915; --surface:#1A231E; --ink:#E4EBE3; --muted:#9AA89D; --line:#2C3830;
-  --accent:#7DC497; --accent-ink:#0F1A13; --accent-soft:#1F3327;
+  --bg:#101819; --surface:#182425; --ink:#E2ECEB; --muted:#98ABA9; --line:#2A3B3C;
+  --accent:#86C9BF; --accent-ink:#0C1A1B; --accent-soft:#1B3436;
   --warm:#EB9A5E; --warm-soft:#3A2919; --bad:#E58072; --bad-soft:#3B2220; color-scheme:dark }}
 :root[data-theme="dark"]{
-  --bg:#121915; --surface:#1A231E; --ink:#E4EBE3; --muted:#9AA89D; --line:#2C3830;
-  --accent:#7DC497; --accent-ink:#0F1A13; --accent-soft:#1F3327;
+  --bg:#101819; --surface:#182425; --ink:#E2ECEB; --muted:#98ABA9; --line:#2A3B3C;
+  --accent:#86C9BF; --accent-ink:#0C1A1B; --accent-soft:#1B3436;
   --warm:#EB9A5E; --warm-soft:#3A2919; --bad:#E58072; --bad-soft:#3B2220; color-scheme:dark }
 
 *{box-sizing:border-box}
@@ -310,8 +310,8 @@ img.art.ready{opacity:1}
 .thumb img.art{aspect-ratio:16/9}
 .rcard .rimg{position:relative;margin:-20px -20px 0;border-radius:12px 12px 0 0;overflow:hidden}
 .rcard .rimg img.art{aspect-ratio:21/9}
-.rimg .where{position:absolute;left:12px;bottom:12px;font-size:11px;font-weight:800;letter-spacing:.04em;background:rgba(255,255,255,.92);color:#1C2A20;border-radius:999px;padding:3px 9px}
-.overlay .close{z-index:2;background:rgba(255,255,255,.95);color:#1C2A20;border:0;border-radius:999px;padding:6px 12px;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.rimg .where{position:absolute;left:12px;bottom:12px;font-size:11px;font-weight:800;letter-spacing:.04em;background:rgba(255,255,255,.92);color:#16292B;border-radius:999px;padding:3px 9px}
+.overlay .close{z-index:2;background:rgba(255,255,255,.95);color:#16292B;border:0;border-radius:999px;padding:6px 12px;box-shadow:0 2px 10px rgba(0,0,0,.2)}
 .citem{grid-template-columns:minmax(0,1fr) auto}
 .cthumb{width:96px;border-radius:8px;overflow:hidden}
 .citem .cdet{grid-column:1/-1}
@@ -815,9 +815,9 @@ body.storemode #shop .hint{font-size:13px}
 .cmnote{display:block;padding:2px 10px 8px;font-size:12px}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .helpbtn{width:38px;padding-left:0;padding-right:0;font-weight:700;border-radius:999px}
-.helpbox{background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 16px;margin:10px 0 14px;font-size:14px;line-height:1.5;max-width:760px}
+.helpbox{background:var(--surface,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 16px;margin:10px 0 14px;font-size:14px;line-height:1.5;max-width:760px}
 .helpbox p{margin:6px 0}
-.hweek{background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:16px;padding:14px 16px;margin:0 0 14px}
+.hweek{background:var(--surface,#fff);border:1px solid var(--line,#e5e0d5);border-radius:16px;padding:14px 16px;margin:0 0 14px}
 .hweek header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}.hweek h3{margin:0;flex:1 1 auto;font-size:18px}
 .htab{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
 .htab th,.htab td{text-align:left;padding:6px 8px;border-top:1px solid var(--line,#eee);vertical-align:top;overflow-wrap:anywhere}
@@ -888,12 +888,12 @@ body.storemode #shop .hint{font-size:13px}
 .gsrc{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .gsrc li{display:grid;grid-template-columns:minmax(120px,220px) 1fr 40px;gap:10px;align-items:center;font-size:14px}
 .gsrc i{display:block;height:10px;border-radius:5px;background:var(--accent);min-width:3px}.gsrc b{text-align:right;font-variant-numeric:tabular-nums}
-.admstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 16px}.admstats div{background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 14px}
+.admstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 16px}.admstats div{background:var(--surface,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 14px}
 .admstats b{display:block;font-size:24px}.admstats span{font-size:12.5px;color:var(--muted,#777)}
 @media(max-width:600px){.admstats{grid-template-columns:repeat(2,1fr)}}
-.admh{margin:22px 0 10px}.admsearch{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line,#ddd);border-radius:12px;margin-bottom:10px;background:var(--card,#fff)}
+.admh{margin:22px 0 10px}.admsearch{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line,#ddd);border-radius:12px;margin-bottom:10px;background:var(--surface,#fff)}
 .admlist{display:flex;flex-direction:column;gap:8px}
-.admrow{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:10px 14px}
+.admrow{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:10px 14px}
 .admrow.banned{background:#fbeeee;border-color:#e7b9b9}.admwho{flex:1 1 300px;min-width:0}.admwho small{display:block;margin-top:3px;overflow-wrap:anywhere}
 .admact{display:flex;gap:6px;flex-wrap:wrap}.btn.danger{color:#a12d2d;border-color:#e3b5b5}
 .mb.ban{background:#f6d5d5;color:#8f2020;font-weight:600}.mb.mod{background:#e3ecfb;color:#1f4f9a;font-weight:600}
@@ -902,19 +902,19 @@ body.storemode #shop .hint{font-size:13px}
 .ugchip small{color:var(--muted)}.ugchip button{border:0;background:none;cursor:pointer;font-size:15px;line-height:1;padding:0 6px;color:#a12d2d}
 .ugadd,.srole{font:inherit;font-size:12.5px;padding:4px 8px;border-radius:999px;border:1px dashed var(--line);background:var(--surface,#fff)}
 .srole{border-style:solid;font-weight:600}.admroles{margin-top:10px}
-.admg{background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.admg{background:var(--surface,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 14px;margin-bottom:10px}
 .admg header{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.admg header b{font-size:16px}.admg header .muted{flex:1;font-size:13px}
 .admadd select{font:inherit;font-size:13px;padding:6px 8px;border-radius:10px;border:1px solid var(--line,#ddd);background:var(--bg,#fff)}
 .admpw{background:#eef7ef;border:1px solid #9cc9a4;border-radius:12px;padding:10px 14px;margin-bottom:10px}.admpw code{font-size:15px;background:#fff;padding:2px 6px;border-radius:6px}
 #adminbox.busy{opacity:.6;pointer-events:none}
 .admtabs{margin:18px 0 12px}
 .admgroups{display:flex;flex-direction:column;gap:8px}
-.admgrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;background:var(--card,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 14px;cursor:pointer;color:var(--ink)}
+.admgrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;background:var(--surface,#fff);border:1px solid var(--line,#e5e0d5);border-radius:14px;padding:12px 14px;cursor:pointer;color:var(--ink)}
 .admgrow:hover{border-color:var(--accent)}.admgrow.banned{background:#fbeeee}.ucls{background:none;border:0;font-size:22px;cursor:pointer;padding:0 6px 0 0;color:var(--ink);align-self:flex-start}.admgrow .muted{flex:1;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.admgrow .chev{font-size:20px;color:var(--muted)}
 .admg.open header .linkish{background:none;border:0;font-size:22px;cursor:pointer;padding:0 4px;color:var(--ink)}
 .uglink{background:none;border:0;font:inherit;padding:0;cursor:pointer;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line)}
 .mlist{list-style:none;margin:8px 0;padding:0;display:flex;flex-direction:column;gap:6px}
-.mrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 10px;border:1px solid var(--line,#e5e0d5);border-radius:12px;background:var(--card,#fff)}
+.mrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 10px;border:1px solid var(--line,#e5e0d5);border-radius:12px;background:var(--surface,#fff)}
 .mname{font-weight:600;flex:1 1 120px}
 .mbadges{display:inline-flex;gap:4px}
 .mb{font-size:11px;padding:2px 8px;border-radius:999px;background:#f0ede6;color:#5b5648}
@@ -922,12 +922,12 @@ body.storemode #shop .hint{font-size:13px}
 .mact{display:inline-flex;gap:4px;flex-wrap:wrap}
 .mact .rolebtn[disabled]{opacity:.4;cursor:not-allowed}
 .seasonrow{align-items:center;gap:12px}.seasonrow>span{display:flex;flex-direction:column;gap:2px}.seasonrow small{font-size:12px;line-height:1.4}
-.wvalid{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;border-radius:14px;border:1px solid var(--line,#e5e0d5);background:var(--card,#fff)}
-.wvalid.ok{border-color:#9cc9a4;background:#eef7ef}
-.wvalid.warn{border-color:#e6c27a;background:#fdf6e7}
+.wvalid{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;border-radius:14px;border:1px solid var(--line,#e5e0d5);background:var(--surface,#fff)}
+.wvalid.ok{border-color:var(--accent);background:var(--accent-soft)}
+.wvalid.warn{border-color:var(--warm);background:var(--warm-soft)}
 .wvalid small{display:inline-block;margin-top:2px}
 .when .wr{display:inline-flex;align-items:center;gap:6px}
-.okbtn{font:inherit;font-size:11px;padding:2px 8px;border-radius:999px;border:1px dashed var(--accent,#2f6b3a);background:transparent;color:var(--accent,#2f6b3a);cursor:pointer;text-transform:none;letter-spacing:0}
+.okbtn{font:inherit;font-size:11px;padding:2px 8px;border-radius:999px;border:1px dashed var(--accent,#1E5B5E);background:transparent;color:var(--accent,#1E5B5E);cursor:pointer;text-transform:none;letter-spacing:0}
 .okchip,.okchip button{font:inherit;font-size:11px;padding:2px 8px;border-radius:999px;background:#e3f2e5;color:#23633a;border:0;font-weight:600;text-transform:none;letter-spacing:0}
 .okchip{padding:0}.okchip button{cursor:pointer}
 .okwait{font-size:11px;color:var(--muted,#888);text-transform:none;letter-spacing:0}
@@ -936,7 +936,7 @@ body.storemode #shop .hint{font-size:13px}
 
 <header class="top">
   <div class="wrap toprow">
-    <div class="brand"><h1><a class="brandlink" href="#aujourdhui">Semainier</a></h1></div>
+    <div class="brand"><h1><a class="brandlink" href="#aujourdhui"><img src="icon-192.png" alt="" width="30" height="30"><span class="bw">Think<span class="bq">’n’</span>Cook</span></a></h1></div>
     <button type="button" class="accbtn" id="accBtn" hidden></button>
   </div>
   <div class="wrap tabrow">
@@ -978,9 +978,9 @@ body.storemode #shop .hint{font-size:13px}
       <button class="btn helpbtn" id="helpBtn" type="button" aria-expanded="false" aria-controls="helpBox" title="Comment ça marche ?">?</button>
     </div>
     <div class="helpbox" id="helpBox" hidden>
-      <p><b>Le semainier</b> propose un plat pour chaque midi et chaque soir, en respectant les règles de votre groupe. Il est partagé : ce qu'un adulte change, tout le groupe le voit.</p>
+      <p><b>Le planning</b> propose un plat pour chaque midi et chaque soir, en respectant les règles de votre groupe. Il est partagé : ce qu'un adulte change, tout le groupe le voit.</p>
       <p><b>Sur un repas :</b> « Changer » pour un autre plat (au hasard, chaud, froid ou depuis le catalogue), la pastille 👤 pour le nombre de personnes, « ⋯ » pour les restes, une recette en plus ou supprimer le repas.</p>
-      <p><b>Une erreur ?</b> « Annuler » défait la dernière modification ; « Revenir à la version d'ouverture » remet le semainier tel qu'il était quand vous avez ouvert l'appli.</p>
+      <p><b>Une erreur ?</b> « Annuler » défait la dernière modification ; « Revenir à la version d'ouverture » remet le planning tel qu'il était quand vous avez ouvert l'appli.</p>
       <p>Les accompagnements marqués « optionnel » (pain, riz, fromage) sont listés à part dans les courses : vous décidez sur place.</p>
     </div>
     <div class="defaults" id="defaults"></div>
@@ -2007,7 +2007,7 @@ function makeMix(id){
   const st=[Sx[2],V[2],P[3]].filter(Boolean);if(st.length<2)st.push("Servir aussitôt.");
   return {id,n:P[0]+(parts.length?", "+parts.join(" et "):""),for:["l2","fam"],p:P[1],t:Math.max(P[4],Sx[3],V[3])+5,ing:Object.entries(ing),st,reg:"France",pays:"France",simple:1,mix:1};
 }
-// les assiettes se créent à la demande, quand on les lit (semainier, favoris, liste de courses…)
+// les assiettes se créent à la demande, quand on les lit (planning, favoris, liste de courses…)
 [[RB,id=>makeMix(id)],[BC,id=>makeMix(id)?{t:[],j:"Cuire et servir."}:undefined]].forEach(([obj,mk])=>{
   Object.setPrototypeOf(obj,new Proxy({},{
     get(t,k,recv){if(typeof k==="string"&&k.startsWith("mix:")){const v=mk(k);if(v)Object.defineProperty(recv,k,{value:v,writable:true,enumerable:false,configurable:true});return v}return undefined},
@@ -2218,7 +2218,7 @@ document.addEventListener("change",e=>{
 
 // ---------- Compte, groupe et synchronisation ----------
 // Sans compte, tout reste dans ce navigateur. Avec un compte, les données sont
-// synchronisées avec le serveur ; dans un groupe, le semainier et les favoris sont partagés.
+// synchronisées avec le serveur ; dans un groupe, le planning et les favoris sont partagés.
 const CLOUD=(()=>{
   // Le serveur répond à deux adresses : la nôtre (api.gamb-it-apps.fr) et celle de l'hébergeur.
   // On essaie la nôtre d'abord ; si elle ne répond pas (réseau qui la bloque, adresse pas encore active), on bascule et on s'en souvient.
@@ -2276,7 +2276,7 @@ const CLOUD=(()=>{
     });
     return out;
   }
-  // Semainier commun : on fusionne semaine par semaine et repas par repas, pour que deux personnes
+  // Planning commun : on fusionne semaine par semaine et repas par repas, pour que deux personnes
   // qui modifient des repas différents en même temps gardent toutes les deux leurs changements.
   const isObj=o=>o&&typeof o==="object"&&!Array.isArray(o);
   function mergeWeek(b,m,t){
@@ -2327,7 +2327,7 @@ const CLOUD=(()=>{
         const st=await api("GET","/state");
         const pr0=acc.user&&acc.user.role;acc.user=st.user;acc.group=st.group;acc.groups=st.groups||[];if(pr0!==(st.user&&st.user.role))setTimeout(()=>{try{hooks.apply()}catch(_){}},0);
         const L=local(),inGroup=!!st.group;
-        // Personnel (sans groupe, il contient aussi le semainier et les favoris)
+        // Personnel (sans groupe, il contient aussi le planning et les favoris)
         const pLocal=inGroup?L.perso:Object.assign({},L.perso,L.shared);
         const pServer=st.perso.data||{};
         let pFinal;
@@ -2376,7 +2376,7 @@ const CLOUD=(()=>{
     const msg=note?`<p class="accmsg ${note.startsWith("!")?"bad":""}" role="status">${esc2(note.replace(/^!/,""))}</p>`:"";
     if(!acc){
       b.innerHTML=`<h3>${view==="login"?"Se connecter":"Créer un compte"}</h3>
-        <p class="muted">Un compte permet de retrouver votre semainier, vos favoris et vos notes sur tous vos appareils, et de les partager en groupe.</p>
+        <p class="muted">Un compte permet de retrouver votre planning, vos favoris et vos notes sur tous vos appareils, et de les partager en groupe.</p>
         <div class="acctabs" role="tablist"><button type="button" role="tab" aria-selected="${view==="login"}" data-acc="view-login">J'ai un compte</button><button type="button" role="tab" aria-selected="${view==="register"}" data-acc="view-register">Créer un compte</button></div>
         ${msg}
         <form class="accform" data-accform="${view}" novalidate>
@@ -2395,18 +2395,18 @@ const CLOUD=(()=>{
       <p class="accstatus" id="accStatus">${statusText()}</p>
       ${msg}
       <section class="accsec"><h4>Mes groupes</h4>
-      <p class="muted small">Un groupe = un semainier, des favoris, des règles et des allergies partagés. Vous pouvez en avoir plusieurs : le couple, la famille, les week-ends entre amis… Vos notes et vos goûts restent personnels.</p>
-      ${(acc.groups||[]).length?`<div class="glist">${acc.groups.map(x=>`<div class="gl ${g&&x.id===g.id?"on":""}"><span class="gic">${esc2(x.icon||"👥")}</span><span class="gtx"><b>${esc2(x.name)}</b><small>${x.n} membre${x.n>1?"s":""} · ${esc2(x.names)}${x.role==="enfant"?" · vous : Enfant":""}</small></span>${g&&x.id===g.id?'<span class="gact">Actif</span>':`<button class="btn sm" type="button" data-accgroup="${x.id}">Utiliser</button>`}</div>`).join("")}</div>`:`<p>Vous n'êtes dans aucun groupe : votre semainier reste personnel.</p>`}
+      <p class="muted small">Un groupe = un planning, des favoris, des règles et des allergies partagés. Vous pouvez en avoir plusieurs : le couple, la famille, les week-ends entre amis… Vos notes et vos goûts restent personnels.</p>
+      ${(acc.groups||[]).length?`<div class="glist">${acc.groups.map(x=>`<div class="gl ${g&&x.id===g.id?"on":""}"><span class="gic">${esc2(x.icon||"👥")}</span><span class="gtx"><b>${esc2(x.name)}</b><small>${x.n} membre${x.n>1?"s":""} · ${esc2(x.names)}${x.role==="enfant"?" · vous : Enfant":""}</small></span>${g&&x.id===g.id?'<span class="gact">Actif</span>':`<button class="btn sm" type="button" data-accgroup="${x.id}">Utiliser</button>`}</div>`).join("")}</div>`:`<p>Vous n'êtes dans aucun groupe : votre planning reste personnel.</p>`}
       ${g?`<div class="gdetail"><h5>${esc2(g.icon||"👥")} ${esc2(g.name)} <small class="muted">· groupe actif</small></h5>
         <ul class="mlist">${g.members.map(m=>{const kid=m.role==="enfant",me=acc.user&&m.username===acc.user.username,adm=!!(acc.user&&acc.user.admin);return `<li class="mrow"><span class="mname">${esc2(m.name)}${me?' <small class="muted">(vous)</small>':""}</span><span class="mbadges"><span class="mb ${m.admin?"adm":"mbr"}">${m.admin?"👑 Admin":"Membre"}</span><span class="mb ${kid?"kid":"adu"}">${kid?"Enfant":"Adulte"}</span></span>${adm?`<span class="mact"><button type="button" class="rolebtn" data-accrole="${esc2(m.username)}|${kid?"adulte":"enfant"}" ${m.admin&&!kid?'disabled title="Un administrateur est toujours adulte"':""}>→ ${kid?"Adulte":"Enfant"}</button><button type="button" class="rolebtn" data-accadmin="${esc2(m.username)}|${m.admin?"0":"1"}" ${kid&&!m.admin?'disabled title="Un enfant ne peut pas être administrateur"':""}>${m.admin?"Retirer admin":"→ Admin"}</button></span>`:""}</li>`}).join("")}</ul>
-        <p class="muted small">${acc.user&&acc.user.admin?"Vous êtes administrateur : vous gérez les profils (adulte ou enfant), nommez d'autres administrateurs et renommez le groupe.":"L'administrateur du groupe gère les profils et le nom du groupe."} Les adultes modifient et valident le semainier ; les enfants proposent des plats, qu'un adulte valide.</p>
+        <p class="muted small">${acc.user&&acc.user.admin?"Vous êtes administrateur : vous gérez les profils (adulte ou enfant), nommez d'autres administrateurs et renommez le groupe.":"L'administrateur du groupe gère les profils et le nom du groupe."} Les adultes modifient et valident le planning ; les enfants proposent des plats, qu'un adulte valide.</p>
         <div class="code"><span>Code d'invitation</span><b class="num" id="accCode">${esc2(g.code)}</b><button class="btn sm" type="button" data-acc="copy">Copier</button></div>
         ${view==="rename"?`<form class="accform inline" data-accform="rename" novalidate>${field("accGName","Nom du groupe","text",`value="${esc2(g.name)}" maxlength="40"`)}<label class="accf"><span>Icône</span><select id="accGIcon">${GICONS2.map(i=>`<option ${i===(g.icon||"")?"selected":""}>${i}</option>`).join("")}</select></label><button class="btn primary" type="submit">Enregistrer</button><button class="btn" type="button" data-acc="view-main">Annuler</button></form>`
         :view==="leave"?`<div class="confirm"><p>Quitter « ${esc2(g.name)} » ? Vous gardez vos autres groupes.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`
         :`<div class="row">${acc.user&&acc.user.admin?'<button class="btn sm" type="button" data-acc="view-rename">Renommer</button>':""}<button class="btn sm" type="button" data-acc="view-leave">Quitter ce groupe</button></div>`}</div>`:""}
       ${view==="newgroup"?`<form class="accform" data-accform="create" novalidate><h5>Nouveau groupe</h5>${field("accGroup","Nom du groupe","text",'placeholder="En amoureux, Famille, Les copains du ski…" maxlength="40"')}
           <label class="accf"><span>Icône</span><select id="accIcon">${GICONS2.map(i=>`<option>${i}</option>`).join("")}</select></label>
-          <label class="accf"><span>Pour commencer</span><select id="accStart"><option value="vide">Un semainier tout neuf</option>${g?`<option value="copie">Une copie de « ${esc2(g.name)} »</option>`:'<option value="copie">Une copie de mon semainier actuel</option>'}</select></label>
+          <label class="accf"><span>Pour commencer</span><select id="accStart"><option value="vide">Un planning tout neuf</option>${g?`<option value="copie">Une copie de « ${esc2(g.name)} »</option>`:'<option value="copie">Une copie de mon planning actuel</option>'}</select></label>
           <div class="row"><button class="btn primary" type="submit">Créer le groupe</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
       :view==="joingroup"?`<form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Code du groupe","text",'placeholder="6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<label class="accf"><span>Je suis</span><select id="accRole"><option value="adulte">Adulte</option><option value="enfant">Enfant</option></select></label><button class="btn primary" type="submit">Rejoindre</button><button class="btn" type="button" data-acc="view-main">Annuler</button></form>`
       :`<div class="row"><button class="btn primary sm" type="button" data-acc="view-newgroup">+ Créer un groupe</button><button class="btn sm" type="button" data-acc="view-joingroup">Rejoindre avec un code</button></div>`}
@@ -2435,7 +2435,7 @@ const CLOUD=(()=>{
       if(k==="open"){note="";view=acc?"main":"login";open();return}
       if(k.startsWith("view-")){view=k.slice(5);note="";if(!document.getElementById("accBody"))open();else renderPanel();const f=document.querySelector("#accBody input");if(f)try{f.focus()}catch(_){};return}
       if(k==="copy"){const c=(acc&&acc.group&&acc.group.code)||"";const done=()=>{note="Code copié : "+c;renderPanel()};try{navigator.clipboard.writeText(c).then(done,()=>{note="Code : "+c;renderPanel()})}catch(_){note="Code : "+c;renderPanel()};return}
-      if(k==="export"){act(async()=>{const d=await api("GET","/account/export");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));a.download="semainier-mes-donnees-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)},"Vos données ont été téléchargées.");return}
+      if(k==="export"){act(async()=>{const d=await api("GET","/account/export");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));a.download="thinkncook-mes-donnees-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)},"Vos données ont été téléchargées.");return}
       if(k==="logout"){act(async()=>{try{await api("POST","/auth/logout")}catch(_){}acc=null;keep();view="login";setStatus("idle")},"Vous êtes déconnecté. Vos données restent sur cet appareil.");return}
       if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave",{id:acc.group&&acc.group.id});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply()},"Vous avez quitté le groupe.");return}
     }
@@ -2783,7 +2783,7 @@ function desHTML(k){
 function desCfgHTML(){
   const c=desCfg(),T=desTypes();
   return `<section class="cfgcard"><h3>🍮 Les desserts</h3>
-      <label class="cfgtog"><span class="sw"><input type="checkbox" data-destog ${c.on?"checked":""}><span class="swt" aria-hidden="true"></span></span><span><b>Un dessert à chaque repas</b><small class="muted">Le semainier alterne entre les desserts ci-dessous, sans servir le même deux repas de suite. Sur chaque repas, touchez le dessert pour le changer.</small></span></label>
+      <label class="cfgtog"><span class="sw"><input type="checkbox" data-destog ${c.on?"checked":""}><span class="swt" aria-hidden="true"></span></span><span><b>Un dessert à chaque repas</b><small class="muted">Le planning alterne entre les desserts ci-dessous, sans servir le même deux repas de suite. Sur chaque repas, touchez le dessert pour le changer.</small></span></label>
       ${c.on?T.map(t=>`<div class="cfgrow desrow"><span><span aria-hidden="true">${t.ic}</span> ${esc(t.n)}</span>${t.custom?`<button type="button" class="xdel" data-desdel="${esc(t.id)}" aria-label="Retirer ${esc(t.n)}" title="Retirer ce dessert de la liste">×</button>`:""}<select data-desf="${esc(t.id)}" aria-label="${esc(t.n)} : à quelle fréquence">${[[0,"Jamais"],[1,"De temps en temps"],[2,"Souvent"]].map(([v,l])=>`<option value="${v}" ${t.f===v?"selected":""}>${l}</option>`).join("")}</select></div>`).join("")+`<div class="thadd desadd"><input type="text" id="desNew" maxlength="30" placeholder="Un autre dessert : tiramisu, salade de fruits…" autocomplete="off" aria-label="Ajouter un dessert à la liste"><button type="button" class="btn sm primary" data-desadd>Ajouter</button></div>`:""}</section>`;
 }
 function desWrite(fn){
@@ -2996,7 +2996,7 @@ function placeWeekbar(v){
   if(sub)sub.after(wb);else sec.prepend(wb);wb.hidden=false;
 }
 
-// ---------- Validation du semainier (par repas et pour toute la semaine) ----------
+// ---------- Validation du planning (par repas et pour toute la semaine) ----------
 const VJ=JSON.stringify;
 const slotSig=(w,k)=>VJ([(w.mode||{})[k]||"cook",(w.plan||{})[k]||"",((w.extra||{})[k]||[]).map(x=>x.id)]);
 const weekSig=w=>SLOTS.map(s=>slotSig(w,s.key)).join("~");
@@ -3018,20 +3018,20 @@ function renderValid(){
   const edTxt=ed&&ed.at?`<small class="muted">Dernière modification : ${ed.by?esc(ed.by)+", ":""}${whenTxt(ed.at)}</small>`:"";
   if(weekOk()){
     el.className="wvalid ok";
-    el.innerHTML=`<div><b>✅ Semainier validé</b>${W.valid.by?" par "+esc(W.valid.by):""} <span class="muted">· ${whenTxt(W.valid.at)}</span><br><small class="muted">C'est le menu de la semaine pour tout le groupe.</small></div>${canValidate()?'<button type="button" class="btn sm" data-wvalid="off">Rouvrir</button>':""}`;
+    el.innerHTML=`<div><b>✅ Planning validé</b>${W.valid.by?" par "+esc(W.valid.by):""} <span class="muted">· ${whenTxt(W.valid.at)}</span><br><small class="muted">C'est le menu de la semaine pour tout le groupe.</small></div>${canValidate()?'<button type="button" class="btn sm" data-wvalid="off">Rouvrir</button>':""}`;
   }else if(W.valid){
     el.className="wvalid warn";
     el.innerHTML=`<div><b>✏️ Modifié depuis la validation</b>${W.valid.by?(/^[aeiouyhéèêâîôûAEIOUYHÉÈ]/.test(W.valid.by)?" d'":" de ")+esc(W.valid.by):""}<br>${edTxt||'<small class="muted">Un repas a changé.</small>'}</div>${canValidate()?'<button type="button" class="btn primary sm" data-wvalid="on">Revalider</button>':""}`;
   }else{
     el.className="wvalid";
-    el.innerHTML=`<div><b>📝 Semainier en préparation</b> <span class="muted">· ${n} repas validé${n>1?"s":""} sur ${live.length}</span><br>${edTxt||(isKid()?'<small class="muted">Un adulte le validera. Tu peux proposer un autre plat sur chaque repas.</small>':'<small class="muted">Validez chaque repas, ou toute la semaine d\'un coup.</small>')}</div>${canValidate()?'<button type="button" class="btn primary sm" data-wvalid="on">✓ Valider le semainier</button>':""}`;
+    el.innerHTML=`<div><b>📝 Planning en préparation</b> <span class="muted">· ${n} repas validé${n>1?"s":""} sur ${live.length}</span><br>${edTxt||(isKid()?'<small class="muted">Un adulte le validera. Tu peux proposer un autre plat sur chaque repas.</small>':'<small class="muted">Validez chaque repas, ou toute la semaine d\'un coup.</small>')}</div>${canValidate()?'<button type="button" class="btn primary sm" data-wvalid="on">✓ Valider le planning</button>':""}`;
   }
 }
 function setValid(on){
   const by=meName(),at=Date.now();
   if(on){W.ok=W.ok||{};liveSlots().forEach(s=>{W.ok[s.key]={sig:slotSig(W,s.key),by,at}});W.valid={sig:weekSig(W),by,at}}
   else delete W.valid;
-  _seen=weekSig(W);save();renderAll();toast(on?"Semainier validé pour tout le groupe":"Semainier rouvert : il peut à nouveau être modifié");
+  _seen=weekSig(W);save();renderAll();toast(on?"Planning validé pour tout le groupe":"Planning rouvert : il peut à nouveau être modifié");
 }
 document.addEventListener("click",e=>{
   const v=e.target.closest("[data-wvalid]");if(v){if(isKid())return;setValid(v.dataset.wvalid==="on");return}
@@ -3039,7 +3039,7 @@ document.addEventListener("click",e=>{
     if(slotOk(k)){delete W.ok[k];toast("Validation retirée")}else{W.ok[k]={sig:slotSig(W,k),by:meName(),at:Date.now()};toast("Repas validé")}
     _seen=weekSig(W);save();renderWeek();return}
 });
-// Qui a modifié le semainier en dernier
+// Qui a modifié le planning en dernier
 let _seen=null;
 function trackEdit(){if(!W||isKid())return;const sg=weekSig(W);if(_seen!==null&&sg!==_seen)W.edit={by:meName(),at:Date.now()};_seen=sg}
 
@@ -3340,7 +3340,7 @@ function renderShop(){
     <ul>${sortDone(man.map(([id,t])=>({ck:"m:"+id,id,t}))).map(x=>{const done=!!W.checked[x.ck];return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${x.ck}" ${done?"checked":""}><span>${esc(x.t)}</span></label>${drv?driveLink(x.t):""}${kid?"":`<button type="button" class="xdel" data-mandel="${x.id}" aria-label="Retirer ${esc(x.t)}">×</button>`}</li>`}).join("")||(kid?'<li class="muted">Rien pour l\'instant.</li>':"")}</ul></div>`;
   // recettes du catalogue
   const pc=panRead(),pids=panIds();
-  const panHTML=ss===2?"":pids.length?`<div class="aisle extra"><h3>📖 En plus, depuis le catalogue</h3><ul class="panlist">${pids.map(id=>`<li><button type="button" class="linkish" data-panopen="${id}">${esc(shortName(RB[id]))}</button><span class="pstep"><button type="button" class="pm" data-pann="${id}" data-d="-1" aria-label="Une portion de moins" ${(pc["r:"+id]||1)<=1?"disabled":""}>−</button><b class="num">${pc["r:"+id]||1}</b><button type="button" class="pm" data-pann="${id}" data-d="1" aria-label="Une portion de plus">+</button></span><button type="button" class="xdel" data-panrm="${id}" aria-label="Retirer ${esc(shortName(RB[id]))}">×</button></li>`).join("")}</ul><p class="aisnote">Leurs ingrédients sont ajoutés aux rayons ci-dessous. <a href="recettes.html">Ajouter une recette du catalogue</a></p></div>`:`<p class="aisnote panhint">Pour acheter les ingrédients d'une recette hors semainier, cochez « Ajouter à ma liste de courses » dans le <a href="recettes.html">catalogue</a>.</p>`;
+  const panHTML=ss===2?"":pids.length?`<div class="aisle extra"><h3>📖 En plus, depuis le catalogue</h3><ul class="panlist">${pids.map(id=>`<li><button type="button" class="linkish" data-panopen="${id}">${esc(shortName(RB[id]))}</button><span class="pstep"><button type="button" class="pm" data-pann="${id}" data-d="-1" aria-label="Une portion de moins" ${(pc["r:"+id]||1)<=1?"disabled":""}>−</button><b class="num">${pc["r:"+id]||1}</b><button type="button" class="pm" data-pann="${id}" data-d="1" aria-label="Une portion de plus">+</button></span><button type="button" class="xdel" data-panrm="${id}" aria-label="Retirer ${esc(shortName(RB[id]))}">×</button></li>`).join("")}</ul><p class="aisnote">Leurs ingrédients sont ajoutés aux rayons ci-dessous. <a href="recettes.html">Ajouter une recette du catalogue</a></p></div>`:`<p class="aisnote panhint">Pour acheter les ingrédients d'une recette hors planning, cochez « Ajouter à ma liste de courses » dans le <a href="recettes.html">catalogue</a>.</p>`;
   const aisles=list.length?list.map(([a,items])=>`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${sortDone(items.map(([id,q])=>({id,...SS.st(a,id,q)}))).map(({id,q,ck,done,got,from})=>{
     const h=[dayTag(baseOf(a,id)),a==="op"&&OPTFOR[id]?"avec : "+esc([...OPTFOR[id]].join(", ")):"",a!=="op"?hint(id,q):"",a!=="op"&&PANFOR[id]?"dont "+esc([...PANFOR[id]].join(", ")):"",got?`✓ déjà acheté : ${fmt(got,I[id].u,true)} (courses du ${from})`:""].filter(Boolean).join(" · ");
     return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true),done,I[id].n)}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
@@ -3392,11 +3392,11 @@ const isSuper=()=>{const a=meAcc();return !!(a&&a.user&&(a.user.superadmin||a.us
 const isSiteAdmin=()=>{const a=meAcc();return !!(a&&a.user&&a.user.superadmin)};
 const ADM=(()=>{
   let D=null,busy=false,err="",q="",gq="",tab="users",gopen=null,uopen=null,arm={k:"",t:0},pw=null,gv=null,LOG=null;
-  // Lecture seule du semainier d'un groupe (administrateurs du site, motif obligatoire, consultation journalisée)
+  // Lecture seule du planning d'un groupe (administrateurs du site, motif obligatoire, consultation journalisée)
   function gviewHTML(g){
-    if(!gv||gv.gid!==g.id)return `<div class="gview"><h5>👁 Semainier du groupe</h5><div class="gvform"><select id="gvReason" aria-label="Motif de la consultation"><option value="">Motif de la consultation…</option><option>Demande d'aide de l'utilisateur</option><option>Problème technique signalé</option><option>Modération</option></select><button type="button" class="btn sm" data-gv="${g.id}">Voir en lecture seule</button></div><p class="muted small">Chaque consultation est enregistrée avec son motif (onglet 🧾 Journal). Seules les semaines et les réglages du foyer sont affichés : ni votes, ni propositions, ni recettes de famille.</p></div>`;
+    if(!gv||gv.gid!==g.id)return `<div class="gview"><h5>👁 Planning du groupe</h5><div class="gvform"><select id="gvReason" aria-label="Motif de la consultation"><option value="">Motif de la consultation…</option><option>Demande d'aide de l'utilisateur</option><option>Problème technique signalé</option><option>Modération</option></select><button type="button" class="btn sm" data-gv="${g.id}">Voir en lecture seule</button></div><p class="muted small">Chaque consultation est enregistrée avec son motif (onglet 🧾 Journal). Seules les semaines et les réglages du foyer sont affichés : ni votes, ni propositions, ni recettes de famille.</p></div>`;
     const ks=Object.keys(gv.weeks||{}).map(Number).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
-    if(!ks.length)return `<div class="gview"><h5>👁 Semainier du groupe</h5><p class="muted">Ce groupe n'a encore aucun semainier.</p><button type="button" class="btn sm" data-gvclose>Fermer</button></div>`;
+    if(!ks.length)return `<div class="gview"><h5>👁 Planning du groupe</h5><p class="muted">Ce groupe n'a encore aucun planning.</p><button type="button" class="btn sm" data-gvclose>Fermer</button></div>`;
     if(gv.wk==null||!ks.includes(gv.wk))gv.wk=ks.includes(NOWW())?NOWW():ks[ks.length-1];
     const w=gv.weeks[gv.wk]||{},plan=w.plan||{},mode=w.mode||{},ex=w.extra||{},pers=w.pers||{},ok=w.ok||{};
     const nm=id=>RB[id]?RB[id].n:(id?"Recette « "+id+" »":"");
@@ -3404,7 +3404,7 @@ const ADM=(()=>{
       const r=plan[k];if(!r)return '<span class="muted">–</span>';
       return `${esc(nm(r))}${(ex[k]||[]).map(x=>`<br><small>+ ${esc(nm(x.id))}</small>`).join("")}<small class="gvp">👤 ${pers[k]||SK[k].pers}${ok[k]?" · ✓":""}</small>`};
     const i=ks.indexOf(gv.wk);
-    return `<div class="gview"><h5>👁 Semainier du groupe <small class="muted">· lecture seule · motif : ${esc(gv.reason)}</small></h5>
+    return `<div class="gview"><h5>👁 Planning du groupe <small class="muted">· lecture seule · motif : ${esc(gv.reason)}</small></h5>
       <div class="gvnav"><button type="button" class="wbtn" data-gvw="${ks[i-1]}" ${i<=0?"disabled":""} aria-label="Semaine précédente">‹</button><b>${esc(weekRange(gv.wk))}</b><button type="button" class="wbtn" data-gvw="${ks[i+1]}" ${i>=ks.length-1?"disabled":""} aria-label="Semaine suivante">›</button>${w.edit&&w.edit.by?`<span class="muted small">modifié par ${esc(w.edit.by)}${w.edit.at?" le "+new Date(w.edit.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""}</span>`:""}<button type="button" class="btn sm" data-gvclose>Fermer</button></div>
       <table class="gvtab"><thead><tr><th></th><th>Midi</th><th>Soir</th></tr></thead><tbody>${ORDER.map(d=>`<tr><th>${DAYS[d].slice(0,3)}. ${dayDate(gv.wk,d).getDate()}</th><td>${cell(d+"m")}</td><td>${cell(d+"s")}</td></tr>`).join("")}</tbody></table></div>`;
   }
@@ -3486,7 +3486,7 @@ const ADM=(()=>{
     if(k==="ban"){const u=D.users.find(x=>x.id===+a);if(c==="1")askInline(b,"Suspendre "+(u?u.name:"ce compte")+" ? Il sera déconnecté partout.",()=>call("/admin/ban",{id:+a,ban:true}));else call("/admin/ban",{id:+a,ban:false});return}
     if(k==="pw"){askInline(b,"Remplacer son mot de passe ?",()=>call("/admin/reset-password",{id:+a}));return}
     if(k==="del"){askInline(b,"Supprimer définitivement ce compte ?",()=>call("/admin/delete-user",{id:+a}));return}
-    if(k==="gdel"){askInline(b,"Supprimer ce groupe et son semainier ?",()=>call("/admin/delete-group",{id:+a}));return}
+    if(k==="gdel"){askInline(b,"Supprimer ce groupe et son planning ?",()=>call("/admin/delete-group",{id:+a}));return}
     if(k==="role"){call("/admin/member",{group:+a,user:+c,role:d});return}
     if(k==="gadm"){call("/admin/member",{group:+a,user:+c,admin:d==="1"});return}
     if(k==="out"){askInline(b,"Retirer du groupe ?",()=>call("/admin/member",{group:+a,user:+c,remove:true}));return}
@@ -3548,7 +3548,7 @@ function renderToday(){
     const ses=SESSIONS.find(x=>POS(d)===x.ref||(x.ref===-1&&d===6));
     if(ses)todo.push(`🧑‍🍳 Aujourd'hui, session de batch cooking : les repas du ${ses.cover}. <a href="#batch">Voir le déroulé</a>`);
     withWeek(now,()=>{const ss=W.shopSess??1,SS=shopState(ss),left=SS.list.reduce((t,[a,it])=>t+it.filter(([id,q])=>!SS.st(a,id,q).done).length,0)+Object.keys(W.manual||{}).filter(id=>!W.checked["m:"+id]).length;if(left)todo.push(`🛒 Il reste <b>${left}</b> article${left>1?"s":""} dans la liste de courses. <a href="#courses">Ouvrir</a>`);
-      if(!weekOk()&&!isKid())todo.push(`📝 Le semainier de la semaine n'est pas encore validé. <a href="#semaine">Le voir</a>`)});
+      if(!weekOk()&&!isKid())todo.push(`📝 Le planning de la semaine n'est pas encore validé. <a href="#semaine">Le voir</a>`)});
   }
   const pend=Object.values(read2("menus.propositions")||{}).filter(p=>p&&p.status==="attente").length;
   if(pend&&!isKid())todo.push(`💡 ${pend} proposition${pend>1?"s":""} des enfants à regarder. <a href="#propositions">Voir</a>`);
@@ -3557,7 +3557,7 @@ function renderToday(){
   if(hasNow)withWeek(now,()=>{[["m",13,"Ce midi"],["s",20,"Ce soir"]].forEach(([w,h,l])=>{const r=recipeAt(d+w);if(r&&hr>=h&&(W.mode[d+w]||"cook")!=="skip")recent.push([l,r])})});
   const rateHTML=recent.length?`<h3 class="th3">Vous avez aimé ?</h3><ul class="todo rate">${recent.map(([l,r])=>`<li><span><small class="muted">${l}</small><br><b>${esc(shortName(r))}</b></span><span data-votebox="${r.id}">${voteHTML(r.id)}</span></li>`).join("")}</ul><p class="muted small">Chacun donne son avis, enfants compris : les plats aimés reviennent plus souvent, les autres se font rares.</p>`:"";
   el.innerHTML=`<div class="todayhead"><h2>${hr<5?"Bonne nuit":hr<18?"Bonjour":"Bonsoir"}${name?" "+esc(name):""} 👋</h2><p class="muted">${dl[0].toUpperCase()+dl.slice(1)}</p></div>
-    ${hasNow?`<div class="tgrid">${meal(now,d+"m","Ce midi")}${meal(now,d+"s","Ce soir")}</div>`:`<div class="tmeal off"><b>Le semainier de cette semaine n'est pas encore prêt.</b><a class="btn sm primary" href="#semaine">Le préparer</a></div>`}
+    ${hasNow?`<div class="tgrid">${meal(now,d+"m","Ce midi")}${meal(now,d+"s","Ce soir")}</div>`:`<div class="tmeal off"><b>Le planning de cette semaine n'est pas encore prêt.</b><a class="btn sm primary" href="#semaine">Le préparer</a></div>`}
     ${rateHTML}
     ${todo.length?`<h3 class="th3">À faire</h3><ul class="todo">${todo.map(t=>`<li>${t}</li>`).join("")}</ul>`:""}
     ${tomorrow!==null&&S.weeks[d===6?now+1:now]?`<h3 class="th3">Demain</h3><div class="tgrid small">${meal(d===6?now+1:now,tomorrow+"m","Demain midi")}${meal(d===6?now+1:now,tomorrow+"s","Demain soir")}</div>`:""}
@@ -3620,7 +3620,7 @@ const MINE=(()=>{
   function toRows(x){return (x.ing||[]).map(([id,q])=>({id,q,name:I[id]?I[id].n:id,u:I[id]?I[id].u:"g",r:I[id]?I[id].r:"co"}))}
   function render(){const el=document.getElementById("minebox");if(!el)return;const M=mineRead(),kid=isKid(),list=Object.values(M).sort((a,b)=>a.n.localeCompare(b.n,"fr"));
     if(edit){el.innerHTML=editor();return}
-    el.innerHTML=`<div class="sechead"><h2>Ajouter une recette</h2><p class="muted">Collez le lien d'une recette trouvée sur internet (Marmiton, 750g, un blog…) ou écrivez la vôtre. Elle est partagée avec le groupe, rejoint le catalogue et le semainier peut la proposer.</p></div>
+    el.innerHTML=`<div class="sechead"><h2>Ajouter une recette</h2><p class="muted">Collez le lien d'une recette trouvée sur internet (Marmiton, 750g, un blog…) ou écrivez la vôtre. Elle est partagée avec le groupe, rejoint le catalogue et le planning peut la proposer.</p></div>
       ${kid?"":`<div class="mineadd"><button type="button" class="btn primary" data-mine="new">＋ Nouvelle recette</button><form class="mineimp" data-mineimp><input type="url" id="mineUrl" placeholder="Coller le lien d'une recette (Marmiton, 750g, blog…)" value="${esc(url)}" aria-label="Lien d'une recette à importer"><button class="btn" type="submit" ${busy?"disabled":""}>${busy?"Import…":"🔗 Importer"}</button></form></div>${err?`<p class="warnbox">${esc(err)}</p>`:""}`}
       ${list.length?`<ul class="minelist">${list.map(x=>`<li><button type="button" class="linkish" data-open-mine="${x.id}"><b>${esc(x.n)}</b></button><small class="muted">${esc(x.byName||"")}${x.src?` · <a href="${esc(x.src)}" target="_blank" rel="noopener">source</a>`:""}</small>${kid?"":`<span class="mineact"><button type="button" class="btn sm" data-minesh="${x.id}" title="Envoyer cette recette à quelqu'un, même hors de votre groupe">📤 Partager</button><button type="button" class="btn sm" data-mine="edit|${x.id}">Modifier</button><button type="button" class="btn sm danger" data-mine="del|${x.id}">Supprimer</button></span>`}</li>`).join("")}</ul>`:`<p class="muted hempty">Aucune recette pour l'instant. Ajoutez la recette de mamie, ou importez celle d'un site en collant son lien.</p>`}`;
   }
@@ -3675,7 +3675,7 @@ function openRecipeAny(id){const r=RB[id];if(!r)return;ov.innerHTML=`<article cl
 
 // ---------- Rappels : notifications planifiées, réglables et désactivables ----------
 const RAPDEF={menu:{on:1,h:"10:30"},batch:{on:1,h:"10:00"},gel:{on:1,h:"20:00"},avis:{on:1,h:"21:00"},courses:{on:0,h:"10:00",d:6},valider:{on:1,h:"18:00",d:5}};
-const RAPLAB={menu:["🍽️ Le menu du jour","Ce midi et ce soir, chaque matin."],batch:["🧑‍🍳 Session de batch cooking","Le dimanche et le mercredi."],gel:["🧊 Sortir du congélateur","La veille, quand un plat congelé est prévu le lendemain."],avis:["👍 Votre avis sur le dîner","Le soir, pour noter le plat en un clic."],courses:["🛒 Les courses","Le jour de votre choix, avec le nombre d'articles."],valider:["📝 Valider le semainier","Si la semaine suivante n'est pas encore validée."]};
+const RAPLAB={menu:["🍽️ Le menu du jour","Ce midi et ce soir, chaque matin."],batch:["🧑‍🍳 Session de batch cooking","Le dimanche et le mercredi."],gel:["🧊 Sortir du congélateur","La veille, quand un plat congelé est prévu le lendemain."],avis:["👍 Votre avis sur le dîner","Le soir, pour noter le plat en un clic."],courses:["🛒 Les courses","Le jour de votre choix, avec le nombre d'articles."],valider:["📝 Valider le planning","Si la semaine suivante n'est pas encore validée."]};
 const JOURS=["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
 const rapCfg=()=>{const r=S.rappels||{};const o={};Object.keys(RAPDEF).forEach(k=>o[k]=Object.assign({},RAPDEF[k],r[k]||{}));return o};
 const pushOn=()=>{try{return localStorage.getItem("menus.push.on")==="1"}catch(e){return false}};
@@ -3689,7 +3689,7 @@ function rapSchedule(){const C=rapCfg(),out=[],now=Date.now();
     if(C.gel.on){const t2=new Date(dt);t2.setDate(t2.getDate()+1);const g2=t2.getDay(),i2=g2===0?6:g2-1,w2=weekOfDate(t2);if(S.weeks[w2])withWeek(w2,()=>{const fz=["m","s"].map(x=>SK[i2+x]).filter(sl=>(W.mode[sl.key]||"cook")!=="skip"&&recipeAt(sl.key)&&frozen(sl));if(fz.length)out.push({at:at(dt,C.gel.h),title:"Sortir du congélateur",body:fz.map(sl=>"Demain "+sl.when.toLowerCase()+" : "+shortName(recipeAt(sl.key))).join(" · "),url:"/menus/index.html#aujourdhui",tag:"gel"})})}
     if(C.avis.on&&names[1])out.push({at:at(dt,C.avis.h),title:"Vous avez aimé ce soir ?",body:names[1]+" : 👍 ou 👎 en un clic.",url:"/menus/index.html#aujourdhui",tag:"avis"});
     if(C.courses.on&&i===+C.courses.d&&S.weeks[w]){const n=withWeek(w,()=>{const ss=0;return shopping(ss).reduce((t,[,it])=>t+it.length,0)});out.push({at:at(dt,C.courses.h),title:"C'est le jour des courses",body:n+" articles dans la liste. Le mode magasin vous attend.",url:"/menus/index.html#courses",tag:"courses"})}
-    if(C.valider.on&&i===+C.valider.d){const nx=S.weeks[w+1];const ok=nx&&nx.valid&&nx.valid.sig===weekSig(nx);if(!ok)out.push({at:at(dt,C.valider.h),title:"Le semainier de la semaine prochaine",body:"Pensez à le regarder et à le valider pour le groupe.",url:"/menus/index.html#semaine",tag:"valider"})}
+    if(C.valider.on&&i===+C.valider.d){const nx=S.weeks[w+1];const ok=nx&&nx.valid&&nx.valid.sig===weekSig(nx);if(!ok)out.push({at:at(dt,C.valider.h),title:"Le planning de la semaine prochaine",body:"Pensez à le regarder et à le valider pour le groupe.",url:"/menus/index.html#semaine",tag:"valider"})}
   }
   return out.filter(x=>x.at>now).sort((a,b)=>a.at-b.at)}
 let _rapT=null;
@@ -3718,7 +3718,7 @@ document.addEventListener("change",e=>{const t=e.target;if(t.dataset.rapon)rapSe
 function renderHistory(){
   const el=document.getElementById("histbox");if(!el)return;
   const now=NOWW(),ws=[];for(let w=now-1;w>=0;w--){const x=S.weeks[w];if(x&&x.plan&&Object.values(x.plan).some(Boolean))ws.push(w)}
-  const head=`<div class="sechead"><h2>Historique</h2><p class="muted">Les semaines passées, en lecture seule. ${isKid()?"":"Un menu qui a plu ? Reprenez-le pour la semaine affichée dans le semainier."}</p></div>`;
+  const head=`<div class="sechead"><h2>Historique</h2><p class="muted">Les semaines passées, en lecture seule. ${isKid()?"":"Un menu qui a plu ? Reprenez-le pour la semaine affichée dans le planning."}</p></div>`;
   if(!ws.length){el.innerHTML=head+`<p class="muted hempty">Rien pour l'instant : chaque semaine terminée viendra se ranger ici.</p>`;return}
   el.innerHTML=head+ws.map(w=>{const x=S.weeks[w],t=weekRange(w),ok=x.valid&&x.valid.sig===weekSig(x);
     const rows=ORDER.map(i=>{const cell=wh=>{const k=i+wh,m=(x.mode||{})[k]||"cook";if(m==="skip")return '<span class="muted">—</span>';
@@ -3789,7 +3789,7 @@ document.addEventListener("change",e=>{
 document.getElementById("prevW").addEventListener("click",()=>goWeek(S.cur-1));
 document.getElementById("nextW").addEventListener("click",()=>goWeek(S.cur+1));
 let _regenArm=0;
-document.getElementById("regen").addEventListener("click",e=>{const go=()=>{W.pin={};build("random");renderAll();toast("Nouvelle semaine générée · « Annuler » pour revenir")};if(W.valid)askInline(e.currentTarget,"Le semainier est validé. Tout remplacer ?",go);else go()});
+document.getElementById("regen").addEventListener("click",e=>{const go=()=>{W.pin={};build("random");renderAll();toast("Nouvelle semaine générée · « Annuler » pour revenir")};if(W.valid)askInline(e.currentTarget,"Le planning est validé. Tout remplacer ?",go);else go()});
 // ---------- Menus des cartes : « Changer », « ⋯ » et personnes ----------
 const CM=(()=>{let el=null,cur=null;
   function close(){if(!el)return;el.remove();el=null;if(cur&&cur.btn)cur.btn.setAttribute("aria-expanded","false");cur=null}
@@ -3866,7 +3866,7 @@ function weekLines(){return ORDER.map(i=>{const m=["m","s"].map(w=>{const k=i+w,
 function weekText(){const t=weekRange(S.cur);return "🍽️ Nos menus "+t+"\n\n"+weekLines().map(([d,m])=>"• "+d+"\n"+(m.length?m.map(([w,n,d])=>"   "+w+" : "+n+(d?" · "+d:"")).join("\n"):"   —")).join("\n")}
 function weekCanvas(){const L=weekLines(),W2=1080,pad=56,lh=40,rows=L.reduce((t,[,m])=>t+1+Math.max(1,m.length),0);const H=pad*2+110+rows*lh+L.length*14;const c=document.createElement("canvas");c.width=W2;c.height=H;const x=c.getContext("2d");
   x.fillStyle="#f3f1ea";x.fillRect(0,0,W2,H);x.fillStyle="#1f3d2b";x.font="bold 46px Georgia, serif";x.fillText("Nos menus",pad,pad+40);x.font="28px system-ui, sans-serif";x.fillStyle="#5b5648";x.fillText(weekRange(S.cur),pad,pad+84);
-  let y=pad+150;L.forEach(([d,m])=>{x.fillStyle="#2f6b3a";x.font="bold 28px system-ui, sans-serif";x.fillText(d,pad,y);y+=lh;x.font="26px system-ui, sans-serif";x.fillStyle="#22201b";(m.length?m:[["","—"]]).forEach(([w,n])=>{const s=(w?w+" : ":"")+n;let t=s;while(x.measureText(t).width>W2-pad*2-30&&t.length>4)t=t.slice(0,-2);if(t!==s)t=t.slice(0,-1)+"…";x.fillText(t,pad+24,y);y+=lh});y+=14});return c}
+  let y=pad+150;L.forEach(([d,m])=>{x.fillStyle="#1E5B5E";x.font="bold 28px system-ui, sans-serif";x.fillText(d,pad,y);y+=lh;x.font="26px system-ui, sans-serif";x.fillStyle="#22201b";(m.length?m:[["","—"]]).forEach(([w,n])=>{const s=(w?w+" : ":"")+n;let t=s;while(x.measureText(t).width>W2-pad*2-30&&t.length>4)t=t.slice(0,-2);if(t!==s)t=t.slice(0,-1)+"…";x.fillText(t,pad+24,y);y+=lh});y+=14});return c}
 function openShare(){const ov2=document.createElement("div");ov2.className="shareov";ov2.innerHTML=`<div class="sharesheet" role="dialog" aria-modal="true" aria-label="Partager le menu"><button type="button" class="close" data-shareclose>Fermer ×</button><h3>Partager le menu ${esc(weekRange(S.cur))}</h3>
   <pre class="sharepre">${esc(weekText())}</pre>
   <div class="sharebtns"><button class="btn primary" type="button" data-share="wa">WhatsApp</button><button class="btn" type="button" data-share="copy">Copier le texte</button>${navigator.share?'<button class="btn" type="button" data-share="native">Partager…</button>':""}<button class="btn" type="button" data-share="img">Image</button><button class="btn" type="button" data-share="print">Imprimer pour le frigo</button></div></div>`;
@@ -3888,11 +3888,11 @@ function histNote(){if(!W)return;const j=JSON.stringify(W);if(_lastJ!==null&&j!=
 function histReset(){if(!W)return;_lastJ=JSON.stringify(W);if(!(S.cur in OPENV))OPENV[S.cur]=_lastJ;paintHist()}
 function paintHist(){const u=document.getElementById("undoBtn"),o=document.getElementById("openBtn");if(!u||!W)return;
   u.disabled=isKid()||!UNDO.some(x=>x.w===S.cur);o.hidden=isKid()||!(S.cur in OPENV)||OPENV[S.cur]===JSON.stringify(W);
-  o.title="Remettre le semainier tel qu'il était à "+OPENT.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}
+  o.title="Remettre le planning tel qu'il était à "+OPENT.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}
 function restoreWeek(j,msg){_restoring=true;S.weeks[S.cur]=JSON.parse(j);W=S.weeks[S.cur];save();_restoring=false;_lastJ=JSON.stringify(W);renderAll();toast(msg)}
 function undo(){if(isKid())return;for(let i=UNDO.length-1;i>=0;i--){if(UNDO[i].w===S.cur){const x=UNDO.splice(i,1)[0];restoreWeek(x.j,"Modification annulée");return}}toast("Rien à annuler")}
 document.getElementById("undoBtn").addEventListener("click",undo);
-document.getElementById("openBtn").addEventListener("click",()=>{if(isKid()||!(S.cur in OPENV))return;const cur=JSON.stringify(W);UNDO.push({w:S.cur,j:cur});restoreWeek(OPENV[S.cur],"Semainier remis comme à l'ouverture ("+OPENT.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+"). « Annuler » pour revenir.")});
+document.getElementById("openBtn").addEventListener("click",()=>{if(isKid()||!(S.cur in OPENV))return;const cur=JSON.stringify(W);UNDO.push({w:S.cur,j:cur});restoreWeek(OPENV[S.cur],"Planning remis comme à l'ouverture ("+OPENT.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+"). « Annuler » pour revenir.")});
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==="z"&&!/INPUT|TEXTAREA|SELECT/.test((document.activeElement||{}).tagName||"")){e.preventDefault();undo()}});
 document.getElementById("helpBtn").addEventListener("click",e=>{const b=document.getElementById("helpBox"),o=b.hidden;b.hidden=!o;e.currentTarget.setAttribute("aria-expanded",String(o))});
 (()=>{
@@ -3925,7 +3925,7 @@ document.getElementById("copyList").addEventListener("click",()=>{
   try{navigator.clipboard.writeText(txt).then(done,fallback)}catch(err){fallback()}
 });
 
-// ---------- Propositions : écran du semainier ----------
+// ---------- Propositions : écran du planning ----------
 const KIDBLOCK="[data-cmenu],[data-mact],[data-setmode],[data-okslot],[data-wvalid],[data-temp],[data-swap],[data-skip],[data-unskip],[data-pers],[data-def],#regen,#reset,#restLunch,[data-padd],[data-pdel],[data-pdiet],[data-pref],#clearPrefs";
 const KIDMSG="Profil Enfant : propose plutôt un plat, un adulte validera.";
 document.addEventListener("click",e=>{if(isKid()&&e.target.closest(KIDBLOCK)&&!e.target.closest(".ck")){e.preventDefault();e.stopImmediatePropagation();toast(KIDMSG)}},true);
@@ -4258,7 +4258,7 @@ function repairQuotas(plan,used,locked,rand,avoid,C,ever){
     }
   });
 }
-// Bilan de la semaine affiché au-dessus du semainier
+// Bilan de la semaine affiché au-dessus du planning
 function renderRules(){
   const el=document.getElementById("rulesbar");if(!el)return;const C=CFG();
   const chips=CATS2.filter(c=>catOn(C,c.k)).map(c=>{const n=quotaCount(W.plan,c.min),[mn,mx]=catRange(C,c.k),ok=n>=mn&&(mx>=c.top||n<=mx);
@@ -4279,10 +4279,10 @@ const gName=()=>{const a=meAcc();return a&&a.group?a.group.name:""};
 const gIcon=g=>g&&g.icon?g.icon:"👥";
 function groupsHTML(){
   const a=meAcc();
-  if(!a||!a.user)return `<section class="gzone"><div class="gzhead"><div><h2>Groupes</h2><p class="muted">Créez un compte pour avoir plusieurs groupes : un pour le couple, un pour la famille à 4, un pour les week-ends avec les amis… Chacun a son semainier, ses favoris et ses règles.</p></div><button type="button" class="btn primary" data-acc="open">Créer un compte ou se connecter</button></div></section>`;
+  if(!a||!a.user)return `<section class="gzone"><div class="gzhead"><div><h2>Groupes</h2><p class="muted">Créez un compte pour avoir plusieurs groupes : un pour le couple, un pour la famille à 4, un pour les week-ends avec les amis… Chacun a son planning, ses favoris et ses règles.</p></div><button type="button" class="btn primary" data-acc="open">Créer un compte ou se connecter</button></div></section>`;
   const gs=a.groups||[],cur=a.group&&a.group.id;
-  return `<section class="gzone"><div class="gzhead"><div><h2>Mes groupes</h2><p class="muted">Chaque groupe a son propre semainier, ses favoris, ses règles et ses allergies. Passez de l'un à l'autre en un clic.</p></div><div class="row"><button type="button" class="btn sm" data-acc="view-newgroup">+ Créer un groupe</button><button type="button" class="btn sm" data-acc="view-joingroup">Rejoindre avec un code</button></div></div>
-    <div class="gcards">${gs.map(g=>`<button type="button" class="gcard ${g.id===cur?"on":""}" ${g.id===cur?'aria-current="true"':`data-gswitch="${g.id}"`}><span class="gic">${esc(gIcon(g))}</span><span class="gtx"><b>${esc(g.name)}</b><small>${g.n} membre${g.n>1?"s":""} · ${esc(g.names)}</small><small>${g.role==="enfant"?"Profil Enfant":"Adulte"}</small></span>${g.id===cur?'<span class="gact">Groupe actif</span>':'<span class="ggo">Utiliser →</span>'}</button>`).join("")||'<p class="muted">Vous n\'êtes dans aucun groupe : votre semainier reste personnel.</p>'}</div>
+  return `<section class="gzone"><div class="gzhead"><div><h2>Mes groupes</h2><p class="muted">Chaque groupe a son propre planning, ses favoris, ses règles et ses allergies. Passez de l'un à l'autre en un clic.</p></div><div class="row"><button type="button" class="btn sm" data-acc="view-newgroup">+ Créer un groupe</button><button type="button" class="btn sm" data-acc="view-joingroup">Rejoindre avec un code</button></div></div>
+    <div class="gcards">${gs.map(g=>`<button type="button" class="gcard ${g.id===cur?"on":""}" ${g.id===cur?'aria-current="true"':`data-gswitch="${g.id}"`}><span class="gic">${esc(gIcon(g))}</span><span class="gtx"><b>${esc(g.name)}</b><small>${g.n} membre${g.n>1?"s":""} · ${esc(g.names)}</small><small>${g.role==="enfant"?"Profil Enfant":"Adulte"}</small></span>${g.id===cur?'<span class="gact">Groupe actif</span>':'<span class="ggo">Utiliser →</span>'}</button>`).join("")||'<p class="muted">Vous n\'êtes dans aucun groupe : votre planning reste personnel.</p>'}</div>
     ${a.group?`<div class="gmeta"><span>Membres de « ${esc(a.group.name)} » :</span> ${(a.group.members||[]).map(m=>`<span class="mem">${esc(m.name)} <small>${m.admin?"👑 Admin · ":""}${m.role==="enfant"?"Enfant":"Adulte"}</small></span>`).join("")}<span class="code">Code d'invitation <b class="num">${esc(a.group.code)}</b></span><button type="button" class="btn sm" data-acc="open">Gérer le groupe</button></div>`:""}</section>`;
 }
 document.addEventListener("click",e=>{const g=e.target.closest("[data-gswitch]");if(g){CLOUD.switchGroup(+g.dataset.gswitch)}});
@@ -4294,7 +4294,7 @@ function renderCfg(){
   const ths=Object.entries(C.themes).filter(([,x])=>THEMES[x.t]).sort((a,b)=>(a[1].d+a[1].w).localeCompare(b[1].d+b[1].w));
   el.innerHTML=`${kid?'<div class="kidban"><b>Profil Enfant</b><span>Tu peux consulter les règles du groupe ; seuls les adultes peuvent les changer.</span></div>':""}
   ${groupsHTML()}
-  <div class="cfghead"><div><h2>Les règles ${gName()?"de « "+esc(gName())+" »":"de la maison"}</h2><p>Propres à ce groupe : chaque groupe a son semainier, ses favoris et ses règles. Le semainier les respecte quand il compose une semaine.</p></div>
+  <div class="cfghead"><div><h2>Les règles ${gName()?"de « "+esc(gName())+" »":"de la maison"}</h2><p>Propres à ce groupe : chaque groupe a son planning, ses favoris et ses règles. Le planning les respecte quand il compose une semaine.</p></div>
     <div class="presets"><span class="muted">Partir d'un modèle :</span>${Object.entries(PRESETS).map(([k,p])=>`<button type="button" class="btn sm" data-preset="${k}" title="${esc(p.d)}">${p.i} ${esc(p.n)}</button>`).join("")}</div></div>
   <div class="cfggrid">
     <section class="cfgcard"><h3>⚖️ Notre rythme de la semaine</h3>
@@ -4324,7 +4324,7 @@ function renderCfg(){
       <div class="bansearch"><input type="search" id="banQ" data-banq placeholder="Rechercher un aliment : champignons, poivron, coriandre…" autocomplete="off" value="${esc(banQ)}"><div class="bansug" id="banSug">${banSuggest()}</div></div></section>
     ${desCfgHTML()}
     ${eatersHTML()}
-    <section class="cfgcard wide"><h3>🩺 Allergies, intolérances et régimes</h3><p class="muted small">Chaque personne qui mange avec ce groupe et ce qu'elle doit éviter : les recettes à risque sont écartées et signalées partout (semainier, catalogue, réceptions).</p><div id="foyer"></div></section>
+    <section class="cfgcard wide"><h3>🩺 Allergies, intolérances et régimes</h3><p class="muted small">Chaque personne qui mange avec ce groupe et ce qu'elle doit éviter : les recettes à risque sont écartées et signalées partout (planning, catalogue, réceptions).</p><div id="foyer"></div></section>
   </div>
   <div class="cfgapply"><div><b>Appliquer à la semaine ${weekRange(S.cur)}</b><span class="muted">Recompose les repas non choisis à la main pour respecter vos règles.</span></div><button type="button" class="btn primary" data-cfgapply>Recomposer la semaine</button></div>`;
   renderFoyer();
@@ -4387,7 +4387,7 @@ function eaterOptions(key,cur){
 function parseEater(val){if(!val)return null;if(val==="skip")return {skip:1,n:0};const [t,x]=val.split(":");if(t==="g"){const a=meAcc(),g=a&&(a.groups||[]).find(y=>y.id===+x);return {g:+x,n:g?g.n:2}}return {n:+x}}
 function eatersHTML(){
   const C=CFG(),E=C.eaters||{};
-  return `<section class="cfgcard wide"><h3>🍽️ Qui mange quand ?</h3><p class="muted small">Pour chaque repas de la semaine type : à combien on mange, ou avec quel groupe (par exemple le lundi midi à deux, le soir à quatre). Les quantités et la liste de courses suivent. Sur une carte du semainier, − et + ne changent que ce repas-là.</p>
+  return `<section class="cfgcard wide"><h3>🍽️ Qui mange quand ?</h3><p class="muted small">Pour chaque repas de la semaine type : à combien on mange, ou avec quel groupe (par exemple le lundi midi à deux, le soir à quatre). Les quantités et la liste de courses suivent. Sur une carte du planning, − et + ne changent que ce repas-là.</p>
     <div class="eqfill"><span class="muted small">Remplir d'un coup :</span>
       <label>Midis du lundi au vendredi <select data-eqfill="wm">${eaterOptions("",null)}</select></label>
       <label>Soirs de la semaine <select data-eqfill="ws">${eaterOptions("",null)}</select></label>
@@ -4426,7 +4426,7 @@ function reloadFromStorage(){
   migrateSunday();avLoad();loadFoy();useWeek(S.cur||0);renderAll();
   try{if(!UNDO.some(x=>x.w===S.cur))OPENV[S.cur]=JSON.stringify(W);paintHist()}catch(e){}
   try{if(location.hash==="#admin"&&isSuper()&&document.getElementById("v-admin").hidden)route()}catch(e){}
-  if(sig0&&S.cur===cur0&&weekSig(W)!==sig0){const ed=W.edit;toast(ed&&ed.by&&ed.by!==meName()?"Semainier mis à jour par "+ed.by:"Semainier mis à jour")}
+  if(sig0&&S.cur===cur0&&weekSig(W)!==sig0){const ed=W.edit;toast(ed&&ed.by&&ed.by!==meName()?"Planning mis à jour par "+ed.by:"Planning mis à jour")}
 }
 CLOUD.init({apply:reloadFromStorage});
 

@@ -50,12 +50,12 @@ for r in sorted(R, key=lambda r: r["id"]):
     seen.add(s); SL[r["id"]] = s
 
 CSS = """
-:root{--bg:#F2F5EF;--surface:#fff;--ink:#1C2A20;--muted:#5B6A5F;--line:#D6DFD3;--accent:#2D6A42;--accent-ink:#fff;--accent-soft:#E2EEE4;--warm:#B85A14}
-@media(prefers-color-scheme:dark){:root{--bg:#121915;--surface:#1A231E;--ink:#E4EBE3;--muted:#9AA89D;--line:#2C3830;--accent:#7DC497;--accent-ink:#0F1A13;--accent-soft:#1F3327;--warm:#E39A5C}}
+:root{--bg:#F2F6F5;--surface:#fff;--ink:#16292B;--muted:#56696A;--line:#D2DEDC;--accent:#1E5B5E;--accent-ink:#fff;--accent-soft:#DFEDEB;--warm:#B85A14}
+@media(prefers-color-scheme:dark){:root{--bg:#101819;--surface:#182425;--ink:#E2ECEB;--muted:#98ABA9;--line:#2A3B3C;--accent:#86C9BF;--accent-ink:#0C1A1B;--accent-soft:#1B3436;--warm:#E39A5C}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif}
 a{color:var(--accent)}header,main,footer{max-width:860px;margin:auto;padding:0 20px}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:18px;padding-bottom:18px}
-.brand{font-weight:800;text-decoration:none;color:var(--ink)}.brand span{color:var(--accent)}
+.brand{font-weight:800;text-decoration:none;color:var(--ink)}.brand span{color:#E8761A}
 .cta{display:inline-block;background:var(--accent);color:var(--accent-ink);padding:10px 18px;border-radius:999px;font-weight:700;text-decoration:none}
 .cta.ghost{background:none;color:var(--accent);border:1px solid var(--line)}
 .crumbs{font-size:14px;color:var(--muted)}.crumbs a{color:var(--muted)}
@@ -79,11 +79,11 @@ def page(title, desc, path, body, ld=None):
     return f"""<!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{e(title)}</title><meta name="description" content="{e(desc)}"><link rel="canonical" href="{url}">
-<meta property="og:type" content="article"><meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}"><meta property="og:url" content="{url}"><meta property="og:site_name" content="Le Semainier">
-<meta property="og:image" content="{SITE}/menus/icon-512.png"><link rel="icon" href="../icon-192.png"><meta name="theme-color" content="#2D6A42">
+<meta property="og:type" content="article"><meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}"><meta property="og:url" content="{url}"><meta property="og:site_name" content="Think’n’Cook">
+<meta property="og:image" content="{SITE}/menus/icon-512.png"><link rel="icon" href="../icon-192.png"><meta name="theme-color" content="#1E5B5E">
 {f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' if ld else ''}
 <style>{CSS}</style></head><body>
-<header><a class="brand" href="index.html">🍽️ Le <span>Semainier</span></a><a class="cta" href="../index.html?ref=recette">Planifier ma semaine</a></header>
+<header><a class="brand" href="index.html"><img src="../icon-192.png" alt="" width="28" height="28" style="vertical-align:-8px;border-radius:7px;margin-right:6px">Think<span>’n’</span>Cook</a><a class="cta" href="../index.html?ref=recette">Planifier ma semaine</a></header>
 <main>{body}</main>
 <footer><span>© GAMB-IT · <a href="https://gamb-it-apps.fr/">gamb-it-apps.fr</a></span><span><a href="index.html">Toutes les recettes</a> · <a href="../conditions.html">Conditions</a> · <a href="https://gamb-it-apps.fr/confidentialite.html">Confidentialité</a> · <a href="https://gamb-it-apps.fr/mentions-legales.html">Mentions légales</a></span></footer>
 </body></html>
@@ -120,23 +120,23 @@ for r in R:
 <ul class="meta"><li>⏱ {t} min</li><li>👥 {PORTIONS} personnes</li><li>🌍 {e(pays)}</li></ul>
 <div class="grid"><section class="card"><h2>Ingrédients</h2><ul class="ing">{''.join(f'<li><b>{e(q)}</b><span>{e(n)}</span></li>' for q, n, _ in ings)}</ul></section>
 <section class="card"><h2>Préparation</h2><ol class="steps">{''.join(f'<li>{e(x)}</li>' for x in r['st'])}</ol></section></div>
-<div class="actions"><a class="cta" href="../recettes.html?ref=recette#r={e(r['id'])}">Ajouter à mon semainier</a><a class="cta ghost" href="../recettes.html?ref=recette#c={e(r["id"])}">Cuisiner pas à pas</a></div>
-<p>Le Semainier prépare vos menus de la semaine, la liste de courses au gramme près et le pas-à-pas en cuisine. Gratuit, à partager avec toute la famille.</p>
+<div class="actions"><a class="cta" href="../recettes.html?ref=recette#r={e(r['id'])}">Ajouter à mon planning</a><a class="cta ghost" href="../recettes.html?ref=recette#c={e(r["id"])}">Cuisiner pas à pas</a></div>
+<p>Think’n’Cook prépare vos menus de la semaine, la liste de courses au gramme près et le pas-à-pas en cuisine. Gratuit, à partager avec toute la famille.</p>
 {f'<h2>Dans le même esprit</h2><ul class="rel">' + ''.join(f'<li><a href="{SL[x["id"]]}.html">{e(x["n"])}<small>{e(x.get("pays") or "")} · {x.get("t") or 0} min</small></a></li>' for x in rel) + '</ul>' if rel else ''}"""
-    open(os.path.join(OUT, s + ".html"), "w", encoding="utf-8").write(page(f"{r['n']} – recette | Le Semainier", desc, s + ".html", body, ld))
+    open(os.path.join(OUT, s + ".html"), "w", encoding="utf-8").write(page(f"{r['n']} – recette | Think’n’Cook", desc, s + ".html", body, ld))
 
 for p, lst in PAYS.items():
     lst = sorted(lst, key=lambda x: x["n"])
     body = f"""<p class="crumbs"><a href="index.html">Recettes</a> › {e(p)}</p><h1>Recettes : {e(p)}</h1><p>{len(lst)} recettes pour {PORTIONS} personnes.</p>
 <ul class="list">{''.join(f'<li><a href="{SL[x["id"]]}.html">{e(x["n"])}</a></li>' for x in lst)}</ul>"""
-    open(os.path.join(OUT, psl[p]), "w", encoding="utf-8").write(page(f"Recettes {p} | Le Semainier", f"{len(lst)} recettes ({p}) avec ingrédients et étapes, pour vos menus de la semaine.", psl[p], body))
+    open(os.path.join(OUT, psl[p]), "w", encoding="utf-8").write(page(f"Recettes {p} | Think’n’Cook", f"{len(lst)} recettes ({p}) avec ingrédients et étapes, pour vos menus de la semaine.", psl[p], body))
 
 pays_sorted = sorted(PAYS, key=lambda p: (-len(PAYS[p]), p))
 body = f"""<h1>{len(R)} recettes pour les menus de la semaine</h1>
-<p>Des plats du quotidien et du monde entier, avec les quantités pour {PORTIONS} et les étapes détaillées. Ajoutez-les à votre semainier pour obtenir la liste de courses automatiquement.</p>
+<p>Des plats du quotidien et du monde entier, avec les quantités pour {PORTIONS} et les étapes détaillées. Ajoutez-les à votre planning pour obtenir la liste de courses automatiquement.</p>
 <h2>Par pays</h2><ul class="list">{''.join(f'<li><a href="{psl[p]}">{e(p)}</a> ({len(PAYS[p])})</li>' for p in pays_sorted)}</ul>
 <h2>Toutes les recettes</h2><ul class="list">{''.join(f'<li><a href="{SL[x["id"]]}.html">{e(x["n"])}</a></li>' for x in sorted(R, key=lambda x: x["n"]))}</ul>"""
-open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(page("Toutes les recettes | Le Semainier", f"{len(R)} recettes faciles avec ingrédients et étapes pour planifier les menus de la semaine en famille.", "index.html", body))
+open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(page("Toutes les recettes | Think’n’Cook", f"{len(R)} recettes faciles avec ingrédients et étapes pour planifier les menus de la semaine en famille.", "index.html", body))
 
 today = datetime.date.today().isoformat()
 urls = [f"{SITE}/", f"{SITE}/menus/", f"{SITE}/menus/recettes.html", f"{SITE}/menus/r/index.html", f"{SITE}/thermomot/"]

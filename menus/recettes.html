@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#2f6b3a">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#1E5B5E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Semainier">
+<meta name="apple-mobile-web-app-title" content="Think’n’Cook">
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 /* Navigation commune aux trois pages */
 .mainnav{flex:1 1 auto}
@@ -25,7 +25,7 @@ nav.tabs .plusbtn:hover:not([aria-current="page"]){background:var(--accent-soft)
 .subnav{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 14px;padding:4px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:999px;width:max-content;max-width:100%}
 .subnav a{padding:6px 12px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:600;font-size:13.5px;white-space:nowrap}
 .subnav a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
-.brandlink{text-decoration:none;color:inherit}
+.brandlink{text-decoration:none;color:inherit}.brandlink{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-body);font-weight:800;letter-spacing:-.02em}.brandlink img{width:30px;height:30px;border-radius:8px;flex:none}.brandlink .bw,.brand .brandlink .bw{color:inherit;font-size:inherit;display:inline!important;gap:0!important;background:none!important;border:0!important;padding:0!important;box-shadow:none!important}a.brandlink{font-family:var(--f-body)!important;font-weight:800!important}.brandlink .bq,.brand .brandlink .bq{color:#E8761A;font-size:inherit;display:inline!important}
 @media (max-width:640px){
   .top .tabrow{position:fixed;left:0;right:0;bottom:0;z-index:55;background:var(--surface,#fff);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom));margin:0;max-width:none}
   nav.mainnav{justify-content:space-around;overflow:visible;margin:0;padding:0;gap:0}
@@ -49,7 +49,7 @@ nav.tabs .plusbtn:hover:not([aria-current="page"]){background:var(--accent-soft)
 <meta name="description" content="Près de 400 recettes de tous les continents, à filtrer par ingrédient.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="gamb-it-apps.fr">
-<meta property="og:title" content="Le tour du monde en cuisine">
+<meta property="og:image" content="https://gamb-it-apps.fr/menus/og-image.png"><meta property="og:title" content="Le tour du monde en cuisine">
 <meta property="og:description" content="Près de 400 recettes de tous les continents, à filtrer par ingrédient.">
 <meta property="og:url" content="https://gamb-it-apps.fr/menus/recettes.html">
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -59,20 +59,20 @@ nav.tabs .plusbtn:hover:not([aria-current="page"]){background:var(--accent-soft)
 <style>
 /* Layout : en-tête collant → ouverture avec mosaïque de plats → bandeau des régions → ingrédients à gauche, cartes illustrées à droite */
 :root{
-  --bg:#F2F5EF; --surface:#FFFFFF; --ink:#1C2A20; --muted:#5B6A5F; --line:#D6DFD3;
-  --accent:#2D6A42; --accent-ink:#FFFFFF; --accent-soft:#E2EEE4;
+  --bg:#F2F6F5; --surface:#FFFFFF; --ink:#16292B; --muted:#56696A; --line:#D2DEDC;
+  --accent:#1E5B5E; --accent-ink:#FFFFFF; --accent-soft:#DFEDEB;
   --warm:#B85A14; --warm-soft:#F7E8DA; --bad:#A2372A; --bad-soft:#F6E2DE;
   --f-display:"Young Serif", Georgia, "Times New Roman", serif;
   --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#121915; --surface:#1A231E; --ink:#E4EBE3; --muted:#9AA89D; --line:#2C3830;
-  --accent:#7DC497; --accent-ink:#0F1A13; --accent-soft:#1F3327;
+  --bg:#101819; --surface:#182425; --ink:#E2ECEB; --muted:#98ABA9; --line:#2A3B3C;
+  --accent:#86C9BF; --accent-ink:#0C1A1B; --accent-soft:#1B3436;
   --warm:#EB9A5E; --warm-soft:#3A2919; --bad:#E58072; --bad-soft:#3B2220; color-scheme:dark }}
 :root[data-theme="dark"]{
-  --bg:#121915; --surface:#1A231E; --ink:#E4EBE3; --muted:#9AA89D; --line:#2C3830;
-  --accent:#7DC497; --accent-ink:#0F1A13; --accent-soft:#1F3327;
+  --bg:#101819; --surface:#182425; --ink:#E2ECEB; --muted:#98ABA9; --line:#2A3B3C;
+  --accent:#86C9BF; --accent-ink:#0C1A1B; --accent-soft:#1B3436;
   --warm:#EB9A5E; --warm-soft:#3A2919; --bad:#E58072; --bad-soft:#3B2220; color-scheme:dark }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
@@ -260,7 +260,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 .foot{padding-block:22px 40px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
 .card .ph{height:8px}
 .card .where{position:static!important;align-self:flex-start;background:var(--bg)!important;color:var(--muted)!important}
-.card .where{position:absolute;left:10px;top:10px;font-size:11px;font-weight:800;letter-spacing:.04em;background:rgba(255,255,255,.92);color:#1C2A20;border-radius:999px;padding:3px 9px}
+.card .where{position:absolute;left:10px;top:10px;font-size:11px;font-weight:800;letter-spacing:.04em;background:rgba(255,255,255,.92);color:#16292B;border-radius:999px;padding:3px 9px}
 .card .kc{position:absolute;right:10px;bottom:10px;font-size:11px;background:rgba(28,42,32,.82);color:#fff;border-radius:999px;padding:2px 8px}
 .card .bd{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px}
 .cname{font-weight:800;font-size:15px;line-height:1.3}
@@ -285,7 +285,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 .sheet .hd .tt{position:absolute;left:24px;right:24px;bottom:18px;color:#fff}
 .sheet .hd .tt small{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.9}
 .sheet .hd h3{font-size:clamp(24px,3.6vw,36px);text-shadow:0 2px 10px rgba(0,0,0,.4)}
-.close{position:absolute;top:14px;right:14px;z-index:2;border:0;background:rgba(255,255,255,.95);color:#1C2A20;border-radius:999px;padding:8px 14px;font-weight:800;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.close{position:absolute;top:14px;right:14px;z-index:2;border:0;background:rgba(255,255,255,.95);color:#16292B;border-radius:999px;padding:8px 14px;font-weight:800;box-shadow:0 2px 10px rgba(0,0,0,.2)}
 .sheet .in{padding:20px 24px 24px;display:flex;flex-direction:column;gap:18px}
 .facts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;color:var(--muted)}
 .serv{display:inline-flex;align-items:center;gap:10px;font-weight:700;color:var(--ink);margin-left:auto}
@@ -557,7 +557,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 </style>
 
 <header class="top">
-  <div class="wrap toprow"><a class="logo brandlink" href="index.html#aujourdhui">Semainier</a><button type="button" class="accbtn" id="accBtn" hidden></button></div>
+  <div class="wrap toprow"><a class="logo brandlink" href="index.html#aujourdhui"><img src="icon-192.png" alt="" width="30" height="30"><span class="bw">Think<span class="bq">’n’</span>Cook</span></a><button type="button" class="accbtn" id="accBtn" hidden></button></div>
   <div class="wrap tabrow">
     <nav class="tabs mainnav" aria-label="Sections">
       <a href="index.html#aujourdhui" data-nav="aujourdhui">Aujourd'hui</a>
@@ -1590,7 +1590,7 @@ function makeMix(id){
   const st=[Sx[2],V[2],P[3]].filter(Boolean);if(st.length<2)st.push("Servir aussitôt.");
   return {id,n:P[0]+(parts.length?", "+parts.join(" et "):""),for:["l2","fam"],p:P[1],t:Math.max(P[4],Sx[3],V[3])+5,ing:Object.entries(ing),st,reg:"France",pays:"France",simple:1,mix:1};
 }
-// les assiettes se créent à la demande, quand on les lit (semainier, favoris, liste de courses…)
+// les assiettes se créent à la demande, quand on les lit (planning, favoris, liste de courses…)
 [[RB,id=>makeMix(id)],[BC,id=>makeMix(id)?{t:[],j:"Cuire et servir."}:undefined]].forEach(([obj,mk])=>{
   Object.setPrototypeOf(obj,new Proxy({},{
     get(t,k,recv){if(typeof k==="string"&&k.startsWith("mix:")){const v=mk(k);if(v)Object.defineProperty(recv,k,{value:v,writable:true,enumerable:false,configurable:true});return v}return undefined},
@@ -1788,7 +1788,7 @@ document.addEventListener("change",e=>{
 
 // ---------- Compte, groupe et synchronisation ----------
 // Sans compte, tout reste dans ce navigateur. Avec un compte, les données sont
-// synchronisées avec le serveur ; dans un groupe, le semainier et les favoris sont partagés.
+// synchronisées avec le serveur ; dans un groupe, le planning et les favoris sont partagés.
 const CLOUD=(()=>{
   // Le serveur répond à deux adresses : la nôtre (api.gamb-it-apps.fr) et celle de l'hébergeur ; bascule automatique si l'une ne répond pas.
   const APIS=["https://api.gamb-it-apps.fr","https://menus-api-oemz.onrender.com"],DEFAULT_API=APIS[1];
@@ -1867,7 +1867,7 @@ const CLOUD=(()=>{
         const st=await api("GET","/state");
         const pr0=acc.user&&acc.user.role;acc.user=st.user;acc.group=st.group;acc.groups=st.groups||[];if(pr0!==(st.user&&st.user.role))setTimeout(()=>{try{hooks.apply()}catch(_){}},0);
         const L=local(),inGroup=!!st.group;
-        // Personnel (sans groupe, il contient aussi le semainier et les favoris)
+        // Personnel (sans groupe, il contient aussi le planning et les favoris)
         const pLocal=inGroup?L.perso:Object.assign({},L.perso,L.shared);
         const pServer=st.perso.data||{};
         let pFinal;
@@ -1916,7 +1916,7 @@ const CLOUD=(()=>{
     const msg=note?`<p class="accmsg ${note.startsWith("!")?"bad":""}" role="status">${esc2(note.replace(/^!/,""))}</p>`:"";
     if(!acc){
       b.innerHTML=`<h3>${view==="login"?"Se connecter":"Créer un compte"}</h3>
-        <p class="muted">Un compte permet de retrouver votre semainier, vos favoris et vos notes sur tous vos appareils, et de les partager en groupe.</p>
+        <p class="muted">Un compte permet de retrouver votre planning, vos favoris et vos notes sur tous vos appareils, et de les partager en groupe.</p>
         <div class="acctabs" role="tablist"><button type="button" role="tab" aria-selected="${view==="login"}" data-acc="view-login">J'ai un compte</button><button type="button" role="tab" aria-selected="${view==="register"}" data-acc="view-register">Créer un compte</button></div>
         ${msg}
         <form class="accform" data-accform="${view}" novalidate>
@@ -1935,18 +1935,18 @@ const CLOUD=(()=>{
       <p class="accstatus" id="accStatus">${statusText()}</p>
       ${msg}
       <section class="accsec"><h4>Mes groupes</h4>
-      <p class="muted small">Un groupe = un semainier, des favoris, des règles et des allergies partagés. Vous pouvez en avoir plusieurs : le couple, la famille, les week-ends entre amis… Vos notes et vos goûts restent personnels.</p>
-      ${(acc.groups||[]).length?`<div class="glist">${acc.groups.map(x=>`<div class="gl ${g&&x.id===g.id?"on":""}"><span class="gic">${esc2(x.icon||"👥")}</span><span class="gtx"><b>${esc2(x.name)}</b><small>${x.n} membre${x.n>1?"s":""} · ${esc2(x.names)}${x.role==="enfant"?" · vous : Enfant":""}</small></span>${g&&x.id===g.id?'<span class="gact">Actif</span>':`<button class="btn sm" type="button" data-accgroup="${x.id}">Utiliser</button>`}</div>`).join("")}</div>`:`<p>Vous n'êtes dans aucun groupe : votre semainier reste personnel.</p>`}
+      <p class="muted small">Un groupe = un planning, des favoris, des règles et des allergies partagés. Vous pouvez en avoir plusieurs : le couple, la famille, les week-ends entre amis… Vos notes et vos goûts restent personnels.</p>
+      ${(acc.groups||[]).length?`<div class="glist">${acc.groups.map(x=>`<div class="gl ${g&&x.id===g.id?"on":""}"><span class="gic">${esc2(x.icon||"👥")}</span><span class="gtx"><b>${esc2(x.name)}</b><small>${x.n} membre${x.n>1?"s":""} · ${esc2(x.names)}${x.role==="enfant"?" · vous : Enfant":""}</small></span>${g&&x.id===g.id?'<span class="gact">Actif</span>':`<button class="btn sm" type="button" data-accgroup="${x.id}">Utiliser</button>`}</div>`).join("")}</div>`:`<p>Vous n'êtes dans aucun groupe : votre planning reste personnel.</p>`}
       ${g?`<div class="gdetail"><h5>${esc2(g.icon||"👥")} ${esc2(g.name)} <small class="muted">· groupe actif</small></h5>
         <p class="members">${g.members.map(m=>{const kid=m.role==="enfant",me=acc.user&&m.username===acc.user.username,adult=acc.user&&acc.user.role!=="enfant";return `<span class="mem memrole">${esc2(m.name)} <small>${kid?"Enfant":"Adulte"}</small>${adult?`<button type="button" class="rolebtn" data-accrole="${esc2(m.username)}|${kid?"adulte":"enfant"}" title="${me?"Votre profil":""}">→ ${kid?"Adulte":"Enfant"}</button>`:""}</span>`}).join("")}</p>
-        <p class="muted small">Profil Enfant : propose des plats et des changements, qu'un adulte valide. Seuls les adultes modifient le semainier et les règles.</p>
+        <p class="muted small">Profil Enfant : propose des plats et des changements, qu'un adulte valide. Seuls les adultes modifient le planning et les règles.</p>
         <div class="code"><span>Code d'invitation</span><b class="num" id="accCode">${esc2(g.code)}</b><button class="btn sm" type="button" data-acc="copy">Copier</button></div>
         ${view==="rename"?`<form class="accform inline" data-accform="rename" novalidate>${field("accGName","Nom du groupe","text",`value="${esc2(g.name)}" maxlength="40"`)}<label class="accf"><span>Icône</span><select id="accGIcon">${GICONS2.map(i=>`<option ${i===(g.icon||"")?"selected":""}>${i}</option>`).join("")}</select></label><button class="btn primary" type="submit">Enregistrer</button><button class="btn" type="button" data-acc="view-main">Annuler</button></form>`
         :view==="leave"?`<div class="confirm"><p>Quitter « ${esc2(g.name)} » ? Vous gardez vos autres groupes.</p><button class="btn danger" type="button" data-acc="leave">Quitter le groupe</button> <button class="btn" type="button" data-acc="view-main">Annuler</button></div>`
         :`<div class="row">${acc.user&&acc.user.role!=="enfant"?'<button class="btn sm" type="button" data-acc="view-rename">Renommer</button>':""}<button class="btn sm" type="button" data-acc="view-leave">Quitter ce groupe</button></div>`}</div>`:""}
       ${view==="newgroup"?`<form class="accform" data-accform="create" novalidate><h5>Nouveau groupe</h5>${field("accGroup","Nom du groupe","text",'placeholder="En amoureux, Famille, Les copains du ski…" maxlength="40"')}
           <label class="accf"><span>Icône</span><select id="accIcon">${GICONS2.map(i=>`<option>${i}</option>`).join("")}</select></label>
-          <label class="accf"><span>Pour commencer</span><select id="accStart"><option value="vide">Un semainier tout neuf</option>${g?`<option value="copie">Une copie de « ${esc2(g.name)} »</option>`:'<option value="copie">Une copie de mon semainier actuel</option>'}</select></label>
+          <label class="accf"><span>Pour commencer</span><select id="accStart"><option value="vide">Un planning tout neuf</option>${g?`<option value="copie">Une copie de « ${esc2(g.name)} »</option>`:'<option value="copie">Une copie de mon planning actuel</option>'}</select></label>
           <div class="row"><button class="btn primary" type="submit">Créer le groupe</button><button class="btn" type="button" data-acc="view-main">Annuler</button></div></form>`
       :view==="joingroup"?`<form class="accform inline" data-accform="join" novalidate>${field("accCodeIn","Code du groupe","text",'placeholder="6 caractères" maxlength="8" autocapitalize="characters" spellcheck="false"')}<label class="accf"><span>Je suis</span><select id="accRole"><option value="adulte">Adulte</option><option value="enfant">Enfant</option></select></label><button class="btn primary" type="submit">Rejoindre</button><button class="btn" type="button" data-acc="view-main">Annuler</button></form>`
       :`<div class="row"><button class="btn primary sm" type="button" data-acc="view-newgroup">+ Créer un groupe</button><button class="btn sm" type="button" data-acc="view-joingroup">Rejoindre avec un code</button></div>`}
@@ -1975,7 +1975,7 @@ const CLOUD=(()=>{
       if(k==="open"){note="";view=acc?"main":"login";open();return}
       if(k.startsWith("view-")){view=k.slice(5);note="";if(!document.getElementById("accBody"))open();else renderPanel();const f=document.querySelector("#accBody input");if(f)try{f.focus()}catch(_){};return}
       if(k==="copy"){const c=(acc&&acc.group&&acc.group.code)||"";const done=()=>{note="Code copié : "+c;renderPanel()};try{navigator.clipboard.writeText(c).then(done,()=>{note="Code : "+c;renderPanel()})}catch(_){note="Code : "+c;renderPanel()};return}
-      if(k==="export"){act(async()=>{const d=await api("GET","/account/export");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));a.download="semainier-mes-donnees-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)},"Vos données ont été téléchargées.");return}
+      if(k==="export"){act(async()=>{const d=await api("GET","/account/export");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));a.download="thinkncook-mes-donnees-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)},"Vos données ont été téléchargées.");return}
       if(k==="logout"){act(async()=>{try{await api("POST","/auth/logout")}catch(_){}acc=null;keep();view="login";setStatus("idle")},"Vous êtes déconnecté. Vos données restent sur cet appareil.");return}
       if(k==="leave"){act(async()=>{await sync();const st=await api("POST","/groups/leave",{id:acc.group&&acc.group.id});acc.group=st.group;acc.groups=st.groups;acc.user=st.user;acc.base=null;acc.baseGid=null;keep();view="main";await sync();hooks.apply()},"Vous avez quitté le groupe.");return}
     }
@@ -2403,7 +2403,7 @@ function dCard(r){const main=r.ing.filter(([id])=>I[id].r!=="pl").map(([id])=>se
     <div class="bd"><div class="ctop"><span class="where tag">${esc(DTL[r.dt]||"Dessert")}</span><span class="cbtnr">${wishBtn(r.id)}${favBtn(r.id)}</span></div><span class="cname">${esc(r.n)}</span>${frigo&&q&&_fs[r.id]?`<span class="frigohit">🧊 Utilise ${_fs[r.id].n}/${_fs[r.id].of} : ${esc(_fs[r.id].hit.join(", "))}</span>`:""}${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}
     <span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${r.w?`<span title="Temps de repos en plus">+ ${esc(r.w)}</span>`:""}${isFruitD(r)&&seasonOf(r,new Date().getMonth()+1).s==="saison"?'<span class="tag saison">🌱 De saison</span>':""}${r.nc?'<span class="tag froid">❄️ Sans cuisson</span>':""}${lv==="dl"?'<span class="tag leger" title="180 kcal ou moins par portion">🪶 Léger</span>':lv==="dg"?'<span class="tag plaisir" title="Plus de 320 kcal par portion">🧁 Gourmand</span>':""}${r.mine?'<span class="tag vege">Maison</span>':""}</span><span class="cing">${main}</span>${cartBtn(r.id)}</div></div>`}
 
-// ---------- semainier partagé (même site) ----------
+// ---------- planning partagé (même site) ----------
 function planner(){try{return JSON.parse(localStorage.getItem("semainier.v3")||"null")}catch(e){return null}}
 function addToMenu(id,day,when,how){
   let S=planner()||{prefs:{},kid:true,cur:0,weeks:{}};
@@ -2478,11 +2478,11 @@ function cartText(){const {c,ids,need,opt}=cartLines();const lines=["Liste de co
   return lines.join("\n")}
 function paintCartBar(){let b=document.getElementById("cartbar");if(!b){b=document.createElement("button");b.type="button";b.id="cartbar";b.className="cartbar";b.setAttribute("data-cartopen","");document.body.appendChild(b)}
   const c=cartRead(),ids=cartIds(),n=ids.length;b.hidden=!n||!ov.hidden;document.body.classList.toggle("hascart",!!n);
-  if(n){const items=new Set(ids.flatMap(id=>RB[id].ing.map(([i])=>i))).size;b.innerHTML=`<span class="cbn num">${n}</span><span class="cbt"><b>Dans la liste de courses</b><small>${n} recette${n>1?"s":""} en plus du semainier · ${items} ingrédients</small></span><span class="cbgo">Voir les courses →</span>`}}
+  if(n){const items=new Set(ids.flatMap(id=>RB[id].ing.map(([i])=>i))).size;b.innerHTML=`<span class="cbn num">${n}</span><span class="cbt"><b>Dans la liste de courses</b><small>${n} recette${n>1?"s":""} en plus du planning · ${items} ingrédients</small></span><span class="cbgo">Voir les courses →</span>`}}
 function refreshCartButtons(){document.querySelectorAll("[data-cart]").forEach(b=>{b.outerHTML=cartBtn(b.dataset.cart,b.classList.contains("big"))})}
 function cartClick(e){
   const t=e.target.closest("[data-cart]");if(t){e.stopPropagation();const id=t.dataset.cart,on=cartToggle(id);refreshCartButtons();paintCartBar();
-    toast(on?shortN(id)+" ajouté aux courses du semainier ("+servings+" pers.)":shortN(id)+" retiré des courses");return true}
+    toast(on?shortN(id)+" ajouté aux courses du planning ("+servings+" pers.)":shortN(id)+" retiré des courses");return true}
   if(e.target.closest("[data-cartopen]")){location.href="index.html#courses";return true}
   if(!cartOpen)return false;
   const cn=e.target.closest("[data-cn]");if(cn){const c=cartRead(),k="r:"+cn.dataset.cn;c[k]=Math.max(1,Math.min(20,(c[k]||1)+ +cn.dataset.d));cartWrite(c);renderCart();return true}
@@ -2506,7 +2506,7 @@ function openRecipe(id){
   const S=planner(),wk=Math.max((S&&S.cur)||0,(()=>{const t=new Date();t.setHours(12,0,0,0);return Math.max(0,Math.floor(Math.round((t-new Date(2026,10,1,12))/864e5)/7))})());
   ov.innerHTML=`<article class="sheet" role="dialog" aria-modal="true" aria-label="${esc(r.n)}">
     <button class="close" type="button" data-close>Fermer ×</button>
-    <div class="hd" style="background:${r.dessert?DBG[r.dt]||ART.BG.Dessert:ART.BG[r.reg]};color:${DARKREG.has(r.reg)?"#fff":"#1C2A20"}"><div class="tt"><small>${r.dessert?"Dessert · "+esc(DTL[r.dt]||""):esc(r.pays)+" · "+esc(r.reg)}</small><h3>${esc(r.n)}</h3></div></div>
+    <div class="hd" style="background:${r.dessert?DBG[r.dt]||ART.BG.Dessert:ART.BG[r.reg]};color:${DARKREG.has(r.reg)?"#fff":"#16292B"}"><div class="tt"><small>${r.dessert?"Dessert · "+esc(DTL[r.dt]||""):esc(r.pays)+" · "+esc(r.reg)}</small><h3>${esc(r.n)}</h3></div></div>
     <div class="in">
       <div class="facts"><span>${r.t} min</span>${r.w?`<span>+ ${esc(r.w)}</span>`:""}<span class="num">≈ ${kcal(r)} kcal / portion</span>${r.dessert?(DLEV(r)==="dl"?'<span class="tag leger">🪶 Léger</span>':DLEV(r)==="dg"?'<span class="tag plaisir">🧁 Gourmand</span>':"")+(r.nc?'<span class="tag froid">❄️ Sans cuisson</span>':""):(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"")}
         <span class="serv">Portions <button type="button" class="sb" data-s="-1" aria-label="Une portion de moins">−</button><b class="num" id="servN">${servings}</b><button type="button" class="sb" data-s="1" aria-label="Une portion de plus">+</button></span></div>
@@ -2526,7 +2526,7 @@ function openRecipe(id){
         <select id="addDay" aria-label="Jour">${[6,0,1,2,3,4,5].map(i=>`<option value="${i}">${DAYS[i]}</option>`).join("")}</select>
         <select id="addWhen" aria-label="Repas"><option>Soir</option><option>Midi</option></select>
         <select id="addHow" aria-label="Comment"><option value="replace">à la place du plat prévu</option><option value="add">en plus du plat prévu</option></select>
-        <button type="button" class="btn" data-add>Ajouter</button><a href="index.html">Ouvrir le semainier</a></div>`}
+        <button type="button" class="btn" data-add>Ajouter</button><a href="index.html">Ouvrir le planning</a></div>`}
     </div></article>`;
   ov.hidden=false;fillIngs();ART.hydrate(ov);
   try{ov.querySelector("[data-close]").focus({preventScroll:true})}catch(e){}

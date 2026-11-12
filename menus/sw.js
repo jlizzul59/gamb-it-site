@@ -1,5 +1,5 @@
-// Service worker du Semainier : fonctionne hors ligne et affiche les rappels.
-const VERSION = "semainier-2026-11-12d";
+// Service worker de Think’n’Cook : fonctionne hors ligne et affiche les rappels.
+const VERSION = "semainier-2026-11-12e";
 const CORE = ["./", "index.html", "recettes.html", "recevoir.html", "recettes-plus.js?v=20261109b", "desserts.js?v=20261110a", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {
@@ -26,7 +26,7 @@ self.addEventListener("fetch", (e) => {
 self.addEventListener("push", (e) => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data && e.data.text() }; }
-  e.waitUntil(self.registration.showNotification(d.title || "Semainier", {
+  e.waitUntil(self.registration.showNotification(d.title || "Think’n’Cook", {
     body: d.body || "", icon: "icon-192.png", badge: "icon-192.png", tag: d.tag || undefined, data: { url: d.url || "/menus/index.html#aujourdhui" },
   }));
 });

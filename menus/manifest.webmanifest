@@ -1,16 +1,17 @@
 {
-  "name": "Semainier en famille",
-  "short_name": "Semainier",
-  "description": "Les menus de la semaine, les courses et les recettes pour toute la famille.",
+  "name": "Think’n’Cook",
+  "short_name": "Think’n’Cook",
+  "description": "Planifier, cuisiner, partager : les menus de la semaine, les courses et les recettes pour toute la famille.",
   "lang": "fr",
   "start_url": "./index.html#aujourdhui",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f3f1ea",
-  "theme_color": "#2f6b3a",
+  "background_color": "#F2F6F5",
+  "theme_color": "#1E5B5E",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" },
     { "src": "icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
