@@ -7,54 +7,69 @@
   <title>GAMB-IT — Applications et expériences numériques</title>
   <meta name="theme-color" content="#111111">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="preload" href="fonts/inter-tight-800.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/inter-tight-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="charte.css">
 </head>
 <body>
   <header class="nav">
     <a class="brand" href="index.html" aria-label="Accueil GAMB-IT"><span class="logo" aria-hidden="true">gamb<span class="sq"></span>IT<span class="mark">!?</span></span></a>
-    <nav><a href="#studio">Le studio</a><a href="#applis">Nos applis</a><a href="#sept-a-dire">7 À DIRE</a><a href="mailto:contact@gamb-it-apps.fr">Contact</a></nav>
+    <nav aria-label="Navigation principale"><a href="#applis">Applis</a><a href="#sept-a-dire">7 À DIRE</a><a href="#contact">Contact</a></nav>
   </header>
   <main>
     <section class="hero" id="studio">
-      <p class="eyebrow">STUDIO NUMÉRIQUE FRANÇAIS</p>
+      <p class="eyebrow">Studio numérique français</p>
       <h1>Des applications qui donnent envie de <em>jouer ensemble.</em></h1>
       <p class="lead">GAMB-IT imagine et développe des expériences mobiles accessibles, conviviales et pensées pour créer de vrais moments partagés.</p>
       <a class="button" href="#applis">Essayer nos applis</a>
     </section>
-    <section class="values" aria-label="Nos engagements">
-      <article><strong>Simple</strong><span>Une prise en main immédiate, sans compte obligatoire.</span></article>
-      <article><strong>Convivial</strong><span>Des expériences conçues pour jouer à plusieurs.</span></article>
-      <article><strong>Respectueux</strong><span>Pas de collecte inutile de données personnelles.</span></article>
-    </section>
-    <section class="apps" id="applis">
-      <p class="eyebrow">À ESSAYER DÈS MAINTENANT</p>
-      <h2>Nos applis en ligne</h2>
+
+    <section class="section" id="applis" aria-labelledby="applis-titre">
+      <div class="section-head">
+        <h2 id="applis-titre">Nos applis en ligne</h2>
+        <p>Gratuites, dans votre navigateur, sans rien installer.</p>
+      </div>
       <div class="appgrid">
         <a class="app" href="menus/">
-          <span class="appicon"><img src="menus/icon-192.png" alt="" width="64" height="64"></span>
-          <span class="appbody"><strong>Semainier</strong><span>Les menus de la semaine pour toute la famille : plus de 1 000 recettes, la liste de courses partagée, le batch cooking et les recettes pas à pas.</span><span class="go">Ouvrir le semainier →</span></span>
+          <span class="appicon"><img src="menus/icon-192.png" alt="" width="56" height="56"></span>
+          <span class="appbody"><strong>Semainier</strong><span>Les menus de la semaine pour toute la famille : plus de 1&nbsp;000 recettes, la liste de courses partagée, le batch cooking et les recettes pas à pas.</span><span class="go">Ouvrir le semainier <span aria-hidden="true">→</span></span></span>
         </a>
         <a class="app" href="thermomot/">
           <span class="appicon thermo" aria-hidden="true">🌡️</span>
-          <span class="appbody"><strong>Thermomot</strong><span>Trouvez le mot secret grâce à la température de vos propositions. Un nouveau mot chaque jour, et tous ceux d'avant.</span><span class="go">Jouer →</span></span>
+          <span class="appbody"><strong>Thermomot</strong><span>Trouvez le mot secret grâce à la température de vos propositions. Un nouveau mot chaque jour, et tous ceux d'avant.</span><span class="go">Jouer <span aria-hidden="true">→</span></span></span>
         </a>
       </div>
     </section>
-    <section class="product" id="sept-a-dire">
-      <div class="seven">7</div>
-      <div>
-        <p class="eyebrow">BIENTÔT SUR MOBILE</p>
-        <h2>7 À DIRE</h2>
-        <p><strong>Une question. Sept réponses. À vous de jouer.</strong></p>
-        <p>Un jeu d’équipe rythmé autour des sept réponses les plus populaires. Choisissez votre thème, trouvez le panneau et adaptez votre stratégie grâce à plusieurs modes de jeu.</p>
-        <div class="badges"><span>Android</span><span>iPhone</span><span>2 à 4 équipes</span></div>
+
+    <section class="section" id="sept-a-dire" aria-labelledby="sept-titre">
+      <div class="section-head">
+        <h2 id="sept-titre">Bientôt sur mobile</h2>
+      </div>
+      <div class="product">
+        <div class="seven" aria-hidden="true">7</div>
+        <div class="product-body">
+          <h3>7 À DIRE</h3>
+          <p class="tagline">Une question. Sept réponses. À vous de jouer.</p>
+          <p>Un jeu d’équipe rythmé autour des sept réponses les plus populaires. Choisissez votre thème, trouvez le panneau et adaptez votre stratégie grâce à plusieurs modes de jeu.</p>
+          <ul class="badges"><li>Android</li><li>iPhone</li><li>2 à 4 équipes</li></ul>
+        </div>
       </div>
     </section>
-    <section class="contact">
-      <p class="eyebrow">UNE QUESTION ?</p>
-      <h2>Parlons-en.</h2>
-      <a href="mailto:contact@gamb-it-apps.fr">contact@gamb-it-apps.fr</a>
+
+    <section class="section" aria-labelledby="valeurs-titre">
+      <div class="section-head">
+        <h2 id="valeurs-titre">Notre façon de faire</h2>
+      </div>
+      <ul class="values">
+        <li><strong>Simple</strong><span>Une prise en main immédiate, sans compte obligatoire.</span></li>
+        <li><strong>Convivial</strong><span>Des expériences conçues pour jouer à plusieurs.</span></li>
+        <li><strong>Respectueux</strong><span>Pas de collecte inutile de données personnelles.</span></li>
+      </ul>
+    </section>
+
+    <section class="contact" id="contact" aria-labelledby="contact-titre">
+      <h2 id="contact-titre">Une question ? Parlons-en.</h2>
+      <p>Une idée, un retour sur une appli ou un projet à nous confier : écrivez-nous.</p>
+      <a class="button button-ghost" href="mailto:contact@gamb-it-apps.fr">contact@gamb-it-apps.fr</a>
     </section>
   </main>
   <footer><span class="sig"><span>© <span id="year"></span> GAMB-IT</span><span class="moves" aria-hidden="true">1. e4 e5<b>2. f4</b></span></span><span class="links"><a href="menus/r/">Recettes</a><a href="mentions-legales.html">Mentions légales</a><a href="confidentialite.html">Confidentialité</a></span></footer>
