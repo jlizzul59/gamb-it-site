@@ -962,6 +962,34 @@ body.storemode #shop .hint{font-size:13px}
 .okchip{padding:0}.okchip button{cursor:pointer}
 .okwait{font-size:11px;color:var(--muted,#888);text-transform:none;letter-spacing:0}
 .meal .name{overflow-wrap:anywhere}
+/* Questionnaire des goûts */
+.qbody{display:flex;flex-direction:column;gap:16px}
+.qrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;padding:8px 0;border-bottom:1px dotted var(--line)}
+.qrow:last-child{border-bottom:0}
+.qlab{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
+.qlab small{font-size:12.5px}
+.qseg{display:inline-flex;flex-wrap:wrap;gap:4px;padding:3px;border:1px solid var(--line);border-radius:18px;background:var(--bg)}
+.qseg button{border:0;background:none;padding:6px 11px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.qseg button[aria-checked="true"]{background:var(--accent);color:var(--accent-ink)}
+.qseg button:disabled{cursor:default;opacity:.75}
+.qin{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--bg);color:var(--ink)}
+.qscale{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 22px}
+.qsr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dotted var(--line);font-size:14px}
+.qsb{display:inline-flex;gap:3px;flex:none}
+.qsb button{width:36px;height:32px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:17px;cursor:pointer;filter:grayscale(1);opacity:.55}
+.qsb button:hover{opacity:1}
+.qsb button[aria-checked="true"]{filter:none;opacity:1;border-color:var(--accent);background:var(--accent-soft)}
+.qsb button.vx[aria-checked="true"]{border-color:var(--bad);background:var(--bad-soft)}
+.qimp{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.qtop{display:flex;flex-wrap:wrap;gap:6px}
+.qtop .chip{cursor:pointer;text-decoration:none}
+.qapply{margin-top:6px}
+.qwho{list-style:none;margin:0;padding:0}
+.qwho li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dotted var(--line);font-size:14px}
+.qok{color:var(--accent)}
+.qbanner{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;background:var(--accent-soft);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:0 0 14px;font-size:14px}
+.qbanner span{flex:1;min-width:220px}
+.qbanner .linkish{background:none;border:0;font-size:20px;line-height:1;color:var(--muted);cursor:pointer}
 </style>
 
 <header class="top">
@@ -980,6 +1008,7 @@ body.storemode #shop .hint{font-size:13px}
     <div class="plusmenu" id="plusMenu" role="menu" hidden>
       <a role="menuitem" href="#groupe">👥 Groupe et règles</a>
       <a role="menuitem" href="#gouts">❤️ Mes goûts</a>
+      <a role="menuitem" href="#questionnaire">📝 Questionnaire des goûts</a>
       <a role="menuitem" href="#propositions">💡 Propositions<span class="pbadge" id="propBadge" hidden></span></a>
       <a role="menuitem" href="#batch">🧑‍🍳 Batch cooking</a>
       <a role="menuitem" href="#historique">🗓️ Historique</a>
@@ -999,6 +1028,7 @@ body.storemode #shop .hint{font-size:13px}
   <section class="view" id="v-aujourdhui" hidden><div id="todaybox"></div></section>
   <section class="view" id="v-semaine" hidden>
     <div id="propBanner"></div>
+    <div id="qBanner"></div>
     <div id="rulesbar"></div>
     <div class="toolbar">
       <button class="btn primary" id="regen" type="button">Nouvelle semaine au hasard</button>
@@ -1026,7 +1056,7 @@ body.storemode #shop .hint{font-size:13px}
   </section>
 
   <section class="view" id="v-gouts" hidden>
-    <nav class="subnav" aria-label="Groupe"><a href="#groupe">Groupe et règles</a><a href="#gouts" aria-current="page">Mes goûts</a><a href="#propositions">Propositions</a></nav>
+    <nav class="subnav" aria-label="Groupe"><a href="#groupe">Groupe et règles</a><a href="#gouts" aria-current="page">Mes goûts</a><a href="#questionnaire">Questionnaire</a><a href="#propositions">Propositions</a></nav>
     <p class="muted" style="margin:0 0 18px">Les allergies, les aliments bannis et les règles de la semaine (poisson, végétarien, soirée pizza…) se règlent pour chaque groupe dans l'onglet <a href="#groupe">Groupe</a>. Ici, ce sont vos goûts personnels.</p>
     <div class="prefintro">
       <div>
@@ -1048,9 +1078,10 @@ body.storemode #shop .hint{font-size:13px}
     <div class="reclist" id="reclist"></div>
   </section>
 
-  <section class="view" id="v-groupe" hidden><nav class="subnav" aria-label="Groupe"><a href="#groupe" aria-current="page">Groupe et règles</a><a href="#gouts">Mes goûts</a><a href="#propositions">Propositions</a></nav><div id="cfgbox"></div></section>
+  <section class="view" id="v-groupe" hidden><nav class="subnav" aria-label="Groupe"><a href="#groupe" aria-current="page">Groupe et règles</a><a href="#gouts">Mes goûts</a><a href="#questionnaire">Questionnaire</a><a href="#propositions">Propositions</a></nav><div id="cfgbox"></div></section>
 
-  <section class="view" id="v-propositions" hidden><nav class="subnav" aria-label="Groupe"><a href="#groupe">Groupe et règles</a><a href="#gouts">Mes goûts</a><a href="#propositions" aria-current="page">Propositions</a></nav><div id="propbox"></div></section>
+  <section class="view" id="v-propositions" hidden><nav class="subnav" aria-label="Groupe"><a href="#groupe">Groupe et règles</a><a href="#gouts">Mes goûts</a><a href="#questionnaire">Questionnaire</a><a href="#propositions" aria-current="page">Propositions</a></nav><div id="propbox"></div></section>
+  <section class="view" id="v-questionnaire" hidden><nav class="subnav" aria-label="Groupe"><a href="#groupe">Groupe et règles</a><a href="#gouts">Mes goûts</a><a href="#questionnaire" aria-current="page">Questionnaire</a><a href="#propositions">Propositions</a></nav><div id="qbox"></div></section>
   <section class="view" id="v-historique" hidden><div id="histbox"></div></section>
   <section class="view" id="v-rappels" hidden><div id="rapbox"></div></section>
   <section class="view" id="v-mesrecettes" hidden><nav class="subnav" aria-label="Recettes"><a href="#recettes">Cette semaine</a><a href="recettes.html">Catalogue complet</a><a href="recettes.html#desserts">🍰 Desserts</a><a href="#mesrecettes" aria-current="page">＋ Ajouter une recette</a></nav><div id="minebox"></div></section>
@@ -2906,9 +2937,9 @@ function useWeek(w){
 function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 const kcal=r=>Math.round(r.ing.reduce((a,[id,q])=>a+q*I[id].k,0));
 const LIGHT=400,isLight=r=>kcal(r)<=LIGHT;
-let FOY=[];function loadFoy(){FOY=Object.values(dread("foyer")).filter(p=>(p.r||[]).length)}
+let FOY=[];function loadFoy(){FOY=Object.values(dread("foyer")).filter(p=>(p.r||[]).length);try{qState().P.forEach(p=>{if((p.r||[]).length)FOY.push({nom:p.nom||voterName(p.u),r:p.r})})}catch(e){}}
 const foyConf=r=>conflicts(r,I,FOY);
-const allowed=r=>r.ing.every(([id])=>S.prefs[id]!==-1)&&!foyConf(r).length&&!cfgBanned(r);
+const allowed=(r,slot)=>r.ing.every(([id])=>S.prefs[id]!==-1)&&!foyConf(r).length&&!cfgBanned(r)&&!qBlock(r,qCls(slot));
 const likes=r=>r.ing.filter(([id])=>S.prefs[id]===1).length;
 const isVege=r=>!r.ing.some(([id])=>I[id].c==="Viandes"||I[id].c==="Poissons & crevettes");
 const isFish=r=>r.ing.some(([id])=>I[id].c==="Poissons & crevettes");
@@ -2927,7 +2958,7 @@ let _sso={t:0,v:0};
 const seasonMode=()=>{const n=Date.now();if(n-_sso.t>300){_sso={t:n,v:+(CFG().saison||0)}}return _sso.v};
 const noSoupMidi=()=>{const n=Date.now();if(n-_nsm.t>300){_nsm={t:n,v:!!CFG().nosouplunch}}return _nsm.v};
 function fits(r,slot,used,plan){
-  if(!r||!allowed(r)||!r.for.includes(slot.kind)||used.has(r.id))return false;
+  if(!r||!allowed(r,slot)||!r.for.includes(slot.kind)||used.has(r.id))return false;
   if(slot.when==="Midi"&&noSoupMidi()&&SOUP_RX.test(r.n))return false;
   if(seasonMode()===2&&seasonOf(r,MONTH()).s==="hors")return false;
   const wt=W&&W.temp&&W.temp[slot.key];if(wt&&(r.temp||tempOf(r))!==wt)return false;
@@ -2940,7 +2971,7 @@ function pick(slot,used,plan,exclude,rand,avoid){
   let c=R.filter(r=>r.id!==exclude&&fits(r,slot,used,plan));
   if(!c.length)c=R.filter(r=>r.id!==exclude&&allowed(r)&&r.for.includes(slot.kind));
   if(!c.length)return null;
-  c=c.map(r=>[r,famBoost(r)+likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?2.5:0)+(isFav(r.id)?2:0)+(noteOf(r.id)?(noteOf(r.id)-3)*1.2:0)-(noteOf(r.id)===1?6:0)+(r.simple&&slot.day<5?(CLASSIC.has(r.id)?0.2:0.9):0)+(CLASSIC.has(r.id)?1:0)]).sort((a,b)=>b[1]-a[1]);
+  c=c.map(r=>[r,famBoost(r)+likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?2.5:0)+(isFav(r.id)?2:0)+(noteOf(r.id)?(noteOf(r.id)-3)*1.2:0)-(noteOf(r.id)===1?6:0)+(r.simple&&slot.day<5?(CLASSIC.has(r.id)?0.2:0.9):0)+(CLASSIC.has(r.id)?1:0)+qScore(r,slot,null,plan)]).sort((a,b)=>b[1]-a[1]);
   return c[0][0].id;
 }
 function build(mode){try{fillDesserts(mode)}catch(e){}return buildCfg(mode)}
@@ -2976,8 +3007,8 @@ function cooks(){
 const WH=sl=>sl.when==="Midi"?"midi":"soir";
 const PN=sl=>(W&&W.pers&&W.pers[sl.key])||slotDefault(sl);
 const persOf=c=>c.n!=null?c.n:c.eat.reduce((a,e)=>a+PN(e),0);
-function qtyBase(c,id,q){return c.n!=null?q*c.n:c.eat.reduce((a,e)=>a+q*PN(e),0)}
-function optQty(c,id){const o=optionsFor(c.r).find(x=>x[0]===id);if(!o)return 0;return c.n!=null?c.n*o[1]:c.eat.reduce((a,e)=>a+PN(e)*o[1],0)}
+function qtyBase(c,id,q){return (c.n!=null?q*c.n:c.eat.reduce((a,e)=>a+q*PN(e),0))*qApp()}
+function optQty(c,id){const o=optionsFor(c.r).find(x=>x[0]===id);if(!o)return 0;return (c.n!=null?c.n*o[1]:c.eat.reduce((a,e)=>a+PN(e)*o[1],0))*qApp()}
 function qtyCook(c,id,q){return qtyBase(c,id,q)}
 const slotLabel=s=>DAYS[s.day].toLowerCase()+" "+s.when.toLowerCase();
 const frozen=e=>{const k=srcKey(e.key);const ses=sessionOf(SK[k||e.key].day);return POS(e.day)-ses.ref>3};
@@ -3220,7 +3251,7 @@ function renderCatList(sfx,key){
   const inWeek=new Set(cooks().map(c=>c.r.id));
   const list=R.filter(catMatches).sort((a,b)=>(allowed(b)-allowed(a))||(isFav(b.id)-isFav(a.id))||(noteOf(b.id)-noteOf(a.id))||(likes(b)-likes(a))||a.n.localeCompare(b.n,"fr"));
   lEl.innerHTML=list.length?list.map(r=>{
-    const bad=r.ing.filter(([id])=>S.prefs[id]===-1).map(([id])=>I[id].n).concat(foyConf(r).map(([k,w])=>DIET_N[k].toLowerCase()+" ("+w.join(", ")+")"));
+    const bad=r.ing.filter(([id])=>S.prefs[id]===-1).map(([id])=>I[id].n).concat(foyConf(r).map(([k,w])=>DIET_N[k].toLowerCase()+" ("+w.join(", ")+")")).concat(qBlock(r,"all")?[qBlock(r,"all")]:[]);
     const cur=key&&W.plan[key]===r.id;
     return `<div class="citem ${bad.length?"is-bad":""}">
       <div class="cmain"><b>${esc(r.n)}</b> ${favBtn(r.id)}${key==="__prop"?"":wishBtn(r.id)}<div class="cmeta">${starsShow(r.id)}<span>${esc(r.pays)}</span><span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${tagHTML(r)}${cur?'<span class="tag">Plat actuel</span>':inWeek.has(r.id)?'<span class="tag">Déjà au menu</span>':""}${bad.length?'<span class="tag no">Contient : '+esc(bad.join(", "))+'</span>':""}</div></div>
@@ -3411,7 +3442,7 @@ function renderDefaults(){
 function refreshAvis(){document.querySelectorAll("[data-avis]").forEach(el=>el.innerHTML=avisInner(el.dataset.avis));if(catKey)renderCatList("m",catKey);renderWeek()}
 function renderFoyer(){const el=document.getElementById("foyer");if(el)el.innerHTML=peopleEditor("foyer",{empty:"Personne n'est encore indiqué. Ajoutez par exemple chaque membre de la famille.",addLabel:"+ Ajouter une personne du groupe"})}
 DIETUI.onChange=(k,soft)=>{if(k!=="foyer")return;const before=JSON.stringify(W.plan);loadFoy();build("keep");const n=Object.keys(W.plan).filter(x=>JSON.parse(before)[x]!==W.plan[x]).length;if(soft){renderWeek();return}renderAll();if(n)toast(n+" repas remplacé"+(n>1?"s":"")+" pour respecter le groupe")};
-function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules();renderHistory();try{MINE.render()}catch(e){console.warn(e)}try{renderRappels()}catch(e){console.warn(e)}try{rapUpload()}catch(e){}try{renderToday()}catch(e){console.warn(e)}const at=document.getElementById("adminTab");if(at)at.hidden=!isSuper()}
+function renderAll(){loadFoy();renderCfg();renderDefaults();renderWeekNav();renderWeek();renderBatch();renderRecipes();renderShop();renderPrefs();renderProps();renderRules();renderHistory();try{MINE.render()}catch(e){console.warn(e)}try{renderRappels()}catch(e){console.warn(e)}try{rapUpload()}catch(e){}try{renderToday()}catch(e){console.warn(e)}try{renderQ();qBanner()}catch(e){console.warn(e)}const at=document.getElementById("adminTab");if(at)at.hidden=!isSuper()}
 
 // ---------- Confirmation à côté du bouton (Oui / Non) pour les actions qui ne se défont pas ----------
 function askInline(btn,msg,yes){if(!btn||btn.dataset.asking)return;btn.dataset.asking="1";
@@ -4307,7 +4338,7 @@ function pickC(slot,used,plan,rand,avoid,pred,C,ever){
   // féculents : le repas juste avant et juste après (veille au soir, lendemain midi) évitent aussi le même
   const si=SLOTS.indexOf(slot),nb=starchVar()?[SLOTS[si-1],SLOTS[si+1]].filter(x=>x&&x.day!==slot.day).map(x=>RB[(plan||{})[x.key]]).filter(Boolean).map(starchOf).filter(Boolean):[];
   const stPen=r=>{const f=starchOf(r);return f&&nb.includes(f)?-1.5:0};
-  return c.map(r=>[r,famBoost(r)+stPen(r)+likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?3:0)+(isFav(r.id)?2:0)+(noteOf(r.id)?(noteOf(r.id)-3)*1.2:0)-(noteOf(r.id)===1?6:0)+(CLASSIC.has(r.id)?1:0)+(r.simple&&slot.day<5?(CLASSIC.has(r.id)?0.2:0.9):0)+cfgScore(r,slot,C,ever)]).sort((a,b)=>b[1]-a[1])[0][0].id;
+  return c.map(r=>[r,famBoost(r)+stPen(r)+likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?3:0)+(isFav(r.id)?2:0)+(noteOf(r.id)?(noteOf(r.id)-3)*1.2:0)-(noteOf(r.id)===1?6:0)+(CLASSIC.has(r.id)?1:0)+(r.simple&&slot.day<5?(CLASSIC.has(r.id)?0.2:0.9):0)+cfgScore(r,slot,C,ever)+qScore(r,slot,ever,plan)]).sort((a,b)=>b[1]-a[1])[0][0].id;
 }
 function buildCfg(mode){
   const C=CFG(),plan={},used=new Set();
@@ -4503,7 +4534,198 @@ document.addEventListener("change",e=>{
   cfgWrite(C);save();build("keep");renderAll();toast(s.dataset.eqfill?"Semaine type mise à jour":"Repas mis à jour : "+(val?eaterLabel(val):"par défaut"));
 });
 
-const VIEWS=["aujourdhui","groupe","semaine","batch","gouts","recettes","courses","propositions","historique","admin","mesrecettes","rappels"];
+// ---------- Questionnaire : le foyer (rempli par un adulte) et un profil par membre ----------
+// Stocké dans la config partagée du groupe (fusionnée clé par clé) : config.qfoyer et config["pf_"+identifiant].
+// Les réponses pèsent directement sur le générateur : filtres (fits/allowed), score (pickC) et quantités (qtyBase).
+const QK_PF="pf_";
+const QCUIS=[ // l'ordre fixe la cuisine retenue quand un plat relève de plusieurs
+ ["inde","🍛","Indienne et curry",r=>r.pays==="Inde"||/curry|dahl|\bdal\b|tikka|masala|biryani|korma/i.test(r.n)],
+ ["texmex","🌮","Tex-mex et mexicaine",r=>r.pays==="Mexique"||/fajita|burrito|quesadilla|tacos|chili con|nachos|enchilada/i.test(r.n)],
+ ["us","🍔","Américaine (burgers, BBQ)",r=>["États-Unis","Louisiane","Québec"].includes(r.pays)||/burger|hot-dog|barbecue|bbq/i.test(r.n)],
+ ["it","🍝","Italienne",r=>r.pays==="Italie"||/pizza|risotto|lasagne|gnocchi|carbonara|bolognaise/i.test(r.n)],
+ ["asie","🥢","Asiatique (Chine, Japon, Thaï…)",r=>r.reg==="Asie"],
+ ["orient","🧆","Orientale (Maroc, Liban, Turquie…)",r=>r.reg==="Moyen-Orient"||["Maroc","Tunisie","Algérie","Égypte"].includes(r.pays)],
+ ["medit","🫒","Méditerranéenne (Grèce, Espagne…)",r=>["Grèce","Espagne","Portugal","Provence","Nice","Corse"].includes(r.pays)],
+ ["fr","🥖","Française et plats du terroir",r=>r.reg==="France"],
+ ["monde","🌍","Plus lointaine (Afrique, Amérique du Sud…)",r=>!!r.reg&&r.reg!=="Europe"]
+];
+const qIngRx=(r,rx)=>r.ing.some(([id])=>I[id]&&!(r.serve&&r.serve.includes(id))&&rx.test(_dn(I[id].n)));
+const QFAM=[
+ ["poisson","🐟","Poisson",r=>dietOfRecipe(r,I).has("poisson")],
+ ["mer","🦐","Crevettes et fruits de mer",r=>dietOfRecipe(r,I).has("crustaces")||qIngRx(r,/calamar|saint-jacques|seiche|poulpe/)],
+ ["boeuf","🥩","Bœuf et veau",r=>qIngRx(r,/boeuf|\bveau\b|paleron|rumsteck|steak|bavette|entrecote/)],
+ ["porc","🥓","Porc, jambon, lardons",r=>dietOfRecipe(r,I).has("porc")],
+ ["volaille","🍗","Poulet, dinde, canard",r=>qIngRx(r,/poulet|dinde|canard|pintade|volaille/)],
+ ["agneau","🐑","Agneau",r=>qIngRx(r,/agneau|mouton|merguez/)],
+ ["oeuf","🥚","Plats aux œufs",r=>r.p==="oeuf"],
+ ["legum","🫘","Légumineuses et tofu",r=>["poischiches","lentilles","tofu","haricots"].includes(r.p)],
+ ["fromage","🧀","Gratins et plats au fromage",r=>/gratin|raclette|tartiflette|fondue|croziflette|croque|lasagne|mac and|aligot/i.test(r.n)]
+];
+const QVAL=[[2,"😍","J'adore"],[1,"🙂","OK"],[-1,"😐","Bof"],[-9,"🚫","Jamais"]];
+const QW={2:1.5,1:0,"-1":-1.2};
+const QHOT=/piment|harissa|sriracha|gochujang|pate de curry|wasabi|jalapeno|chipotle|tabasco|cayenne/;
+// Ce que le questionnaire sait d'une recette (calculé une fois)
+const _qt={};
+function qTag(r){if(_qt[r.id])return _qt[r.id];
+  const c=(QCUIS.find(x=>x[3](r))||[null])[0],f=QFAM.filter(x=>x[3](r)).map(x=>x[0]);
+  const st=_dn((r.st||[]).join(" "));
+  const nveg=r.ing.filter(([id])=>I[id]&&I[id].c==="Légumes").length;
+  return _qt[r.id]={c,f,hot:qIngRx(r,QHOT),veg:nveg>=3,oven:/\bfour\b|enfourn|gratiner|sous le gril|prechauff|\d\s?°c/.test(st),mix:/\bmixer|mixez|mixeur|blender/.test(st)};
+}
+// Réponses du groupe, relues au plus toutes les 300 ms
+let _qs={t:0,sig:"",P:[],F:{}},_qc={};
+function qState(){const n=Date.now();if(n-_qs.t<300)return _qs;
+  const C=CFG(),a=meAcc(),mem=a&&a.group&&a.group.members?new Set(a.group.members.map(m=>m.username)):null,me=myVoter();
+  const P=Object.keys(C).filter(k=>k.startsWith(QK_PF)).map(k=>Object.assign({u:k.slice(QK_PF.length)},C[k])).filter(p=>p&&p.at&&(mem?mem.has(p.u):p.u===me));
+  const F=C.qfoyer||{},sig=JSON.stringify([P,F]);if(sig!==_qs.sig)_qc={};
+  _qs={t:n,sig,P,F};return _qs}
+const qInval=()=>{_qs.t=0;_qc={}};
+// Qui est à table : en semaine le midi, seulement ceux qui déjeunent à la maison
+function qCls(slot){return slot&&slot.day<5&&slot.when==="Midi"?"midi":"all"}
+function qPeople(cls){const P=qState().P;if(cls!=="midi")return P;const m=P.filter(p=>p.midi!=="non");return m.length?m:P}
+// Filtres stricts : renvoie la raison du refus, ou ""
+function qBlockP(r,ppl,F){const t=qTag(r);
+  if(F.four===0&&t.oven)return "pas de four";
+  if(F.mix===0&&t.mix)return "pas de mixeur";
+  for(const p of ppl){const nm=p.nom||voterName(p.u);
+    const no=(p.no||[]).find(id=>r.ing.some(([x])=>x===id));if(no)return nm+" : jamais "+(I[no]?I[no].n.toLowerCase():"");
+    if(t.c&&p.cuis&&p.cuis[t.c]===-9)return nm+" : jamais de cuisine "+QCUIS.find(x=>x[0]===t.c)[2].toLowerCase();
+    const f=t.f.find(x=>p.fam&&p.fam[x]===-9);if(f)return nm+" : jamais "+QFAM.find(x=>x[0]===f)[2].toLowerCase()}
+  return ""}
+// Goûts des personnes à table (moyenne, pour qu'un groupe de 2 ou de 5 pèse pareil)
+function qTasteP(r,ppl){if(!ppl.length)return 0;const t=qTag(r);let s=0;
+  ppl.forEach(p=>{let v=0;
+    if(t.c&&p.cuis)v+=QW[p.cuis[t.c]]||0;
+    if(p.fam){let f=0;t.f.forEach(x=>f+=QW[p.fam[x]]||0);v+=Math.max(-2.5,Math.min(2.5,f))}
+    if(t.hot)v+=p.epice===0?-2.5:p.epice===2?0.6:0;
+    if(p.viande==="rare")v+=isVege(r)?1:isRed(r)?-0.8:0;else if(p.viande==="jour"&&isVege(r))v-=0.8;
+    if(t.veg)v+=p.leg==="peu"?-1:p.leg==="bcp"?0.8:0;
+    if((p.dou||[]).includes(r.id))v+=3;
+    s+=v});
+  return s/ppl.length*1.6}
+function qBlock(r,cls){const k="b|"+r.id+"|"+cls;return k in _qc?_qc[k]:(_qc[k]=qBlockP(r,qPeople(cls),qState().F))}
+function qTaste(r,cls){const k="s|"+r.id+"|"+cls;return k in _qc?_qc[k]:(_qc[k]=qTasteP(r,qPeople(cls)))}
+// Habitudes du foyer qui n'ont pas déjà leur réglage dans « Groupe et règles »
+function qFoyer(r,slot,ever){const F=qState().F;if(!F.at)return 0;let s=0;const wd=slot.day<5;
+  if(!wd&&F.twe){if(r.t>F.twe)s-=1.5+(r.t-F.twe)/20;else if(F.twe>=60&&r.t>=50)s+=0.8}
+  if(wd&&F.batch===2&&slot.when==="Soir"&&BC[r.id]&&(BC[r.id].t||[]).length&&r.t>25)s+=1.5;
+  if(F.niv==="deb"&&((r.st||[]).length>6||r.t>75))s-=1.2;
+  if(F.niv==="pass"&&!wd&&(r.tag==="plaisir"||r.t>=60))s+=0.5;
+  if(F.nouv==="sur"){if(CLASSIC.has(r.id)||isFav(r.id)||noteOf(r.id)>=4)s+=1;if(ever&&!ever.has(r.id))s-=0.5}
+  else if(F.nouv==="surprise"){if(ever&&!ever.has(r.id))s+=1;if(r.reg&&r.reg!=="France")s+=0.4}
+  if(F.budget==="plaisir"&&r.tag==="plaisir")s+=0.6;
+  return s}
+// Variété : une cuisine adorée ne doit pas envahir toute la semaine
+function qVar(r,plan){const c=qTag(r).c;if(!c||c==="fr"||!plan||!qState().P.length)return 0;let n=0;for(const k in plan){const x=RB[plan[k]];if(x&&x!==r&&qTag(x).c===c)n++}return n>=2?-(n-1)*1.2:0}
+const qScore=(r,slot,ever,plan)=>qTaste(r,qCls(slot))+qFoyer(r,slot,ever)+qVar(r,plan);
+// Appétit : coefficient appliqué aux quantités et à la liste de courses
+const QAPP={petit:0.8,moyen:1,gros:1.2};
+function qApp(){const P=qState().P.filter(p=>p.app&&QAPP[p.app]);return P.length?P.reduce((a,p)=>a+QAPP[p.app],0)/P.length:1}
+
+// ----- Écran -----
+let qTab=null,qNoQ="",qDouQ="";
+const qMe=()=>{const C=CFG();return C[QK_PF+myVoter()]||null};
+function qWrite(fn){const C=CFG();fn(C);cfgWrite(C);qInval();loadFoy()}
+function qMeWrite(fn){qWrite(C=>{const k=QK_PF+myVoter(),a=meAcc();const p=C[k]||{nom:a&&a.user?a.user.name:"",cuis:{},fam:{},no:[],dou:[],r:[]};fn(p);p.at=Date.now();C[k]=p})}
+function qSeg(name,cur,opts,attr){return `<div class="qseg" role="radiogroup" aria-label="${esc(name)}">${opts.map(([v,l])=>`<button type="button" role="radio" aria-checked="${cur===v}" ${attr}='${JSON.stringify(v)}'>${l}</button>`).join("")}</div>`}
+function qRow(lab,help,ctrl){return `<div class="qrow"><div class="qlab"><b>${lab}</b>${help?`<small class="muted">${help}</small>`:""}</div>${ctrl}</div>`}
+function qScale(kind,list,vals){return `<div class="qscale">${list.map(([k,ic,lab])=>{const v=vals&&k in vals?vals[k]:1;return `<div class="qsr"><span class="qsl"><span aria-hidden="true">${ic}</span> ${esc(lab)}</span><span class="qsb" role="radiogroup" aria-label="${esc(lab)}">${QVAL.map(([x,e,l])=>`<button type="button" role="radio" aria-checked="${v===x}" class="v${x<0?"n":""}${x===-9?" vx":""}" data-qsc="${kind}|${k}|${x}" title="${l}" aria-label="${l}"><span aria-hidden="true">${e}</span></button>`).join("")}</span></div>`}).join("")}</div>`}
+function qImpact(){
+  const {P,F}=qState(),me=P.find(p=>p.u===myVoter());const M=R.filter(r=>!r.dessert&&r.for&&r.for.length);
+  const blockAll=M.filter(r=>qBlock(r,"all")).length;
+  const mine=me?M.map(r=>[r,[qBlockP(r,[me],{}),qTasteP(r,[me])]]):[];
+  const myOut=mine.filter(([,x])=>x[0]).length,top=mine.filter(([,x])=>!x[0]).sort((a,b)=>b[1][1]-a[1][1]).slice(0,5).map(([r])=>r);
+  return `<section class="cfgcard qimpact"><h3>🎯 Ce que ça change sur les menus</h3>
+    <ul class="qimp">${me?`<li><b class="num">${myOut}</b> recette${myOut>1?"s":""} sur ${M.length} écartée${myOut>1?"s":""} pour vous (vos « jamais »).</li>`:`<li>Remplissez « Mon profil » pour que vos goûts comptent.</li>`}
+      <li>Pour tout le groupe (${P.length} profil${P.length>1?"s":""}${F.at?" + le foyer":""}) : <b class="num">${blockAll}</b> recette${blockAll>1?"s":""} écartée${blockAll>1?"s":""} au total. Le midi en semaine, seuls ceux qui déjeunent à la maison comptent.</li>
+      ${F.at?`<li>Soirs de semaine : ${F.tsem?F.tsem+" min maximum":"pas de limite"}${F.batch===2?", sauf les plats préparés en batch le dimanche":""}. Week-end : ${F.twe?F.twe+" min maximum":"pas de limite"}.</li>`:""}
+      ${qApp()!==1?`<li>Quantités ajustées à l'appétit du groupe : ×${qApp().toFixed(2).replace(".",",")}.</li>`:""}</ul>
+    ${top.length?`<p class="muted small">Les plats qui remontent pour vous :</p><div class="qtop">${top.map(r=>`<button type="button" class="chip like" data-openrec="${r.id}">${esc(r.n)}</button>`).join("")}</div>`:""}
+    ${isKid()?'<p class="muted small">Un adulte du groupe recomposera la semaine pour en tenir compte.</p>':`<div class="cfgapply qapply"><div><b>Appliquer à la semaine ${weekRange(S.cur)}</b><span class="muted">Recompose les repas non choisis à la main avec ces réponses.</span></div><button type="button" class="btn primary" data-cfgapply>Recomposer la semaine</button></div>`}</section>`}
+function qFoyerHTML(){
+  const F=CFG().qfoyer||{},kid=isKid(),dis=kid?" disabled":"";const at=F.at?new Date(F.at).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}):"";
+  const seg=(name,key,cur,opts)=>qSeg(name,cur,opts,`data-qf="${key}"${dis} data-v`);
+  return `${kid?'<div class="kidban"><b>Profil Enfant</b><span>Ces questions sont pour les parents. Toi, réponds dans « Mon profil » !</span></div>':""}
+  <p class="muted">${F.at?"Rempli"+(F.byName?" par "+esc(F.byName):"")+" le "+at+". ":""}Un parent répond une fois pour toute la maison. Certaines réponses mettent aussi à jour les règles du groupe (temps du soir, budget, saison).</p>
+  <div class="cfggrid">
+   <section class="cfgcard"><h3>⏱️ Le temps en cuisine</h3>
+    ${qRow("En semaine, le soir","Temps de préparation maximum.",seg("Semaine","tsem",F.tsem,[[20,"20 min"],[30,"30 min"],[45,"45 min"],[60,"1 h"],[0,"Peu importe"]]))}
+    ${qRow("Le week-end","Les plats mijotés passent le samedi et le dimanche si vous avez le temps.",seg("Week-end","twe",F.twe,[[30,"30 min"],[60,"1 h"],[90,"1 h 30"],[0,"Sans limite"]]))}
+    ${qRow("Batch cooking","Chaque semaine : les plats longs à préparer le dimanche reviennent les soirs de semaine.",seg("Batch","batch",F.batch,[[0,"Jamais"],[1,"Parfois"],[2,"Chaque semaine"]]))}</section>
+   <section class="cfgcard"><h3>👩‍🍳 Notre façon de cuisiner</h3>
+    ${qRow("Niveau en cuisine","Débutant : moins de recettes longues ou à rallonge.",seg("Niveau","niv",F.niv,[["deb","Débutant"],["ok","À l'aise"],["pass","Passionné"]]))}
+    ${qRow("La nouveauté","Valeurs sûres : classiques et favoris d'abord.",seg("Nouveauté","nouv",F.nouv,[["sur","Valeurs sûres"],["un","Un peu"],["surprise","Surprenez-nous"]]))}
+    ${qRow("Équipement","Sans four ou sans mixeur, les recettes qui en ont besoin sont écartées.",`<div class="qseg">${[["four","🔥 Four"],["mix","🌀 Mixeur"]].map(([k,l])=>`<button type="button" role="checkbox" aria-checked="${F[k]!==0}" data-qeq="${k}"${dis}>${l}</button>`).join("")}</div>`)}</section>
+   <section class="cfgcard"><h3>🛒 Courses et budget</h3>
+    ${qRow("Budget","Serré : active la semaine économique.",seg("Budget","budget",F.budget,[["serre","Serré"],["std","Normal"],["plaisir","On se fait plaisir"]]))}
+    ${qRow("Produits de saison","",seg("Saison","saison",F.saison,[[0,"Peu importe"],[1,"Si possible"],[2,"Uniquement"]]))}</section>
+  </div>`}
+function qProfilHTML(){
+  const p=qMe()||{},a=meAcc();const seg=(name,key,cur,opts)=>qSeg(name,cur,opts,`data-qp="${key}" data-v`);
+  const noS=norm(qNoQ.trim()),douS=norm(qDouQ.trim());
+  const noSug=noS?Object.entries(I).filter(([id,x])=>x.c&&!(p.no||[]).includes(id)&&norm(x.n).includes(noS)).slice(0,10):[];
+  const douSug=douS.length>1?R.filter(r=>!r.dessert&&r.for&&r.for.length&&!(p.dou||[]).includes(r.id)&&norm(r.n).includes(douS)).slice(0,8):[];
+  return `<p class="muted">${p.at?"Vos réponses sont enregistrées : elles comptent dès la prochaine semaine composée. ":"2 minutes, et les menus tiendront compte de vos goûts. "}Chacun répond pour lui ; les autres membres voient seulement qui a répondu.</p>
+  <div class="cfggrid">
+   <section class="cfgcard"><h3>👤 Moi</h3>
+    ${a&&a.user?"":qRow("Prénom","",`<input class="qin" data-qnom value="${esc(p.nom||"")}" maxlength="30" placeholder="Prénom">`)}
+    ${qRow("Le midi en semaine","Si vous mangez ailleurs, vos goûts ne comptent pas pour ces repas-là.",seg("Midi","midi",p.midi||"oui",[["oui","Je mange à la maison"],["non","Je mange ailleurs"]]))}
+    ${qRow("Appétit","Ajuste les quantités et la liste de courses.",seg("Appétit","app",p.app||"moyen",[["petit","Petit"],["moyen","Moyen"],["gros","Gros"]]))}
+    ${qRow("La viande","",seg("Viande","viande",p.viande||"qq",[["jour","Tous les jours"],["qq","Quelques fois"],["rare","Rarement"]]))}
+    ${qRow("Les légumes","",seg("Légumes","leg",p.leg||"moy",[["peu","Pas trop"],["moy","Normal"],["bcp","Beaucoup"]]))}
+    ${qRow("Épicé","",seg("Épicé","epice",p.epice==null?1:p.epice,[[0,"Pas du tout"],[1,"Un peu"],[2,"J'adore"]]))}</section>
+   <section class="cfgcard"><h3>🩺 Régimes et allergies</h3><p class="muted small">Obligatoire : les recettes qui en contiennent sont écartées à chaque repas et signalées partout.</p>
+    <div class="ppchips">${DIETS.map(([k,l])=>{const on=(p.r||[]).includes(k);return `<button type="button" class="dchip ${on?"on":""}" data-qdiet="${k}" aria-pressed="${on}">${l}</button>`}).join("")}</div>
+    <h3 style="margin-top:8px">🙅 Ce que je ne mange jamais</h3>
+    <div class="banchips">${(p.no||[]).filter(id=>I[id]).map(id=>`<button type="button" class="chip no" data-qnorm="${id}" aria-label="Retirer ${esc(I[id].n)}">${esc(I[id].n)} ×</button>`).join("")||'<span class="muted small">Rien pour l\'instant.</span>'}</div>
+    <div class="bansearch"><input type="search" data-qnoq placeholder="Champignons, poivron, coriandre…" autocomplete="off" value="${esc(qNoQ)}"><div class="bansug" id="qNoSug">${noSug.map(([id,x])=>`<button type="button" class="chip" data-qnoadd="${id}">+ ${esc(x.n)}</button>`).join("")}</div></div></section>
+   <section class="cfgcard wide"><h3>🌍 Les cuisines</h3>${qScale("cuis",QCUIS,p.cuis)}</section>
+   <section class="cfgcard wide"><h3>🍽️ Les ingrédients principaux</h3>${qScale("fam",QFAM,p.fam)}<p class="muted small">🚫 Jamais : les plats concernés ne sont plus proposés quand vous êtes à table. 😍 et 😐 font monter ou descendre les plats.</p></section>
+   <section class="cfgcard wide"><h3>💛 Mes plats doudou</h3><p class="muted small">Jusqu'à 5 plats que vous adorez : ils reviennent plus souvent.</p>
+    <div class="banchips">${(p.dou||[]).filter(id=>RB[id]).map(id=>`<button type="button" class="chip like" data-qdourm="${id}" aria-label="Retirer ${esc(RB[id].n)}">${esc(RB[id].n)} ×</button>`).join("")||'<span class="muted small">Aucun pour l\'instant.</span>'}</div>
+    ${(p.dou||[]).length<5?`<div class="bansearch"><input type="search" data-qdouq placeholder="Lasagnes, poulet tikka, tartiflette…" autocomplete="off" value="${esc(qDouQ)}"><div class="bansug" id="qDouSug">${douSug.map(r=>`<button type="button" class="chip" data-qdouadd="${r.id}">+ ${esc(r.n)}</button>`).join("")}</div></div>`:""}</section>
+  </div>`}
+function qGroupeHTML(){const {P,F}=qState(),a=meAcc(),mem=a&&a.group?(a.group.members||[]):[{username:myVoter(),name:(a&&a.user&&a.user.name)||"Moi",role:"adulte"}];
+  return `<section class="cfgcard"><h3>👥 Qui a répondu ?</h3><ul class="qwho">
+    <li><span>🏠 Le foyer</span>${F.at?`<b class="qok">✓ ${F.byName?esc(F.byName):"Rempli"}</b>`:'<span class="muted">À remplir par un parent</span>'}</li>
+    ${mem.map(m=>{const p=P.find(x=>x.u===m.username);return `<li><span>${m.role==="enfant"?"🧒":"🧑"} ${esc(m.name||m.username)}</span>${p?'<b class="qok">✓ Profil rempli</b>':'<span class="muted">Pas encore</span>'}</li>`}).join("")}</ul>
+    ${a&&a.group?'<p class="muted small">Chaque membre répond depuis son propre compte, dans « Mon profil ».</p>':'<p class="muted small">Sans compte, un seul profil. Créez un compte et un groupe pour que chacun réponde pour lui.</p>'}</section>`}
+function renderQ(){const el=document.getElementById("qbox");if(!el)return;
+  if(!qTab)qTab=(CFG().qfoyer||{}).at||isKid()?"moi":"foyer";
+  const tabs=[["foyer","🏠 Le foyer"],["moi","👤 Mon profil"],["groupe","👥 Qui a répondu"]];
+  const ae=document.activeElement,keep=ae&&ae.matches&&ae.matches("[data-qnoq],[data-qdouq],[data-qnom]")?[ae.matches("[data-qnoq]")?"[data-qnoq]":ae.matches("[data-qdouq]")?"[data-qdouq]":"[data-qnom]",ae.selectionStart]:null;
+  el.innerHTML=`<div class="shophead"><div><h2>Le questionnaire des goûts</h2><p>Vos habitudes et vos goûts guident directement les menus proposés.</p>
+    <div class="seg" role="tablist">${tabs.map(([k,l])=>`<button type="button" role="tab" data-qtab="${k}" aria-pressed="${qTab===k}" aria-selected="${qTab===k}">${l}</button>`).join("")}</div></div></div>
+    <div class="qbody">${qTab==="foyer"?qFoyerHTML():qTab==="moi"?qProfilHTML():qGroupeHTML()}${qImpact()}</div>`;
+  if(keep){const i=el.querySelector(keep[0]);if(i){i.focus();try{i.setSelectionRange(keep[1],keep[1])}catch(_){}}}
+}
+function qBanner(){const el=document.getElementById("qBanner");if(!el)return;let off=false;try{off=localStorage.getItem("menus.qban")==="1"}catch(_){}
+  el.innerHTML=!off&&!qMe()?`<div class="qbanner"><span>📝 <b>2 minutes pour des menus à votre goût</b> : répondez au questionnaire (cuisines, plats préférés, temps en cuisine).</span><a class="btn sm primary" href="#questionnaire">Répondre</a><button type="button" class="linkish" data-qbanx aria-label="Masquer">×</button></div>`:""}
+const qAfter=()=>{renderQ();qBanner();renderWeek()};
+document.addEventListener("click",e=>{const t=e.target;
+  if(t.closest("[data-qbanx]")){try{localStorage.setItem("menus.qban","1")}catch(_){}qBanner();return}
+  const tb=t.closest("[data-qtab]");if(tb){qTab=tb.dataset.qtab;renderQ();return}
+  const qf=t.closest("[data-qf]");if(qf&&!qf.disabled){if(isKid())return;const key=qf.dataset.qf,v=JSON.parse(qf.dataset.v);
+    qWrite(C=>{const F=C.qfoyer=Object.assign({},C.qfoyer||{});F[key]=v;F.at=Date.now();const a=meAcc();F.byName=a&&a.user?a.user.name:"";
+      if(key==="tsem")C.tmax=v;if(key==="budget")C.eco=v==="serre"?1:0;if(key==="saison")C.saison=v;if(key==="nouv")C.neu=v==="sur"?0:1});
+    qAfter();try{renderCfg()}catch(_){}return}
+  const qe=t.closest("[data-qeq]");if(qe&&!qe.disabled){if(isKid())return;const k=qe.dataset.qeq;qWrite(C=>{const F=C.qfoyer=Object.assign({},C.qfoyer||{});F[k]=F[k]===0?1:0;F.at=Date.now()});qAfter();return}
+  const qp=t.closest("[data-qp]");if(qp){const k=qp.dataset.qp,v=JSON.parse(qp.dataset.v);qMeWrite(p=>{p[k]=v});qAfter();return}
+  const sc=t.closest("[data-qsc]");if(sc){const [kind,k,x]=sc.dataset.qsc.split("|");qMeWrite(p=>{p[kind]=p[kind]||{};if(+x===1)delete p[kind][k];else p[kind][k]=+x});qAfter();return}
+  const dg=t.closest("[data-qdiet]");if(dg){const k=dg.dataset.qdiet;qMeWrite(p=>{p.r=p.r||[];const i=p.r.indexOf(k);if(i<0)p.r.push(k);else p.r.splice(i,1)});qAfter();return}
+  const na=t.closest("[data-qnoadd]");if(na){const id=na.dataset.qnoadd;qMeWrite(p=>{p.no=(p.no||[]).concat(id)});qNoQ="";qAfter();toast(I[id].n+" : plus proposé quand vous êtes à table");return}
+  const nr=t.closest("[data-qnorm]");if(nr){qMeWrite(p=>{p.no=(p.no||[]).filter(x=>x!==nr.dataset.qnorm)});qAfter();return}
+  const da=t.closest("[data-qdouadd]");if(da){qMeWrite(p=>{p.dou=(p.dou||[]).concat(da.dataset.qdouadd).slice(0,5)});qDouQ="";qAfter();return}
+  const dr=t.closest("[data-qdourm]");if(dr){qMeWrite(p=>{p.dou=(p.dou||[]).filter(x=>x!==dr.dataset.qdourm)});qAfter();return}
+  const orc=t.closest("[data-openrec]");if(orc&&orc.closest("#qbox")){try{openRecipeAny(orc.dataset.openrec)}catch(_){}return}
+});
+document.addEventListener("input",e=>{const t=e.target;
+  if(t.matches("[data-qnoq]")){qNoQ=t.value;renderQ();return}
+  if(t.matches("[data-qdouq]")){qDouQ=t.value;renderQ();return}
+});
+document.addEventListener("change",e=>{const t=e.target;if(t.matches("[data-qnom]")){const v=t.value.trim().slice(0,30);qMeWrite(p=>{p.nom=v});qAfter()}});
+
+const VIEWS=["aujourdhui","groupe","semaine","batch","gouts","recettes","courses","propositions","historique","admin","mesrecettes","rappels","questionnaire"];
 function route(){
   let v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):location.hash==="#envies"?"propositions":"aujourdhui";
   if(v==="admin"&&!isSuper())v="semaine";if(v==="admin")ADM.load();
