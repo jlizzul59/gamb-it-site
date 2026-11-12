@@ -9,10 +9,10 @@
   "background_color": "#F2F6F5",
   "theme_color": "#1E5B5E",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" },
-    { "src": "icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "tnc-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "tnc-icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "tnc-favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "tnc-icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
     { "name": "Aujourd'hui", "url": "./index.html#aujourdhui" },

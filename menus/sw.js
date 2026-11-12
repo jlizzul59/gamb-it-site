@@ -1,6 +1,6 @@
 // Service worker de Think’n’Cook : fonctionne hors ligne et affiche les rappels.
-const VERSION = "semainier-2026-11-12e";
-const CORE = ["./", "index.html", "recettes.html", "recevoir.html", "recettes-plus.js?v=20261109b", "desserts.js?v=20261110a", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
+const VERSION = "semainier-2026-11-12f";
+const CORE = ["./", "index.html", "recettes.html", "recevoir.html", "recettes-plus.js?v=20261109b", "desserts.js?v=20261110a", "manifest.webmanifest", "tnc-icon-192.png", "tnc-icon-512.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -27,7 +27,7 @@ self.addEventListener("push", (e) => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data && e.data.text() }; }
   e.waitUntil(self.registration.showNotification(d.title || "Think’n’Cook", {
-    body: d.body || "", icon: "icon-192.png", badge: "icon-192.png", tag: d.tag || undefined, data: { url: d.url || "/menus/index.html#aujourdhui" },
+    body: d.body || "", icon: "tnc-icon-192.png", badge: "tnc-icon-192.png", tag: d.tag || undefined, data: { url: d.url || "/menus/index.html#aujourdhui" },
   }));
 });
 self.addEventListener("notificationclick", (e) => {

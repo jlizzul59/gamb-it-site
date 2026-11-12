@@ -80,10 +80,10 @@ def page(title, desc, path, body, ld=None):
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{e(title)}</title><meta name="description" content="{e(desc)}"><link rel="canonical" href="{url}">
 <meta property="og:type" content="article"><meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}"><meta property="og:url" content="{url}"><meta property="og:site_name" content="Think’n’Cook">
-<meta property="og:image" content="{SITE}/menus/icon-512.png"><link rel="icon" href="../icon-192.png"><meta name="theme-color" content="#1E5B5E">
+<meta property="og:image" content="{SITE}/menus/tnc-icon-512.png"><link rel="icon" href="../tnc-icon-192.png"><meta name="theme-color" content="#1E5B5E">
 {f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' if ld else ''}
 <style>{CSS}</style></head><body>
-<header><a class="brand" href="index.html"><img src="../icon-192.png" alt="" width="28" height="28" style="vertical-align:-8px;border-radius:7px;margin-right:6px">Think<span>’n’</span>Cook</a><a class="cta" href="../index.html?ref=recette">Planifier ma semaine</a></header>
+<header><a class="brand" href="index.html"><img src="../tnc-icon-192.png" alt="" width="28" height="28" style="vertical-align:-8px;border-radius:7px;margin-right:6px">Think<span>’n’</span>Cook</a><a class="cta" href="../index.html?ref=recette">Planifier ma semaine</a></header>
 <main>{body}</main>
 <footer><span>© GAMB-IT · <a href="https://gamb-it-apps.fr/">gamb-it-apps.fr</a></span><span><a href="index.html">Toutes les recettes</a> · <a href="../conditions.html">Conditions</a> · <a href="https://gamb-it-apps.fr/confidentialite.html">Confidentialité</a> · <a href="https://gamb-it-apps.fr/mentions-legales.html">Mentions légales</a></span></footer>
 </body></html>
@@ -111,7 +111,7 @@ for r in R:
           "recipeCuisine": pays, "recipeCategory": "Plat principal", "inLanguage": "fr",
           "recipeIngredient": [f"{q} {n}" if q else n for q, n, _ in ings],
           "recipeInstructions": [{"@type": "HowToStep", "text": x} for x in r["st"]],
-          "image": [f"{SITE}/menus/icon-512.png"], "url": f"{SITE}/menus/r/{s}.html"}
+          "image": [f"{SITE}/menus/tnc-icon-512.png"], "url": f"{SITE}/menus/r/{s}.html"}
     if t: ld["totalTime"] = f"PT{t}M"
     rel = [x for x in prot[r.get("p")] if x["id"] != r["id"]]
     rel = sorted(rel, key=lambda x: (x.get("pays") != pays, x["n"]))[:6]
