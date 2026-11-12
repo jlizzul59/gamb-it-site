@@ -235,6 +235,13 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 .card{cursor:pointer}
 .card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ctop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wishb{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.wishb.on{background:#F5B700;border-color:#F5B700;color:#2B2100}
+.wishb.big{font-size:14px;padding:6px 14px}
+.wishfab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:60;background:#F5B700;color:#2B2100;font-weight:800;text-decoration:none;border-radius:999px;padding:12px 20px;box-shadow:0 10px 26px rgba(0,0,0,.2);white-space:nowrap}
+.wishfab b{background:#2B2100;color:#F5B700;border-radius:999px;padding:1px 8px;margin-left:4px}
+@media(min-width:641px){.wishfab{bottom:24px}}
+.cbtnr{display:inline-flex;align-items:center;gap:6px}
 .favb{border:0;background:none;color:var(--muted);font-size:19px;line-height:1;padding:2px 5px;border-radius:999px;cursor:pointer}
 .favb:hover{color:var(--bad)}
 .favb.on{color:var(--bad)}
@@ -1684,10 +1691,24 @@ const isFav=id=>!!AV.fav[id];
 const noteOf=id=>AV.note[id]||0;
 function toggleFav(id){if(AV.fav[id])delete AV.fav[id];else AV.fav[id]=1;avSave()}
 function setNote(id,v){if(AV.note[id]===v)delete AV.note[id];else AV.note[id]=v;avSave()}
+// Liste d'envies (profil enfant) : cocher un plat sans l'ouvrir ; partagée entre les pages de l'appareil
+const WISHK2="menus.wish";
+const wishRead=()=>{try{return JSON.parse(localStorage.getItem(WISHK2)||"[]")}catch(e){return []}};
+const wishHas=id=>wishRead().includes(id);
+const kidNow=()=>{try{const a=CLOUD.account;return !!(a&&a.group&&a.user&&a.user.role==="enfant")}catch(e){return false}};
+let _wf=0;const wishBtn=(id,big)=>{if(!kidNow()){if(!_wf){_wf=1;setTimeout(()=>{_wf=0;wishFab()},0)}return ""}if(!_wf){_wf=1;setTimeout(()=>{_wf=0;wishFab()},0)}const on=wishHas(id);return `<button type="button" class="wishb ${on?"on":""} ${big?"big":""}" data-wish="${id}" aria-pressed="${on}" title="${on?"Retirer de mes envies":"Ajouter à mes envies"}">${on?"✓ Envie":"+ Envie"}</button>`};
+function wishToggle(id){let L=wishRead();L=L.includes(id)?L.filter(x=>x!==id):[...L,id];try{localStorage.setItem(WISHK2,JSON.stringify(L))}catch(e){}
+  if(typeof WISH!=="undefined"){WISH.clear();L.forEach(x=>WISH.add(x))}
+  document.querySelectorAll(`[data-wish="${CSS.escape(id)}"]`).forEach(b=>{const on=L.includes(id);b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);b.textContent=on?"✓ Envie":"+ Envie"});wishFab()}
+function wishFab(){let f=document.getElementById("wishfab");const n=kidNow()?wishRead().filter(id=>RB[id]).length:0;
+  if(!n){if(f)f.hidden=true;return}
+  if(!f){f=document.createElement("a");f.id="wishfab";f.className="wishfab";document.body.appendChild(f)}
+  f.href=(location.pathname.endsWith("recettes.html")?"index.html":"")+"#envies";f.hidden=false;f.innerHTML=`⭐ Mes envies <b>${n}</b> · Envoyer aux adultes →`}
+document.addEventListener("click",e=>{const w=e.target.closest("[data-wish]");if(w){e.preventDefault();e.stopPropagation();wishToggle(w.dataset.wish)}},true);
 const favBtn=(id,big)=>{const on=isFav(id);return `<button type="button" class="favb ${on?"on":""} ${big?"big":""}" data-fav="${id}" aria-pressed="${on}" aria-label="${on?"Retirer des favoris":"Ajouter aux favoris"}" title="${on?"Retirer des favoris":"Ajouter aux favoris"}">${on?"♥":"♡"}${big?(on?" Favori":" Ajouter aux favoris"):""}</button>`};
 const starsInput=id=>`<span class="stars" role="group" aria-label="Ma note">${[1,2,3,4,5].map(v=>`<button type="button" class="st ${v<=noteOf(id)?"on":""}" data-rate="${id}" data-v="${v}" aria-label="${v} sur 5" aria-pressed="${v===noteOf(id)}">★</button>`).join("")}</span>`;
 const starsShow=id=>{const n=noteOf(id);return n?`<span class="stshow" title="Ma note : ${n} sur 5" aria-label="Ma note : ${n} sur 5">${"★".repeat(n)}<i>${"★".repeat(5-n)}</i></span>`:""};
-const avisInner=id=>`${favBtn(id,true)}<span class="mynote">Ma note ${starsInput(id)}</span>${noteOf(id)?'<span class="muted" style="font-size:12px;font-weight:400">Touchez la même étoile pour effacer</span>':""}`;
+const avisInner=id=>`${favBtn(id,true)}${wishBtn(id,true)}<span class="mynote">Ma note ${starsInput(id)}</span>${noteOf(id)?'<span class="muted" style="font-size:12px;font-weight:400">Touchez la même étoile pour effacer</span>':""}`;
 window.addEventListener("storage",e=>{if(e.key===AV_KEY)avLoad()});
 
 
@@ -2371,7 +2392,7 @@ function render(){
     if(r.dessert)return dCard(r);
     const main=r.ing.filter(([id])=>I[id].r!=="pl"&&!BASICS.has(id)).map(([id])=>sel[id]===1?`<mark>${esc(I[id].n.toLowerCase())}</mark>`:esc(I[id].n.toLowerCase())).join(", ");
     return `<div class="card" role="button" tabindex="0" data-r="${r.id}" aria-label="${esc(r.n)}"><div class="ph" style="background:${ART.BG[r.reg]}"></div>
-      <div class="bd"><div class="ctop"><span class="where tag">${esc(r.pays)}</span>${favBtn(r.id)}</div><span class="cname">${esc(r.n)}</span>${frigo&&q&&_fs[r.id]?`<span class="frigohit">🧊 Utilise ${_fs[r.id].n}/${_fs[r.id].of} : ${esc(_fs[r.id].hit.join(", "))}</span>`:""}${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}<span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${seasonOf(r,new Date().getMonth()+1).s==="saison"?'<span class="tag saison">🌱 De saison</span>':""}${(r.temp||tempOf(r))==="froid"?'<span class="tag froid">❄️ Froid</span>':'<span class="tag chaud">🔥 Chaud</span>'}${r.simple?'<span class="tag vege">Tout simple</span>':""}${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span>${cartBtn(r.id)}</div></div>`;
+      <div class="bd"><div class="ctop"><span class="where tag">${esc(r.pays)}</span><span class="cbtnr">${wishBtn(r.id)}${favBtn(r.id)}</span></div><span class="cname">${esc(r.n)}</span>${frigo&&q&&_fs[r.id]?`<span class="frigohit">🧊 Utilise ${_fs[r.id].n}/${_fs[r.id].of} : ${esc(_fs[r.id].hit.join(", "))}</span>`:""}${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}<span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${seasonOf(r,new Date().getMonth()+1).s==="saison"?'<span class="tag saison">🌱 De saison</span>':""}${(r.temp||tempOf(r))==="froid"?'<span class="tag froid">❄️ Froid</span>':'<span class="tag chaud">🔥 Chaud</span>'}${r.simple?'<span class="tag vege">Tout simple</span>':""}${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span>${cartBtn(r.id)}</div></div>`;
   }).join(""):`<div class="none"><b>Aucune recette avec cette combinaison.</b><br>Retirez un ingrédient, un filtre ou changez de région.</div>`);
   ART.hydrate(document.getElementById("results"));
 }
@@ -2379,7 +2400,7 @@ function render(){
 // Carte d'un dessert
 function dCard(r){const main=r.ing.filter(([id])=>I[id].r!=="pl").map(([id])=>sel[id]===1?`<mark>${esc(I[id].n.toLowerCase())}</mark>`:esc(I[id].n.toLowerCase())).join(", "),lv=DLEV(r);
   return `<div class="card" role="button" tabindex="0" data-r="${r.id}" aria-label="${esc(r.n)}"><div class="ph" style="background:${DBG[r.dt]||ART.BG.Dessert}"></div>
-    <div class="bd"><div class="ctop"><span class="where tag">${esc(DTL[r.dt]||"Dessert")}</span>${favBtn(r.id)}</div><span class="cname">${esc(r.n)}</span>${frigo&&q&&_fs[r.id]?`<span class="frigohit">🧊 Utilise ${_fs[r.id].n}/${_fs[r.id].of} : ${esc(_fs[r.id].hit.join(", "))}</span>`:""}${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}
+    <div class="bd"><div class="ctop"><span class="where tag">${esc(DTL[r.dt]||"Dessert")}</span><span class="cbtnr">${wishBtn(r.id)}${favBtn(r.id)}</span></div><span class="cname">${esc(r.n)}</span>${frigo&&q&&_fs[r.id]?`<span class="frigohit">🧊 Utilise ${_fs[r.id].n}/${_fs[r.id].of} : ${esc(_fs[r.id].hit.join(", "))}</span>`:""}${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}
     <span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${r.w?`<span title="Temps de repos en plus">+ ${esc(r.w)}</span>`:""}${isFruitD(r)&&seasonOf(r,new Date().getMonth()+1).s==="saison"?'<span class="tag saison">🌱 De saison</span>':""}${r.nc?'<span class="tag froid">❄️ Sans cuisson</span>':""}${lv==="dl"?'<span class="tag leger" title="180 kcal ou moins par portion">🪶 Léger</span>':lv==="dg"?'<span class="tag plaisir" title="Plus de 320 kcal par portion">🧁 Gourmand</span>':""}${r.mine?'<span class="tag vege">Maison</span>':""}</span><span class="cing">${main}</span>${cartBtn(r.id)}</div></div>`}
 
 // ---------- semainier partagé (même site) ----------

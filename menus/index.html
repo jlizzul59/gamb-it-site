@@ -341,6 +341,12 @@ img.art.ready{opacity:1}
 .steps li.optstep{color:var(--muted)}
 .optb{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--warm);background:var(--warm-soft);border-radius:999px;padding:1px 7px;margin-right:4px}
 
+.wishb{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.wishb.on{background:#F5B700;border-color:#F5B700;color:#2B2100}
+.wishb.big{font-size:14px;padding:6px 14px}
+.wishfab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:60;background:#F5B700;color:#2B2100;font-weight:800;text-decoration:none;border-radius:999px;padding:12px 20px;box-shadow:0 10px 26px rgba(0,0,0,.2);white-space:nowrap}
+.wishfab b{background:#2B2100;color:#F5B700;border-radius:999px;padding:1px 8px;margin-left:4px}
+@media(min-width:641px){.wishfab{bottom:24px}}
 .favb{border:0;background:none;color:var(--muted);font-size:19px;line-height:1;padding:2px 5px;border-radius:999px;cursor:pointer}
 .favb:hover{color:var(--bad)}
 .favb.on{color:var(--bad)}
@@ -2090,10 +2096,24 @@ const isFav=id=>!!AV.fav[id];
 const noteOf=id=>AV.note[id]||0;
 function toggleFav(id){if(AV.fav[id])delete AV.fav[id];else AV.fav[id]=1;avSave()}
 function setNote(id,v){if(AV.note[id]===v)delete AV.note[id];else AV.note[id]=v;avSave()}
+// Liste d'envies (profil enfant) : cocher un plat sans l'ouvrir ; partagée entre les pages de l'appareil
+const WISHK2="menus.wish";
+const wishRead=()=>{try{return JSON.parse(localStorage.getItem(WISHK2)||"[]")}catch(e){return []}};
+const wishHas=id=>wishRead().includes(id);
+const kidNow=()=>{try{const a=CLOUD.account;return !!(a&&a.group&&a.user&&a.user.role==="enfant")}catch(e){return false}};
+let _wf=0;const wishBtn=(id,big)=>{if(!kidNow()){if(!_wf){_wf=1;setTimeout(()=>{_wf=0;wishFab()},0)}return ""}if(!_wf){_wf=1;setTimeout(()=>{_wf=0;wishFab()},0)}const on=wishHas(id);return `<button type="button" class="wishb ${on?"on":""} ${big?"big":""}" data-wish="${id}" aria-pressed="${on}" title="${on?"Retirer de mes envies":"Ajouter à mes envies"}">${on?"✓ Envie":"+ Envie"}</button>`};
+function wishToggle(id){let L=wishRead();L=L.includes(id)?L.filter(x=>x!==id):[...L,id];try{localStorage.setItem(WISHK2,JSON.stringify(L))}catch(e){}
+  if(typeof WISH!=="undefined"){WISH.clear();L.forEach(x=>WISH.add(x))}
+  document.querySelectorAll(`[data-wish="${CSS.escape(id)}"]`).forEach(b=>{const on=L.includes(id);b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);b.textContent=on?"✓ Envie":"+ Envie"});wishFab()}
+function wishFab(){let f=document.getElementById("wishfab");const n=kidNow()?wishRead().filter(id=>RB[id]).length:0;
+  if(!n){if(f)f.hidden=true;return}
+  if(!f){f=document.createElement("a");f.id="wishfab";f.className="wishfab";document.body.appendChild(f)}
+  f.href=(location.pathname.endsWith("recettes.html")?"index.html":"")+"#envies";f.hidden=false;f.innerHTML=`⭐ Mes envies <b>${n}</b> · Envoyer aux adultes →`}
+document.addEventListener("click",e=>{const w=e.target.closest("[data-wish]");if(w){e.preventDefault();e.stopPropagation();wishToggle(w.dataset.wish)}},true);
 const favBtn=(id,big)=>{const on=isFav(id);return `<button type="button" class="favb ${on?"on":""} ${big?"big":""}" data-fav="${id}" aria-pressed="${on}" aria-label="${on?"Retirer des favoris":"Ajouter aux favoris"}" title="${on?"Retirer des favoris":"Ajouter aux favoris"}">${on?"♥":"♡"}${big?(on?" Favori":" Ajouter aux favoris"):""}</button>`};
 const starsInput=id=>`<span class="stars" role="group" aria-label="Ma note">${[1,2,3,4,5].map(v=>`<button type="button" class="st ${v<=noteOf(id)?"on":""}" data-rate="${id}" data-v="${v}" aria-label="${v} sur 5" aria-pressed="${v===noteOf(id)}">★</button>`).join("")}</span>`;
 const starsShow=id=>{const n=noteOf(id);return n?`<span class="stshow" title="Ma note : ${n} sur 5" aria-label="Ma note : ${n} sur 5">${"★".repeat(n)}<i>${"★".repeat(5-n)}</i></span>`:""};
-const avisInner=id=>`${favBtn(id,true)}<span class="mynote">Ma note ${starsInput(id)}</span>${noteOf(id)?'<span class="muted" style="font-size:12px;font-weight:400">Touchez la même étoile pour effacer</span>':""}`;
+const avisInner=id=>`${favBtn(id,true)}${wishBtn(id,true)}<span class="mynote">Ma note ${starsInput(id)}</span>${noteOf(id)?'<span class="muted" style="font-size:12px;font-weight:400">Touchez la même étoile pour effacer</span>':""}`;
 window.addEventListener("storage",e=>{if(e.key===AV_KEY)avLoad()});
 
 
@@ -3142,7 +3162,7 @@ function renderCatList(sfx,key){
     const bad=r.ing.filter(([id])=>S.prefs[id]===-1).map(([id])=>I[id].n).concat(foyConf(r).map(([k,w])=>DIET_N[k].toLowerCase()+" ("+w.join(", ")+")"));
     const cur=key&&W.plan[key]===r.id;
     return `<div class="citem ${bad.length?"is-bad":""}">
-      <div class="cmain"><b>${esc(r.n)}</b> ${favBtn(r.id)}<div class="cmeta">${starsShow(r.id)}<span>${esc(r.pays)}</span><span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${tagHTML(r)}${cur?'<span class="tag">Plat actuel</span>':inWeek.has(r.id)?'<span class="tag">Déjà au menu</span>':""}${bad.length?'<span class="tag no">Contient : '+esc(bad.join(", "))+'</span>':""}</div></div>
+      <div class="cmain"><b>${esc(r.n)}</b> ${favBtn(r.id)}${key==="__prop"?"":wishBtn(r.id)}<div class="cmeta">${starsShow(r.id)}<span>${esc(r.pays)}</span><span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${tagHTML(r)}${cur?'<span class="tag">Plat actuel</span>':inWeek.has(r.id)?'<span class="tag">Déjà au menu</span>':""}${bad.length?'<span class="tag no">Contient : '+esc(bad.join(", "))+'</span>':""}</div></div>
       <div class="cbtns"><button class="btn sm" type="button" data-view>Voir</button>${key&&!cur?(key==="__prop"?`<button class="btn sm ${WISH.has(r.id)?"primary":""}" type="button" data-choose="${r.id}" aria-pressed="${WISH.has(r.id)}">${WISH.has(r.id)?"✓ Dans ma liste":"+ Ma liste"}</button>`:`<button class="btn primary sm" type="button" data-choose="${r.id}">Choisir</button>`):""}</div>
       <div class="cdet" hidden><div class="rbody"><div><h4>Pour 1 personne</h4><ul class="ings">${r.ing.map(([id,q])=>`<li><span class="num">${fmt(q,I[id].u,false)}</span><span>${esc(I[id].n)}</span></li>`).join("")}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div></div></div>
     </div>`;
@@ -4286,10 +4306,11 @@ document.addEventListener("change",e=>{
 
 const VIEWS=["aujourdhui","groupe","semaine","batch","gouts","recettes","courses","propositions","historique","admin","mesrecettes","rappels"];
 function route(){
-  let v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"aujourdhui";
+  let v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):location.hash==="#envies"?"propositions":"aujourdhui";
   if(v==="admin"&&!isSuper())v="semaine";if(v==="admin")ADM.load();
   VIEWS.forEach(x=>document.getElementById("v-"+x).hidden=x!==v);
   placeWeekbar(v);
+  if(location.hash==="#envies"){setTimeout(()=>{openPropCatalog()},50);history.replaceState(null,"","#propositions")}
   const top=["aujourdhui","semaine","courses","recettes"].includes(v)?v:"plus";
   document.querySelectorAll("nav.mainnav [data-nav]").forEach(a=>{if(a.dataset.nav===top)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   document.querySelectorAll("#plusMenu a").forEach(a=>{if(a.getAttribute("href")==="#"+v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
