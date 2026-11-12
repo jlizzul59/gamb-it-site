@@ -112,6 +112,7 @@ footer a:hover{color:var(--text)}
 .legal p strong{color:var(--text);font-weight:600}
 .legal a{color:var(--amber);text-underline-offset:3px}
 .legal a:hover{color:var(--amber-hover)}
+.legal .eyebrow{color:var(--amber);font-size:13px;letter-spacing:.06em;margin:0}
 .updated{font-size:14px!important}
 
 @media(max-width:760px){
