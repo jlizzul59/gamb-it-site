@@ -1,5 +1,5 @@
 // Service worker de Think’n’Cook : fonctionne hors ligne et affiche les rappels.
-const VERSION = "semainier-2026-11-12f";
+const VERSION = "semainier-2026-11-12g";
 const CORE = ["./", "index.html", "recettes.html", "recevoir.html", "recettes-plus.js?v=20261109b", "desserts.js?v=20261110a", "manifest.webmanifest", "tnc-icon-192.png", "tnc-icon-512.png"];
 
 self.addEventListener("install", (e) => {

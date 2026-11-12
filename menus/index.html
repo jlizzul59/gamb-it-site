@@ -116,6 +116,36 @@ main{padding-block:28px 64px}
 .toggle input{accent-color:var(--accent);width:16px;height:16px}
 
 /* Semaine */
+.wvbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.wvseg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.wvseg button{border:0;background:none;font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:999px;color:var(--muted);cursor:pointer}
+.wvseg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+#v-semaine.simple #defaults,#v-semaine.simple #week{display:none!important}
+.kidmode #v-semaine.simple #rulesbar,.kidmode #v-semaine.simple > .toolbar,.kidmode #v-semaine.simple #helpBox{display:none!important}
+.wsimple{max-width:780px}
+.wsr{display:grid;grid-template-columns:64px minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:stretch;margin-bottom:10px}
+.wsh{margin-bottom:2px}.wsh span{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wsd{display:flex;flex-direction:column;justify-content:center;font-size:14px;color:var(--muted);line-height:1.25}.wsd b{color:var(--ink);font-size:15px}
+.wsr.today .wsd b{color:var(--accent)}.wsr.today .wsd::after{content:"Aujourd’hui";font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;margin-top:2px}
+.sc{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:6px;text-align:left;font:inherit;font-size:16px;line-height:1.3;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-height:72px;cursor:pointer;width:100%}
+.sc:hover:not(:disabled){border-color:var(--accent)}
+.sc small{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.sc.off .scn{color:var(--muted);font-style:italic}
+.wsr.past .sc{opacity:.5}
+.xing .sc.armed{border-style:dashed;border-color:var(--accent);border-width:2px}
+.sc.on{background:var(--accent-soft);border:2px solid var(--accent);box-shadow:0 0 0 3px var(--accent-soft);opacity:1}
+.sc:disabled{cursor:not-allowed}
+.sc .xp{color:var(--warm);font-weight:700}
+.xhint{margin:0 0 12px;font-size:14px;padding:10px 12px;border-radius:12px;background:var(--accent-soft);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.xchc{position:sticky;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:5;background:var(--surface);border:2px solid var(--accent);border-radius:16px;padding:14px;margin-top:6px;box-shadow:0 10px 30px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:10px}
+.xchc p{margin:0}.xchc small{color:var(--muted)}
+.xchc input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.xchc .row{display:flex;gap:8px;flex-wrap:wrap}
+@media (min-width:900px){.xchc{bottom:16px}}
+@media (max-width:520px){.wsr{grid-template-columns:44px minmax(0,1fr) minmax(0,1fr);gap:8px}.sc{font-size:15px;padding:10px;min-height:64px}.wsd{font-size:13px}.wsd b{font-size:14px}}
+.bxs{margin-bottom:16px}.bxl{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.bx{border:1px solid var(--line);border-left:4px solid var(--warm);border-radius:12px;padding:10px 12px;background:var(--surface);display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.4}
+.bx q{display:block;font-style:italic;color:var(--muted);margin-top:4px}.bx small{color:var(--muted)}.bxa{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .week{display:grid;grid-template-columns:var(--wcols,repeat(7,minmax(0,1fr)));gap:10px}
 .meal[data-dragkey]:not(.is-off){-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .grip{display:inline-block;margin-right:5px;color:var(--muted);cursor:grab;font-size:13px;letter-spacing:-1px;opacity:.55}
@@ -984,8 +1014,10 @@ body.storemode #shop .hint{font-size:13px}
       <p>Les accompagnements marqués « optionnel » (pain, riz, fromage) sont listés à part dans les courses : vous décidez sur place.</p>
     </div>
     <div class="defaults" id="defaults"></div>
+    <div class="wvbar" id="wvbar"></div>
     <div id="wvalid" class="wvalid" aria-live="polite"></div>
     <div class="week" id="week"></div>
+    <div class="wsimple" id="wsimple" hidden></div>
   </section>
 
   <section class="view" id="v-batch" hidden>
@@ -3049,14 +3081,17 @@ function trackEdit(){if(!W||isKid())return;const sg=weekSig(W);if(_seen!==null&&
 function swapMeals(a,b){
   if(!a||!b||a===b||isKid()||!SK[a]||!SK[b])return;
   if(W.mode[a]==="rest"||W.mode[b]==="rest"){toast("Impossible d'échanger avec un repas « restes »");return}
+  swapCore(a,b);
+  save();renderAll();
+  const ra=RB[W.plan[a]],rb=RB[W.plan[b]];
+  toast(ra&&rb?`⇅ ${ra.n} ↔ ${rb.n}`:`⇅ Repas déplacé vers ${slotLabel(SK[ra?a:b])}`);
+}
+function swapCore(a,b){
   const pa=PN(SK[a]),pb=PN(SK[b]);
   ["plan","pin","temp","extra","mode"].forEach(f=>{W[f]=W[f]||{};const x=W[f][a],y=W[f][b];if(y===undefined)delete W[f][a];else W[f][a]=y;if(x===undefined)delete W[f][b];else W[f][b]=x});
   // les recettes ajoutées prennent le nombre de personnes de leur nouveau créneau
   [[a,pb,pa],[b,pa,pb]].forEach(([k,from,to])=>(W.extra[k]||[]).forEach(x=>{if(x.n===from)x.n=to}));
   if(W.ok){delete W.ok[a];delete W.ok[b]}
-  save();renderAll();
-  const ra=RB[W.plan[a]],rb=RB[W.plan[b]];
-  toast(ra&&rb?`⇅ ${ra.n} ↔ ${rb.n}`:`⇅ Repas déplacé vers ${slotLabel(SK[ra?a:b])}`);
 }
 const DND=(()=>{
   let st=null;
@@ -3137,6 +3172,7 @@ function renderWeek(){
     return `<div class="day ${dayOff?"day-off":""}"><div class="dayhead"><b>${d}</b><small>${dateOf(i)}</small></div>${meals}${tot?`<div class="daytotal">Midi + soir : <span class="num">≈ ${tot} kcal</span></div>`:""}</div>`;
   }).join("");
   ART.hydrate(el);
+  renderSimple();
 }
 
 // ---------- Recettes ----------
@@ -3993,11 +4029,68 @@ function openPropForm(id,slot){
 }
 const statusHTML=p=>p.status==="ok"?`<span class="pst ok">✓ Validé${p.assigned&&SK[p.assigned.key]?" : "+esc(slotDate(p.assigned.w,p.assigned.key)):""}</span>`
   :p.status==="non"?`<span class="pst no">Refusé${p.reason?" : "+esc(p.reason):""}</span>`:`<span class="pst wait">En attente</span>`;
-function propLine(p){const r=RB[p.recipe];if(!r)return "";const repl=p.slot&&S.weeks[p.week]&&RB[S.weeks[p.week].plan[p.slot]];
+function propLine(p){if(p.type==="swap"){const w=p.week||0,ra=RB[p.ra],rb=RB[p.rb];return `<b>${esc(p.byName||p.by||"Un enfant")}</b> propose d’échanger <i>${ra?esc(shortName(ra)):"pas de repas"}</i> (${esc(slotDate(w,p.a))}) ⇄ <i>${rb?esc(shortName(rb)):"pas de repas"}</i> (${esc(slotDate(w,p.b))})`}
+  const r=RB[p.recipe];if(!r)return "";const repl=p.slot&&S.weeks[p.week]&&RB[S.weeks[p.week].plan[p.slot]];
   return `<b>${esc(p.byName||p.by||"Un enfant")}</b> propose <button type="button" class="linkbtn" data-propview="${p.recipe}">${esc(r.n)}</button>${p.slot&&SK[p.slot]?` ${p.type==="modif"?"à la place de "+(repl?"<i>"+esc(shortName(repl))+"</i>, ":""):"pour "}${esc(slotDate(p.week||0,p.slot))}`:""}`}
+
+// ---------- Vue simple de la semaine (un jour par ligne) + échanges proposés par les enfants ----------
+const WVK="menus.wview";
+const wview=()=>{let v=null;try{v=localStorage.getItem(WVK)}catch(e){}return v==="simple"||v==="detail"?v:(isKid()?"simple":"detail")};
+const XCH={on:false,a:null,b:null};
+function renderSimple(){
+  const bar=document.getElementById("wvbar"),box=document.getElementById("wsimple"),sec=document.getElementById("v-semaine");if(!bar||!box||!W)return;
+  const simple=wview()==="simple",kid=isKid();
+  if(!simple){XCH.on=false;XCH.a=XCH.b=null}
+  sec.classList.toggle("simple",simple);
+  bar.innerHTML=`<div class="wvseg" role="group" aria-label="Affichage de la semaine"><button type="button" data-wview="simple" aria-pressed="${simple}">Vue simple</button><button type="button" data-wview="detail" aria-pressed="${!simple}">Vue détaillée</button></div>`+
+    (simple?`<button type="button" class="btn sm ${XCH.on?"primary":""}" data-xch="toggle" aria-pressed="${XCH.on}">⇅ ${kid?"Proposer d’échanger deux repas":"Échanger deux repas"}</button>`:"");
+  box.hidden=!simple;if(!simple){box.innerHTML="";return}
+  const t0=new Date();t0.setHours(0,0,0,0);
+  const pend=pendingProps().filter(([,p])=>p.type==="swap"&&(p.week||0)===S.cur),inX=new Set();pend.forEach(([,p])=>{inX.add(p.a);inX.add(p.b)});
+  const can=k=>{const m=W.mode[k]||"cook",src=srcKey(k);return !slotPast(S.cur,k)&&!(m==="rest"&&src!==k)&&(m==="skip"||!!recipeAt(k))};
+  const cell=k=>{const sl=SK[k],m=W.mode[k]||"cook",src=srcKey(k),r=recipeAt(k),isRest=m==="rest"&&src!==k;
+    const what=m==="skip"?"Pas de repas":!r?"—":isRest?"Restes : "+shortName(r):shortName(r);
+    const ok=XCH.on?can(k):!!(r&&src);
+    const sub=m==="skip"?"":`<small><span>👤 ${PN(sl)}</span>${r&&slotOk(k)?"<span>✓ validé</span>":""}${inX.has(k)?'<span class="xp">⇅ échange proposé</span>':""}</small>`;
+    return `<button type="button" class="sc ${m==="skip"?"off":""} ${XCH.on&&ok?"armed":""} ${XCH.a===k||XCH.b===k?"on":""}" data-sc="${k}" ${XCH.on&&!ok?"disabled":""} aria-label="${esc(DAYS[sl.day]+" "+sl.when.toLowerCase()+" : "+what)}"><span class="scn">${esc(what)}</span>${sub}</button>`};
+  const rows=ORDER.map(d=>{const dt=dayDate(S.cur,d);dt.setHours(0,0,0,0);const past=dt<t0,today=+dt===+t0;
+    return `<div class="wsr ${past?"past":""} ${today?"today":""}"><span class="wsd">${DAYS[d].slice(0,3)}.<b>${ddmm(dayDate(S.cur,d))}</b></span>${cell(d+"m")}${cell(d+"s")}</div>`}).join("");
+  const nm=k=>{const r=recipeAt(k);return (W.mode[k]==="skip"||!r)?"pas de repas":shortName(r)};
+  const hint=!XCH.on?"":XCH.a&&XCH.b?"":`<p class="xhint">${XCH.a?`Touche le repas à échanger avec <b>${esc(nm(XCH.a))}</b> (${esc(slotDate(S.cur,XCH.a))}).`:"Touche le premier des deux repas à échanger."} <button type="button" class="linkish" data-xch="cancel">Annuler</button></p>`;
+  const conf=XCH.on&&XCH.a&&XCH.b&&kid?`<div class="xchc" role="dialog" aria-label="Proposer l’échange"><p>Échanger <b>${esc(nm(XCH.a))}</b> <small>(${esc(slotDate(S.cur,XCH.a))})</small> ⇄ <b>${esc(nm(XCH.b))}</b> <small>(${esc(slotDate(S.cur,XCH.b))})</small></p>
+    <input id="xchMsg" maxlength="200" placeholder="Pourquoi ? Par ex. : je ne suis pas là ce midi-là"><div class="row"><button type="button" class="btn primary" data-xch="send">Envoyer aux adultes</button><button type="button" class="btn" data-xch="cancel">Annuler</button></div></div>`:"";
+  box.classList.toggle("xing",XCH.on);
+  box.innerHTML=hint+`<div class="wsr wsh"><span></span><span>Midi</span><span>Soir</span></div>`+rows+conf;
+}
+document.addEventListener("click",e=>{
+  const v=e.target.closest("[data-wview]");if(v){try{localStorage.setItem(WVK,v.dataset.wview)}catch(_){}XCH.on=false;XCH.a=XCH.b=null;renderWeek();return}
+  const x=e.target.closest("[data-xch]");if(x){const a=x.dataset.xch;
+    if(a==="toggle"){XCH.on=!XCH.on;XCH.a=XCH.b=null;renderSimple();return}
+    if(a==="cancel"){XCH.on=false;XCH.a=XCH.b=null;renderSimple();return}
+    if(a==="send"&&XCH.a&&XCH.b){const msg=((document.getElementById("xchMsg")||{}).value||"").trim().slice(0,200);
+      propose({type:"swap",week:S.cur,a:XCH.a,b:XCH.b,ra:W.plan[XCH.a]||null,rb:W.plan[XCH.b]||null,ma:W.mode[XCH.a]||null,mb:W.mode[XCH.b]||null,msg});
+      XCH.on=false;XCH.a=XCH.b=null;renderProps();renderSimple();toast("Échange proposé aux adultes 🎉");return}
+    return}
+  const c=e.target.closest("[data-sc]");if(c){const k=c.dataset.sc;
+    if(!XCH.on){const src=srcKey(k);if(src&&recipeAt(k))openRecipe(src);return}
+    if(XCH.a===k){XCH.a=XCH.b=null;renderSimple();return}
+    if(!XCH.a||XCH.b){XCH.a=k;XCH.b=null;renderSimple();return}
+    XCH.b=k;
+    if(!isKid()){const a=XCH.a,b=k;XCH.on=false;XCH.a=XCH.b=null;swapMeals(a,b);return}
+    renderSimple();const i=document.getElementById("xchMsg");if(i)try{i.focus({preventScroll:true})}catch(_){}
+    const cf=document.querySelector(".xchc");if(cf)cf.scrollIntoView({behavior:"smooth",block:"nearest"});return}
+});
+function acceptSwap(pid){const all=propsRead(),p=all[pid];if(!p)return;const w=p.week||0;
+  if(!S.weeks[w]){const back=S.cur;useWeek(w);useWeek(back)}
+  const md=(S.weeks[w]&&S.weeks[w].mode)||{};if(md[p.a]==="rest"||md[p.b]==="rest"){toast("Impossible d’échanger avec un repas « restes »");return}
+  withWeek(w,()=>{swapCore(p.a,p.b);save()});
+  p.status="ok";p.decidedBy=meUser();p.decidedAt=Date.now();propsWrite(all);BOARD.sel=null;BOARD.drop=null;renderAll();
+  toastUndo("⇄ Repas échangés : "+slotDate(w,p.a)+" et "+slotDate(w,p.b),()=>{withWeek(w,()=>{swapCore(p.a,p.b);save()});const a2=propsRead();if(a2[pid]){a2[pid].status="attente";delete a2[pid].decidedBy;delete a2[pid].decidedAt;propsWrite(a2)}renderAll()});
+}
 // ---------- Tableau des propositions : envies à gauche, semaine à droite ; glisser (ou toucher puis toucher) pour placer ----------
 const BOARD={w:null,sel:null,kid:"",drop:null};
 function boardHTML(pend){
+  const swaps=pend.filter(([,p])=>p.type==="swap");pend=pend.filter(([,p])=>p.type!=="swap");
   const n0=NOWW();if(BOARD.w==null||BOARD.w<n0||BOARD.w>n0+1)BOARD.w=n0;
   const kids=[...new Set(pend.map(([,p])=>p.byName||p.by||"?"))];if(BOARD.kid&&!kids.includes(BOARD.kid))BOARD.kid="";
   const list=pend.filter(([,p])=>!BOARD.kid||(p.byName||p.by||"?")===BOARD.kid);
@@ -4020,7 +4113,7 @@ function boardHTML(pend){
         <button type="button" class="linkish" data-bwdo="cancel">Annuler</button></div>`:""}</div>`};
   const lab=x=>x===n0?"Cette semaine":"Semaine prochaine";
   return `<div class="board ${BOARD.sel?"has-sel":""}">
-    <aside class="bwish"><div class="bwh"><b>Envies à placer</b><span class="bcount">${pend.length}</span></div>
+    <aside class="bwish">${swaps.length?`<div class="bxs"><div class="bwh"><b>Échanges proposés</b><span class="bcount">${swaps.length}</span></div><ul class="bxl">${swaps.map(swapCard).join("")}</ul></div>`:""}<div class="bwh"><b>Envies à placer</b><span class="bcount">${pend.length}</span></div>
       ${kids.length>1?`<div class="bkids"><button type="button" data-bwkid="" aria-pressed="${!BOARD.kid}">Tous</button>${kids.map(k=>`<button type="button" data-bwkid="${esc(k)}" aria-pressed="${BOARD.kid===k}">${esc(k)} (${pend.filter(([,p])=>(p.byName||p.by||"?")===k).length})</button>`).join("")}</div>`:""}
       ${list.length?`<ul class="bwl">${list.map(card).join("")}</ul>${pend.length>1?`<button type="button" class="linkish bnoall" data-bwnoall>Refuser tout ce qui reste…</button>`:""}`
         :`<p class="muted bempty">${pend.length?"Rien pour ce filtre.":"Aucune envie en attente. 🎉"}${Object.keys(propsRead()).length?"":" Pour que les enfants puissent proposer, passez leur profil en « Enfant » dans Groupe."}</p>`}
@@ -4032,6 +4125,11 @@ function boardHTML(pend){
       <div class="bgridm"><span></span><span class="spw">Midi</span><span class="spw">Soir</span>${ORDER.map(d=>{const dt=dayDate(w,d);return `<span class="sph">${DAYS[d].slice(0,3)}.<b>${ddmm(dt)}</b></span>${cell(d,"Midi")}${cell(d,"Soir")}`}).join("")}</div></div>
   </div>`;
 }
+function swapCard([id,p]){const w=p.week||0,wk=S.weeks[w]||{},pl=wk.plan||{},md=wk.mode||{};
+  const nm=k=>md[k]==="skip"||!RB[pl[k]]?"pas de repas":esc(shortName(RB[pl[k]]));
+  const changed=(pl[p.a]||null)!==(p.ra||null)||(pl[p.b]||null)!==(p.rb||null),late=slotPast(w,p.a)||slotPast(w,p.b);
+  return `<li class="bx"><div><b>${esc(p.byName||p.by||"Un enfant")}</b> propose d’échanger :<br><b>${nm(p.a)}</b> <small>${esc(slotDate(w,p.a))}</small> ⇄ <b>${nm(p.b)}</b> <small>${esc(slotDate(w,p.b))}</small>${p.msg?`<q>${esc(p.msg)}</q>`:""}${changed?`<br><small>Le menu a changé depuis la proposition.</small>`:""}</div>
+    <div class="bxa">${late?`<small>Trop tard : l’un des repas est passé.</small>`:`<button type="button" class="btn sm primary" data-bxok="${id}">⇄ Échanger</button>`}<button type="button" class="btn sm" data-bwno="${id}">Refuser</button></div></li>`}
 function placeProp(pid,w,key,how){
   const all=propsRead(),p=all[pid];if(!p||!RB[p.recipe])return;
   const back=S.cur;if(!S.weeks[w]){useWeek(w);useWeek(back)}
@@ -4048,6 +4146,7 @@ function refuseProp(ids){const all=propsRead();ids.forEach(id=>{const p=all[id];
   toastUndo(ids.length>1?ids.length+" envies refusées":"Envie refusée",()=>{const a2=propsRead();ids.forEach(id=>{if(a2[id]){a2[id].status="attente";delete a2[id].decidedBy}});propsWrite(a2);renderProps()})}
 document.addEventListener("click",e=>{
   if(!e.target.closest("#propbox"))return;
+  const xo=e.target.closest("[data-bxok]");if(xo){acceptSwap(xo.dataset.bxok);return}
   const q=e.target.closest("[data-bwquick]");if(q){const p=propsRead()[q.dataset.bwquick];if(p)placeProp(q.dataset.bwquick,p.week||0,p.slot,"replace");return}
   const no=e.target.closest("[data-bwno]");if(no){refuseProp([no.dataset.bwno]);return}
   const na=e.target.closest("[data-bwnoall]");if(na){askInline(na,"Refuser toutes les envies affichées ?",()=>{const all=propsRead();refuseProp(Object.keys(all).filter(id=>all[id].status==="attente"&&(!BOARD.kid||(all[id].byName||all[id].by||"?")===BOARD.kid)))});return}
@@ -4080,8 +4179,8 @@ function renderProps(){
   const badge=document.getElementById("propBadge");if(badge){const n=kid?all.filter(([,p])=>p.by===me&&p.status==="attente").length:pend.length;badge.textContent=n?n:"";badge.hidden=!n}
   document.body.classList.toggle("kidmode",kid);kidLabels();
   const ban=document.getElementById("propBanner");
-  if(ban){ban.innerHTML=kid?`<div class="kidban"><b>Profil Enfant</b><span>Tu peux proposer des plats ou un changement de repas : un adulte validera et choisira le jour.</span><button type="button" class="btn sm primary" data-propnew>+ Ma liste d'envies</button></div>`
-    :pend.length?`<div class="kidban adult"><b>${pend.length} proposition${pend.length>1?"s":""} à valider</b><span>${pend.slice(0,3).map(([,p])=>esc((p.byName||"Un enfant")+" : "+(RB[p.recipe]?shortName(RB[p.recipe]):""))).join(" · ")}</span><a class="btn sm primary" href="#propositions">Voir et valider</a></div>`:"";}
+  if(ban){ban.innerHTML=kid?`<div class="kidban"><b>Profil Enfant</b><span>Tu peux proposer des plats, ou échanger deux repas depuis la vue simple de la semaine : un adulte validera.</span><button type="button" class="btn sm primary" data-propnew>+ Ma liste d'envies</button></div>`
+    :pend.length?`<div class="kidban adult"><b>${pend.length} proposition${pend.length>1?"s":""} à valider</b><span>${pend.slice(0,3).map(([,p])=>esc((p.byName||"Un enfant")+" : "+(p.type==="swap"?"un échange de repas":RB[p.recipe]?shortName(RB[p.recipe]):""))).join(" · ")}</span><a class="btn sm primary" href="#propositions">Voir et valider</a></div>`:"";}
   if(kid){
     const mine=all.filter(([,p])=>p.by===me);
     el.innerHTML=`<div class="shophead"><div><h2>Mes propositions</h2><p>Choisis un plat dans le catalogue, dis pour quel repas, et envoie-le aux adultes. Tu verras ici s'il est validé.</p></div><div class="toolbar"><button type="button" class="btn primary" data-propnew>+ Ma liste d'envies</button></div></div>
