@@ -280,6 +280,8 @@ body.dnd-on,body.dnd-on *{cursor:grabbing!important}
 .driveext{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
 .drivenote{margin:0 0 12px;padding:10px 12px;border:1px dashed var(--line);border-radius:12px;font-size:13.5px}
 .aisle li.done label{color:var(--muted);text-decoration:line-through}
+.aisle.bought{column-span:all;margin-top:10px;opacity:.85}.aisle.bought h3{color:var(--muted);border-bottom-color:var(--line)}.aisle.bought h3 small{font-weight:400}
+.aisle.bought li.man{display:flex;align-items:center;gap:6px}.aisle.bought li.man label{flex:1}
 
 /* Modes de repas */
 .ctrl{display:flex;align-items:center;justify-content:space-between;gap:6px;border-top:1px dashed var(--line);padding-top:6px}
@@ -3464,15 +3466,23 @@ function renderShop(){
   const sortDone=arr=>store?arr.slice().sort((a,b)=>(a.done!=null?a.done:!!W.checked[a.ck])-(b.done!=null?b.done:!!W.checked[b.ck])):arr;
   // articles libres
   const man=Object.entries(W.manual||{});
+  // Les articles cochés quittent leur rayon et se retrouvent tout en bas, dans « Déjà achetés »
+  const bought=[];
+  const manLi=([id,t])=>{const ck="m:"+id,done=!!W.checked[ck];return `<li class="${done?"done":""} man"><label><input type="checkbox" data-check="${ck}" ${done?"checked":""}><span>${esc(t)}</span></label>${drv&&!done?driveLink(t):""}${kid?"":`<button type="button" class="xdel" data-mandel="${id}" aria-label="Retirer ${esc(t)}">×</button>`}</li>`};
+  man.filter(([id])=>W.checked["m:"+id]).forEach(m=>bought.push(manLi(m)));
   const manHTML=`<div class="aisle manual"><h3>✍️ À ajouter</h3>${kid?"":`<form class="manadd" data-manform><input type="text" id="manInput" maxlength="60" placeholder="Liquide vaisselle, yaourts, café…" aria-label="Ajouter un article à la liste" autocomplete="off"><button class="btn sm" type="submit">Ajouter</button></form>`}
-    <ul>${sortDone(man.map(([id,t])=>({ck:"m:"+id,id,t}))).map(x=>{const done=!!W.checked[x.ck];return `<li class="${done?"done":""}"><label><input type="checkbox" data-check="${x.ck}" ${done?"checked":""}><span>${esc(x.t)}</span></label>${drv?driveLink(x.t):""}${kid?"":`<button type="button" class="xdel" data-mandel="${x.id}" aria-label="Retirer ${esc(x.t)}">×</button>`}</li>`}).join("")||(kid?'<li class="muted">Rien pour l\'instant.</li>':"")}</ul></div>`;
+    <ul>${man.filter(([id])=>!W.checked["m:"+id]).map(manLi).join("")||(kid&&!man.length?'<li class="muted">Rien pour l\'instant.</li>':"")}</ul></div>`;
   // recettes du catalogue
   const pc=panRead(),pids=panIds();
   const panHTML=ss===2?"":pids.length?`<div class="aisle extra"><h3>📖 En plus, depuis le catalogue</h3><ul class="panlist">${pids.map(id=>`<li><button type="button" class="linkish" data-panopen="${id}">${esc(shortName(RB[id]))}</button><span class="pstep"><button type="button" class="pm" data-pann="${id}" data-d="-1" aria-label="Une portion de moins" ${(pc["r:"+id]||1)<=1?"disabled":""}>−</button><b class="num">${pc["r:"+id]||1}</b><button type="button" class="pm" data-pann="${id}" data-d="1" aria-label="Une portion de plus">+</button></span><button type="button" class="xdel" data-panrm="${id}" aria-label="Retirer ${esc(shortName(RB[id]))}">×</button></li>`).join("")}</ul><p class="aisnote">Leurs ingrédients sont ajoutés aux rayons ci-dessous. <a href="recettes.html">Ajouter une recette du catalogue</a></p></div>`:`<p class="aisnote panhint">Pour acheter les ingrédients d'une recette hors planning, cochez « Ajouter à ma liste de courses » dans le <a href="recettes.html">catalogue</a>.</p>`;
   const OTH=otherNeeds(ss);
-  const aisles=list.length?list.map(([a,items])=>`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${sortDone(items.map(([id,q])=>({id,...SS.st(a,id,q)}))).map(({id,q,ck,done,got,from})=>{
+  const aisleHTML=list.map(([a,items])=>{const rows=items.map(([id,q])=>({id,...SS.st(a,id,q)})),todo=rows.filter(x=>!x.done);
+    rows.filter(x=>x.done).forEach(({id,q,ck})=>bought.push(li(ck,esc(I[id].n),dayTag(baseOf(a,id)),fmt(q,I[id].u,true),true,"")));
+    return todo.length?`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${todo.map(({id,q,ck,done,got,from})=>{
     const h=[dayTag(baseOf(a,id)),a==="op"&&OPTFOR[id]?"avec : "+esc([...OPTFOR[id]].join(", ")):"",a!=="op"?hint(id,q):"",a!=="op"&&PANFOR[id]?"dont "+esc([...PANFOR[id]].join(", ")):"",got?`✓ déjà acheté : ${fmt(got,I[id].u,true)} (courses du ${from})`:"",a!=="op"&&OTH[id]&&I[id].r!=="pl"?`<span class="also">🔁 aussi pour ${daysShort(OTH[id].days)} : + ${fmt(OTH[id].q,I[id].u,true)} (pas dans cette liste)</span>`:""].filter(Boolean).join(" · ");
-    return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true),done,I[id].n)}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
+    return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true),done,I[id].n)}).join("")}</ul></div>`:""}).join("");
+  const boughtHTML=bought.length?`<div class="aisle bought"><h3>✓ Déjà achetés <small>(${bought.length})</small></h3><ul>${bought.join("")}</ul></div>`:"";
+  const aisles=(list.length?aisleHTML||(bought.length?'<p class="muted">Tout est acheté 🎉</p>':""):'<p class="muted">Rien à acheter pour cette sélection.</p>')+boughtHTML;
   const n=list.reduce((t,[a,items])=>t+items.length,0)+man.length,d=list.reduce((t,[a,items])=>t+items.filter(([id,q])=>SS.st(a,id,q).done).length,0)+man.filter(([id])=>W.checked["m:"+id]).length;
   const bud=list.filter(([a])=>a!=="op").reduce((t,[,items])=>t+items.reduce((u,[id,q])=>u+unitPrice(id)*q,0),0)+0;
   const meals=listEntries(ss).filter(e=>e.c.xi==null).reduce((t,e)=>t+e.pers,0);
@@ -3914,7 +3924,7 @@ document.addEventListener("input",e=>{
 document.addEventListener("change",e=>{
   const c=e.target.closest("[data-check]");
   if(c&&c.dataset.check.startsWith("w:")){toggleWeekCheck(c.dataset.check.slice(2),c.checked);save();renderShop();return}
-  if(c){const id=c.dataset.check;if(c.checked)W.checked[id]=1;else delete W.checked[id];save();c.closest("li").classList.toggle("done",c.checked);if(document.body.classList.contains("storemode"))renderShop();return}
+  if(c){const id=c.dataset.check;if(c.checked)W.checked[id]=1;else delete W.checked[id];save();renderShop();return}
   const m=e.target.closest("[data-mode]");
   if(m){setMode(m.dataset.mode,m.value);build("keep");renderAll()}
 });
