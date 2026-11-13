@@ -3366,12 +3366,12 @@ const DKORD=[6,0,1,2,3,4,5,13,7,8,9,10,11,12];
 const dkLab=d=>d<7?DAYS[d].slice(0,3).toLowerCase():DAYS[d-7].slice(0,3).toLowerCase()+" "+dayDate(S.cur+1,d-7).getDate();
 const dayTag=k=>DAYFOR[k]?DKORD.filter(d=>DAYFOR[k].has(d)).map(dkLab).join(", "):"";
 // Repas retenus pour les courses. Par défaut : les repas à venir de la session. On peut en retirer (W.shopOff)
-// ou en ajouter d'autres (W.shopAdd["<session>:<clé>"]) : jour passé, jour de l'autre session, ou jour de la
+// ou en ajouter d'autres (W.shopAdd["<session>:<clé>"]) : jour de l'autre session, ou jour de la
 // semaine suivante (clé préfixée « n: »). Un repas ajouté ailleurs sort de sa liste d'origine. Commun au groupe.
 const offKey=c=>c.sl.key+":"+c.r.id;
 const mkEntry=(c,next)=>({c,next,key:offKey(c),akey:(next?"n:":"")+offKey(c),dk:c.sl.day+(next?7:0),ses:sessionOf(c.sl.day).n,past:!next&&isPastDay(c.sl.day),pers:persOf(c),
   ing:c.r.ing.map(([id,q])=>[id,qtyCook(c,id,q)]),opt:optionsFor(c.r).map(([id])=>[id,optQty(c,id)]).filter(x=>x[1])});
-function shopEntries(){const cur=cooks().map(c=>mkEntry(c,false));let nx=[];try{nx=withWeek(S.cur+1,()=>cooks().map(c=>mkEntry(c,true)))||[]}catch(e){}return cur.concat(nx)}
+function shopEntries(){const cur=cooks().map(c=>mkEntry(c,false)).filter(e=>!e.past);let nx=[];try{nx=withWeek(S.cur+1,()=>cooks().map(c=>mkEntry(c,true)))||[]}catch(e){}return cur.concat(nx)}
 const shopAdded=k=>!!(W.shopAdd&&W.shopAdd[k]);
 const prevTook=key=>{const p=S.weeks[S.cur-1],a=p&&p.shopAdd;return !!(a&&(a["1:n:"+key]||a["2:n:"+key]))};
 const nativeIn=(e,ss)=>!e.next&&e.ses===ss&&!e.past&&!(W.shopOff&&W.shopOff[e.key])&&!shopAdded((3-ss)+":"+e.key)&&!prevTook(e.key);
