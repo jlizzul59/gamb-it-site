@@ -837,6 +837,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .mp-chip:not(.on) .mp-n{text-decoration:line-through}.mp-chip:not(.on) .mp-ic{filter:grayscale(1);opacity:.5}
 .mp-chip:disabled,.mp-day:disabled{cursor:default}
 .mp-help{font-size:12px;color:var(--muted);margin:6px 0 0}
+.mp-sep{margin:10px 0 0;padding-top:10px;border-top:2px solid var(--line);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 .mealsum{font-size:14px;color:var(--muted);margin:0 0 10px}
 .aisle.manual,.aisle.extra{background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px}
 .manadd{display:flex;gap:6px;margin:6px 0}.manadd input{flex:1;min-width:0;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
@@ -3361,15 +3362,32 @@ const panIds=()=>Object.keys(panRead()).filter(k=>k.startsWith("r:")&&RB[k.slice
 let PANFOR={};
 // Jours de cuisine par ingrédient (clé « op-id » pour les accompagnements)
 let DAYFOR={};
-const dayTag=k=>DAYFOR[k]?[6,0,1,2,3,4,5].filter(d=>DAYFOR[k].has(d)).map(d=>DAYS[d].slice(0,3).toLowerCase()).join(", "):"";
-// Repas retenus pour les courses : on peut en retirer un, ou un jour entier (W.shopOff, commun au groupe)
+const DKORD=[6,0,1,2,3,4,5,13,7,8,9,10,11,12];
+const dkLab=d=>d<7?DAYS[d].slice(0,3).toLowerCase():DAYS[d-7].slice(0,3).toLowerCase()+" "+dayDate(S.cur+1,d-7).getDate();
+const dayTag=k=>DAYFOR[k]?DKORD.filter(d=>DAYFOR[k].has(d)).map(dkLab).join(", "):"";
+// Repas retenus pour les courses. Par défaut : les repas à venir de la session. On peut en retirer (W.shopOff)
+// ou en ajouter d'autres (W.shopAdd["<session>:<clé>"]) : jour passé, jour de l'autre session, ou jour de la
+// semaine suivante (clé préfixée « n: »). Un repas ajouté ailleurs sort de sa liste d'origine. Commun au groupe.
 const offKey=c=>c.sl.key+":"+c.r.id;
-const shopIn=c=>!(W.shopOff&&W.shopOff[offKey(c)]);
-// Les repas des jours déjà passés sortent de la liste de courses (cochés ou non)
-const sessCooks=sess=>cooks().filter(c=>(!sess||sessionOf(c.sl.day).n===sess)&&!isPastDay(c.sl.day));
-const shopCooks=sess=>sessCooks(sess).filter(shopIn);
+const mkEntry=(c,next)=>({c,next,key:offKey(c),akey:(next?"n:":"")+offKey(c),dk:c.sl.day+(next?7:0),ses:sessionOf(c.sl.day).n,past:!next&&isPastDay(c.sl.day),pers:persOf(c),
+  ing:c.r.ing.map(([id,q])=>[id,qtyCook(c,id,q)]),opt:optionsFor(c.r).map(([id])=>[id,optQty(c,id)]).filter(x=>x[1])});
+function shopEntries(){const cur=cooks().map(c=>mkEntry(c,false));let nx=[];try{nx=withWeek(S.cur+1,()=>cooks().map(c=>mkEntry(c,true)))||[]}catch(e){}return cur.concat(nx)}
+const shopAdded=k=>!!(W.shopAdd&&W.shopAdd[k]);
+const prevTook=key=>{const p=S.weeks[S.cur-1],a=p&&p.shopAdd;return !!(a&&(a["1:n:"+key]||a["2:n:"+key]))};
+const nativeIn=(e,ss)=>!e.next&&e.ses===ss&&!e.past&&!(W.shopOff&&W.shopOff[e.key])&&!shopAdded((3-ss)+":"+e.key)&&!prevTook(e.key);
+const inList=(e,ss)=>ss===0?inList(e,1)||inList(e,2):nativeIn(e,ss)||shopAdded(ss+":"+e.akey);
+const listEntries=ss=>shopEntries().filter(e=>inList(e,ss));
+function setAdd(k,on){W.shopAdd=W.shopAdd||{};if(on)W.shopAdd[k]=1;else delete W.shopAdd[k];if(!Object.keys(W.shopAdd).length)delete W.shopAdd}
+function setEntry(e,ss,on){
+  if(!on){[1,2].filter(n=>!ss||n===ss).forEach(n=>setAdd(n+":"+e.akey,false));if(inList(e,ss)){W.shopOff=W.shopOff||{};W.shopOff[e.key]=1}return}
+  if(inList(e,ss))return;
+  if(!e.next&&!e.past&&(!ss||e.ses===ss)){if(W.shopOff){delete W.shopOff[e.key];if(!Object.keys(W.shopOff).length)delete W.shopOff}
+    setAdd((3-e.ses)+":"+e.key,false);const p=S.weeks[S.cur-1];if(p&&p.shopAdd){delete p.shopAdd["1:n:"+e.key];delete p.shopAdd["2:n:"+e.key]}}
+  else setAdd((ss||2)+":"+e.akey,true)}
+function shopDefault(ss){const E=shopEntries();E.forEach(e=>[1,2].filter(n=>!ss||n===ss).forEach(n=>setAdd(n+":"+e.akey,false)));
+  E.filter(e=>!e.next&&(!ss||e.ses===ss)).forEach(e=>{if(W.shopOff)delete W.shopOff[e.key]});if(W.shopOff&&!Object.keys(W.shopOff).length)delete W.shopOff}
+const shopCustom=ss=>shopEntries().some(e=>inList(e,ss)!==(!e.next&&!e.past&&(!ss||e.ses===ss)&&!prevTook(e.key)));
 const isPastDay=d=>{const t=new Date();t.setHours(0,0,0,0);const x=dayDate(S.cur,d);x.setHours(0,0,0,0);return x<t};
-function setOff(list,off){W.shopOff=W.shopOff||{};list.forEach(c=>{if(off)W.shopOff[offKey(c)]=1;else delete W.shopOff[offKey(c)]});if(!Object.keys(W.shopOff).length)delete W.shopOff;save();renderShop()}
 let mealsOpen=null;
 // Coches : une par session (1 = dimanche, 2 = mercredi). « Toute la semaine » se déduit des deux :
 // ce qui a été acheté le dimanche est retiré de la vue semaine, et cocher dans la vue semaine coche les deux sessions.
@@ -3389,32 +3407,28 @@ function toggleWeekCheck(b,on){const S2=shopState(0).Q;
   ["0:","1:","2:"].forEach(p=>delete W.checked[p+b]);
   if(on){let any=false;[1,2].forEach(n=>{if(S2[n][b]){W.checked[n+":"+b]=1;any=true}});if(!any)W.checked["0:"+b]=1}}
 function mealPickHTML(ss,store,kid){
-  const gone=[...new Set(cooks().filter(c=>(!ss||sessionOf(c.sl.day).n===ss)&&isPastDay(c.sl.day)).map(c=>c.sl.day))];
-  const goneHTML=gone.length&&!store?`<p class="mp-gone">🗓️ Les repas déjà passés (${[6,0,1,2,3,4,5].filter(d=>gone.includes(d)).map(d=>DAYS[d].slice(0,3).toLowerCase()+".").join(", ")}) ne sont plus dans la liste.</p>`:"";
-  return goneHTML+mealPickInner(ss,store,kid)}
-function mealPickInner(ss,store,kid){
-  const all=sessCooks(ss);if(!all.length)return"";
-  const inc=all.filter(shopIn),nIn=inc.length,nAll=all.length,partial=nIn<nAll;
-  if(mealsOpen===null)mealsOpen=partial;
-  const days=[];all.forEach(c=>{let d=days.find(x=>x.day===c.sl.day);if(!d)days.push(d={day:c.sl.day,items:[]});d.items.push(c)});
-  const sum=nIn===nAll?`Tous les repas (${nAll})`:nIn?`<b>${nIn}</b> repas sur ${nAll}`:"Aucun repas";
-  const dLab=d=>{const x=dayDate(S.cur,d);return DAYS[d].slice(0,3)+". "+x.getDate()};
-  const daysTxt=days.filter(d=>d.items.some(shopIn)).map(d=>dLab(d.day)).join(", ");
-  if(store)return partial?`<p class="mealsum">🍽️ Courses pour : ${esc(daysTxt)||"aucun repas"}</p>`:"";
-  const ro=kid?"disabled":"";
-  const past=all.filter(c=>isPastDay(c.sl.day));
+  const E=shopEntries();if(!E.length)return"";
+  const inc=E.filter(e=>inList(e,ss)),nIn=inc.length,custom=shopCustom(ss);
+  if(mealsOpen===null)mealsOpen=custom;
+  const dLab=dk=>{const x=dayDate(S.cur+(dk>6?1:0),dk%7);return DAYS[dk%7].slice(0,3)+". "+x.getDate()};
+  const daysTxt=DKORD.filter(dk=>inc.some(e=>e.dk===dk)).map(dLab).join(", ");
+  if(store)return custom?`<p class="mealsum">🍽️ Courses pour : ${esc(daysTxt)||"aucun repas"}</p>`:"";
+  const ro=kid?"disabled":"",hasNext=E.some(e=>e.next);
+  const row=dk=>{const it=E.filter(e=>e.dk===dk);if(!it.length)return"";const k=it.filter(e=>inList(e,ss)).length,st=k===it.length?"on":k?"part":"off";
+    return `<div class="mp-row ${st}"><button type="button" class="mp-day" data-mpday="${dk}" aria-pressed="${st!=="off"}" title="${st==="on"?"Retirer":"Ajouter"} toute la journée" ${ro}><b>${DAYS[dk%7].slice(0,3)}.</b><span>${dayDate(S.cur+(dk>6?1:0),dk%7).getDate()}</span>${it[0].past?'<i>passé</i>':""}</button>
+      <div class="mp-chips">${it.map(e=>{const on=inList(e,ss),c=e.c;return `<button type="button" class="mp-chip ${on?"on":""}" data-mpmeal="${esc(e.akey)}" aria-pressed="${on}" ${ro}><span class="mp-ic" aria-hidden="true">${c.xi!=null?"＋":c.sl.when==="Midi"?"☀️":"🌙"}</span><span class="mp-n">${esc(shortName(c.r))}</span></button>`}).join("")}</div></div>`};
   const body=mealsOpen?`<div class="mealpick-b">
-    ${kid?"":`<div class="mp-quick" role="group" aria-label="Sélection rapide"><button type="button" data-mp="all" ${nIn===nAll?"disabled":""}>Tout</button><button type="button" data-mp="none" ${!nIn?"disabled":""}>Rien</button>${past.length?`<button type="button" data-mp="future">Dès aujourd'hui</button>`:""}</div>`}
-    <div class="mp-rows">${days.map(d=>{const k=d.items.filter(shopIn).length,st=k===d.items.length?"on":k?"part":"off";
-      return `<div class="mp-row ${st}"><button type="button" class="mp-day" data-mpday="${d.day}" aria-pressed="${st!=="off"}" title="${st==="off"?"Remettre":"Retirer"} toute la journée" ${ro}><b>${DAYS[d.day].slice(0,3)}.</b><span>${dayDate(S.cur,d.day).getDate()}</span>${isPastDay(d.day)?'<i>passé</i>':""}</button>
-        <div class="mp-chips">${d.items.map(c=>{const on=shopIn(c);return `<button type="button" class="mp-chip ${on?"on":""}" data-mpmeal="${esc(offKey(c))}" aria-pressed="${on}" ${ro}><span class="mp-ic" aria-hidden="true">${c.xi!=null?"＋":c.sl.when==="Midi"?"☀️":"🌙"}</span><span class="mp-n">${esc(shortName(c.r))}</span></button>`}).join("")}</div></div>`}).join("")}</div>
-    <p class="mp-help">${kid?"Seuls les adultes peuvent changer la sélection.":"Touchez un plat pour le retirer de la liste, ou le jour pour toute la journée. Partagé avec le groupe."}</p></div>`:"";
-  return `<div class="mealpick ${partial?"partial":""}"><button type="button" class="mp-head" data-mptoggle aria-expanded="${mealsOpen}"><span>🍽️ <span class="mp-lab">Pour quels repas ?</span> <span class="mp-sum">${sum}</span>${partial&&!mealsOpen?`<small class="mp-days-s">${esc(daysTxt)}</small>`:""}</span><span class="mp-chev" aria-hidden="true">${mealsOpen?"▴":"▾"}</span></button>${body}</div>`;
+    ${kid?"":`<div class="mp-quick" role="group" aria-label="Sélection rapide"><button type="button" data-mp="def" ${custom?"":"disabled"}>Par défaut</button><button type="button" data-mp="none" ${!nIn?"disabled":""}>Rien</button></div>`}
+    <div class="mp-rows">${DKORD.slice(0,7).map(row).join("")}</div>
+    <p class="mp-sep">Semaine suivante</p>
+    ${hasNext?`<div class="mp-rows">${DKORD.slice(7).map(row).join("")}</div>`:`<p class="mp-help">La semaine suivante n'a pas encore de menus : ouvrez-la une fois dans « Semaine », ses jours apparaîtront ici.</p>`}
+    <p class="mp-help">${kid?"Seuls les adultes peuvent changer la sélection.":"Touchez un plat ou un jour pour l'ajouter à cette liste ou l'en retirer. Un repas ajouté ici sort de sa liste d'origine. Partagé avec le groupe."}</p></div>`:"";
+  return `<div class="mealpick ${custom?"partial":""}"><button type="button" class="mp-head" data-mptoggle aria-expanded="${mealsOpen}"><span>🍽️ <span class="mp-lab">Pour quels jours ?</span> <span class="mp-sum">${nIn?`<b>${nIn}</b> repas`:"Aucun repas"}</span>${!mealsOpen&&daysTxt?`<small class="mp-days-s">${esc(daysTxt)}</small>`:""}</span><span class="mp-chev" aria-hidden="true">${mealsOpen?"▴":"▾"}</span></button>${body}</div>`;
 }
 function shopping(sess){
   const tot={},opt={};OPTFOR={};PANFOR={};DAYFOR={};
   if(sess!==2){const pc=panRead();panIds().forEach(id=>{const r=RB[id],n=pc["r:"+id]||1;r.ing.forEach(([i,q])=>{tot[i]=(tot[i]||0)+q*n;(PANFOR[i]=PANFOR[i]||new Set()).add(shortName(r))})})}
-  shopCooks(sess).forEach(c=>{c.r.ing.forEach(([id,q])=>{tot[id]=(tot[id]||0)+qtyCook(c,id,q);(DAYFOR[id]=DAYFOR[id]||new Set()).add(c.sl.day)});optionsFor(c.r).forEach(([id])=>{const v=optQty(c,id);if(v){opt[id]=(opt[id]||0)+v;(OPTFOR[id]=OPTFOR[id]||new Set()).add(shortName(c.r));(DAYFOR["op-"+id]=DAYFOR["op-"+id]||new Set()).add(c.sl.day)}})});
+  listEntries(sess).forEach(e=>{e.ing.forEach(([id,q])=>{tot[id]=(tot[id]||0)+q;(DAYFOR[id]=DAYFOR[id]||new Set()).add(e.dk)});e.opt.forEach(([id,v])=>{opt[id]=(opt[id]||0)+v;(OPTFOR[id]=OPTFOR[id]||new Set()).add(shortName(e.c.r));(DAYFOR["op-"+id]=DAYFOR["op-"+id]||new Set()).add(e.dk)})});
   const by={};
   Object.entries(tot).forEach(([id,q])=>{const r=I[id].r;(by[r]=by[r]||[]).push([id,q])});
   if(Object.keys(opt).length)by.op=Object.entries(opt);
@@ -3438,7 +3452,7 @@ document.addEventListener("click",e=>{
 });
 // Ingrédients aussi utiles pour des repas hors de cette liste (autre session, repas retirés) : à signaler sur la ligne
 function otherNeeds(ss){const out={};
-  cooks().filter(c=>!((ss===0||sessionOf(c.sl.day).n===ss)&&shopIn(c))&&!isPastDay(c.sl.day)).forEach(c=>c.r.ing.forEach(([id,q])=>{const o=out[id]=out[id]||{q:0,days:new Set()};o.q+=qtyCook(c,id,q);o.days.add(c.sl.day)}));
+  shopEntries().filter(e=>!e.next&&!e.past&&!inList(e,ss)).forEach(e=>e.ing.forEach(([id,q])=>{const o=out[id]=out[id]||{q:0,days:new Set()};o.q+=q;o.days.add(e.c.sl.day)}));
   return out}
 const daysShort=s=>[6,0,1,2,3,4,5].filter(d=>s.has(d)).map(d=>DAYS[d].slice(0,3).toLowerCase()+".").join(", ");
 function renderShop(){
@@ -3461,7 +3475,7 @@ function renderShop(){
     return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true),done,I[id].n)}).join("")}</ul></div>`).join(""):'<p class="muted">Rien à acheter pour cette sélection.</p>';
   const n=list.reduce((t,[a,items])=>t+items.length,0)+man.length,d=list.reduce((t,[a,items])=>t+items.filter(([id,q])=>SS.st(a,id,q).done).length,0)+man.filter(([id])=>W.checked["m:"+id]).length;
   const bud=list.filter(([a])=>a!=="op").reduce((t,[,items])=>t+items.reduce((u,[id,q])=>u+unitPrice(id)*q,0),0)+0;
-  const meals=shopCooks(ss).filter(c=>c.xi==null).reduce((t,c)=>t+persOf(c),0);
+  const meals=listEntries(ss).filter(e=>e.c.xi==null).reduce((t,e)=>t+e.pers,0);
   const budHTML=store||!bud?"":`<div class="budget"><b>💶 Budget estimé : ≈ ${euro(bud)}</b>${meals?`<span class="muted"> · ≈ ${euro(bud/meals)} par repas et par personne</span>`:""}<small class="muted">Prix moyens en supermarché, hors placard. Pour dépenser moins : Groupe › règle « Semaine économique ».</small></div>`;
   // articles restant à acheter, pour l'extension « Semainier → Drive Auchan »
   window._driveItems=drv?list.filter(([a])=>a!=="op").flatMap(([a,items])=>items.map(([id,q])=>({id,...SS.st(a,id,q)})).filter(x=>!x.done&&x.q>0).map(x=>({key:x.id,q:driveQ(I[x.id].n),label:I[x.id].n,need:fmt(x.q,I[x.id].u,true),amt:x.q,u:I[x.id].u}))).concat(man.filter(([id])=>!W.checked["m:"+id]).map(([id,t])=>({key:"m:"+norm(t),q:driveQ(t),label:t,need:"",amt:0,u:""}))):[];
@@ -3887,10 +3901,9 @@ document.addEventListener("click",e=>{
   const us=e.target.closest("[data-unskip]");if(us){setMode(us.dataset.unskip,"cook");build("keep");renderAll();return}
   const ss=e.target.closest("[data-sess]");if(ss){W.shopSess=+ss.dataset.sess;save();renderShop();return}
   if(e.target.closest("[data-mptoggle]")){mealsOpen=!mealsOpen;renderShop();return}
-  const mpm=e.target.closest("[data-mpmeal]");if(mpm&&!isKid()){const c=sessCooks(W.shopSess??1).find(x=>offKey(x)===mpm.dataset.mpmeal);if(c)setOff([c],shopIn(c));return}
-  const mpd=e.target.closest("[data-mpday]");if(mpd&&!isKid()){const l=sessCooks(W.shopSess??1).filter(c=>c.sl.day===+mpd.dataset.mpday);setOff(l,l.every(shopIn));return}
-  const mpq=e.target.closest("[data-mp]");if(mpq&&!isKid()){const l=sessCooks(W.shopSess??1),v=mpq.dataset.mp;
-    if(v==="all")setOff(l,false);else if(v==="none")setOff(l,true);else{setOff(l.filter(c=>!isPastDay(c.sl.day)),false);setOff(l.filter(c=>isPastDay(c.sl.day)),true)}return}
+  const mpm=e.target.closest("[data-mpmeal]");if(mpm&&!isKid()){const ss=W.shopSess??1,x=shopEntries().find(x=>x.akey===mpm.dataset.mpmeal);if(x){setEntry(x,ss,!inList(x,ss));save();renderShop()}return}
+  const mpd=e.target.closest("[data-mpday]");if(mpd&&!isKid()){const ss=W.shopSess??1,l=shopEntries().filter(x=>x.dk===+mpd.dataset.mpday),on=!l.every(x=>inList(x,ss));l.forEach(x=>setEntry(x,ss,on));save();renderShop();return}
+  const mpq=e.target.closest("[data-mp]");if(mpq&&!isKid()){const ss=W.shopSess??1;if(mpq.dataset.mp==="def")shopDefault(ss);else shopEntries().forEach(x=>setEntry(x,ss,false));save();renderShop();return}
   const p=e.target.closest("[data-pref]");
   if(p){const id=p.dataset.pref,v=S.prefs[id];S.prefs[id]=v===1?-1:v===-1?0:1;if(!S.prefs[id])delete S.prefs[id];build("keep");renderAll()}
 });
