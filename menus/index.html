@@ -181,12 +181,6 @@ body.dnd-on,body.dnd-on *{cursor:grabbing!important}
 .mp-gone{margin:0 0 10px;font-size:13px;color:var(--muted)}
 @media (min-width:641px){.top .tabrow{display:flex;align-items:center;gap:12px}.top .tabrow .weekbar.wb-top{margin-left:auto;flex-wrap:nowrap}.weekbar.wb-top .wnow{white-space:nowrap}}
 @media (max-width:640px){.view > .weekbar{position:sticky;top:var(--hdrh,56px);z-index:4;background:var(--bg);margin:0 -16px 10px;padding:8px 16px;border-bottom:1px solid var(--line);box-shadow:0 6px 12px -10px rgba(0,0,0,.25)}}
-.tag.tm{background:#E7EEF7;color:#2C4E7A}
-.tmblock{margin:14px 0 0;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
-.tmblock>summary{cursor:pointer;padding:10px 14px;font-weight:700;color:#2C4E7A;list-style:none}.tmblock>summary::-webkit-details-marker{display:none}
-.tmblock>summary small{font-weight:500;color:var(--muted)}
-.tmsteps{margin:0;padding:0 16px 0 34px;line-height:1.5}.tmsteps li{margin:6px 0;display:list-item!important}.tmsteps li::before{content:none!important;display:none!important}
-.tmnote{margin:8px 14px;font-size:12.5px;color:var(--muted)}.tmblock .cookb{margin:4px 14px 14px}
 .pasthide{grid-column:1/-1;justify-self:start;background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:0}
 .day{display:flex;flex-direction:column;gap:8px;min-width:0}
 .dayhead{display:flex;justify-content:space-between;align-items:baseline;padding:0 2px 6px;border-bottom:2px solid var(--ink)}
@@ -1138,7 +1132,7 @@ body.storemode #shop .hint{font-size:13px}
 <textarea id="copyArea" style="position:fixed;left:-9999px;top:0" aria-hidden="true" tabindex="-1"></textarea>
 
 <script src="recettes-plus.js?v=20261109b"></script>
-<script src="cuisine.js?v=20261113b"></script>
+<script src="cuisine.js?v=20261113c"></script>
 <script src="cote.js?v=20261113a"></script>
 <script src="desserts.js?v=20261110a"></script>
 <script>
@@ -3070,7 +3064,7 @@ const qWords=q=>norm(q).split(/[\s,;'’\-]+/).filter(w=>w&&!QSTOP.has(w)).map(w
 const qMatch=(q,text)=>{const t=norm(text),ws=qWords(q);return ws.every(w=>t.includes(w))};
 const shortName=r=>r.n.split(",")[0];
 const MONTH=()=>dayDate(S.cur||0,3).getMonth()+1;
-const tagAll=r=>(r.mine?'<span class="tag maison" title="Recette ajoutée par votre groupe">🏠 Maison</span>':"")+(seasonOf(r,MONTH()).s==="saison"?'<span class="tag saison" title="Légumes ou fruits de saison">🌱 De saison</span>':"")+((r.temp||tempOf(r))==="froid"?'<span class="tag froid" title="Se mange froid">❄️ Froid</span>':'<span class="tag chaud" title="Se mange chaud">🔥 Chaud</span>')+(r.simple?'<span class="tag simple">Tout simple</span>':"")+(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"")+(window.isTM&&isTM(r)?'<span class="tag tm" title="Se fait entièrement au Thermomix (étapes en option dans la recette)">🤖 Thermomix</span>':"");
+const tagAll=r=>(r.mine?'<span class="tag maison" title="Recette ajoutée par votre groupe">🏠 Maison</span>':"")+(seasonOf(r,MONTH()).s==="saison"?'<span class="tag saison" title="Légumes ou fruits de saison">🌱 De saison</span>':"")+((r.temp||tempOf(r))==="froid"?'<span class="tag froid" title="Se mange froid">❄️ Froid</span>':'<span class="tag chaud" title="Se mange chaud">🔥 Chaud</span>')+(r.simple?'<span class="tag simple">Tout simple</span>':"")+(r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':"")+(isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':"")+(isVege(r)?'<span class="tag vege">Végétarien</span>':"");
 // Carte compacte : les étiquettes les plus utiles d'abord (« chaud » est la règle, on ne l'affiche pas)
 const TAGPRIO=["maison","froid","leger","simple","vege","plaisir","saison"];
 const tagHTML=(r,max)=>{const h=tagAll(r);if(!max)return h;const m=(h.match(/<span class="tag[^>]*>.*?<\/span>/g)||[]).map(x=>[TAGPRIO.indexOf((x.match(/class="tag (\w+)/)||[])[1]),x]).filter(x=>x[0]>=0).sort((a,b)=>a[0]-b[0]);return m.slice(0,max).map(x=>x[1]).join("")};
@@ -3265,20 +3259,16 @@ function recipeHTML(c,modal){
     <div class="rpers">${c.xi!=null?`<span>Portions</span><span class="pstep"><button type="button" class="pm" data-xpers="${c.sl.key}|${c.xi}" data-d="-1" aria-label="Une portion de moins" ${c.n<=1?"disabled":""}>−</button><b class="num">${c.n}</b><button type="button" class="pm" data-xpers="${c.sl.key}|${c.xi}" data-d="1" aria-label="Une portion de plus" ${c.n>=12?"disabled":""}>+</button></span><span class="muted">En plus du plat principal</span>`:`<span>Personnes</span><span class="pstep"><button type="button" class="pm" data-pers="${c.sl.key}" data-d="-1" aria-label="Une personne de moins" ${PN(c.sl)<=1?"disabled":""}>−</button><b class="num ${W.pers&&W.pers[c.sl.key]?"custom":""}">${PN(c.sl)}</b><button type="button" class="pm" data-pers="${c.sl.key}" data-d="1" aria-label="Une personne de plus" ${PN(c.sl)>=12?"disabled":""}>+</button></span>`}${extra.length?`<span class="muted">+ ${extra.reduce((a,e)=>a+PN(e),0)} pour les restes · ${pers} portions au total</span>`:""}</div></div>
     <div class="rcook"><button type="button" class="cookb" data-cookslot="${c.sl.key}${c.xi!=null?"|"+c.xi:""}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button></div>
     <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings">${ing}${optLines}</ul></div><div><h4>Préparation</h4>${bmodeHTML()}<div class="bmwrap ${bmode()==="batch"?"bm-batch":""}"><div class="pane-j"><ol class="steps">${stepsWithFiches(r.st)}${optStepHTML(r,pers)}</ol></div>
-    <div class="pane-b">${batchBlockHTML(r,(id,q)=>fmt(qtyBase(c,id,q),I[id].u,false),"session du "+sessionOf(c.sl.day).short)}</div></div>${tmHTML(r)}</div></div>
+    <div class="pane-b">${batchBlockHTML(r,(id,q)=>fmt(qtyBase(c,id,q),I[id].u,false),"session du "+sessionOf(c.sl.day).short)}</div></div></div></div>
   </article>`;
 }
-// Mode cuisine avec les étapes Thermomix
-document.addEventListener("click",ev=>{const b=ev.target.closest&&ev.target.closest("[data-cooktm]");if(!b)return;const r=RB[b.dataset.cooktm];if(!r||!window.tmSteps)return;ev.preventDefault();ev.stopPropagation();
-  const n=typeof servings!=="undefined"?servings:(()=>{try{const c=cooks().find(x=>x.r.id===r.id);return c?persOf(c):4}catch(_){return 4}})();
-  COOK.open({title:r.n,sub:"Au Thermomix · "+n+" portion"+(n>1?"s":""),steps:tmSteps(r),opt:[],ings:r.ing.map(([id,q])=>({q:fmt(q*n,I[id].u),v:q*n,u:I[id].u,name:I[id].n}))})},true);
 function renderRecipes(){const cs=cooks();const el=document.getElementById("reclist");el.innerHTML=cs.length?cs.map(c=>recipeHTML(c,false)).join(""):'<p class="muted">Aucun repas prévu cette semaine.</p>';ART.hydrate(el)}
 
 // ---------- Catalogue ----------
 let catQ="",catF=new Set(),catKey=null;
-const FILTERS=[["all","Tout"],["fav","♥ Favoris"],["top","Mes mieux notées"],["ok","Compatibles avec mes goûts"],["plaisir","Gourmand"],["leger","🪶 Léger"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"],["simple","Tout simple"],["soupe","Soupes"],["saison","🌱 De saison"],["chaud","🔥 Chaud"],["froid","❄️ Froid"],["cote","🥫 Sauces & à-côtés"],["tm","🤖 Thermomix"]].concat(REGIONS.map(g=>["reg:"+g,g]));
+const FILTERS=[["all","Tout"],["fav","♥ Favoris"],["top","Mes mieux notées"],["ok","Compatibles avec mes goûts"],["plaisir","Gourmand"],["leger","🪶 Léger"],["vege","Végétarien"],["poisson","Poisson"],["viande","Viande"],["rapide","25 min ou moins"],["simple","Tout simple"],["soupe","Soupes"],["saison","🌱 De saison"],["chaud","🔥 Chaud"],["froid","❄️ Froid"],["cote","🥫 Sauces & à-côtés"]].concat(REGIONS.map(g=>["reg:"+g,g]));
 // Filtres cumulables : ET entre familles, OU dans une même famille (Végétarien ou Poisson, Asie ou Italie…)
-const CATPRED={fav:r=>isFav(r.id),top:r=>noteOf(r.id)>=4,ok:r=>allowed(r),plaisir:r=>r.tag==="plaisir",leger:r=>isLight(r),vege:r=>isVege(r),poisson:r=>isFish(r),viande:r=>!isVege(r)&&!isFish(r),rapide:r=>r.t<=25,simple:r=>!!r.simple,soupe:r=>SOUP_RX.test(r.n),chaud:r=>(r.temp||tempOf(r))==="chaud",froid:r=>(r.temp||tempOf(r))==="froid",saison:r=>seasonOf(r,MONTH()).s==="saison",cote:r=>!!r.cote,tm:r=>isTM(r)};
+const CATPRED={fav:r=>isFav(r.id),top:r=>noteOf(r.id)>=4,ok:r=>allowed(r),plaisir:r=>r.tag==="plaisir",leger:r=>isLight(r),vege:r=>isVege(r),poisson:r=>isFish(r),viande:r=>!isVege(r)&&!isFish(r),rapide:r=>r.t<=25,simple:r=>!!r.simple,soupe:r=>SOUP_RX.test(r.n),chaud:r=>(r.temp||tempOf(r))==="chaud",froid:r=>(r.temp||tempOf(r))==="froid",saison:r=>seasonOf(r,MONTH()).s==="saison",cote:r=>!!r.cote};
 const catFam=v=>v.startsWith("reg:")?"reg":["vege","poisson","viande"].includes(v)?"prot":["chaud","froid"].includes(v)?"temp":v;
 function catMatches(r){
   if(catQ&&!qMatch(catQ,r.n))return false;

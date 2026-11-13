@@ -1,6 +1,6 @@
 // Service worker de Think’n’Cook : fonctionne hors ligne et affiche les rappels.
-const VERSION = "semainier-2026-11-13c";
-const CORE = ["./", "index.html", "recettes.html", "recevoir.html", "recettes-plus.js?v=20261109b", "desserts.js?v=20261110a", "cuisine.js?v=20261113b", "cote.js?v=20261113a", "manifest.webmanifest", "tnc-icon-192.png", "tnc-icon-512.png"];
+const VERSION = "semainier-2026-11-13d";
+const CORE = ["./", "index.html", "recettes.html", "recevoir.html", "recettes-plus.js?v=20261109b", "desserts.js?v=20261110a", "cuisine.js?v=20261113c", "cote.js?v=20261113a", "manifest.webmanifest", "tnc-icon-192.png", "tnc-icon-512.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
