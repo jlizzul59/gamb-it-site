@@ -1,0 +1,228 @@
+# Recettes « à côté » (sauces, terrines, gravlax, condiments, bases) -> menus/cote.js
+# Quantités pour 1 portion, comme le reste du catalogue.
+import json
+I={
+ "foiegras":{"n":"Foie gras de canard cru (lobe déveiné)","r":"bo","u":"g","k":4.6,"c":"Viandes"},
+ "foievolaille":{"n":"Foies de volaille","r":"bo","u":"g","k":1.2,"c":"Viandes"},
+ "selfin":{"n":"Sel fin","r":"pl","u":"g","k":0},
+ "grossel":{"n":"Gros sel","r":"pl","u":"g","k":0},
+ "poivre":{"n":"Poivre noir moulu","r":"pl","u":"g","k":2.5},
+ "poivregrains":{"n":"Poivre noir en grains","r":"pl","u":"cc","k":6},
+ "armagnac":{"n":"Armagnac ou cognac","r":"co","u":"ml","k":2.3},
+ "porto":{"n":"Porto ou sauternes","r":"co","u":"ml","k":1.6},
+ "huilen":{"n":"Huile neutre (tournesol, colza)","r":"pl","u":"cs","k":120},
+ "anchois":{"n":"Filets d'anchois à l'huile","r":"co","u":"g","k":2.1},
+ "olivesnoires":{"n":"Olives noires dénoyautées","r":"co","u":"g","k":1.5},
+ "figuessech":{"n":"Figues séchées","r":"co","u":"g","k":2.5,"c":"Fruits secs"},
+ "vinaigrecidre":{"n":"Vinaigre de cidre","r":"pl","u":"cs","k":3},
+ "levureb":{"n":"Levure de boulanger sèche (sachet)","r":"pl","u":"pc","k":20},
+ "cremeepaisse":{"n":"Crème fraîche épaisse","r":"cr","u":"g","k":3},
+}
+R=[]
+def add(id,n,cat,p,t,ing,st,temp="froid",w=None,tag=None):
+    r={"id":"c_"+id,"n":n,"pays":cat,"p":p,"t":t,"ing":ing,"st":st,"temp":temp}
+    if w:r["w"]=w
+    if tag:r["tag"]=tag
+    R.append(r)
+SC,SF,TD,TF,PM,CO,BA="Sauces chaudes","Sauces froides","Tartinables & dips","Terrines & foie gras","Poissons marinés","Condiments & conserves","Bases maison"
+# ---------- Sauces chaudes ----------
+add("bechamel","Béchamel maison",SC,"vege",15,[["beurre",10],["farine",10],["lait",125],["muscade",0.1]],[
+ "Faire fondre le beurre dans une casserole à feu moyen, sans le laisser colorer.",
+ "Ajouter la farine d'un coup et mélanger au fouet 1 minute : c'est le roux.",
+ "Hors du feu, verser un tiers du lait froid en fouettant fort, puis remettre sur le feu et ajouter le reste petit à petit.",
+ "Laisser épaissir 5 à 8 minutes à feu doux sans cesser de fouetter.",
+ "Saler, poivrer, râper la muscade. Utiliser aussitôt ou couvrir d'un film au contact."],"chaud")
+add("saucetomate","Sauce tomate maison",SC,"vege",30,[["tomatecc",100],["oignon",25],["ail",0.5],["huile",0.5],["herbes",0.25],["sucre",0.1]],[
+ "Éplucher et émincer finement l'oignon et l'ail.",
+ "Faire fondre l'oignon 5 minutes dans l'huile d'olive à feu moyen, ajouter l'ail 30 secondes.",
+ "Verser les tomates concassées, les herbes, une pincée de sucre et de sel.",
+ "Laisser mijoter 20 minutes à découvert en remuant de temps en temps, jusqu'à ce que la sauce épaississe.",
+ "Poivrer, goûter, mixer si on la veut lisse. Se garde 3 jours au frigo ou 3 mois au congélateur."],"chaud")
+add("bearnaise","Sauce béarnaise",SC,"vege",25,[["echalote",10],["estragon",0.15],["vinaigre",0.5],["vinblanc",10],["oeuf",0.5],["beurre",30]],[
+ "Ciseler très finement l'échalote et la moitié de l'estragon.",
+ "Les mettre dans une petite casserole avec le vinaigre, le vin blanc et un tour de poivre. Faire réduire à feu doux jusqu'à ce qu'il ne reste presque plus de liquide. Laisser tiédir.",
+ "Faire fondre le beurre doucement à part, et retirer l'écume blanche qui monte.",
+ "Ajouter les jaunes d'œufs et une cuillère d'eau à la réduction tiède. Fouetter sur feu très doux (ou au bain-marie) jusqu'à ce que le mélange mousse et épaississe : il ne doit jamais bouillir.",
+ "Hors du feu, verser le beurre fondu en filet en fouettant sans arrêt.",
+ "Ajouter le reste d'estragon ciselé, saler. Servir tiède avec une viande grillée ou des frites.",
+ "Si elle tourne (elle devient liquide et granuleuse) : fouetter un glaçon dedans, ou repartir d'un jaune et y verser la sauce petit à petit."],"chaud")
+add("hollandaise","Sauce hollandaise",SC,"vege",15,[["oeuf",0.5],["beurre",30],["citron",0.1]],[
+ "Faire fondre le beurre doucement et retirer l'écume blanche.",
+ "Dans une casserole à fond épais, fouetter les jaunes d'œufs avec une cuillère d'eau froide.",
+ "Fouetter sur feu très doux (ou au bain-marie) jusqu'à obtenir une mousse épaisse et pâle (le « sabayon ») : retirer du feu dès que ça devient trop chaud au doigt.",
+ "Hors du feu, verser le beurre fondu en filet en fouettant sans arrêt.",
+ "Ajouter le jus de citron, saler, poivrer. Servir aussitôt avec des asperges, un poisson ou des œufs pochés."],"chaud")
+add("poivre","Sauce au poivre",SC,"vege",15,[["echalote",10],["poivregrains",0.25],["armagnac",10],["bouillon",0.1],["cremeliquide",40]],[
+ "Concasser le poivre en grains : l'écraser grossièrement avec le fond d'une casserole.",
+ "Faire fondre l'échalote ciselée dans la poêle où la viande a cuit (ou avec une noisette de beurre), 2 minutes.",
+ "Ajouter le poivre, puis l'armagnac. Le faire bouillir 30 secondes pour évaporer l'alcool (adultes seulement : ne jamais flamber sans adulte, et éloigner la hotte).",
+ "Verser un fond de bouillon (un demi-cube dans 10 cl d'eau pour 4) et gratter le fond de la poêle pour déglacer.",
+ "Ajouter la crème, laisser réduire 3 à 4 minutes jusqu'à ce que la sauce nappe la cuillère. Saler."],"chaud")
+add("beurreblanc","Beurre blanc",SC,"vege",20,[["echalote",10],["vinblanc",20],["vinaigre",0.5],["beurre",30]],[
+ "Ciseler très finement l'échalote.",
+ "La faire réduire dans une petite casserole avec le vin blanc et le vinaigre, à feu moyen, jusqu'à ce qu'il ne reste qu'une cuillère de liquide.",
+ "Baisser le feu au minimum. Ajouter le beurre bien froid coupé en dés, petit à petit, en fouettant : chaque morceau doit fondre avant d'ajouter le suivant.",
+ "La sauce devient crémeuse et brillante : saler, poivrer. Elle ne doit jamais bouillir.",
+ "Servir tout de suite avec un poisson blanc ou des noix de Saint-Jacques."],"chaud")
+add("roquefort","Sauce au bleu",SC,"vege",10,[["bleu",25],["cremeliquide",40]],[
+ "Émietter le bleu dans une petite casserole.","Ajouter la crème et faire fondre à feu doux en remuant.",
+ "Laisser frémir 2 minutes pour épaissir. Poivrer (pas de sel : le fromage est déjà salé).","Parfaite avec une viande grillée, des pâtes ou des pommes de terre."],"chaud")
+add("teriyaki","Sauce teriyaki",SC,"vege",10,[["soja",1.5],["mirin",1],["sucre",0.5],["gingembref",3],["maizena",1]],[
+ "Râper le gingembre frais.","Dans une petite casserole, mélanger la sauce soja, le mirin, le sucre, le gingembre et 2 cuillères d'eau.",
+ "Porter à frémissement.","Délayer la Maïzena dans une cuillère d'eau froide, la verser en remuant : la sauce épaissit en 1 minute.",
+ "Utiliser pour laquer du poulet, du saumon ou des légumes sautés. Se garde une semaine au frigo."],"chaud")
+add("bbq","Sauce barbecue maison",SC,"vege",15,[["ketchup",1.5],["miel",0.5],["vinaigrecidre",0.5],["soja",0.25],["paprikafume",0.25],["ail",0.25]],[
+ "Écraser l'ail.","Mettre tous les ingrédients dans une petite casserole avec 2 cuillères d'eau.",
+ "Laisser mijoter 10 minutes à feu doux en remuant : la sauce épaissit et brille.",
+ "Laisser refroidir. Se garde 2 semaines au frigo dans un pot fermé."],"chaud")
+add("satay","Sauce cacahuète (satay)",SC,"vege",10,[["beurrecacahuete",1],["coco",40],["soja",0.5],["citronvert",0.25],["sucre",0.25],["piment",0.1]],[
+ "Mettre le beurre de cacahuète et le lait de coco dans une petite casserole.","Chauffer doucement en fouettant jusqu'à ce que ce soit lisse.",
+ "Ajouter la sauce soja, le sucre, le jus de citron vert et le piment.","Laisser épaissir 2 minutes. Servir tiède avec des brochettes, des rouleaux de printemps ou des nouilles."],"chaud")
+# ---------- Sauces froides ----------
+add("mayo","Mayonnaise maison",SF,"vege",10,[["oeuf",0.15],["moutarde",0.1],["huilen",1.5],["vinaigre",0.05]],[
+ "Sortir l'œuf et la moutarde du frigo 30 minutes avant : tout doit être à la même température.",
+ "Dans un bol, mettre le jaune d'œuf, la moutarde, du sel et du poivre.",
+ "Verser l'huile en tout petit filet en fouettant sans arrêt (au batteur, c'est plus facile).",
+ "Quand elle épaissit, verser un peu plus vite. Finir avec quelques gouttes de vinaigre.",
+ "Se garde 24 heures au frigo, pas plus (œuf cru)."])
+add("aioli","Aïoli",SF,"vege",15,[["ail",1],["oeuf",0.15],["huile",1],["huilen",0.5],["citron",0.05]],[
+ "Éplucher l'ail, retirer le germe vert, et l'écraser en purée avec une pincée de sel (au mortier ou au presse-ail).",
+ "Ajouter le jaune d'œuf et mélanger.",
+ "Verser les huiles en tout petit filet en fouettant sans arrêt, comme une mayonnaise.",
+ "Finir avec un peu de jus de citron. Servir avec des légumes vapeur, un poisson poché ou des œufs durs (la fameuse « aïoli » provençale)."])
+add("tartare","Sauce tartare",SF,"vege",10,[["mayo",1.5],["cornichons",8],["capres",3],["echalote",5],["persil",0.05],["estragon",0.05]],[
+ "Hacher finement les cornichons, les câpres, l'échalote et les herbes.","Les mélanger à la mayonnaise.",
+ "Poivrer, goûter. Laisser reposer 30 minutes au frigo pour que les parfums se mélangent.","Avec un poisson pané, des frites ou un tartare de bœuf."])
+add("vinaigrette","Vinaigrette moutarde-miel",SF,"vege",5,[["moutarde",0.15],["miel",0.1],["vinaigre",0.5],["huile",1.5]],[
+ "Dans un pot à confiture, mettre la moutarde, le miel, le vinaigre, du sel et du poivre.",
+ "Fermer et secouer pour dissoudre le sel.","Ajouter l'huile, refermer et secouer fort 10 secondes.",
+ "Se garde une semaine au frigo. Secouer avant de servir."])
+add("vierge","Sauce vierge",SF,"vege",10,[["tomate",60],["echalote",5],["basilic",0.1],["citron",0.15],["huile",1.5]],[
+ "Couper les tomates en tout petits dés (en retirant les pépins si elles sont très juteuses).",
+ "Ciseler l'échalote et le basilic.","Mélanger avec le jus de citron et l'huile d'olive. Saler, poivrer.",
+ "Servir à température ambiante sur un poisson grillé, des pâtes ou une viande blanche."])
+add("chimichurri","Chimichurri",SF,"vege",10,[["persil",0.25],["ail",0.5],["origan",0.25],["vinaigre",0.5],["huile",2],["piment",0.1]],[
+ "Hacher très finement le persil et l'ail.","Mélanger avec l'origan, le piment, le vinaigre, l'huile, du sel et du poivre.",
+ "Laisser reposer au moins 30 minutes : c'est meilleur.","La sauce argentine pour les viandes grillées. Se garde 3 jours au frigo."])
+add("chien","Sauce chien",SF,"vege",10,[["oignon",15],["ail",0.25],["persil",0.15],["ciboulette",0.1],["citronvert",0.3],["piment",0.1],["huilen",1]],[
+ "Hacher très finement l'oignon, l'ail, le persil et la ciboulette.","Les mettre dans un bol avec le piment, le jus de citron vert et l'huile. Saler, poivrer.",
+ "Verser 2 cuillères d'eau bouillante dessus et mélanger : c'est le secret de la sauce antillaise.","Laisser refroidir. Avec du poisson grillé, du poulet ou des accras."])
+add("tzatziki","Tzatziki",SF,"vege",10,[["yaourt",80],["concombre",50],["ail",0.25],["aneth",0.05],["menthe",0.05],["huile",0.25]],[
+ "Râper le concombre avec la peau, le saler et le laisser égoutter 10 minutes dans une passoire. Le presser entre les mains pour enlever l'eau.",
+ "Écraser l'ail.","Mélanger le yaourt, le concombre, l'ail et les herbes ciselées.","Arroser d'un filet d'huile d'olive. Servir frais avec des grillades, des pitas ou des crudités."])
+add("yaourtsauce","Sauce yaourt, citron et herbes",SF,"vege",5,[["yaourt",60],["citron",0.1],["ciboulette",0.1],["persil",0.05]],[
+ "Ciseler la ciboulette et le persil.","Mélanger avec le yaourt et le jus de citron. Saler, poivrer.","Légère et fraîche, pour les falafels, les pommes de terre ou les salades."])
+# ---------- Tartinables & dips ----------
+add("houmous","Houmous maison",TD,"poischiches",10,[["poischiches",60],["tahin",0.5],["citron",0.15],["ail",0.15],["cumin",0.1],["huile",0.5]],[
+ "Égoutter les pois chiches en gardant un peu de leur jus.",
+ "Les mixer avec le tahini, le jus de citron, l'ail, le cumin et du sel.",
+ "Ajouter le jus des pois chiches cuillère par cuillère jusqu'à obtenir une crème lisse.",
+ "Servir avec un filet d'huile d'olive et une pincée de paprika. 4 jours au frigo."])
+add("guacamole","Guacamole",TD,"vege",10,[["avocat",0.5],["citronvert",0.25],["oignonrouge",10],["tomate",20],["coriandre",0.05],["piment",0.05]],[
+ "Ciseler finement l'oignon rouge et la coriandre, couper la tomate en petits dés.",
+ "Couper l'avocat en deux, retirer le noyau, récupérer la chair à la cuillère.",
+ "L'écraser à la fourchette avec le jus de citron vert (il empêche de noircir).",
+ "Mélanger avec le reste, saler, pimenter à son goût.","À faire au dernier moment, ou couvrir d'un film au contact."])
+add("caviaraub","Caviar d'aubergine",TD,"vege",50,[["aubergine",150],["ail",0.25],["citron",0.1],["huile",1],["cumin",0.1],["persil",0.05]],[
+ "Préchauffer le four à 200 °C.","Couper les aubergines en deux dans la longueur, quadriller la chair au couteau, arroser d'un peu d'huile.",
+ "Les cuire 40 minutes face coupée sur la plaque : la chair doit être très fondante.",
+ "Récupérer la chair à la cuillère, l'écraser à la fourchette avec l'ail écrasé, le citron, le cumin et l'huile.",
+ "Saler, poivrer, parsemer de persil. Avec du pain grillé ou des crudités."])
+add("tapenade","Tapenade",TD,"vege",10,[["olivesnoires",40],["capres",4],["anchois",4],["ail",0.15],["citron",0.05],["huile",0.75]],[
+ "Mettre les olives, les câpres, les anchois et l'ail dans le bol du mixeur.",
+ "Mixer par petites impulsions en ajoutant l'huile et le jus de citron.","On peut la garder un peu grossière.",
+ "Pas de sel : c'est déjà très salé. Sur du pain grillé à l'apéritif. Une semaine au frigo, couverte d'huile."])
+add("pesto","Pesto au basilic",TD,"vege",10,[["basilic",0.4],["pignons",8],["parmesan",10],["ail",0.15],["huile",1.5]],[
+ "Faire dorer les pignons à sec dans une poêle 2 minutes en remuant (ils brûlent vite).",
+ "Mixer les feuilles de basilic, les pignons, l'ail et le parmesan.","Ajouter l'huile en filet en mixant. Saler.",
+ "Couvrir d'un filet d'huile pour qu'il reste vert : 5 jours au frigo, ou en bacs à glaçons au congélateur."])
+add("rillettesthon","Rillettes de thon",TD,"thon",10,[["thon",40],["fromagefrais",25],["citron",0.1],["ciboulette",0.1],["moutarde",0.05]],[
+ "Égoutter le thon.","L'écraser à la fourchette avec le fromage frais, la moutarde et le jus de citron.",
+ "Ajouter la ciboulette ciselée, poivrer.","Servir frais sur du pain grillé ou des crackers. 2 jours au frigo."])
+add("rillettessaumon","Rillettes aux deux saumons",TD,"saumon",20,[["saumon",40],["saumonfume",15],["fromagefrais",25],["citron",0.1],["aneth",0.05]],[
+ "Pocher le pavé de saumon 8 minutes dans de l'eau frémissante salée. Laisser refroidir et retirer la peau.",
+ "L'émietter à la fourchette.","Couper le saumon fumé en petits morceaux.",
+ "Mélanger avec le fromage frais, le jus de citron et l'aneth ciselé. Poivrer.","Laisser prendre 1 heure au frigo. 2 jours maximum."],w="1 h au frigo")
+add("beurremd","Beurre maître d'hôtel",TD,"vege",10,[["beurre",15],["persil",0.05],["ail",0.1],["citron",0.05]],[
+ "Sortir le beurre 30 minutes avant pour qu'il soit mou.","L'écraser à la fourchette avec le persil haché, l'ail écrasé, quelques gouttes de citron, sel et poivre.",
+ "Le rouler en boudin dans du film alimentaire et le mettre au frigo.","Une rondelle sur une viande grillée ou un poisson chaud. 1 semaine au frigo, 2 mois au congélateur."])
+# ---------- Terrines & foie gras ----------
+add("foiegras","Foie gras de canard mi-cuit en terrine",TF,"canard",40,[["foiegras",65],["selfin",0.85],["poivre",0.15],["sucre",0.05],["armagnac",3]],[
+ "La veille ou 2 jours avant : sortir le lobe du frigo 1 heure avant pour qu'il soit souple.",
+ "Le déveiner : ouvrir doucement les deux lobes avec les pouces, repérer les veines (fils rouges) et les tirer délicatement avec la pointe d'un couteau, en abîmant le moins possible.",
+ "Assaisonner les deux faces avec le sel, le poivre et la pincée de sucre (repère : 12 g de sel et 2 g de poivre par kilo). Arroser d'armagnac.",
+ "Tasser le foie dans une terrine, côté lisse au fond, en appuyant pour chasser l'air. Couvrir. Laisser 2 heures au frigo.",
+ "Préchauffer le four à 100 °C. Poser la terrine dans un plat rempli d'eau chaude jusqu'à mi-hauteur (bain-marie) et cuire 35 à 40 minutes pour 500 g. Avec un thermomètre : 55 °C à cœur.",
+ "Sortir la terrine, retirer le surplus de graisse jaune (le garder pour cuire des pommes de terre). Poser une planchette avec un poids léger dessus et laisser refroidir.",
+ "Mettre au frigo au moins 24 heures, idéalement 48 heures, avant de servir. Couper en tranches avec un couteau trempé dans l'eau chaude. Avec du pain d'épices ou du pain grillé, et un chutney de figues."],"froid",w="24 à 48 h au frigo",tag="plaisir")
+add("terrinecampagne","Terrine de campagne",TF,"porc",30,[["porchache",90],["foievolaille",25],["lardons",10],["echalote",8],["oeuf",0.1],["armagnac",3],["thym",0.1],["laurier",0.1],["selfin",1]],[
+ "Préchauffer le four à 160 °C.","Hacher grossièrement les foies de volaille au couteau, ciseler les échalotes.",
+ "Mélanger la chair à saucisse, les foies, les lardons, les échalotes, l'œuf, l'armagnac, le thym, le sel (attention : la chair à saucisse est souvent déjà salée, mettre moitié moins) et du poivre.",
+ "Tasser dans une terrine, poser les feuilles de laurier dessus et couvrir.",
+ "Cuire au bain-marie 1 h 30 : la terrine est cuite quand le jus qui remonte est clair, ou à 70 °C à cœur.",
+ "Laisser refroidir avec un poids léger dessus, puis 24 heures au frigo avant de déguster. Se garde 5 jours."],"froid",w="24 h au frigo")
+add("magret","Magret de canard séché maison",TF,"canard",15,[["canard",80],["grossel",40],["poivre",0.3],["thym",0.1]],[
+ "Recouvrir le magret entièrement de gros sel dans un plat, et laisser 24 heures au frigo.",
+ "Le rincer à l'eau froide et bien l'essuyer.","Le frotter avec le poivre et le thym.",
+ "L'envelopper dans un torchon propre (ou de la gaze) et le suspendre ou le poser sur une grille dans le bas du frigo, pendant 2 à 3 semaines.",
+ "Il est prêt quand il est ferme sous le doigt. Couper en tranches très fines. À l'apéritif ou dans une salade."],"froid",w="2 à 3 semaines au frigo")
+# ---------- Poissons marinés ----------
+add("gravlax","Saumon gravlax à l'aneth",PM,"saumon",20,[["saumoncru",100],["grossel",12],["sucre",1],["aneth",0.2],["poivregrains",0.25],["citron",0.1]],[
+ "Sécurité : le saumon se mange cru. Prendre un saumon très frais et le congeler au moins 7 jours à -18 °C (ou l'acheter « qualité sashimi », déjà congelé), puis le décongeler une nuit au frigo.",
+ "Retirer les arêtes avec une pince à épiler (passer le doigt à rebrousse-poil pour les sentir).",
+ "Mélanger le gros sel, le sucre, le poivre concassé, le zeste de citron et l'aneth haché.",
+ "Étaler la moitié du mélange dans un plat, poser le saumon côté peau, recouvrir du reste.",
+ "Couvrir d'un film, poser un poids léger dessus (une boîte de conserve) et laisser 36 à 48 heures au frigo, en le retournant toutes les 12 heures.",
+ "Rincer rapidement à l'eau froide, bien sécher, parsemer d'aneth frais.",
+ "Couper en tranches très fines, en biais, avec un couteau bien aiguisé. Avec du pain de seigle, une sauce moutarde-aneth ou des pommes de terre tièdes. 4 jours au frigo."],w="36 à 48 h au frigo")
+add("truitegravlax","Truite gravlax aux agrumes",PM,"truite",20,[["truite",100],["grossel",12],["sucre",1],["orange",0.25],["citronvert",0.25],["aneth",0.1]],[
+ "Sécurité : congeler la truite au moins 7 jours à -18 °C avant (ou l'acheter déjà surgelée), puis la décongeler une nuit au frigo.",
+ "Retirer les arêtes avec une pince.","Mélanger le sel, le sucre, les zestes d'orange et de citron vert et l'aneth ciselé.",
+ "Enrober les filets de ce mélange dans un plat, couvrir et laisser 24 heures au frigo.",
+ "Rincer, sécher, couper en fines tranches. Arroser d'un peu de jus d'orange au moment de servir."],w="24 h au frigo")
+# ---------- Condiments & conserves ----------
+add("pickleoignon","Oignons rouges pickles",CO,"vege",10,[["oignonrouge",40],["vinaigrecidre",2],["sucre",0.5],["selfin",1]],[
+ "Éplucher les oignons et les couper en rondelles très fines.","Les tasser dans un pot en verre propre.",
+ "Faire chauffer le vinaigre avec autant d'eau, le sucre et le sel, jusqu'à ce qu'ils soient dissous.",
+ "Verser chaud sur les oignons, fermer et laisser refroidir.","Prêts en 1 heure, encore meilleurs le lendemain. 2 semaines au frigo. Dans les tacos, les burgers, les salades."],w="1 h")
+add("picklecon","Pickles de concombre à l'aneth",CO,"vege",15,[["concombre",80],["vinaigrecidre",2],["sucre",0.5],["selfin",1],["aneth",0.05],["ail",0.25]],[
+ "Couper le concombre en rondelles ou en bâtonnets.","Les mettre dans un pot avec l'ail écrasé et l'aneth.",
+ "Chauffer le vinaigre avec autant d'eau, le sucre et le sel jusqu'à dissolution.","Verser sur les concombres, fermer, laisser refroidir puis 24 heures au frigo. Se garde 2 semaines."],w="24 h au frigo")
+add("confitoignon","Confit d'oignons",CO,"vege",50,[["oignon",80],["beurre",5],["sucre",1],["balsamique",0.5],["vin",15],["thym",0.05]],[
+ "Émincer finement les oignons.","Les faire fondre dans le beurre à feu doux 15 minutes, à couvert, en remuant.",
+ "Ajouter le sucre, le vinaigre balsamique, le vin rouge et le thym.",
+ "Laisser cuire à découvert à feu doux 30 minutes en remuant de temps en temps, jusqu'à ce que ce soit confit et que le liquide ait disparu.",
+ "Saler, poivrer. Avec le foie gras, les terrines, un burger ou du fromage de chèvre. 1 semaine au frigo."],"chaud")
+add("chutneyfigue","Chutney de figues",CO,"vege",45,[["figuessech",40],["oignon",15],["sucre",1],["vinaigrecidre",1],["gingembre",0.1],["cannelle",0.05]],[
+ "Couper les figues séchées en petits morceaux et l'oignon en petits dés.",
+ "Tout mettre dans une casserole avec le sucre, le vinaigre, les épices et un verre d'eau pour 4.",
+ "Laisser mijoter 35 minutes à feu doux en remuant, jusqu'à obtenir une texture de confiture épaisse.",
+ "Verser en pot propre et laisser refroidir. Le compagnon du foie gras et des fromages. 1 mois au frigo."],"chaud")
+add("citronsconfits","Citrons confits au sel",CO,"vege",15,[["citron",1],["grossel",25]],[
+ "Laver et brosser les citrons (bio de préférence).","Les couper en croix sans aller jusqu'au bout, pour qu'ils restent attachés à la base.",
+ "Remplir chaque citron de gros sel et les tasser dans un bocal propre.",
+ "Couvrir de jus de citron (ou d'eau), fermer et laisser 3 à 4 semaines à température ambiante, à l'abri de la lumière, en retournant le bocal de temps en temps.",
+ "Rincer avant usage et n'utiliser que l'écorce, coupée en lanières : pour les tajines, le poulet rôti, les salades."],w="3 à 4 semaines")
+# ---------- Bases maison ----------
+add("bouillon","Bouillon de volaille maison",BA,"poulet",130,[["ailes",120],["carotte",40],["poireau",40],["oignon",30],["celeri",15],["laurier",0.25],["thym",0.1],["poivregrains",0.15]],[
+ "Mettre les ailes de poulet dans une grande casserole, couvrir de 2 litres d'eau froide pour 4 portions et porter doucement à ébullition.",
+ "Retirer l'écume grise qui monte avec une louche.",
+ "Ajouter les légumes en gros morceaux, le laurier, le thym et le poivre. Ne pas saler.",
+ "Laisser frémir 2 heures à petit feu, sans couvercle.",
+ "Filtrer dans une passoire fine. Laisser refroidir puis retirer la graisse figée en surface.",
+ "Saler au moment de l'utiliser. 3 jours au frigo, 3 mois au congélateur (pratique en bacs à glaçons)."],"chaud")
+add("patebrisee","Pâte brisée maison",BA,"vege",15,[["farine",40],["beurre",20],["selfin",0.5]],[
+ "Couper le beurre bien froid en petits dés.",
+ "Dans un saladier, mélanger la farine et le sel, ajouter le beurre et frotter entre les doigts jusqu'à obtenir comme du sable.",
+ "Ajouter de l'eau très froide cuillère par cuillère (environ 4 à 5 cuillères pour une tarte) en mélangeant du bout des doigts, juste assez pour former une boule. Ne pas trop la travailler.",
+ "Aplatir la boule, l'envelopper dans un film et la laisser reposer 30 minutes au frigo.",
+ "L'étaler au rouleau sur le plan de travail fariné, de l'épaisseur d'une pièce de 2 euros."],w="30 min au frigo")
+add("patepizza","Pâte à pizza maison",BA,"vege",20,[["farine",80],["levureb",0.1],["huile",0.5],["selfin",1.5]],[
+ "Délayer la levure dans 5 cl d'eau tiède par portion (tiède au doigt, pas chaude : la chaleur tue la levure).",
+ "Dans un saladier, mélanger la farine et le sel, faire un puits, verser l'eau et l'huile.",
+ "Mélanger puis pétrir 8 à 10 minutes sur le plan de travail fariné : la pâte devient lisse et souple, elle ne colle plus.",
+ "La mettre en boule dans le saladier, couvrir d'un torchon et laisser lever 1 heure à 1 h 30 dans un endroit tiède : elle double de volume.",
+ "L'étaler du bout des doigts, garnir et cuire au four le plus chaud possible (250 °C) 10 à 12 minutes."],w="1 h à 1 h 30 de pousse")
+out="// Recettes « à côté » : sauces, terrines, foie gras, gravlax, condiments, bases maison.\n// Généré par _outils/recettes/cote.py, ne pas éditer à la main.\nwindow.MENUS_COTE="+json.dumps({"I":I,"R":R},ensure_ascii=False,separators=(",",":"))+";\n"
+open("menus/cote.js","w",encoding="utf-8").write(out)
+print(len(R),"recettes")

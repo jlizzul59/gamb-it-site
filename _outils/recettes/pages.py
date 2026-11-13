@@ -80,7 +80,7 @@ def page(title, desc, path, body, ld=None):
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{e(title)}</title><meta name="description" content="{e(desc)}"><link rel="canonical" href="{url}">
 <meta property="og:type" content="article"><meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}"><meta property="og:url" content="{url}"><meta property="og:site_name" content="Think’n’Cook">
-<meta property="og:image" content="{SITE}/menus/tnc-icon-512.png"><link rel="icon" href="../tnc-icon-192.png"><meta name="theme-color" content="#1E5B5E">
+<meta property="og:image" content="{SITE}/menus/tnc-og-image.png"><link rel="icon" href="../tnc-favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#1E5B5E">
 {f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' if ld else ''}
 <style>{CSS}</style></head><body>
 <header><a class="brand" href="index.html"><img src="../tnc-icon-192.png" alt="" width="28" height="28" style="vertical-align:-8px;border-radius:7px;margin-right:6px">Think<span>’n’</span>Cook</a><a class="cta" href="../index.html?ref=recette">Planifier ma semaine</a></header>
