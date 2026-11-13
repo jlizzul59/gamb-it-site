@@ -319,12 +319,18 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 .bblock h5{margin:12px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .btasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .btasks>li{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface)}
-.btt{font-weight:600}.bti{margin:6px 0 0;font-size:13.5px}
+.btt{font-weight:600}.btend{margin:4px 0 0;font-size:13.5px;color:var(--muted)}.cuts{margin:6px 0 2px;padding-left:18px;font-size:14px;line-height:1.5}.cuts li{margin:2px 0}.bti{margin:6px 0 0;font-size:13.5px}
 .bthow{margin-top:6px}.bthow>summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:13.5px}
 .btsteps{margin:6px 0;padding-left:20px;font-size:14px;line-height:1.5}
 .bj{margin:0;padding:10px 12px;border-radius:12px;background:var(--accent-soft);line-height:1.5}
 .steps li .fiche{grid-column:2}
 .ck .fiche{color:var(--ink);text-align:left;margin:10px 0}
+.tag.tm{background:#E7EEF7;color:#2C4E7A}
+.tmblock{margin:14px 0 0;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.tmblock>summary{cursor:pointer;padding:10px 14px;font-weight:700;color:#2C4E7A;list-style:none}.tmblock>summary::-webkit-details-marker{display:none}
+.tmblock>summary small{font-weight:500;color:var(--muted)}
+.tmsteps{margin:0;padding:0 16px 0 34px;line-height:1.5}.tmsteps li{margin:6px 0;display:list-item!important}.tmsteps li::before{content:none!important;display:none!important}
+.tmnote{margin:8px 14px;font-size:12.5px;color:var(--muted)}.tmblock .cookb{margin:4px 14px 14px}
 .bcnote{font-size:13px;background:var(--accent-soft);border-radius:10px;padding:10px 14px}
 .bcnote b{color:var(--accent)}
 .kid{font-size:13px;background:var(--warm-soft);border-radius:10px;padding:10px 14px}
@@ -639,7 +645,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 <div class="overlay" id="overlay" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <script src="recettes-plus.js?v=20261109b"></script>
-<script src="cuisine.js?v=20261113a"></script>
+<script src="cuisine.js?v=20261113b"></script>
 <script src="cote.js?v=20261113a"></script>
 <script src="desserts.js?v=20261110a"></script>
 <script>
@@ -2348,7 +2354,7 @@ function save(){try{localStorage.setItem("recettes.filtres",JSON.stringify({sel,
 
 let FOY=[];function loadFoy(){FOY=Object.values(dread("foyer")).filter(p=>(p.r||[]).length)}loadFoy();
 const foyConf=r=>conflicts(r,I,FOY);
-const QUICK=[["foyer","Compatible avec le groupe",r=>!foyConf(r).length&&!cfgBanned(r)],["fav","♥ Favoris",r=>isFav(r.id)],["top","Mes notes ≥ 4",r=>noteOf(r.id)>=4],["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["leger","🪶 Léger",r=>isLight(r)],["simple","Tout simple",r=>r.simple],["soupe","Soupes",r=>SOUP_RX.test(r.n)],["saison","🌱 De saison",r=>seasonOf(r,new Date().getMonth()+1).s==="saison"],["chaud","🔥 Chaud",r=>(r.temp||tempOf(r))==="chaud"],["froid","❄️ Froid",r=>(r.temp||tempOf(r))==="froid"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
+const QUICK=[["foyer","Compatible avec le groupe",r=>!foyConf(r).length&&!cfgBanned(r)],["fav","♥ Favoris",r=>isFav(r.id)],["top","Mes notes ≥ 4",r=>noteOf(r.id)>=4],["vege","Végétarien",r=>isVege(r)],["plaisir","Gourmand",r=>r.tag==="plaisir"],["leger","🪶 Léger",r=>isLight(r)],["simple","Tout simple",r=>r.simple],["soupe","Soupes",r=>SOUP_RX.test(r.n)],["tm","🤖 Thermomix",r=>isTM(r)],["saison","🌱 De saison",r=>seasonOf(r,new Date().getMonth()+1).s==="saison"],["chaud","🔥 Chaud",r=>(r.temp||tempOf(r))==="chaud"],["froid","❄️ Froid",r=>(r.temp||tempOf(r))==="froid"],["rapide","≤ 25 min",r=>r.t<=25],["emporter","Midi à emporter",r=>r.for.includes("l2")],["leger","< 400 kcal",r=>kcal(r)<400]];
 const has=(r,id)=>r.ing.some(([x])=>x===id);
 // Desserts : fruits, saison, chocolat, niveau de calories (un seul à la fois)
 const isFruitD=r=>r.ing.some(([id])=>I[id].c==="Fruits")||/fruit|pomme|poire|fraise|framboise|banane|cerise|abricot|p[êe]che|citron|orange|mangue|ananas|figue|prune|rhubarbe|myrtille|kiwi|melon/i.test(r.n);
@@ -2416,7 +2422,7 @@ function render(){
     if(r.dessert)return dCard(r);
     const main=r.ing.filter(([id])=>I[id].r!=="pl"&&!BASICS.has(id)).map(([id])=>sel[id]===1?`<mark>${esc(I[id].n.toLowerCase())}</mark>`:esc(I[id].n.toLowerCase())).join(", ");
     return `<div class="card" role="button" tabindex="0" data-r="${r.id}" aria-label="${esc(r.n)}"><div class="ph" style="background:${ART.BG[r.reg]}"></div>
-      <div class="bd"><div class="ctop"><span class="where tag">${esc(r.pays)}</span><span class="cbtnr">${wishBtn(r.id)}${favBtn(r.id)}</span></div><span class="cname">${esc(r.n)}</span>${frigo&&q&&_fs[r.id]?`<span class="frigohit">🧊 Utilise ${_fs[r.id].n}/${_fs[r.id].of} : ${esc(_fs[r.id].hit.join(", "))}</span>`:""}${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}<span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${seasonOf(r,new Date().getMonth()+1).s==="saison"?'<span class="tag saison">🌱 De saison</span>':""}${(r.temp||tempOf(r))==="froid"?'<span class="tag froid">❄️ Froid</span>':'<span class="tag chaud">🔥 Chaud</span>'}${r.simple?'<span class="tag vege">Tout simple</span>':""}${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span>${cartBtn(r.id)}</div></div>`;
+      <div class="bd"><div class="ctop"><span class="where tag">${esc(r.pays)}</span><span class="cbtnr">${wishBtn(r.id)}${favBtn(r.id)}</span></div><span class="cname">${esc(r.n)}</span>${frigo&&q&&_fs[r.id]?`<span class="frigohit">🧊 Utilise ${_fs[r.id].n}/${_fs[r.id].of} : ${esc(_fs[r.id].hit.join(", "))}</span>`:""}${foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}<span class="cmeta">${starsShow(r.id)}<span class="num">≈ ${kcal(r)} kcal</span><span>${r.t} min</span>${seasonOf(r,new Date().getMonth()+1).s==="saison"?'<span class="tag saison">🌱 De saison</span>':""}${(r.temp||tempOf(r))==="froid"?'<span class="tag froid">❄️ Froid</span>':'<span class="tag chaud">🔥 Chaud</span>'}${r.simple?'<span class="tag vege">Tout simple</span>':""}${window.isTM&&isTM(r)?'<span class="tag tm">🤖 Thermomix</span>':""}${r.tag==="plaisir"?'<span class="tag plaisir">Gourmand</span>':""}${isLight(r)?'<span class="tag leger" title="400 kcal ou moins par portion">🪶 Léger</span>':""}${isVege(r)?'<span class="tag vege">Végétarien</span>':""}</span><span class="cing">${main}</span>${cartBtn(r.id)}</div></div>`;
   }).join(""):`<div class="none"><b>Aucune recette avec cette combinaison.</b><br>Retirez un ingrédient, un filtre ou changez de région.</div>`);
   ART.hydrate(document.getElementById("results"));
 }
@@ -2522,6 +2528,11 @@ function cartClick(e){
 let confirmClear=false;
 window.addEventListener("storage",e=>{if(e.key===CK){paintCartBar();refreshCartButtons();if(cartOpen)renderCart()}});
 
+
+// Mode cuisine avec les étapes Thermomix
+document.addEventListener("click",ev=>{const b=ev.target.closest&&ev.target.closest("[data-cooktm]");if(!b)return;const r=RB[b.dataset.cooktm];if(!r||!window.tmSteps)return;ev.preventDefault();ev.stopPropagation();
+  const n=typeof servings!=="undefined"?servings:(()=>{try{const c=cooks().find(x=>x.r.id===r.id);return c?persOf(c):4}catch(_){return 4}})();
+  COOK.open({title:r.n,sub:"Au Thermomix · "+n+" portion"+(n>1?"s":""),steps:tmSteps(r),opt:[],ings:r.ing.map(([id,q])=>({q:fmt(q*n,I[id].u),v:q*n,u:I[id].u,name:I[id].n}))})},true);
 // ---------- fiche ----------
 const ov=document.getElementById("overlay");let current=null;
 function openRecipe(id){
@@ -2538,7 +2549,7 @@ function openRecipe(id){
       ${(()=>{const m=new Date().getMonth()+1,ss=seasonOf(r,m);return ss.s==="saison"?`<p class="seasonnote" style="color:#3F7A1F;background:#EEF6E6">🌱 De saison en ${MOIS[m-1]}.</p>`:ss.s==="hors"?`<p class="seasonnote">Hors saison en ${MOIS[m-1]} : ${esc(seasonOutTxt(r,m))}.</p>`:""})()}
       ${foyConf(r).length?`<div class="warnbox">Attention, contient : ${esc(conflictText(foyConf(r)))}</div>`:""}
       <div class="rbody"><div><h4>Ingrédients</h4><ul class="ings" id="ings"></ul></div>
-        <div><h4>Préparation</h4>${r.dessert?"":bmodeHTML()}<div class="bmwrap ${!r.dessert&&bmode()==="batch"?"bm-batch":""}"><div class="pane-j"><ol class="steps" id="steps"></ol></div><div class="pane-b" id="bpane"></div></div></div></div>
+        <div><h4>Préparation</h4>${r.dessert?"":bmodeHTML()}<div class="bmwrap ${!r.dessert&&bmode()==="batch"?"bm-batch":""}"><div class="pane-j"><ol class="steps" id="steps"></ol></div><div class="pane-b" id="bpane"></div></div>${r.dessert?"":tmHTML(r)}</div></div>
       ${r.dessert&&r.w?`<div class="bcnote"><b>À prévoir :</b> ${esc(r.w)} avant de servir.</div>`:""}
       ${r.shared?`<div class="sharebox"><p>📩 ${r.by?"<b>"+esc(r.by)+"</b> vous partage cette recette.":"On vous partage cette recette."}${r.src?` <a href="${esc(r.src)}" target="_blank" rel="noopener">Voir la source</a>`:""}</p><button type="button" class="cookb" data-shareadd>＋ Ajouter à mes recettes</button><button type="button" class="cookb ghost" data-cook="${r.id}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button></div>`:
       `<div class="addcart"><button type="button" class="cookb" data-cook="${r.id}"><span aria-hidden="true">▶</span> Cuisiner pas à pas</button>${cartBtn(r.id,true)}<button type="button" class="shareb" data-sharer="${r.id}" title="Envoyer cette recette à quelqu'un, même hors de votre groupe">📤 Partager</button></div>`}
