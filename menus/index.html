@@ -3673,8 +3673,11 @@ function renderToday(){
   const tomorrow=d===5?null:(d===6?0:d+1);  // samedi : la semaine suivante commence dimanche
   const dl=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
   // ingrédients d'un repas pas encore cochés dans la liste de courses (hors placard et hors repas retirés de la liste)
-  const missing=key=>{const k=srcKey(key);if(!k||k!==key)return [];const cs=cooks().filter(c=>c.sl.key===k&&shopIn(c));if(!cs.length)return [];
-    const SS=shopState(0),out=new Set();cs.forEach(c=>c.r.ing.forEach(([id])=>{if(!I[id]||I[id].r==="pl")return;const inList=(SS.Q[1][id]||0)+(SS.Q[2][id]||0);if(inList&&!SS.st(I[id].r,id,0).done)out.add(id)}));return [...out]};
+  const missing=key=>{try{const k=srcKey(key);if(!k||k!==key)return [];
+    // repas présents dans une liste de courses (session 1 ou 2), ingrédients pas encore cochés dans la liste où ils figurent
+    const es=shopEntries().filter(e=>!e.next&&e.c.sl.key===k&&(inList(e,1)||inList(e,2)));if(!es.length)return [];
+    const out=new Set();es.forEach(e=>{const ss=[1,2].filter(n=>inList(e,n));e.ing.forEach(([id])=>{if(!I[id]||I[id].r==="pl")return;
+      const ok=W.checked["0:"+id]||ss.some(n=>W.checked[n+":"+id]);if(!ok)out.add(id)})});return [...out]}catch(err){return []}};
   const meal=(w,key,label,chk)=>withWeek(w,()=>{try{fillDesserts("keep")}catch(e){}const sl=SK[key],m=W.mode[key]||"cook";if(m==="skip")return `<div class="tmeal off"><small>${label}</small><b>Pas de repas prévu</b></div>`;
     const r=recipeAt(key);if(!r)return `<div class="tmeal off"><small>${label}</small><b>Rien de prévu</b></div>`;
     const rest=srcKey(key)!==key,xs=rest?[]:XS(key).map(x=>RB[x.id]).filter(Boolean),fz=frozen(sl);
