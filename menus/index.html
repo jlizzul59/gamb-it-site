@@ -869,8 +869,9 @@ body.storemode #shop .hint{font-size:13px}
 .desrow .xdel{margin-left:auto}.desadd{margin-top:10px}.desadd input{flex:1;min-width:0;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--ink)}
 .tpin{font-size:11px}
 .xrec.xcompact{display:flex;flex-direction:row;align-items:flex-start;gap:6px}.xrec.mainrec{border-top:0;padding-top:0}.mainrec .xdel{margin-top:1px}.xcompact .name{flex:1;min-width:0}
-.cmenu{position:absolute;z-index:60;min-width:230px;max-width:min(320px,calc(100vw - 16px));background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column}
+.cmenu{position:absolute;z-index:60;overscroll-behavior:contain;min-width:230px;max-width:min(320px,calc(100vw - 16px));background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column}
 .cmenu .cmh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:6px 10px 4px}
+.cmenu .cmh.cmh2{text-transform:none;letter-spacing:0;font-size:12px;border-top:1px solid var(--line);margin-top:4px;padding-top:8px}.cmenu>button.cmsub{padding-left:16px}
 .cmenu>button{font:inherit;font-size:14px;text-align:left;background:none;border:0;border-radius:10px;padding:9px 10px;cursor:pointer;color:var(--ink)}.cmenu>a{font-size:14px;border-radius:10px;padding:9px 10px;color:var(--accent);text-decoration:none;font-weight:600;border-top:1px solid var(--line);margin-top:4px}.cmenu>a:hover{background:var(--bg)}
 .cmenu>button:hover:not([disabled]),.cmenu>button:focus-visible{background:var(--bg)}
 .cmenu>button[disabled]{opacity:.45;cursor:not-allowed}.cmenu>button.danger{color:#a12d2d}
@@ -1024,6 +1025,14 @@ body.storemode #shop .hint{font-size:13px}
 .qbanner{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;background:var(--accent-soft);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:0 0 14px;font-size:14px}
 .qbanner span{flex:1;min-width:220px}
 .qbanner .linkish{background:none;border:0;font-size:20px;line-height:1;color:var(--muted);cursor:pointer}
+
+/* Fenêtres et messages toujours visibles (au-dessus de la barre d'onglets du téléphone) */
+.overlay{z-index:58;overscroll-behavior:contain}
+html.ov-on,html.ov-on body{overflow:hidden}
+html.ov-on .wishfab{display:none}
+.toast{z-index:90;max-width:calc(100vw - 24px)}
+.sharesheet{max-height:min(90vh,calc(100dvh - 32px))}
+@media (max-width:640px){.toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
 </style>
 
 <header class="top">
@@ -1073,7 +1082,7 @@ body.storemode #shop .hint{font-size:13px}
     </div>
     <div class="helpbox" id="helpBox" hidden>
       <p><b>Le planning</b> propose un plat pour chaque midi et chaque soir, en respectant les règles de votre groupe. Il est partagé : ce qu'un adulte change, tout le groupe le voit.</p>
-      <p><b>Sur un repas :</b> « Changer » pour un autre plat (au hasard, chaud, froid ou depuis le catalogue), la pastille 👤 pour le nombre de personnes, « ⋯ » pour les restes, une recette en plus ou supprimer le repas.</p>
+      <p><b>Sur un repas :</b> « Changer » pour un autre plat (au hasard, chaud, froid ou depuis le catalogue), la pastille 👤 pour le nombre de personnes, « ⋯ » pour manger les restes d’un repas au choix, une recette en plus ou supprimer le repas.</p>
       <p><b>Une erreur ?</b> « Annuler » défait la dernière modification ; « Revenir à la version d'ouverture » remet le planning tel qu'il était quand vous avez ouvert l'appli.</p>
       <p>Les accompagnements marqués « optionnel » (pain, riz, fromage) sont listés à part dans les courses : vous décidez sur place.</p>
     </div>
@@ -2985,10 +2994,14 @@ const isVege=r=>!r.ing.some(([id])=>I[id].c==="Viandes"||I[id].c==="Poissons & c
 const isFish=r=>r.ing.some(([id])=>I[id].c==="Poissons & crevettes");
 
 function prevActive(key){let i=SLOTS.findIndex(s=>s.key===key)-1;while(i>=0&&W.mode[SLOTS[i].key]==="skip")i--;return i<0?null:SLOTS[i].key}
+// Restes : repas d'origine choisi par l'utilisateur (W.rsrc), sinon le repas juste avant
+function restFrom(key){const s=W.rsrc&&W.rsrc[key];if(s&&SK[s]){const i=SLOTS.findIndex(x=>x.key===key),j=SLOTS.findIndex(x=>x.key===s);if(j>=0&&j<i&&W.mode[s]!=="skip")return s}return prevActive(key)}
+// Repas cuisinés plus tôt dans la semaine dont on peut manger les restes (du plus récent au plus ancien)
+function restCands(key){const i=SLOTS.findIndex(x=>x.key===key),out=[];for(let j=i-1;j>=0;j--){const s=SLOTS[j].key;if(W.mode[s]==="skip"||W.mode[s]==="rest")continue;if(W.plan[s]&&RB[W.plan[s]])out.push(s)}return out}
 function srcKey(key){
   const m=W.mode[key];
   if(m==="skip")return null;
-  if(m==="rest"){const p=prevActive(key);return p?srcKey(p):key}
+  if(m==="rest"){const p=restFrom(key);return p?srcKey(p):key}
   return key;
 }
 const recipeAt=key=>{const k=srcKey(key);return k?RB[W.plan[k]]:null};
@@ -3934,7 +3947,7 @@ document.addEventListener("click",e=>{if(isKid())return;
   if(e.target.closest("[data-notecancel]")){NOTEED=null;renderAll()}});
 document.addEventListener("submit",e=>{const f=e.target.closest("[data-noteform]");if(!f)return;e.preventDefault();saveNote(f.dataset.noteform,f.querySelector("input").value)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&NOTEED){NOTEED=null;renderAll()}});
-function setMode(key,m){if(m==="cook")delete W.mode[key];else W.mode[key]=m}
+function setMode(key,m){if(m==="cook")delete W.mode[key];else W.mode[key]=m;if(m!=="rest"&&W.rsrc){delete W.rsrc[key];if(!Object.keys(W.rsrc).length)delete W.rsrc}}
 function goWeek(w){useWeek(w);save();renderAll();window.scrollTo(0,0)}
 document.addEventListener("click",e=>{
   const cks=e.target.closest("[data-cookslot]");if(cks){const c=findCook(cks.dataset.cookslot);if(c){const r=c.r,pers=persOf(c),os=optSteps(r,pers),bs=bmode()==="batch"&&BC[r.id]&&BC[r.id].t.length?batchDaySteps(r):null;COOK.open({title:r.n,sub:slotLabel(c.sl)+" · "+pers+" portion"+(pers>1?"s":"")+(bs?" · avec le batch":""),steps:(bs||r.st).concat(os),opt:os.map((_,k)=>(bs||r.st).length+k),ings:r.ing.map(([id,q])=>({q:fmt(qtyBase(c,id,q),I[id].u,false),v:qtyBase(c,id,q),u:I[id].u,name:I[id].n})).concat(optionsFor(r).map(([id,q])=>({q:fmt(q*pers,I[id].u,false),name:I[id].n+" (optionnel)"})))})}return}
@@ -3989,8 +4002,10 @@ const CM=(()=>{let el=null,cur=null;
       <button type="button" role="menuitem" data-mact="cold|${k}">❄️ Au hasard, un plat froid</button>
       <button type="button" role="menuitem" data-pick="${k}">📖 Choisir dans le catalogue</button>
       ${tv?`<button type="button" role="menuitem" data-mact="anytemp|${k}">↺ Chaud ou froid : peu importe <small class="muted">(ce repas est réglé sur ${tv})</small></button>`:""}`;
-    if(kind==="more"){const restOK=!!prevActive(k);return `<div class="cmh">${esc(slotLabel(sl))}</div>
-      ${mode==="rest"?`<button type="button" role="menuitem" data-mact="cook|${k}">🍳 Cuisiner un plat à la place des restes</button>`:`<button type="button" role="menuitem" data-mact="rest|${k}" ${restOK?"":"disabled"}>♻️ Manger les restes du repas d'avant</button>`}
+    if(kind==="more"){const rc=restCands(k),curSrc=mode==="rest"?srcKey(k):null,shown=rc.slice(0,4);if(curSrc&&curSrc!==k&&!shown.includes(curSrc))shown.push(curSrc);
+      const restItems=shown.map(s=>`<button type="button" role="menuitem" class="cmsub ${s===curSrc?"cur":""}" data-mact="rest|${k}" data-src="${s}">♻️ Restes du ${esc(slotLabel(SK[s]))} <small class="muted">· ${esc(shortName(RB[W.plan[s]]))}</small>${s===curSrc?" ✓":""}</button>`).join("");
+      return `<div class="cmh">${esc(slotLabel(sl))}</div>
+      ${mode==="rest"?`<div class="cmh cmh2">Manger les restes de…</div>${restItems}<button type="button" role="menuitem" data-mact="cook|${k}">🍳 Cuisiner un plat à la place des restes</button>`:rc.length?`<div class="cmh cmh2">Manger les restes de…</div>${restItems}`:`<button type="button" role="menuitem" disabled>♻️ Pas encore de repas avant pour des restes</button>`}
       ${mode!=="rest"?`<button type="button" role="menuitem" data-xadd="${k}">➕ Ajouter une recette à ce repas</button>`:""}
       ${r&&mode!=="rest"&&SK[k.slice(0,-1)+(k.endsWith("m")?"s":"m")]&&W.mode[k.slice(0,-1)+(k.endsWith("m")?"s":"m")]!=="rest"?`<button type="button" role="menuitem" data-mact="xchg|${k}">⇅ Échanger avec le ${k.endsWith("m")?"soir":"midi"}</button>`:""}
       ${r?`<button type="button" role="menuitem" data-mact="ok|${k}">${slotOk(k)?"✓ Retirer la validation":"✓ Valider ce repas"}</button>`:""}
@@ -4007,9 +4022,15 @@ const CM=(()=>{let el=null,cur=null;
       ${n!==def?`<button type="button" role="menuitem" data-mact="pdef|${k}">↺ Revenir à ${def}, le nombre habituel</button>`:`<small class="muted cmnote">Nombre habituel : ${def}. Il se règle dans Groupe › Qui mange quand ?</small>`}`}
     return "";
   }
-  function place(btn){const r=btn.getBoundingClientRect(),w=el.offsetWidth,vw=document.documentElement.clientWidth;let x=r.left+window.scrollX;x=Math.max(window.scrollX+8,Math.min(x,window.scrollX+vw-w-8));el.style.left=x+"px";el.style.top=(r.bottom+window.scrollY+4)+"px"}
+  // Toujours entièrement visible : sous le bouton s'il y a la place, sinon au-dessus, sinon calé dans l'écran (avec défilement si trop long)
+  function place(btn){const r=btn.getBoundingClientRect(),vw=document.documentElement.clientWidth,vv=window.visualViewport,vh=vv?vv.height:window.innerHeight;
+    let top0=8,bot=vh-8;const tb=document.querySelector(".top .tabrow");if(tb&&getComputedStyle(tb).position==="fixed"){const t=tb.getBoundingClientRect().top;if(t>vh/2)bot=Math.min(bot,t-8)}
+    el.style.maxHeight="";el.style.overflowY="";const w=el.offsetWidth,h=el.offsetHeight,room=bot-top0;let y;
+    if(r.bottom+4+h<=bot)y=r.bottom+4;else if(r.top-4-h>=top0)y=r.top-4-h;else if(h<=room)y=Math.max(top0,bot-h);else{y=top0;el.style.maxHeight=room+"px";el.style.overflowY="auto"}
+    let x=r.left;x=Math.max(8,Math.min(x,vw-w-8));el.style.left=(x+window.scrollX)+"px";el.style.top=(y+window.scrollY)+"px"}
   function open(kind,k,btn){close();cur={kind,k,btn};el=document.createElement("div");el.className="cmenu";el.setAttribute("role","menu");el.innerHTML=html(kind,k);document.body.appendChild(el);place(btn);btn.setAttribute("aria-expanded","true");const f=el.querySelector("button:not([disabled])");if(f)try{f.focus({preventScroll:true})}catch(_){}}
   function refresh(){if(!cur)return;const b=document.querySelector(`[data-cmenu="${cur.kind}|${cur.k}"]`);if(!b){close();return}cur.btn=b;el.innerHTML=html(cur.kind,cur.k);place(b);b.setAttribute("aria-expanded","true")}
+  window.addEventListener("resize",()=>{if(el&&cur&&cur.btn&&document.body.contains(cur.btn))place(cur.btn);else close()});
   return {open,close,refresh,get cur(){return cur},get el(){return el}};
 })();
 function setPers(k,n){const sl=SK[k];W.pers=W.pers||{};n=Math.max(1,Math.min(12,n));if(n===S.def[WH(sl)])delete W.pers[k];else W.pers[k]=n;save();renderAll()}
@@ -4027,7 +4048,8 @@ document.addEventListener("click",e=>{
     if(a==="xchg"){swapMeals(k,k.slice(0,-1)+(k.endsWith("m")?"s":"m"));return}
     if(a==="hot"||a==="cold"){const t=a==="hot"?"chaud":"froid";W.temp=W.temp||{};W.temp[k]=t;delete W.pin[k];swap(k);toast((t==="chaud"?"🔥 Plat chaud":"❄️ Plat froid")+" pour "+slotLabel(sl)+" : gardé pour les prochains tirages");return}
     if(a==="anytemp"){if(W.temp)delete W.temp[k];save();renderAll();toast("Chaud ou froid : peu importe");return}
-    if(a==="rest"||a==="cook"){setMode(k,a);build("keep");renderAll();return}
+    if(a==="rest"){const s=ma.dataset.src;setMode(k,"rest");if(s&&SK[s]){W.rsrc=W.rsrc||{};W.rsrc[k]=s}build("keep");renderAll();const src=srcKey(k);if(src&&src!==k&&RB[W.plan[src]])toast("♻️ "+slotLabel(sl)+" : restes du "+slotLabel(SK[src]));return}
+    if(a==="cook"){setMode(k,a);build("keep");renderAll();return}
     if(a==="note"){NOTEED=k;renderAll();setTimeout(()=>{const i=document.querySelector(`[data-noteform="${k}"] input`);if(i)i.focus()},30);return}
     if(a==="skip"){setMode(k,"skip");build("keep");renderAll();toast("Repas du "+slotLabel(sl)+" supprimé · « Annuler » pour le remettre");return}
     if(a==="ok"){W.ok=W.ok||{};if(slotOk(k)){delete W.ok[k];toast("Validation retirée")}else{W.ok[k]={sig:slotSig(W,k),by:meName(),at:Date.now()};toast("Repas validé")}_seen=weekSig(W);save();renderAll();return}
@@ -4087,7 +4109,7 @@ document.getElementById("openBtn").addEventListener("click",()=>{if(isKid()||!(S
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==="z"&&!/INPUT|TEXTAREA|SELECT/.test((document.activeElement||{}).tagName||"")){e.preventDefault();undo()}});
 document.getElementById("helpBtn").addEventListener("click",e=>{const b=document.getElementById("helpBox"),o=b.hidden;b.hidden=!o;e.currentTarget.setAttribute("aria-expanded",String(o))});
 (()=>{
-  ["1m","3m","4m"].forEach(k=>{if(W.mode[k]!=="skip")W.mode[k]="rest"});build("keep");renderAll();toast("Midis de mardi, jeudi et vendredi en restes de la veille");
+  ["1m","3m","4m"].forEach(k=>{if(W.mode[k]!=="skip"){W.mode[k]="rest";if(W.rsrc)delete W.rsrc[k]}});build("keep");renderAll();toast("Midis de mardi, jeudi et vendredi en restes de la veille");
 });
 document.getElementById("clearPrefs").addEventListener("click",()=>{S.prefs={};build("keep");renderAll()});
 document.getElementById("uncheck").addEventListener("click",e=>{const btn=e.currentTarget,ss=W.shopSess??1;
@@ -4913,4 +4935,10 @@ if("serviceWorker" in navigator&&location.protocol==="https:")window.addEventLis
 })();
 </script>
 
+<script>
+// Fenêtre ouverte : on bloque le défilement de la page derrière et on repart du haut de la fenêtre
+(()=>{const o=document.getElementById("overlay");if(!o)return;let was=!o.hidden;
+  const f=()=>{const on=!o.hidden;document.documentElement.classList.toggle("ov-on",on);if(on&&!was)o.scrollTop=0;was=on};
+  new MutationObserver(f).observe(o,{attributes:true,attributeFilter:["hidden"]});f()})();
+</script>
 </html>

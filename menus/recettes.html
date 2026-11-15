@@ -575,6 +575,14 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .mixname{flex-basis:100%;font-size:13px;color:var(--muted)}
 #results .mixbox{grid-column:1/-1;margin:0}
 .kidprop input{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 10px;font:inherit;font-size:14px;min-width:180px}
+
+/* Fenêtres et messages toujours visibles (au-dessus de la barre d'onglets du téléphone) */
+.overlay{z-index:58;overscroll-behavior:contain}
+html.ov-on,html.ov-on body{overflow:hidden}
+html.ov-on .wishfab{display:none}
+.toast{z-index:90;max-width:calc(100vw - 24px)}
+.sharesheet{max-height:min(90vh,calc(100dvh - 32px))}
+@media (max-width:640px){.toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
 </style>
 
 <header class="top">
@@ -2690,4 +2698,10 @@ if("serviceWorker" in navigator&&location.protocol==="https:")window.addEventLis
 })();
 </script>
 
+<script>
+// Fenêtre ouverte : on bloque le défilement de la page derrière et on repart du haut de la fenêtre
+(()=>{const o=document.getElementById("overlay");if(!o)return;let was=!o.hidden;
+  const f=()=>{const on=!o.hidden;document.documentElement.classList.toggle("ov-on",on);if(on&&!was)o.scrollTop=0;was=on};
+  new MutationObserver(f).observe(o,{attributes:true,attributeFilter:["hidden"]});f()})();
+</script>
 </html>
