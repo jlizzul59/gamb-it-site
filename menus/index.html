@@ -3007,10 +3007,15 @@ function fits(r,slot,used,plan){
   if(other&&RB[other]&&starchVar()){const f=starchOf(r);if(f&&f===starchOf(RB[other]))return false}
   return true;
 }
+// Règle globale : pas un plat déjà au planning dans les N semaines d'avant ou d'après (réglage « Pas le même plat avant », 2 par défaut)
+function recentIds(){const n=Math.max(1,(CFG().norepeat||2)),out=new Set();
+  for(let k=-n;k<=n;k++){if(!k)continue;const pw=S.weeks[S.cur+k];if(!pw||!pw.plan)continue;Object.entries(pw.plan).forEach(([key,x])=>{if(x&&(pw.mode||{})[key]!=="skip")out.add(x)})}
+  return out}
+const noRecent=c=>{const rc=recentIds(),f=c.filter(r=>!rc.has(r.id));return f.length?f:c};
 function pick(slot,used,plan,exclude,rand,avoid){
   let c=R.filter(r=>r.id!==exclude&&fits(r,slot,used,plan));
   if(!c.length)c=R.filter(r=>r.id!==exclude&&allowed(r)&&r.for.includes(slot.kind));
-  if(!c.length)return null;
+  if(!c.length)return null;c=noRecent(c);
   c=c.map(r=>[r,famBoost(r)+likes(r)*3+(rand?rand()*2:0)-(avoid&&avoid.has(r.id)?2.5:0)+(isFav(r.id)?2:0)+(noteOf(r.id)?(noteOf(r.id)-3)*1.2:0)-(noteOf(r.id)===1?6:0)+(r.simple&&slot.day<5?(CLASSIC.has(r.id)?0.2:0.9):0)+(CLASSIC.has(r.id)?1:0)+qScore(r,slot,null,plan)]).sort((a,b)=>b[1]-a[1]);
   return c[0][0].id;
 }
@@ -3034,7 +3039,7 @@ function buildOld(mode){ // keep | default | seed | random
 const ROLLSEEN={};
 function rollPick(slot,used,plan,cur){
   const sk=S.cur+"|"+slot.key,seen=ROLLSEEN[sk]=ROLLSEEN[sk]||new Set();if(cur)seen.add(cur);
-  let c=R.filter(r=>fits(r,slot,used,plan));if(!c.length)c=R.filter(r=>allowed(r)&&r.for.includes(slot.kind));
+  let c=R.filter(r=>fits(r,slot,used,plan));if(!c.length)c=R.filter(r=>allowed(r)&&r.for.includes(slot.kind));c=noRecent(c);
   let pool=c.filter(r=>!seen.has(r.id));
   if(!pool.length){seen.clear();if(cur)seen.add(cur);pool=c.filter(r=>r.id!==cur)}
   if(!pool.length)return null;
@@ -4452,7 +4457,7 @@ function cfgScore(r,slot,C,ever){
 function pickC(slot,used,plan,rand,avoid,pred,C,ever){
   let c=R.filter(r=>fits(r,slot,used,plan)&&(!pred||pred(r)));
   if(!c.length&&pred)c=R.filter(r=>allowed(r)&&!used.has(r.id)&&pred(r));
-  if(!c.length)return null;
+  if(!c.length)return null;c=noRecent(c);
   // féculents : le repas juste avant et juste après (veille au soir, lendemain midi) évitent aussi le même
   const si=SLOTS.indexOf(slot),nb=starchVar()?[SLOTS[si-1],SLOTS[si+1]].filter(x=>x&&x.day!==slot.day).map(x=>RB[(plan||{})[x.key]]).filter(Boolean).map(starchOf).filter(Boolean):[];
   const stPen=r=>{const f=starchOf(r);return f&&nb.includes(f)?-1.5:0};
@@ -4566,7 +4571,7 @@ function renderCfg(){
       <div class="cfgrow"><span>Temps de préparation maximum</span><select data-cfgsel="tmax">${[[0,"Pas de limite"],[20,"20 min"],[30,"30 min"],[45,"45 min"],[60,"1 h"]].map(([v,l])=>`<option value="${v}" ${C.tmax==v?"selected":""}>${l}</option>`).join("")}</select></div>
       <label class="cfgtog"><span class="sw"><input type="checkbox" data-cfgtog="light" ${C.light?"checked":""}><span class="swt" aria-hidden="true"></span></span><span><b>Dîners plutôt légers</b><small class="muted">Privilégie les plats de moins de 600 kcal par portion le soir.</small></span></label>
       <label class="cfgtog"><span class="sw"><input type="checkbox" data-cfgtog="neu" ${C.neu?"checked":""}><span class="swt" aria-hidden="true"></span></span><span><b>Une touche de nouveauté</b><small class="muted">Glisse des plats jamais faits dans vos semaines.</small></span></label>
-      <div class="cfgrow"><span>Pas le même plat avant</span><select data-cfgsel="norepeat">${[1,2,3,4,6].map(v=>`<option value="${v}" ${C.norepeat==v?"selected":""}>${v} semaine${v>1?"s":""}</option>`).join("")}</select></div></section>
+      <div class="cfgrow"><span>Pas le même plat à moins de</span><select data-cfgsel="norepeat">${[1,2,3,4,6].map(v=>`<option value="${v}" ${C.norepeat==v?"selected":""}>${v} semaine${v>1?"s":""}</option>`).join("")}</select></div></section>
     <section class="cfgcard"><h3>🚫 Jamais au menu</h3><p class="muted small">Ce que personne ne mange dans ce groupe : les recettes qui en contiennent ne sont plus proposées. (Les goûts de chacun restent dans « Mes goûts ».)</p>
       <div class="banchips">${bans.map(id=>`<button type="button" class="chip no" data-banrm="${id}" aria-label="Retirer ${esc(I[id].n)}">${esc(I[id].n)} ×</button>`).join("")||'<span class="muted small">Rien pour l\'instant.</span>'}</div>
       <div class="bansearch"><input type="search" id="banQ" data-banq placeholder="Rechercher un aliment : champignons, poivron, coriandre…" autocomplete="off" value="${esc(banQ)}"><div class="bansug" id="banSug">${banSuggest()}</div></div></section>
