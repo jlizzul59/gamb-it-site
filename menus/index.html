@@ -1144,7 +1144,7 @@ body.storemode #shop .hint{font-size:13px}
 <script src="cuisine.js?v=20261115a"></script>
 <script src="cote.js?v=20261113a"></script>
 <script src="desserts.js?v=20261110a"></script>
-<script src="extra.js?v=20261115b"></script>
+<script src="extra.js?v=20261115c"></script>
 <script>
 // ---------- Ingrédients ----------
 // u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
@@ -2872,7 +2872,7 @@ function fillDesserts(mode){
 }
 function setDessert(k,id){
   W.dessert=W.dessert||{};W.dpin=W.dpin||{};
-  if(id==="rand"){delete W.dpin[k];const n=desPick(k,Math.random,W.dessert[k]);if(n)W.dessert[k]=n}
+  if(id==="rand"){delete W.dpin[k];const sk="d|"+S.cur+"|"+k,seen=ROLLSEEN[sk]=ROLLSEEN[sk]||new Set();if(W.dessert[k])seen.add(W.dessert[k]);let n=null;for(let i=0;i<30&&!n;i++){const x=desPick(k,Math.random,W.dessert[k]);if(x&&!seen.has(x))n=x}if(!n){seen.clear();n=desPick(k,Math.random,W.dessert[k])}if(n){seen.add(n);W.dessert[k]=n}}
   else{W.dessert[k]=id;W.dpin[k]=1}
   if(!Object.keys(W.dpin).length)delete W.dpin;
   save();renderWeek();renderToday();
@@ -3029,11 +3029,25 @@ function buildOld(mode){ // keep | default | seed | random
   }
   W.plan=plan;save();
 }
+// « Un autre plat au hasard » : tirage vraiment au hasard parmi les ~15 plats les mieux adaptés,
+// sans jamais reproposer un plat déjà vu sur ce repas (on repart de zéro quand on a tout vu)
+const ROLLSEEN={};
+function rollPick(slot,used,plan,cur){
+  const sk=S.cur+"|"+slot.key,seen=ROLLSEEN[sk]=ROLLSEEN[sk]||new Set();if(cur)seen.add(cur);
+  let c=R.filter(r=>fits(r,slot,used,plan));if(!c.length)c=R.filter(r=>allowed(r)&&r.for.includes(slot.kind));
+  let pool=c.filter(r=>!seen.has(r.id));
+  if(!pool.length){seen.clear();if(cur)seen.add(cur);pool=c.filter(r=>r.id!==cur)}
+  if(!pool.length)return null;
+  const sc=r=>famBoost(r)+likes(r)*0.6+(isFav(r.id)?0.6:0)+(noteOf(r.id)?(noteOf(r.id)-3)*0.5:0)-(noteOf(r.id)===1?6:0)+qScore(r,slot,null,plan);
+  const top=pool.map(r=>[r,sc(r)]).sort((a,b)=>b[1]-a[1]).slice(0,15).filter(x=>x[1]>-4);
+  const pk=(top.length?top:[[pool[0]]])[Math.floor(Math.random()*(top.length||1))][0];
+  seen.add(pk.id);return pk.id;
+}
 function swap(key){
   const sl=SK[key];
   const used=new Set(SLOTS.filter(s=>s.key!==key&&srcKey(s.key)===s.key&&W.plan[s.key]).map(s=>W.plan[s.key]));
   const plan={...W.plan};delete plan[key];
-  const id=pick(sl,used,plan,W.plan[key],Math.random);
+  const id=rollPick(sl,used,plan,W.plan[key]);
   if(id){W.plan[key]=id;delete W.pin[key];save();renderAll();toast("Nouveau plat : "+RB[id].n)}
   else toast("Pas d'autre recette compatible avec vos goûts");
 }

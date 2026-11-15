@@ -22,14 +22,18 @@ def des(id,n,t,ing,st,w=None):
     if w:r["w"]=w
     D.append(r)
 # ---------- Plats ----------
-plat("soireecrepes","Soirée crêpes : complètes jambon-fromage-œuf, puis crêpes sucrées","jambon",50,
- [["farine",60],["lait",140],["oeuf",1.5],["beurre",12],["jambon",45],["emmental",30],["sucre",0.5],["pateatartiner",1],["confiture",0.5],["citron",0.15],["salade",40]],
- ["Pâte : dans un saladier, mettre la farine et une pincée de sel, creuser un puits, y casser les œufs de la pâte (2 pour 4 personnes). Fouetter en versant le lait petit à petit, jusqu'à une pâte lisse et fluide comme de la crème liquide. Ajouter la moitié du beurre fondu. Laisser reposer 1 h (ou la nuit au frigo).",
-  "Chauffer une poêle à crêpes à feu moyen-vif et la graisser avec un papier essuie-tout trempé dans le beurre fondu. Verser une petite louche de pâte en tournant la poêle pour l'étaler finement.",
-  "Quand les bords se décollent et dorent (1 min), retourner la crêpe à la spatule et cuire 30 s de l'autre côté. Empiler les crêpes sur une assiette, sous un torchon.",
-  "Complètes : remettre une crêpe dans la poêle, y casser un œuf au centre, étaler le blanc à la spatule, ajouter le jambon et le fromage râpé. Couvrir 2 min, jusqu'à ce que le blanc soit cuit et le fromage fondu, puis replier les bords en carré. Servir avec la salade.",
-  "Dessert : garnir les crêpes restantes de sucre et d'un filet de citron, de pâte à tartiner ou de confiture, et les plier en quatre."],
- [["cru","Préparer la pâte à crêpes (elle se garde 24 h au frigo, bien couverte)"]],"Bien mélanger la pâte, cuire les crêpes, garnir les complètes, puis les sucrées au dessert.",forr=("fam",),w="1 h de repos de la pâte",tag="plaisir")
+plat("soireecrepes","Soirée crêpes (chacun garnit)","jambon",45,
+ [["farine",60],["lait",140],["oeuf",1],["beurre",12],["jambon",40],["emmental",30],["sucre",0.5],["pateatartiner",1],["confiture",0.5],["citron",0.15]],
+ ["Pâte : mettre la farine et une pincée de sel dans un saladier, creuser un puits, y casser les œufs et fouetter en versant le lait petit à petit, jusqu'à une pâte lisse et fluide. Ajouter la moitié du beurre fondu. Laisser reposer 1 h si possible.",
+  "Chauffer la poêle à feu moyen-vif, la graisser avec un essuie-tout trempé dans le beurre fondu, verser une petite louche de pâte en tournant la poêle. Retourner quand les bords dorent (1 min), 30 s de l'autre côté. Empiler sous un torchon.",
+  "Mettre tout sur la table : jambon, fromage râpé, sucre, citron, pâte à tartiner, confiture. Chacun garnit ses crêpes."],
+ [["cru","Préparer la pâte à crêpes (24 h au frigo, bien couverte)"]],"Cuire les crêpes, tout mettre sur la table.",forr=("fam","l2"),w="1 h de repos de la pâte",tag="plaisir",simple=True)
+plat("soireegalettes","Soirée galettes de sarrasin (chacun garnit)","jambon",45,
+ [["farinesarrasin",60],["oeuf",1.25],["beurre",12],["jambon",40],["emmental",35],["champignons",50],["salade",30]],
+ ["Pâte : mélanger la farine de sarrasin et une pincée de sel, verser 15 cl d'eau par personne en deux fois en battant bien, ajouter 1 œuf pour 4. Laisser reposer au moins 2 h (idéalement la nuit).",
+  "Émincer les champignons et les faire revenir 8 min dans un peu de beurre.",
+  "Chauffer la poêle à feu vif, la beurrer, verser une louche de pâte et l'étaler vite. Cuire 2 min, retourner : chacun garnit sa galette dans la poêle (œuf, jambon, fromage, champignons) et la replie quand le fromage a fondu."],
+ [["cru","Préparer la pâte à galettes (2 jours au frigo)"],["feu","Faire revenir les champignons"]],"Cuire les galettes, chacun garnit la sienne.",forr=("fam","l2"),w="2 h de repos de la pâte",tag="plaisir")
 plat("galettesaucisse","Galette-saucisse et salade verte","saucisse",25,
  [["galette",1.5],["toulouse",120],["beurre",5],["moutarde",0.25],["oignon",30],["salade",50],["vinaigre",0.25],["huile",0.5]],
  ["Piquer les saucisses à la fourchette et les cuire 15 min à la poêle à feu moyen avec un filet d'huile, en les retournant pour qu'elles dorent de tous les côtés.",
