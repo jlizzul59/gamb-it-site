@@ -3265,7 +3265,7 @@ function renderWeek(){
         ${mode!=="skip"&&!isRest?extraHTML(sl):""}
         ${mode!=="skip"&&r?desHTML(sl.key):""}
         ${mode!=="skip"&&r?`<div class="meta"><span class="num">≈ ${kcal(r)} kcal</span>${!isRest?tagHTML(r,2):""}</div>`:""}${r&&mode!=="skip"&&foyConf(r).length?`<span class="warnd" title="Contient : ${esc(conflictText(foyConf(r)))}">⚠ ${esc(conflictShort(foyConf(r)))}</span>`:""}
-        ${mode==="skip"?"":kid?(isRest?"":`<div class="mbar"><button class="chg" type="button" data-pick="${sl.key}">Proposer un autre plat</button></div>`):`<div class="mbar">${isRest?`<button class="chg" type="button" data-setmode="${sl.key}|cook">Cuisiner un plat</button>`:`<button class="chg" type="button" data-cmenu="chg|${sl.key}" aria-haspopup="menu">Changer <span aria-hidden="true">▾</span></button>`}<button class="more" type="button" data-cmenu="more|${sl.key}" aria-haspopup="menu" aria-label="Plus d'options pour ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" title="Plus d'options">⋯</button></div>`}</div>`;
+        ${mode==="skip"?"":kid?(isRest?"":`<div class="mbar"><button class="chg" type="button" data-pick="${sl.key}">Proposer un autre plat</button></div>`):`<div class="mbar">${isRest?`<button class="chg" type="button" data-setmode="${sl.key}|cook">Cuisiner un plat</button>`:`<button class="chg" type="button" data-cmenu="chg|${sl.key}" aria-haspopup="menu">Changer <span aria-hidden="true">▾</span></button><button class="more reroll" type="button" data-reroll="${sl.key}" title="Un autre plat au hasard" aria-label="Un autre plat au hasard">🎲</button>`}<button class="more" type="button" data-cmenu="more|${sl.key}" aria-haspopup="menu" aria-label="Plus d'options pour ${DAYS[i].toLowerCase()} ${sl.when.toLowerCase()}" title="Plus d'options">⋯</button></div>`}</div>`;
     }).join("");
     return `<div class="day ${dayOff?"day-off":""} ${past.includes(i)?"day-past":""}"><div class="dayhead"><b>${d}</b><small>${dateOf(i)}</small></div>${meals}${tot?`<div class="daytotal">Midi + soir : <span class="num">≈ ${tot} kcal</span></div>`:""}</div>`;
   }).join("");
@@ -3978,6 +3978,7 @@ document.getElementById("prevW").addEventListener("click",()=>goWeek(S.cur-1));
 document.getElementById("nextW").addEventListener("click",()=>goWeek(S.cur+1));
 let _regenArm=0;
 document.getElementById("regen").addEventListener("click",e=>{const go=()=>{W.pin={};build("random");renderAll();toast("Nouvelle semaine générée · « Annuler » pour revenir")};if(W.valid)askInline(e.currentTarget,"Le planning est validé. Tout remplacer ?",go);else go()});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-reroll]");if(!b||isKid())return;e.preventDefault();swap(b.dataset.reroll)});
 // ---------- Menus des cartes : « Changer », « ⋯ » et personnes ----------
 const CM=(()=>{let el=null,cur=null;
   function close(){if(!el)return;el.remove();el=null;if(cur&&cur.btn)cur.btn.setAttribute("aria-expanded","false");cur=null}
@@ -4116,7 +4117,7 @@ document.getElementById("copyList").addEventListener("click",()=>{
 });
 
 // ---------- Propositions : écran du planning ----------
-const KIDBLOCK="[data-cmenu],[data-mact],[data-setmode],[data-okslot],[data-wvalid],[data-temp],[data-swap],[data-skip],[data-unskip],[data-pers],[data-def],#regen,#reset,#restLunch,[data-padd],[data-pdel],[data-pdiet],[data-pref],#clearPrefs";
+const KIDBLOCK="[data-cmenu],[data-reroll],[data-mact],[data-setmode],[data-okslot],[data-wvalid],[data-temp],[data-swap],[data-skip],[data-unskip],[data-pers],[data-def],#regen,#reset,#restLunch,[data-padd],[data-pdel],[data-pdiet],[data-pref],#clearPrefs";
 const KIDMSG="Profil Enfant : propose plutôt un plat, un adulte validera.";
 document.addEventListener("click",e=>{if(isKid()&&e.target.closest(KIDBLOCK)&&!e.target.closest(".ck")){e.preventDefault();e.stopImmediatePropagation();toast(KIDMSG)}},true);
 document.addEventListener("change",e=>{if(isKid()&&e.target.closest("[data-mode],[data-pname],[data-pnote]")){e.stopImmediatePropagation();toast(KIDMSG);renderAll()}},true);
