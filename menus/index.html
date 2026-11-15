@@ -1144,7 +1144,7 @@ body.storemode #shop .hint{font-size:13px}
 <script src="cuisine.js?v=20261115a"></script>
 <script src="cote.js?v=20261113a"></script>
 <script src="desserts.js?v=20261110a"></script>
-<script src="extra.js?v=20261115d"></script>
+<script src="extra.js?v=20261115e"></script>
 <script>
 // ---------- Ingrédients ----------
 // u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
@@ -3330,7 +3330,7 @@ function renderCatList(sfx,key){
 }
 function openCatalog(key){
   catKey=key;const sl=SK[key];
-  ov.innerHTML=`<article class="rcard catcard"><button class="close" type="button" data-close>Fermer</button>
+  catQ="";catF.clear();ov.innerHTML=`<article class="rcard catcard"><button class="close" type="button" data-close>Fermer</button>
     <div class="rhead"><small>${DAYS[sl.day]} ${dateOf(sl.day)} · ${sl.when} · ${PN(sl)} pers.</small><h3>Choisir un plat</h3></div>${catalogShell("m",key)}</article>`;
   ov.hidden=false;renderCatList("m",key);
   const q=document.getElementById("catq-m");try{q.focus({preventScroll:true})}catch(e){}
@@ -4165,7 +4165,7 @@ function wishBar(){const el=document.getElementById("wishbar");if(!el)return;con
   el.classList.toggle("has",!!L.length)}
 function openPropCatalog(){
   catKey="__prop";
-  ov.innerHTML=`<article class="rcard catcard"><button class="close" type="button" data-close>Fermer</button>
+  catQ="";catF.clear();ov.innerHTML=`<article class="rcard catcard"><button class="close" type="button" data-close>Fermer</button>
     <div class="rhead"><small>À valider par un adulte</small><h3>Ma liste d'envies</h3></div>${catalogShell("m","__prop")}<div class="wishbar" id="wishbar"></div></article>`;
   ov.hidden=false;renderCatList("m","__prop");wishBar();
   const q=document.getElementById("catq-m");try{q.focus({preventScroll:true})}catch(e){}
@@ -4384,7 +4384,7 @@ function extraHTML(sl){
 }
 function openExtraCatalog(key){
   catKey="x:"+key;const sl=SK[key];
-  ov.innerHTML=`<article class="rcard catcard"><button class="close" type="button" data-close>Fermer</button>
+  catQ="";catF.clear();ov.innerHTML=`<article class="rcard catcard"><button class="close" type="button" data-close>Fermer</button>
     <div class="rhead"><small>${DAYS[sl.day]} ${dateOf(sl.day)} · ${sl.when}</small><h3>Ajouter une recette à ce repas</h3></div>${catalogShell("m","x:"+key)}</article>`;
   ov.hidden=false;renderCatList("m","x:"+key);
   const q=document.getElementById("catq-m");try{q.focus({preventScroll:true})}catch(e){}
@@ -4875,6 +4875,18 @@ function reloadFromStorage(){
 }
 CLOUD.init({apply:reloadFromStorage});
 
+// Bouton retour du téléphone : ferme la fenêtre ouverte (recette, catalogue, mode cuisine…) au lieu de quitter la page
+(()=>{let depth=0,popping=false;
+  const ck=()=>document.querySelector(".ck"),ovl=()=>document.getElementById("overlay");
+  const openCount=()=>{let n=0;const o=ovl(),c=ck();if(o&&!o.hidden)n++;if(c&&!c.hidden)n++;return n};
+  const closeTop=()=>{const c=ck();if(c&&!c.hidden){const b=c.querySelector("[data-ckclose]");if(b){b.click();return}c.hidden=true;document.documentElement.classList.remove("ck-on");return}
+    const o=ovl();if(o&&!o.hidden){try{closeModal()}catch(e){o.hidden=true;o.innerHTML=""}}};
+  const sync=()=>{if(popping)return;const n=openCount();
+    while(depth<n){depth++;try{history.pushState({tncov:depth},"",location.href)}catch(e){}}
+    if(depth>n){const d=depth-n;depth=n;if(history.state&&history.state.tncov)try{history.go(-d)}catch(e){}}};
+  let t=0;new MutationObserver(()=>{if(!t)t=setTimeout(()=>{t=0;sync()},0)}).observe(document.body,{attributes:true,attributeFilter:["hidden"],subtree:true,childList:true});
+  window.addEventListener("popstate",e=>{const s=(e.state&&e.state.tncov)||0;if(depth>s){popping=true;while(depth>s&&openCount()){depth--;closeTop()}depth=Math.min(depth,openCount());popping=false}});
+})();
 // ---------- Menu « Plus » de la navigation ----------
 (()=>{const b=document.getElementById("plusBtn"),m=document.getElementById("plusMenu");if(!b||!m)return;
   const close=()=>{m.hidden=true;b.setAttribute("aria-expanded","false")};

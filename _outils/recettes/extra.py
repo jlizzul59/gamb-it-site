@@ -11,8 +11,9 @@ I={
  "orange":{"n":"Oranges","r":"fl","u":"pc","k":60},
 }
 R=[];D=[];BC={}
+REG={"Maghreb":"Afrique","Turquie":"Moyen-Orient"}
 def plat(id,n,p,t,ing,st,bt,bj,forr=("fam","l2"),w=None,pays="France",tag=None,simple=False):
-    r={"id":"e_"+id,"n":n,"for":list(forr),"p":p,"t":t,"ing":ing,"st":st,"pays":pays,"reg":"France","temp":"chaud"}
+    r={"id":"e_"+id,"n":n,"for":list(forr),"p":p,"t":t,"ing":ing,"st":st,"pays":pays,"reg":REG.get(pays,"France"),"temp":"chaud"}
     if w:r["w"]=w
     if tag:r["tag"]=tag
     if simple:r["simple"]=1
@@ -114,6 +115,54 @@ des("gaufresliege","Gaufres de Liège",40,[["farine",50],["lait",15],["oeuf",0.2
   "Laisser lever 1 h dans un endroit tiède : la pâte gonfle.",
   "Incorporer le sucre perlé, former des boules de 80 g et les laisser reposer 15 min.",
   "Cuire chaque boule 3 à 4 min dans le gaufrier bien chaud, jusqu'à ce que le sucre caramélise. Attention, le caramel est brûlant : laisser tiédir avant de croquer."],w="1 h 15 de pousse")
+# ---------- Bricks ----------
+PLIAGE="Plier en triangle : poser une feuille de brick, la plier en deux pour obtenir une longue bande, mettre une cuillère de farce en bas, rabattre un coin pour former un triangle, puis continuer à plier en triangle jusqu'au bout de la bande. Coller le bout avec un peu d'eau."
+plat("brickpouletcurry","Bricks au poulet, curry et carottes, salade","poulet",40,
+ [["brick",3],["poulet",110],["carotte",60],["oignon",30],["curry",0.75],["creme",20],["coriandre",0.1],["huile",1],["salade",40]],
+ ["Préchauffer le four à 200 °C.","Couper le poulet en petits dés, râper les carottes, émincer l'oignon.",
+  "Faire revenir l'oignon 3 min dans un filet d'huile, ajouter le poulet et le curry et cuire 5 min, jusqu'à ce que le poulet soit blanc à cœur. Ajouter les carottes et la crème, laisser 2 min, saler et ajouter la coriandre ciselée.",
+  PLIAGE,"Poser les bricks sur une plaque, les badigeonner d'huile au pinceau et cuire 12 à 15 min, jusqu'à ce qu'elles soient dorées et croustillantes.","Servir avec la salade."],
+ [["cru","Couper le poulet en dés, râper les carottes, émincer l'oignon"],["feu","Cuire la farce au poulet-curry (2 jours au frigo)"]],"Plier les bricks et les dorer 15 min au four.",pays="Maghreb")
+plat("brickchevremiel","Bricks chèvre-miel, salade aux noix","vege",25,
+ [["brick",2],["chevre",70],["miel",1],["noix",15],["huile",1],["salade",60],["vinaigre",0.25]],
+ ["Préchauffer le four à 200 °C.","Couper la bûche de chèvre en rondelles épaisses (2 par personne).",
+  "Poser une rondelle au centre de chaque feuille de brick, ajouter un filet de miel et quelques noix concassées. Rabattre les bords pour former un carré bien fermé.",
+  "Badigeonner d'huile et cuire 8 à 10 min, jusqu'à ce que la brick soit dorée (le chèvre doit juste fondre).","Servir aussitôt sur la salade, avec le reste des noix et une vinaigrette."],
+ [["cru","Laver la salade, concasser les noix"]],"Garnir les bricks et les dorer 10 min.",simple=True)
+plat("bricksaumonepinards","Bricks au saumon, épinards et ricotta, riz","saumon",40,
+ [["brick",3],["saumon",110],["epinards",80],["ricotta",40],["citron",0.25],["huile",1],["riz",60]],
+ ["Préchauffer le four à 200 °C. Cuire le riz.","Faire tomber les épinards 2 min dans une poêle, les presser pour enlever l'eau.",
+  "Couper le saumon cru en petits dés (sans la peau). Mélanger avec les épinards, la ricotta, le zeste de citron, sel et poivre.",
+  PLIAGE,"Badigeonner d'huile et cuire 12 à 15 min : le saumon cuit dans la brick.","Servir avec le riz et un filet de citron."],
+ [["feu","Cuire le riz"],["feu","Faire tomber les épinards et les presser"]],"Mélanger la farce au saumon cru, plier les bricks, 15 min au four.")
+plat("brickfetaepinards","Börek feta-épinards, salade de tomates","vege",35,
+ [["brick",3],["feta",70],["epinards",100],["oeuf",0.5],["menthe",0.1],["huile",1],["tomate",120],["oignonrouge",15]],
+ ["Préchauffer le four à 200 °C.","Faire tomber les épinards 2 min à la poêle et les presser. Les hacher grossièrement.",
+  "Écraser la feta à la fourchette, ajouter les épinards, l'œuf battu et la menthe ciselée. Poivrer (pas de sel, la feta est salée).",
+  "Rouler en cigares : mettre une cuillère de farce en bas de chaque feuille, rabattre les côtés et rouler serré. Coller le bout avec un peu d'eau.",
+  "Badigeonner d'huile et cuire 15 min, jusqu'à ce qu'ils soient dorés.","Servir avec les tomates en quartiers et l'oignon rouge émincé."],
+ [["feu","Faire tomber les épinards et les presser"],["cru","Couper les tomates, émincer l'oignon rouge"]],"Préparer la farce, rouler les böreks, 15 min au four.",pays="Turquie")
+plat("brickboeufoeuf","Bricks au bœuf, œuf et coriandre, salade","boeuf",30,
+ [["brick",2],["boeuf",90],["oeuf",1],["oignon",30],["cumin",0.5],["coriandre",0.1],["huile",1.5],["salade",50],["citron",0.25]],
+ ["Émincer l'oignon et le faire revenir 3 min dans un filet d'huile, ajouter le bœuf et le cumin et cuire 5 min en émiettant. Saler, poivrer, ajouter la coriandre.",
+  "Poser une feuille de brick dans une assiette creuse, mettre la viande au centre en formant un puits et casser un œuf dedans.",
+  "Replier vite la feuille en demi-lune (ou en carré) et la glisser dans une poêle avec un fond d'huile chaude.",
+  "Cuire 2 min de chaque côté, jusqu'à ce que la brick soit dorée : le jaune reste coulant.","Égoutter sur du papier absorbant et servir avec la salade et le citron."],
+ [["feu","Cuire la viande au cumin (2 jours au frigo)"]],"Garnir les bricks avec la viande et l'œuf, les dorer à la poêle.",pays="Maghreb")
+plat("brickslegumes","Bricks aux légumes et chèvre, salade","vege",40,
+ [["brick",3],["courgette",80],["poivron",60],["oignon",30],["chevre",40],["huile",1.5],["salade",40]],
+ ["Préchauffer le four à 200 °C.","Couper la courgette et le poivron en petits dés, émincer l'oignon.",
+  "Faire revenir les légumes 10 min dans un filet d'huile, jusqu'à ce qu'ils soient tendres. Saler, poivrer, laisser tiédir et ajouter le chèvre émietté.",
+  PLIAGE,"Badigeonner d'huile et cuire 12 à 15 min.","Servir avec la salade."],
+ [["cru","Couper la courgette et le poivron en dés, émincer l'oignon"],["feu","Faire revenir les légumes (2 jours au frigo)"]],"Plier les bricks et les dorer 15 min au four.")
+des("brickbanane","Bricks banane-chocolat",20,[["brick",1],["banane",0.5],["pateatartiner",1],["beurre",5],["sucre",0.25]],
+ ["Préchauffer le four à 200 °C. Faire fondre le beurre.","Couper les bananes en rondelles.",
+  "Sur chaque feuille de brick, étaler une cuillère de pâte à tartiner, ajouter des rondelles de banane et refermer en carré.",
+  "Badigeonner de beurre fondu, saupoudrer d'un peu de sucre et cuire 8 à 10 min. Servir tiède."])
+des("aumonierespommes","Aumônières pommes-cannelle",30,[["brick",1],["pomme",0.75],["beurre",8],["sucre",0.75],["cannelle",0.25]],
+ ["Préchauffer le four à 200 °C.","Éplucher les pommes et les couper en petits dés. Les faire dorer 5 min à la poêle avec un peu de beurre, le sucre et la cannelle.",
+  "Faire fondre le reste du beurre. Badigeonner les feuilles de brick, mettre les pommes au centre et resserrer en petite bourse.",
+  "Cuire 10 min, jusqu'à ce que les bords soient dorés. Servir tiède, avec une boule de glace vanille si on veut."])
 FIX={"d_crepes":{"w":"1 h de repos","st":["Mettre la farine, le sucre et une pincée de sel dans un saladier et creuser un puits au milieu.",
  "Casser les œufs dans le puits et fouetter au centre en ramenant peu à peu la farine.",
  "Verser le lait petit à petit sans arrêter de fouetter, jusqu'à une pâte lisse et fluide comme une crème liquide.",

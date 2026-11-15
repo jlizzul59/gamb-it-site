@@ -643,7 +643,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 <script src="cuisine.js?v=20261115a"></script>
 <script src="cote.js?v=20261113a"></script>
 <script src="desserts.js?v=20261110a"></script>
-<script src="extra.js?v=20261115d"></script>
+<script src="extra.js?v=20261115e"></script>
 <script>
 
 // ---------- Ingrédients ----------
@@ -2665,6 +2665,18 @@ function addShared(){const r=SHARED;if(!r)return;if(isKid()){toast("Demandez à 
 document.getElementById("dice").addEventListener("click",()=>{const L=LIST().filter(r=>!r.id.startsWith("mix:"));openRecipe(L[Math.floor(Math.random()*L.length)].id)});
 function openFromHash(){const sh=location.hash.match(/^#partage=(.*)$/);if(sh){setTimeout(()=>openShared(sh[1]),60);return}
   const m=location.hash.match(/^#([rc])=(.+)$/);if(m){const id=decodeURIComponent(m[2]);if(RB[id]&&RB[id].dessert&&!isDes()){mode="desserts";renderHero();render()}if(RB[id])setTimeout(()=>{try{openRecipe(id);if(m[1]==="c"){const b=document.querySelector("[data-cook]");b&&b.click()}}catch(e){}},50)}}
+// Bouton retour du téléphone : ferme la fenêtre ouverte (recette, catalogue, mode cuisine…) au lieu de quitter la page
+(()=>{let depth=0,popping=false;
+  const ck=()=>document.querySelector(".ck"),ovl=()=>document.getElementById("overlay");
+  const openCount=()=>{let n=0;const o=ovl(),c=ck();if(o&&!o.hidden)n++;if(c&&!c.hidden)n++;return n};
+  const closeTop=()=>{const c=ck();if(c&&!c.hidden){const b=c.querySelector("[data-ckclose]");if(b){b.click();return}c.hidden=true;document.documentElement.classList.remove("ck-on");return}
+    const o=ovl();if(o&&!o.hidden){try{closeModal()}catch(e){o.hidden=true;o.innerHTML=""}}};
+  const sync=()=>{if(popping)return;const n=openCount();
+    while(depth<n){depth++;try{history.pushState({tncov:depth},"",location.href)}catch(e){}}
+    if(depth>n){const d=depth-n;depth=n;if(history.state&&history.state.tncov)try{history.go(-d)}catch(e){}}};
+  let t=0;new MutationObserver(()=>{if(!t)t=setTimeout(()=>{t=0;sync()},0)}).observe(document.body,{attributes:true,attributeFilter:["hidden"],subtree:true,childList:true});
+  window.addEventListener("popstate",e=>{const s=(e.state&&e.state.tncov)||0;if(depth>s){popping=true;while(depth>s&&openCount()){depth--;closeTop()}depth=Math.min(depth,openCount());popping=false}});
+})();
 openFromHash();window.addEventListener("hashchange",openFromHash);
 
 // ---------- Appli installable : service worker et bouton « Installer » ----------
