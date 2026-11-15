@@ -7,6 +7,31 @@ const gB=()=>typeof BC!=="undefined"?BC:{};
 // Chaque fiche : t = titre, rx = mots qui la déclenchent dans une étape, mat = matériel, st = pas à pas,
 // ok = comment savoir que c'est réussi, oups = si ça rate, av = se prépare à l'avance ?
 const F={
+pateacrepes:{b:"Pâte à crêpes : farine, œufs, lait versé petit à petit en fouettant, beurre fondu, 1 h de repos.",t:"Faire ses crêpes maison",rx:/^(?!.*(p[âa]te|farine|louche|vergeoise)).*\bcr[êe]pes?\b/i,
+ mat:"Un saladier, un fouet, une louche, une poêle à crêpes (ou une poêle antiadhésive), une spatule.",
+ q:"Pour 12 crêpes environ : 250 g de farine, 4 œufs, 50 cl de lait, 50 g de beurre fondu, 1 pincée de sel (+ 1 cuillère à soupe de sucre pour des crêpes sucrées). Si vous les faites maison, ajoutez ces ingrédients à la liste de courses à la place des crêpes toutes prêtes.",
+ st:["Mettre la farine et le sel dans le saladier et creuser un puits au milieu.",
+  "Casser les œufs dans le puits et commencer à fouetter au centre, en ramenant peu à peu la farine.",
+  "Verser le lait petit à petit, sans arrêter de fouetter : la pâte doit rester lisse. Au début elle est épaisse, puis elle devient fluide.",
+  "Ajouter le beurre fondu et mélanger. Laisser reposer 1 h à température ambiante (ou toute la nuit au frigo).",
+  "Chauffer la poêle à feu moyen-vif et la graisser avec un essuie-tout trempé dans du beurre fondu.",
+  "Verser une petite louche de pâte en tournant la poêle pour qu'elle couvre tout le fond en couche fine.",
+  "Quand les bords dorent et se décollent (environ 1 min), retourner la crêpe à la spatule et cuire 30 s de l'autre côté. Empiler sur une assiette."],
+ ok:"La pâte a la consistance d'une crème liquide ; la crêpe se décolle toute seule quand on secoue la poêle.",
+ oups:"Des grumeaux ? Un coup de mixeur plongeant. Trop épaisse ? Un peu de lait. La première crêpe rate souvent : c'est normal, la poêle n'était pas encore à bonne température.",
+ av:"La pâte se garde 24 h au frigo, bien couverte (remuer avant usage). Les crêpes cuites se gardent 2 jours au frigo, empilées et filmées, ou 2 mois au congélateur."},
+pategalettes:{b:"Pâte à galettes : farine de sarrasin, sel, eau ajoutée petit à petit, un œuf, une nuit de repos.",t:"Faire ses galettes de sarrasin maison",rx:/^(?!.*(farine|huile|louche|b(œ|oe)uf|lahmacun|pommes? de terre|l[ée]gumes)).*(galettes? de sarrasin|(garnir|chauff|tartiner|poser|rouler).*galettes?|galettes?.*(chauff|garnir))/i,
+ mat:"Un saladier, un fouet (ou une cuillère en bois), une louche, une grande poêle (ou une crêpière), une spatule.",
+ q:"Pour 10 galettes environ : 250 g de farine de sarrasin, 1 œuf, 60 cl d'eau froide, 1 cuillère à café rase de sel, du beurre pour la cuisson.",
+ st:["Mélanger la farine de sarrasin et le sel dans le saladier.",
+  "Verser la moitié de l'eau et battre énergiquement 2 à 3 minutes : c'est ce qui rend la galette souple.",
+  "Ajouter l'œuf, puis le reste de l'eau petit à petit, en continuant de battre jusqu'à une pâte lisse et assez liquide.",
+  "Couvrir et laisser reposer au moins 2 h au frigo, idéalement toute une nuit.",
+  "Chauffer la poêle à feu vif et la graisser au beurre. Verser une louche de pâte et l'étaler très vite en tournant la poêle.",
+  "Cuire 2 min, jusqu'à ce que les bords brunissent et se décollent, retourner et cuire 1 min. C'est à ce moment qu'on peut garnir."],
+ ok:"La galette est fine, avec des petits trous, et les bords sont dentelés et croustillants.",
+ oups:"La galette se casse ? La pâte est trop épaisse : ajouter un peu d'eau. Elle colle ? La poêle n'est pas assez chaude ou pas assez beurrée.",
+ av:"La pâte se garde 2 jours au frigo. Les galettes cuites se gardent 2 jours au frigo, empilées et filmées : on les réchauffe et on les garnit directement dans la poêle."},
 bechamel:{b:"Faire fondre le beurre, ajouter la farine et cuire 1 min en fouettant, puis verser le lait froid petit à petit et laisser épaissir 5 min. Saler, poivrer, muscade.",t:"Faire une béchamel",rx:/b[ée]chamel/i,
  mat:"Une casserole, un fouet, une cuillère en bois.",
  q:"Repère : autant de beurre que de farine (par exemple 40 g + 40 g) pour 50 cl de lait. Plus de lait = plus liquide.",
@@ -229,7 +254,7 @@ const ORDER=Object.keys(F);
 // Fiches repérées dans un texte (au plus 2 par étape, sans répéter celles déjà montrées)
 // une étape qui détaille déjà la technique n'a pas besoin de fiche ; seules les étapes brèves (« napper de béchamel ») en reçoivent une
 // fiches proposées sous les étapes : seulement les vraies techniques (pas « mixer » ou « faire revenir »)
-const STEPF=new Set(["bechamel","saucetomate","roux","vinaigrette","mayo","puree","lentilles","quinoa","oeufpoche","blancs","paner","papillote","foncer","blanchir","caramel","pocher","riz"]);
+const STEPF=new Set(["pateacrepes","pategalettes","bechamel","saucetomate","roux","vinaigrette","mayo","puree","lentilles","quinoa","oeufpoche","blancs","paner","papillote","foncer","blanchir","caramel","pocher","riz"]);
 window.fichesIn=(txt,seen,force)=>{const out=[];if(!force&&String(txt).length>120)return out;for(const k of ORDER){if(out.length>=2)break;if(seen&&seen.has(k))continue;if(!force&&!STEPF.has(k))continue;if(F[k].rx.test(txt)){out.push(k);seen&&seen.add(k)}}
   // pas de fiche générale (revenir, réduire, déglacer, saisir) à côté d'une fiche plus précise
   const GEN=new Set(["revenir","reduire","deglacer","saisir"]);

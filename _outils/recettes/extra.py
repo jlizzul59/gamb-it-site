@@ -90,10 +90,12 @@ des("crepesvergeoise","Crêpes à la vergeoise et au beurre (comme dans le Nord)
   "Cuire les crêpes fines dans une poêle beurrée, 1 min de chaque côté.",
   "Dès la sortie de la poêle, étaler une noisette de beurre et saupoudrer de vergeoise : elle fond et caramélise légèrement. Plier en quatre."],w="1 h de repos")
 des("crepesbanane","Crêpes banane-chocolat",30,[["farine",30],["lait",70],["oeuf",0.5],["beurre",5],["banane",0.5],["pateatartiner",1]],
- ["Préparer la pâte et cuire les crêpes (voir les crêpes classiques).",
+ ["Pâte : mettre la farine et une pincée de sel dans un saladier, creuser un puits, y casser les œufs et fouetter en versant le lait petit à petit, jusqu'à une pâte lisse et fluide comme une crème liquide. Ajouter un peu de beurre fondu. Laisser reposer 1 h (ou la nuit au frigo).",
+  "Chauffer la poêle à feu moyen-vif, la graisser avec un essuie-tout trempé dans le beurre fondu. Verser une petite louche de pâte en tournant la poêle pour l'étaler finement. Retourner quand les bords dorent (1 min), cuire 30 s de l'autre côté.",
   "Couper les bananes en rondelles.","Tartiner chaque crêpe chaude de pâte à tartiner, ajouter les rondelles de banane et plier en quatre."],w="1 h de repos")
 des("crepessuzette","Crêpes Suzette",40,[["farine",30],["lait",70],["oeuf",0.5],["beurre",20],["sucre",1],["orange",0.75]],
- ["Préparer la pâte et cuire les crêpes fines (voir les crêpes classiques).",
+ ["Pâte : mettre la farine et une pincée de sel dans un saladier, creuser un puits, y casser les œufs et fouetter en versant le lait petit à petit, jusqu'à une pâte lisse et fluide comme une crème liquide. Ajouter un peu de beurre fondu. Laisser reposer 1 h (ou la nuit au frigo).",
+  "Chauffer la poêle à feu moyen-vif, la graisser avec un essuie-tout trempé dans le beurre fondu. Verser une petite louche de pâte en tournant la poêle pour l'étaler finement. Retourner quand les bords dorent (1 min), cuire 30 s de l'autre côté.",
   "Râper le zeste d'une orange et presser le jus de toutes.",
   "Dans une grande poêle, faire fondre le beurre avec le sucre jusqu'à un caramel blond, verser le jus et le zeste (attention aux éclaboussures) et laisser réduire 3 min en sirop.",
   "Plier les crêpes en quatre, les passer dans le sirop chaud des deux côtés, servir aussitôt. Version adulte : on peut ajouter un trait de liqueur d'orange au sirop."],w="1 h de repos")
@@ -103,7 +105,14 @@ des("gaufresliege","Gaufres de Liège",40,[["farine",50],["lait",15],["oeuf",0.2
   "Laisser lever 1 h dans un endroit tiède : la pâte gonfle.",
   "Incorporer le sucre perlé, former des boules de 80 g et les laisser reposer 15 min.",
   "Cuire chaque boule 3 à 4 min dans le gaufrier bien chaud, jusqu'à ce que le sucre caramélise. Attention, le caramel est brûlant : laisser tiédir avant de croquer."],w="1 h 15 de pousse")
-out="// Crêpes, gaufres, croques… : plats du planning (R) et desserts (D). Généré par _outils/recettes/extra.py.\nwindow.MENUS_EXTRA="+json.dumps({"I":I,"R":R,"D":D,"BC":BC},ensure_ascii=False,separators=(",",":"))+";\n"
-out+="// Les desserts rejoignent la liste des desserts avant son chargement\n(()=>{const X=window.MENUS_EXTRA,DS=window.MENUS_DESSERTS;if(!X||!DS)return;Object.assign(DS.I=DS.I||{},X.I);X.D.forEach(d=>{if(!DS.R.some(r=>r.id===d.id))DS.R.push(d)})})();\n"
+FIX={"d_crepes":{"w":"1 h de repos","st":["Mettre la farine, le sucre et une pincée de sel dans un saladier et creuser un puits au milieu.",
+ "Casser les œufs dans le puits et fouetter au centre en ramenant peu à peu la farine.",
+ "Verser le lait petit à petit sans arrêter de fouetter, jusqu'à une pâte lisse et fluide comme une crème liquide.",
+ "Ajouter le beurre fondu, mélanger et laisser reposer 1 h (ou toute la nuit au frigo).",
+ "Chauffer une poêle à feu moyen-vif et la graisser avec un essuie-tout trempé dans un peu de beurre fondu. Verser une petite louche de pâte en tournant la poêle pour l'étaler finement.",
+ "Quand les bords dorent et se décollent (environ 1 min), retourner la crêpe à la spatule et cuire 30 s de l'autre côté. Empiler sur une assiette.",
+ "Servir avec la confiture (ou du sucre, de la pâte à tartiner…)."]}}
+out="// Crêpes, gaufres, croques… : plats du planning (R) et desserts (D). Généré par _outils/recettes/extra.py.\nwindow.MENUS_EXTRA="+json.dumps({"I":I,"R":R,"D":D,"BC":BC,"FIX":FIX},ensure_ascii=False,separators=(",",":"))+";\n"
+out+="// Les desserts rejoignent la liste des desserts avant son chargement\n(()=>{const X=window.MENUS_EXTRA,DS=window.MENUS_DESSERTS;if(!X||!DS)return;Object.assign(DS.I=DS.I||{},X.I);X.D.forEach(d=>{if(!DS.R.some(r=>r.id===d.id))DS.R.push(d)});DS.R.forEach(r=>{if(X.FIX[r.id])Object.assign(r,X.FIX[r.id])})})();\n"
 open("menus/extra.js","w",encoding="utf-8").write(out)
 print(len(R),"plats,",len(D),"desserts")
