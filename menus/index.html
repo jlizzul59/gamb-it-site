@@ -1144,6 +1144,7 @@ body.storemode #shop .hint{font-size:13px}
 <script src="cuisine.js?v=20261113c"></script>
 <script src="cote.js?v=20261113a"></script>
 <script src="desserts.js?v=20261110a"></script>
+<script src="extra.js?v=20261115a"></script>
 <script>
 // ---------- Ingrédients ----------
 // u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
@@ -2058,6 +2059,7 @@ QNEW.forEach(o=>{const r=Object.assign({},o);delete r.j;if(RB[r.id])Object.assig
 ["pesto","beurrecacahuete","patecurry","miso","tahin","gochujang","tamarin"].forEach(k=>{if(I[k])I[k].r="co"});
 // Recettes ajoutées (fichier partagé recettes-plus.js)
 (()=>{const X=window.MENUS_PLUS;if(!X)return;Object.assign(I,X.I);if(X.IREN)for(const k in X.IREN)if(I[k])Object.assign(I[k],X.IREN[k]);if(X.FIX)for(const id in X.FIX)if(RB[id])Object.assign(RB[id],X.FIX[id]);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:"Réchauffer doucement avant de servir."}})})();
+(()=>{const X=window.MENUS_EXTRA;if(!X)return;Object.assign(I,X.I);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:""}})})();
 Object.assign(BC,QBC);
 // Recettes « à côté » (cote.js) : sauces, terrines, gravlax, condiments… jamais proposées comme plat du planning
 (()=>{const X=window.MENUS_COTE;if(!X)return;Object.assign(I,X.I);X.R.forEach(r=>{r.cote=1;r.ctemp=r.temp;r.for=[];r.reg="À côté";if(!RB[r.id])R.push(r);RB[r.id]=r;BC[r.id]={t:[],j:r.w?"Préparé à l'avance ("+r.w+") : sortir du frigo et servir.":"Servir."}})})();

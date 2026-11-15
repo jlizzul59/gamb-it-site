@@ -165,6 +165,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background
 
 .status{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
 #count{font-size:15px}
+.alsoin{font-size:14px;margin:0 0 6px;padding:8px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}.alsoin .linkbtn{font:inherit;font-weight:600;background:none;border:0;color:var(--accent,#1f6f78);text-decoration:underline;cursor:pointer;padding:0 0 0 4px}
 #count b{font-family:var(--f-display);font-weight:400;font-size:26px}
 #active{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
 .pill{border:0;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:700}
@@ -642,6 +643,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 <script src="cuisine.js?v=20261113c"></script>
 <script src="cote.js?v=20261113a"></script>
 <script src="desserts.js?v=20261110a"></script>
+<script src="extra.js?v=20261115a"></script>
 <script>
 
 // ---------- Ingrédients ----------
@@ -1557,6 +1559,7 @@ QNEW.forEach(o=>{const r=Object.assign({},o);delete r.j;if(RB[r.id])Object.assig
 ["pesto","beurrecacahuete","patecurry","miso","tahin","gochujang","tamarin"].forEach(k=>{if(I[k])I[k].r="co"});
 // Recettes ajoutées (fichier partagé recettes-plus.js)
 (()=>{const X=window.MENUS_PLUS;if(!X)return;Object.assign(I,X.I);if(X.IREN)for(const k in X.IREN)if(I[k])Object.assign(I[k],X.IREN[k]);if(X.FIX)for(const id in X.FIX)if(RB[id])Object.assign(RB[id],X.FIX[id]);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:"Réchauffer doucement avant de servir."}})})();
+(()=>{const X=window.MENUS_EXTRA;if(!X)return;Object.assign(I,X.I);X.R.forEach(r=>{if(RB[r.id])return;R.push(r);RB[r.id]=r;BC[r.id]=X.BC[r.id]||{t:[],j:""}})})();
 Object.assign(BC,QBC);
 // ---------- Desserts (desserts.js) : rayon à part du catalogue ----------
 const DS=window.MENUS_DESSERTS||{I:{},S:{},T:[],R:[]};Object.assign(I,DS.I);
@@ -2390,12 +2393,14 @@ function renderRegions(){
   const opts=[["","Tout le monde",base.length,"linear-gradient(135deg,"+REGIONS.map(g=>ART.BG[g]).join(",")+")"]].concat(REGIONS.map(g=>[g,g,base.filter(r=>r.reg===g).length,ART.BG[g]]));
   document.getElementById("regions").innerHTML=opts.map(([v,l,n,bg])=>`<button type="button" class="reg" data-reg="${v}" aria-pressed="${region===v}"><i style="background:${bg}"></i>${l} <small>${n}</small></button>`).join("");
 }
+document.addEventListener("click",e=>{const b=e.target.closest("[data-gomode]");if(!b)return;mode=b.dataset.gomode;if(mode==="plats"){dtype="";dquick.clear()}renderHero();render()});
 function render(){
   let res=LIST().filter(r=>matches(r)).sort(SORTS[sort]||SORTS.nom);
   if(frigo&&q){const sc=new Map(res.map(r=>[r.id,frigoScore(r)]));res=res.sort((a,b)=>sc.get(b.id).n-sc.get(a.id).n||a.ing.length-b.ing.length);res.forEach(r=>_fs[r.id]=sc.get(r.id))}
   document.querySelectorAll("[data-smode]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.smode===smode)));{const qi=document.getElementById("q");qi.placeholder=isDes()?(smode==="frigo"?"Ce qu'il vous reste : pommes, yaourt, chocolat…":smode==="ing"?"Ingrédients : pomme cannelle":"Nom du dessert : crumble, mousse, tarte…"):smode==="frigo"?"Ce qu'il vous reste : courgettes, crème, jambon…":smode==="ing"?"Ingrédients : carotte poulet patate":"Nom de la recette : soupe pois cassé, gratin…"}
   renderRegions();
-  document.getElementById("count").innerHTML=isDes()?`<b>${res.length}</b> dessert${res.length>1?"s":""}${dtype?" · "+DTL[dtype]:""}`:`<b>${res.length}</b> recette${res.length>1?"s":""}${region?" · "+region:""}`;
+  const _nz=x=>x.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(),_qs=q&&smode!=="frigo"?_nz(q).trim().replace(/s$/,""):"",_oth=_qs.length>2?(isDes()?R:D).filter(r=>!r.cote&&_nz(r.n).includes(_qs)):[];
+  document.getElementById("count").innerHTML=(_oth.length?`<div class="alsoin">${isDes()?"🍽️ Aussi dans les plats":"🍰 Aussi dans les desserts"} : ${_oth.slice(0,4).map(r=>esc(r.n)).join(", ")}${_oth.length>4?"…":""} <button type="button" class="linkbtn" data-gomode="${isDes()?"plats":"desserts"}">Voir</button></div>`:"")+(isDes()?`<b>${res.length}</b> dessert${res.length>1?"s":""}${dtype?" · "+DTL[dtype]:""}`:`<b>${res.length}</b> recette${res.length>1?"s":""}${region?" · "+region:""}`);
   const act=Object.entries(sel).map(([id,v])=>`<button type="button" class="pill ${v===1?"in":"out"}" data-rm="${id}" aria-label="Retirer ${esc(I[id].n)}">${v===1?"Avec":"Sans"} ${esc(I[id].n.toLowerCase())} ×</button>`).join("");
   document.getElementById("active").innerHTML=act||(isDes()?dtype||dquick.size:region||quick.size)||q?act+`<button type="button" class="clear" data-clearall>Tout effacer</button>`:"";
   document.getElementById("quick").innerHTML=curQUICK().filter(([k])=>k!=="foyer"||FOY.length).map(([k,l])=>`<button type="button" class="qf" data-q="${k}" aria-pressed="${curQ().has(k)}" ${LEVEL[k]&&isDes()?`title="${LEVEL[k][1]}"`:""}>${l}</button>`).join("");
