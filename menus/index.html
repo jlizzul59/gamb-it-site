@@ -181,6 +181,12 @@ body.dnd-on,body.dnd-on *{cursor:grabbing!important}
 .mp-gone{margin:0 0 10px;font-size:13px;color:var(--muted)}
 @media (min-width:641px){.top .tabrow{display:flex;align-items:center;gap:12px}.top .tabrow .weekbar.wb-top{margin-left:auto;flex-wrap:nowrap}.weekbar.wb-top .wnow{white-space:nowrap}}
 @media (max-width:640px){.view > .weekbar{position:sticky;top:var(--hdrh,56px);z-index:4;background:var(--bg);margin:0 -16px 10px;padding:8px 16px;border-bottom:1px solid var(--line);box-shadow:0 6px 12px -10px rgba(0,0,0,.25)}}
+.meal.is-note{background:var(--surface);border-style:solid}
+.notetxt{display:block;width:100%;text-align:left;font:inherit;font-size:15px;font-weight:600;color:var(--ink);background:var(--accent-soft);border:0;border-radius:10px;padding:10px 12px;cursor:pointer;line-height:1.35}
+.notetxt:disabled{cursor:default}
+.nbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.noteform{display:flex;flex-direction:column;gap:8px}.noteform input{font:inherit;font-size:15px;padding:9px 10px;border:1.5px solid var(--accent);border-radius:10px;background:var(--surface);color:var(--ink);width:100%;box-sizing:border-box}
+.tmeal.tnote b{font-size:18px}
 .pasthide{grid-column:1/-1;justify-self:start;background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:0}
 .day{display:flex;flex-direction:column;gap:8px;min-width:0}
 .dayhead{display:flex;justify-content:space-between;align-items:baseline;padding:0 2px 6px;border-bottom:2px solid var(--ink)}
@@ -3157,7 +3163,7 @@ function swapMeals(a,b){
 }
 function swapCore(a,b){
   const pa=PN(SK[a]),pb=PN(SK[b]);
-  ["plan","pin","temp","extra","mode"].forEach(f=>{W[f]=W[f]||{};const x=W[f][a],y=W[f][b];if(y===undefined)delete W[f][a];else W[f][a]=y;if(x===undefined)delete W[f][b];else W[f][b]=x});
+  ["plan","pin","temp","extra","mode","note"].forEach(f=>{W[f]=W[f]||{};const x=W[f][a],y=W[f][b];if(y===undefined)delete W[f][a];else W[f][a]=y;if(x===undefined)delete W[f][b];else W[f][b]=x});if(W.note&&!Object.keys(W.note).length)delete W.note;
   // les recettes ajoutées prennent le nombre de personnes de leur nouveau créneau
   [[a,pb,pa],[b,pa,pb]].forEach(([k,from,to])=>(W.extra[k]||[]).forEach(x=>{if(x.n===from)x.n=to}));
   if(W.ok){delete W.ok[a];delete W.ok[b]}
@@ -3227,12 +3233,12 @@ function renderWeek(){
       const restOK=!!prevActive(sl.key);
       const isRest=mode==="rest"&&src!==sl.key;
       let body;
-      if(mode==="skip")body=`<span class="off">Repas supprimé</span><button class="restore" type="button" data-unskip="${sl.key}">Rétablir</button>`;
+      if(mode==="skip"||(NOTEED===sl.key&&!isKid()))body=noteBody(sl.key);
       else if(!r)body=`<span class="empty">Aucune recette compatible</span>`;
       else body=`${isRest?'<span class="restlab">Restes de '+slotLabel(SK[src])+'</span>':""}<div class="xrec xcompact mainrec"><button class="name" type="button" data-open="${src}">${esc(r.n)}${isFav(r.id)?' <span class="favdot" aria-label="Favori">♥</span>':""}</button>${!isRest&&!isKid()?`<button type="button" class="xdel" data-maindel="${sl.key}" aria-label="Retirer ${esc(r.n)}" title="${XS(sl.key).length?"Retirer cette recette":"Retirer cette recette (le repas sera supprimé)"}">×</button>`:""}</div>`+(!isRest?(()=>{const rs=SLOTS.filter(s=>s.key!==sl.key&&W.mode[s.key]==="rest"&&srcKey(s.key)===sl.key);return rs.length?`<span class="restfor">♻️ Faire plus : restes pour ${rs.map(s=>esc(slotLabel(s))).join(", ")} (${(n=>"+"+n+" portion"+(n>1?"s":""))(rs.reduce((t,s)=>t+ +PN(s),0))})</span>`:""})():"");
       const tv=(W.temp||{})[sl.key],kid=isKid(),pc=W.pers&&W.pers[sl.key];
       const dk=!kid&&!isRest&&(mode==="skip"||r);
-      return `<div class="meal ${mode==="skip"?"is-off":""} ${isRest?"is-rest":""}" ${dk?`data-dragkey="${sl.key}"`:""} ${isRest?`data-nodrop="1"`:""}>
+      return `<div class="meal ${mode==="skip"?(mealNote(sl.key)?"is-note":"is-off"):""} ${isRest?"is-rest":""}" ${dk?`data-dragkey="${sl.key}"`:""} ${isRest?`data-nodrop="1"`:""}>
         <div class="when"><span>${dk&&mode!=="skip"?'<span class="grip" aria-hidden="true" title="Glisser sur un autre repas pour les échanger">⠿</span>':""}${sl.when}${tv?` <span class="tpin" title="Préférence pour ce repas">${tv==="chaud"?"🔥":"❄️"}</span>`:""}</span><span class="wr">${mode!=="skip"&&r&&slotOk(sl.key)?'<span class="okchip">✓ Validé</span>':""}${mode!=="skip"?`<button type="button" class="ppill${pc?" custom":""}" ${kid?"disabled":`data-cmenu="pers|${sl.key}"`} aria-label="${PN(sl)} ${XS(sl.key).length&&!isRest?"portions":"personnes"}, modifier" title="Nombre de personnes pour ce repas">👤 ${PN(sl)}</button>`:""}</span></div>
         ${body}
         ${mode!=="skip"&&!isRest?extraHTML(sl):""}
@@ -3678,7 +3684,7 @@ function renderToday(){
     const es=shopEntries().filter(e=>!e.next&&e.c.sl.key===k&&(inList(e,1)||inList(e,2)));if(!es.length)return [];
     const out=new Set();es.forEach(e=>{const ss=[1,2].filter(n=>inList(e,n));e.ing.forEach(([id])=>{if(!I[id]||I[id].r==="pl")return;
       const ok=W.checked["0:"+id]||ss.some(n=>W.checked[n+":"+id]);if(!ok)out.add(id)})});return [...out]}catch(err){return []}};
-  const meal=(w,key,label,chk)=>withWeek(w,()=>{try{fillDesserts("keep")}catch(e){}const sl=SK[key],m=W.mode[key]||"cook";if(m==="skip")return `<div class="tmeal off"><small>${label}</small><b>Pas de repas prévu</b></div>`;
+  const meal=(w,key,label,chk)=>withWeek(w,()=>{try{fillDesserts("keep")}catch(e){}const sl=SK[key],m=W.mode[key]||"cook";if(m==="skip")return mealNote(key)?`<div class="tmeal tnote"><small>${label}</small><b>✏️ ${esc(mealNote(key))}</b></div>`:`<div class="tmeal off"><small>${label}</small><b>Pas de repas prévu</b></div>`;
     const r=recipeAt(key);if(!r)return `<div class="tmeal off"><small>${label}</small><b>Rien de prévu</b></div>`;
     const rest=srcKey(key)!==key,xs=rest?[]:XS(key).map(x=>RB[x.id]).filter(Boolean),fz=frozen(sl);
     return `<div class="tmeal"><small>${label} · 👤 ${PN(sl)}${rest?" · restes":""}</small><b>${esc(r.n)}</b>${xs.length?`<span class="muted">+ ${xs.map(x=>esc(shortName(x))).join(" + ")}</span>`:""}
@@ -3867,7 +3873,7 @@ function renderHistory(){
   const head=`<div class="sechead"><h2>Historique</h2><p class="muted">Les semaines passées, en lecture seule. ${isKid()?"":"Un menu qui a plu ? Reprenez-le pour la semaine affichée dans le planning."}</p></div>`;
   if(!ws.length){el.innerHTML=head+`<p class="muted hempty">Rien pour l'instant : chaque semaine terminée viendra se ranger ici.</p>`;return}
   el.innerHTML=head+ws.map(w=>{const x=S.weeks[w],t=weekRange(w),ok=x.valid&&x.valid.sig===weekSig(x);
-    const rows=ORDER.map(i=>{const cell=wh=>{const k=i+wh,m=(x.mode||{})[k]||"cook";if(m==="skip")return '<span class="muted">—</span>';
+    const rows=ORDER.map(i=>{const cell=wh=>{const k=i+wh,m=(x.mode||{})[k]||"cook";if(m==="skip")return x.note&&x.note[k]?esc(x.note[k]):'<span class="muted">—</span>';
         const r=RB[x.plan[k]];if(!r)return '<span class="muted">—</span>';
         const xs=((x.extra||{})[k]||[]).map(e=>RB[e.id]).filter(Boolean);
         return esc(shortName(r))+(xs.length?" + "+xs.map(e=>esc(shortName(e))).join(" + "):"")+(m==="rest"?' <span class="muted">(restes)</span>':"")};
@@ -3891,6 +3897,22 @@ function openRecipe(key){const c=findCook(key);if(!c)return;ov.innerHTML=recipeH
 function closeModal(){ov.hidden=true;ov.innerHTML="";catKey=null}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeModal()});
 
+
+// ---------- Repas en texte libre (« Resto chez mamie », « Pizza du vendredi »…) : pas de recette, pas de courses ----------
+let NOTEED=null;
+const mealNote=k=>((W&&W.note)||{})[k]||"";
+function noteBody(k){const n=mealNote(k),kid=isKid();
+  if(NOTEED===k&&!kid)return `<form class="noteform" data-noteform="${k}"><input type="text" maxlength="80" value="${esc(n)}" placeholder="Ex. : resto chez mamie, pizza, pique-nique…" aria-label="Ce qu'on mange"><div class="nbtns"><button type="submit" class="btn sm primary">OK</button><button type="button" class="btn sm" data-notecancel>Annuler</button></div></form>`;
+  if(n)return `<button type="button" class="notetxt" ${kid?"disabled":`data-noteedit="${k}" title="Modifier"`}>✏️ ${esc(n)}</button>${kid?"":`<div class="nbtns"><button class="restore" type="button" data-unskip="${k}">Remettre une recette</button></div>`}`;
+  return `<span class="off">Repas supprimé</span>${kid?"":`<div class="nbtns"><button class="restore" type="button" data-unskip="${k}">Rétablir</button><button class="restore" type="button" data-noteedit="${k}">✏️ Écrire</button></div>`}`}
+function saveNote(k,txt){txt=String(txt||"").trim().slice(0,80);W.note=W.note||{};
+  if(txt){W.note[k]=txt;setMode(k,"skip")}else delete W.note[k];
+  if(!Object.keys(W.note).length)delete W.note;NOTEED=null;build("keep");save();renderAll();if(txt)toast("✏️ "+slotLabel(SK[k])+" : "+txt)}
+document.addEventListener("click",e=>{if(isKid())return;
+  const ed=e.target.closest("[data-noteedit]");if(ed){NOTEED=ed.dataset.noteedit;renderAll();setTimeout(()=>{const i=document.querySelector(`[data-noteform="${NOTEED}"] input`);if(i){i.focus();i.select()}},30);return}
+  if(e.target.closest("[data-notecancel]")){NOTEED=null;renderAll()}});
+document.addEventListener("submit",e=>{const f=e.target.closest("[data-noteform]");if(!f)return;e.preventDefault();saveNote(f.dataset.noteform,f.querySelector("input").value)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&NOTEED){NOTEED=null;renderAll()}});
 function setMode(key,m){if(m==="cook")delete W.mode[key];else W.mode[key]=m}
 function goWeek(w){useWeek(w);save();renderAll();window.scrollTo(0,0)}
 document.addEventListener("click",e=>{
@@ -3911,7 +3933,7 @@ document.addEventListener("click",e=>{
   const pp=e.target.closest("[data-pers]");if(pp){const k=pp.dataset.pers,sl=SK[k];W.pers=W.pers||{};const n=Math.max(1,Math.min(12,PN(sl)+ +pp.dataset.d));if(n===S.def[WH(sl)])delete W.pers[k];else W.pers[k]=n;save();renderAll();if(!ov.hidden){const c=cooks().find(c=>c.sl.key===k);if(c){ov.innerHTML=recipeHTML(c,true)}}return}
   const dd=e.target.closest("[data-def]");if(dd){const k=dd.dataset.def;S.def[k]=Math.max(1,Math.min(12,S.def[k]+ +dd.dataset.d));Object.values(S.weeks).forEach(w=>{if(w.pers)for(const x in w.pers)if(SK[x]&&WH(SK[x])===k&&w.pers[x]===S.def[k])delete w.pers[x]});save();renderAll();return}
   const sk=e.target.closest("[data-skip]");if(sk){const k=sk.dataset.skip;setMode(k,"skip");build("keep");renderAll();toast("Repas du "+slotLabel(SK[k])+" supprimé");return}
-  const us=e.target.closest("[data-unskip]");if(us){setMode(us.dataset.unskip,"cook");build("keep");renderAll();return}
+  const us=e.target.closest("[data-unskip]");if(us){const k=us.dataset.unskip;if(W.note){delete W.note[k];if(!Object.keys(W.note).length)delete W.note}setMode(k,"cook");build("keep");renderAll();return}
   const ss=e.target.closest("[data-sess]");if(ss){W.shopSess=+ss.dataset.sess;save();renderShop();return}
   if(e.target.closest("[data-mptoggle]")){mealsOpen=!mealsOpen;renderShop();return}
   const mpm=e.target.closest("[data-mpmeal]");if(mpm&&!isKid()){const ss=W.shopSess??1,x=shopEntries().find(x=>x.akey===mpm.dataset.mpmeal);if(x){setEntry(x,ss,!inList(x,ss));save();renderShop()}return}
@@ -3951,6 +3973,7 @@ const CM=(()=>{let el=null,cur=null;
       ${r&&mode!=="rest"&&SK[k.slice(0,-1)+(k.endsWith("m")?"s":"m")]&&W.mode[k.slice(0,-1)+(k.endsWith("m")?"s":"m")]!=="rest"?`<button type="button" role="menuitem" data-mact="xchg|${k}">⇅ Échanger avec le ${k.endsWith("m")?"soir":"midi"}</button>`:""}
       ${r?`<button type="button" role="menuitem" data-mact="ok|${k}">${slotOk(k)?"✓ Retirer la validation":"✓ Valider ce repas"}</button>`:""}
       ${r?`<button type="button" role="menuitem" data-open="${srcKey(k)}">📄 Voir la recette</button>`:""}
+      <button type="button" role="menuitem" data-mact="note|${k}">✏️ Écrire le repas (sans recette)</button>
       <button type="button" role="menuitem" class="danger" data-mact="skip|${k}">🗑 Supprimer ce repas</button>`}
     if(kind==="des"){const cur=(W.dessert||{})[k];return `<div class="cmh">Dessert · ${esc(slotLabel(sl))}</div>
       ${desTypes().map(t=>`<button type="button" role="menuitem" class="${cur===t.id?"cur":""}" data-mact="des|${k}" data-des="${esc(t.id)}">${t.ic} ${esc(t.n)}${cur===t.id?" ✓":""}</button>`).join("")}
@@ -3983,6 +4006,7 @@ document.addEventListener("click",e=>{
     if(a==="hot"||a==="cold"){const t=a==="hot"?"chaud":"froid";W.temp=W.temp||{};W.temp[k]=t;delete W.pin[k];swap(k);toast((t==="chaud"?"🔥 Plat chaud":"❄️ Plat froid")+" pour "+slotLabel(sl)+" : gardé pour les prochains tirages");return}
     if(a==="anytemp"){if(W.temp)delete W.temp[k];save();renderAll();toast("Chaud ou froid : peu importe");return}
     if(a==="rest"||a==="cook"){setMode(k,a);build("keep");renderAll();return}
+    if(a==="note"){NOTEED=k;renderAll();setTimeout(()=>{const i=document.querySelector(`[data-noteform="${k}"] input`);if(i)i.focus()},30);return}
     if(a==="skip"){setMode(k,"skip");build("keep");renderAll();toast("Repas du "+slotLabel(sl)+" supprimé · « Annuler » pour le remettre");return}
     if(a==="ok"){W.ok=W.ok||{};if(slotOk(k)){delete W.ok[k];toast("Validation retirée")}else{W.ok[k]={sig:slotSig(W,k),by:meName(),at:Date.now()};toast("Repas validé")}_seen=weekSig(W);save();renderAll();return}
     return}
@@ -4007,7 +4031,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-maindel]")
   else{setMode(k,"skip");build("keep");renderAll();toast("Repas du "+slotLabel(sl)+" supprimé · « Annuler » pour le remettre")}});
 
 // ---------- Partager le menu de la semaine (texte, WhatsApp, image, impression) ----------
-function weekLines(){return ORDER.map(i=>{const m=["m","s"].map(w=>{const k=i+w,mode=W.mode[k]||"cook";if(mode==="skip")return null;const r=recipeAt(k);if(!r)return null;const xs=srcKey(k)===k?XS(k).map(x=>RB[x.id]).filter(Boolean):[];return [w==="m"?"Midi":"Soir",shortName(r)+(xs.length?" + "+xs.map(shortName).join(" + "):"")+(srcKey(k)!==k?" (restes)":""),desLine(k)]}).filter(Boolean);return [DAYS[i]+" "+dayDate(S.cur,i).getDate(),m]})}
+function weekLines(){return ORDER.map(i=>{const m=["m","s"].map(w=>{const k=i+w,mode=W.mode[k]||"cook";if(mode==="skip")return mealNote(k)?[w==="m"?"Midi":"Soir",mealNote(k)]:null;const r=recipeAt(k);if(!r)return null;const xs=srcKey(k)===k?XS(k).map(x=>RB[x.id]).filter(Boolean):[];return [w==="m"?"Midi":"Soir",shortName(r)+(xs.length?" + "+xs.map(shortName).join(" + "):"")+(srcKey(k)!==k?" (restes)":""),desLine(k)]}).filter(Boolean);return [DAYS[i]+" "+dayDate(S.cur,i).getDate(),m]})}
 function weekText(){const t=weekRange(S.cur);return "🍽️ Nos menus "+t+"\n\n"+weekLines().map(([d,m])=>"• "+d+"\n"+(m.length?m.map(([w,n,d])=>"   "+w+" : "+n+(d?" · "+d:"")).join("\n"):"   —")).join("\n")}
 function weekCanvas(){const L=weekLines(),W2=1080,pad=56,lh=40,rows=L.reduce((t,[,m])=>t+1+Math.max(1,m.length),0);const H=pad*2+110+rows*lh+L.length*14;const c=document.createElement("canvas");c.width=W2;c.height=H;const x=c.getContext("2d");
   x.fillStyle="#f3f1ea";x.fillRect(0,0,W2,H);x.fillStyle="#1f3d2b";x.font="bold 46px Georgia, serif";x.fillText("Nos menus",pad,pad+40);x.font="28px system-ui, sans-serif";x.fillStyle="#5b5648";x.fillText(weekRange(S.cur),pad,pad+84);
@@ -4158,7 +4182,7 @@ function renderSimple(){
   const pend=pendingProps().filter(([,p])=>p.type==="swap"&&(p.week||0)===S.cur),inX=new Set();pend.forEach(([,p])=>{inX.add(p.a);inX.add(p.b)});
   const can=k=>{const m=W.mode[k]||"cook",src=srcKey(k);return !slotPast(S.cur,k)&&!(m==="rest"&&src!==k)&&(m==="skip"||!!recipeAt(k))};
   const cell=k=>{const sl=SK[k],m=W.mode[k]||"cook",src=srcKey(k),r=recipeAt(k),isRest=m==="rest"&&src!==k;
-    const what=m==="skip"?"Pas de repas":!r?"—":isRest?"Restes : "+shortName(r):shortName(r);
+    const what=m==="skip"?(mealNote(k)?"✏️ "+mealNote(k):"Pas de repas"):!r?"—":isRest?"Restes : "+shortName(r):shortName(r);
     const ok=XCH.on?can(k):!!(r&&src);
     const sub=m==="skip"?"":`<small><span>👤 ${PN(sl)}</span>${r&&slotOk(k)?"<span>✓ validé</span>":""}${inX.has(k)?'<span class="xp">⇅ échange proposé</span>':""}</small>`;
     return `<button type="button" class="sc ${m==="skip"?"off":""} ${XCH.on&&ok?"armed":""} ${XCH.a===k||XCH.b===k?"on":""}" data-sc="${k}" ${XCH.on&&!ok?"disabled":""} aria-label="${esc(DAYS[sl.day]+" "+sl.when.toLowerCase()+" : "+what)}"><span class="scn">${esc(what)}</span>${sub}</button>`};
