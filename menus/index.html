@@ -850,6 +850,10 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .aisle.manual,.aisle.extra{background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px}
 .manadd{display:flex;gap:6px;margin:6px 0}.manadd input{flex:1;min-width:0;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .aisle.manual li{display:flex;align-items:center;gap:6px}.aisle.manual li label{flex:1}
+.mancat-sel{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);max-width:46%}
+.mancat-sel.none{color:var(--muted)}.manadd .mancat-sel{max-width:40%}
+.mancat{font-size:12px;color:var(--muted);white-space:nowrap}
+@media (max-width:520px){.manadd{flex-wrap:wrap}.manadd input{flex-basis:100%}.manadd .mancat-sel{flex:1;max-width:none}}
 .panlist li{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}.panlist .linkish{flex:1;text-align:left;background:none;border:0;font:inherit;font-weight:600;cursor:pointer;color:var(--ink);padding:0}
 .panhint{margin:0 0 12px}
 body.storemode header.top,body.storemode #v-courses .shophead,body.storemode footer,body.storemode .manadd{display:none}
@@ -1158,6 +1162,9 @@ html.ov-on .wishfab{display:none}
 // ---------- Ingrédients ----------
 // u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
 const AISLES={bo:"Boucherie & poissonnerie",fl:"Fruits & légumes",cr:"Crèmerie, œufs & frais",co:"Épicerie & conserves",pa:"Pain",op:"Optionnel : selon l'appétit"};
+// Rayons proposés pour les articles ajoutés à la main (ordre = ordre de passage en magasin)
+const MAN_AISLES={bo:"🥩 Boucherie & poissonnerie",fl:"🥕 Fruits & légumes",cr:"🧀 Crèmerie, œufs & frais",pa:"🥖 Pain",co:"🥫 Épicerie & conserves",su:"🧊 Surgelés",bs:"🧃 Boissons",hy:"🧴 Hygiène & beauté",en:"🧽 Entretien & maison",bb:"🍼 Bébé",an:"🐾 Animaux",au:"📦 Autre"};
+const MAN_ORDER=["bo","fl","cr","co","pa","su","bs","hy","en","bb","an","au"];
 const I={
  poulet:{n:"Blanc de poulet",r:"bo",u:"g",k:1.1,c:"Viandes"},
  dinde:{n:"Escalope de dinde",r:"bo",u:"g",k:1.05,c:"Viandes"},
@@ -3497,6 +3504,24 @@ function otherNeeds(ss){const out={};
   shopEntries().filter(e=>!e.next&&!e.past&&!inList(e,ss)).forEach(e=>e.ing.forEach(([id,q])=>{const o=out[id]=out[id]||{q:0,days:new Set()};o.q+=q;o.days.add(e.c.sl.day)}));
   return out}
 const daysShort=s=>[6,0,1,2,3,4,5].filter(d=>s.has(d)).map(d=>DAYS[d].slice(0,3).toLowerCase()+".").join(", ");
+// Articles libres : ancienne forme = texte seul, nouvelle forme = {t:texte, a:rayon}
+const manT=v=>typeof v==="string"?v:(v&&v.t)||"";
+const manA=v=>v&&typeof v==="object"&&MAN_AISLES[v.a]?v.a:"";
+const MAN_KW=[["su",/surgel|glace|glaçon|esquimau|cornet|bâtonnets? de poisson|frites? surgel/],["bs",/(^|[\s'])(eaux?|jus|sodas?|coca|limonade|sirop|bières?|bieres?|vins?|cidre|champagne|café|cafe|thé|the|tisane|boissons?)(?=$|[\s,.])/],
+ ["hy",/dentifrice|brosse à dents|shampo|gel douche|savon|déodorant|deodorant|coton|rasoir|mousse à raser|crème solaire|maquillage|serviettes? hyg|tampons?|protège|papier toilette|pq\b|mouchoir|lingette|démaquill/],
+ ["en",/vaisselle|lessive|adoucissant|éponge|eponge|javel|nettoyant|sopalin|essuie|sacs? poubelle|poubelle|pastilles? lave|ampoule|piles?\b|aluminium|film étirable|papier cuisson|allumettes|bougie|désodoris/],
+ ["bb",/couche|petit pot|lait (1er|2e|premier|deuxième) âge|biberon|liniment/],["an",/croquettes|pâtée|patee|litière|litiere|chat\b|chien\b/],
+ ["fl",/pomme|banane|orange|clémentine|clementine|citron|fraise|raisin|kiwi|poire|salade|tomate|carotte|courgette|oignon|ail\b|légume|legume|fruit|avocat|concombre|champignon|herbes?|persil|basilic/],
+ ["cr",/yaourt|yogourt|fromage|beurre|crème|creme|lait|œuf|oeuf|compote|dessert|skyr|faisselle|jambon|lardon|pâte feuilletée|pate feuilletee|pâte brisée|pizza fraîche/],
+ ["pa",/pain|baguette|brioche|croissant|viennois|biscotte|pain de mie/],["bo",/viande|steak|poulet|bœuf|boeuf|porc|saucisse|poisson|saumon|crevette|dinde|veau|agneau|merguez/],
+ ["co",/pâtes|pates|riz|farine|sucre|sel\b|poivre|huile|vinaigre|conserve|céréale|cereale|biscuit|gâteau|gateau|chips|apéro|apero|confiture|nutella|pâte à tartiner|miel|sauce|ketchup|mayonnaise|moutarde|épice|epice|bonbon|chocolat/]];
+function guessAisle(t){const s=String(t||"").toLowerCase().trim();if(!s)return"";
+  for(const [a,re] of MAN_KW)if(re.test(s))return a;
+  const n=norm(s);let best="",bl=0;
+  Object.values(I).forEach(x=>{if(!x||!x.n||!AISLES[x.r]||x.r==="op")return;const xn=norm(x.n).replace(/\s*\(.*?\)/g,"");const w=xn.split(/[ ,']/)[0];
+    if(w.length>=4&&(n.startsWith(w)||n.includes(" "+w))&&w.length>bl){best=x.r;bl=w.length}});
+  return best}
+const manSel=(cur,attrs)=>`<select ${attrs}><option value="">Rayon ?</option>${MAN_ORDER.map(k=>`<option value="${k}" ${cur===k?"selected":""}>${MAN_AISLES[k]}</option>`).join("")}</select>`;
 function renderShop(){
   const ss=W.shopSess??1;
   document.querySelectorAll("[data-sess]").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.sess===ss)));
@@ -3508,27 +3533,35 @@ function renderShop(){
   const man=Object.entries(W.manual||{});
   // Les articles cochés quittent leur rayon et se retrouvent tout en bas, dans « Déjà achetés »
   const bought=[];
-  const manLi=([id,t])=>{const ck="m:"+id,done=!!W.checked[ck];return `<li class="${done?"done":""} man"><label><input type="checkbox" data-check="${ck}" ${done?"checked":""}><span>${esc(t)}</span></label>${drv&&!done?driveLink(t):""}${kid?"":`<button type="button" class="xdel" data-mandel="${id}" aria-label="Retirer ${esc(t)}">×</button>`}</li>`};
+  const manLi=([id,v],inAisle)=>{const t=manT(v),a=manA(v),ck="m:"+id,done=!!W.checked[ck];
+    const cat=store||inAisle||done?(inAisle?'<span class="hint">✍️ ajouté à la main</span>':""):kid?(a?`<span class="mancat">${MAN_AISLES[a]}</span>`:""):manSel(a,`class="mancat-sel ${a?"":"none"}" data-mancat="${id}" aria-label="Rayon de ${esc(t)}"`);
+    return `<li class="${done?"done":""} man"><label><input type="checkbox" data-check="${ck}" ${done?"checked":""}><span>${esc(t)}${inAisle?cat:""}</span></label>${inAisle?"":cat}${drv&&!done?driveLink(t):""}${kid||store?"":`<button type="button" class="xdel" data-mandel="${id}" aria-label="Retirer ${esc(t)}">×</button>`}</li>`};
   man.filter(([id])=>W.checked["m:"+id]).forEach(m=>bought.push(manLi(m)));
-  const manHTML=`<div class="aisle manual"><h3>✍️ À ajouter</h3>${kid?"":`<form class="manadd" data-manform><input type="text" id="manInput" maxlength="60" placeholder="Liquide vaisselle, yaourts, café…" aria-label="Ajouter un article à la liste" autocomplete="off"><button class="btn sm" type="submit">Ajouter</button></form>`}
-    <ul>${man.filter(([id])=>!W.checked["m:"+id]).map(manLi).join("")||(kid&&!man.length?'<li class="muted">Rien pour l\'instant.</li>':"")}</ul></div>`;
+  // En mode magasin, les articles libres rangés dans un rayon rejoignent ce rayon
+  const manTodo=man.filter(([id])=>!W.checked["m:"+id]),manBy={};
+  if(store)manTodo.forEach(m=>{const a=manA(m[1]);if(a)(manBy[a]=manBy[a]||[]).push(m)});
+  const manTop=store?manTodo.filter(m=>!manA(m[1])):manTodo;
+  const manHTML=store&&!manTop.length?"":`<div class="aisle manual"><h3>✍️ ${store?"Sans rayon":"À ajouter"}</h3>${kid?"":`<form class="manadd" data-manform><input type="text" id="manInput" maxlength="60" placeholder="Liquide vaisselle, yaourts, café…" aria-label="Ajouter un article à la liste" autocomplete="off">${manSel("",`id="manCat" class="mancat-sel none" aria-label="Rayon en magasin"`)}<button class="btn sm" type="submit">Ajouter</button></form>`}
+    <ul>${manTop.map(m=>manLi(m)).join("")||(kid&&!man.length?'<li class="muted">Rien pour l\'instant.</li>':"")}</ul>${!store&&!kid&&manTodo.length?'<p class="aisnote">Le rayon sert au mode magasin : l\'article y est rangé avec les autres produits du même rayon.</p>':""}</div>`;
   // recettes du catalogue
   const pc=panRead(),pids=panIds();
   const panHTML=ss===2?"":pids.length?`<div class="aisle extra"><h3>📖 En plus, depuis le catalogue</h3><ul class="panlist">${pids.map(id=>`<li><button type="button" class="linkish" data-panopen="${id}">${esc(shortName(RB[id]))}</button><span class="pstep"><button type="button" class="pm" data-pann="${id}" data-d="-1" aria-label="Une portion de moins" ${(pc["r:"+id]||1)<=1?"disabled":""}>−</button><b class="num">${pc["r:"+id]||1}</b><button type="button" class="pm" data-pann="${id}" data-d="1" aria-label="Une portion de plus">+</button></span><button type="button" class="xdel" data-panrm="${id}" aria-label="Retirer ${esc(shortName(RB[id]))}">×</button></li>`).join("")}</ul><p class="aisnote">Leurs ingrédients sont ajoutés aux rayons ci-dessous. <a href="recettes.html">Ajouter une recette du catalogue</a></p></div>`:`<p class="aisnote panhint">Pour acheter les ingrédients d'une recette hors planning, cochez « Ajouter à ma liste de courses » dans le <a href="recettes.html">catalogue</a>.</p>`;
   const OTH=otherNeeds(ss);
-  const aisleHTML=list.map(([a,items])=>{const rows=items.map(([id,q])=>({id,...SS.st(a,id,q)})),todo=rows.filter(x=>!x.done);
+  const listA=store?(()=>{const m=new Map(list);const keys=MAN_ORDER.filter(k=>m.has(k)||manBy[k]);
+    return keys.map(k=>[k,m.get(k)||[]]).concat(list.filter(([a])=>!MAN_ORDER.includes(a)))})():list;
+  const aisleHTML=listA.map(([a,items])=>{const rows=items.map(([id,q])=>({id,...SS.st(a,id,q)})),todo=rows.filter(x=>!x.done),mx=manBy[a]||[];
     rows.filter(x=>x.done).forEach(({id,q,ck})=>bought.push(li(ck,esc(I[id].n),dayTag(baseOf(a,id)),fmt(q,I[id].u,true),true,"")));
-    return todo.length?`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${todo.map(({id,q,ck,done,got,from})=>{
+    return todo.length||mx.length?`<div class="aisle ${a==="op"?"opt":""}"><h3>${AISLES[a]&&a!=="op"?AISLES[a]:MAN_AISLES[a]||AISLES[a]}</h3>${a==="op"?'<p class="aisnote">Accompagnements proposés en plus dans certaines recettes. À prendre seulement si vous en voulez.</p>':""}<ul>${todo.map(({id,q,ck,done,got,from})=>{
     const h=[dayTag(baseOf(a,id)),a==="op"&&OPTFOR[id]?"avec : "+esc([...OPTFOR[id]].join(", ")):"",a!=="op"?hint(id,q):"",a!=="op"&&PANFOR[id]?"dont "+esc([...PANFOR[id]].join(", ")):"",got?`✓ déjà acheté : ${fmt(got,I[id].u,true)} (courses du ${from})`:"",a!=="op"&&OTH[id]&&I[id].r!=="pl"?`<span class="also">🔁 aussi pour ${daysShort(OTH[id].days)} : + ${fmt(OTH[id].q,I[id].u,true)} (pas dans cette liste)</span>`:""].filter(Boolean).join(" · ");
-    return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true),done,I[id].n)}).join("")}</ul></div>`:""}).join("");
+    return li(ck,esc(I[id].n),h,fmt(q,I[id].u,true),done,I[id].n)}).join("")}${mx.map(m=>manLi(m,true)).join("")}</ul></div>`:""}).join("");
   const boughtHTML=bought.length?`<div class="aisle bought"><h3>✓ Déjà achetés <small>(${bought.length})</small></h3><ul>${bought.join("")}</ul></div>`:"";
-  const aisles=(list.length?aisleHTML||(bought.length?'<p class="muted">Tout est acheté 🎉</p>':""):'<p class="muted">Rien à acheter pour cette sélection.</p>')+boughtHTML;
+  const aisles=(listA.length?aisleHTML||(bought.length?'<p class="muted">Tout est acheté 🎉</p>':""):'<p class="muted">Rien à acheter pour cette sélection.</p>')+boughtHTML;
   const n=list.reduce((t,[a,items])=>t+items.length,0)+man.length,d=list.reduce((t,[a,items])=>t+items.filter(([id,q])=>SS.st(a,id,q).done).length,0)+man.filter(([id])=>W.checked["m:"+id]).length;
   const bud=list.filter(([a])=>a!=="op").reduce((t,[,items])=>t+items.reduce((u,[id,q])=>u+unitPrice(id)*q,0),0)+0;
   const meals=listEntries(ss).filter(e=>e.c.xi==null).reduce((t,e)=>t+e.pers,0);
   const budHTML=store||!bud?"":`<div class="budget"><b>💶 Budget estimé : ≈ ${euro(bud)}</b>${meals?`<span class="muted"> · ≈ ${euro(bud/meals)} par repas et par personne</span>`:""}<small class="muted">Prix moyens en supermarché, hors placard. Pour dépenser moins : Groupe › règle « Semaine économique ».</small></div>`;
   // articles restant à acheter, pour l'extension « Semainier → Drive Auchan »
-  window._driveItems=drv?list.filter(([a])=>a!=="op").flatMap(([a,items])=>items.map(([id,q])=>({id,...SS.st(a,id,q)})).filter(x=>!x.done&&x.q>0).map(x=>({key:x.id,q:driveQ(I[x.id].n),label:I[x.id].n,need:fmt(x.q,I[x.id].u,true),amt:x.q,u:I[x.id].u}))).concat(man.filter(([id])=>!W.checked["m:"+id]).map(([id,t])=>({key:"m:"+norm(t),q:driveQ(t),label:t,need:"",amt:0,u:""}))):[];
+  window._driveItems=drv?list.filter(([a])=>a!=="op").flatMap(([a,items])=>items.map(([id,q])=>({id,...SS.st(a,id,q)})).filter(x=>!x.done&&x.q>0).map(x=>({key:x.id,q:driveQ(I[x.id].n),label:I[x.id].n,need:fmt(x.q,I[x.id].u,true),amt:x.q,u:I[x.id].u}))).concat(man.filter(([id])=>!W.checked["m:"+id]).map(([id,v])=>{const t=manT(v);return {key:"m:"+norm(t),q:driveQ(t),label:t,need:"",amt:0,u:""}})):[];
   const drvHTML=drv?`<div class="drivenote">🚗 <b>Commander au drive ${DRV.n}</b> : touchez « ${DRV.n} ↗ » à côté d'un article pour le chercher sur auchan.fr (toujours dans le même onglet), ajoutez-le au panier là-bas, puis cochez-le ici.${driveExt()?`<div class="driveext"><button type="button" class="btn sm primary" data-drivesend ${window._driveItems.length?"":"disabled"}>▶ Remplir mon panier Auchan</button><span class="muted small">${window._driveItems.length} article${window._driveItems.length>1?"s":""} non coché${window._driveItems.length>1?"s":""} · avec l'extension installée sur ce navigateur</span></div>`:""}</div>`:"";
   document.getElementById("shop").innerHTML=mealPickHTML(ss,store,kid)+drvHTML+budHTML+(store?`<div class="storebar"><div class="bar"><i style="width:${n?Math.round(d/n*100):0}%"></i></div><b class="num">${d} / ${n}</b><button type="button" class="btn sm" id="storeExit">Terminer</button></div>`:"")+manHTML+panHTML+aisles;
 }
@@ -4126,13 +4159,20 @@ document.addEventListener("click",e=>{
   const pr=e.target.closest("[data-panrm]");if(pr){const c=panRead();delete c["r:"+pr.dataset.panrm];panWrite(c);renderShop();toast("Recette retirée de la liste");return}
   const po=e.target.closest("[data-panopen]");if(po){location.href="recettes.html#r="+encodeURIComponent(po.dataset.panopen);return}
 });
-document.addEventListener("submit",e=>{const f=e.target.closest("[data-manform]");if(!f)return;e.preventDefault();if(isKid())return;const inp=f.querySelector("input"),t=inp.value.trim();if(!t)return;W.manual=W.manual||{};W.manual[Date.now().toString(36)]=t.slice(0,60);save();renderShop();const i2=document.getElementById("manInput");if(i2)i2.focus()});
+document.addEventListener("submit",e=>{const f=e.target.closest("[data-manform]");if(!f)return;e.preventDefault();if(isKid())return;const inp=f.querySelector("input"),t=inp.value.trim();if(!t)return;W.manual=W.manual||{};const cs=f.querySelector("#manCat"),a=cs&&cs.value||guessAisle(t);W.manual[Date.now().toString(36)]=a?{t:t.slice(0,60),a}:t.slice(0,60);save();renderShop();const i2=document.getElementById("manInput");if(i2)i2.focus()});
+// Rayon deviné pendant la saisie (tant qu'on ne l'a pas choisi soi-même)
+document.addEventListener("input",e=>{if(e.target.id!=="manInput")return;const cs=document.getElementById("manCat");if(!cs||cs.dataset.touched)return;cs.value=guessAisle(e.target.value);cs.classList.toggle("none",!cs.value)});
+document.addEventListener("change",e=>{
+  if(e.target.id==="manCat"){e.target.dataset.touched=e.target.value?"1":"";e.target.classList.toggle("none",!e.target.value);return}
+  const s=e.target.closest("[data-mancat]");if(!s||isKid())return;const id=s.dataset.mancat,v=(W.manual||{})[id];if(v==null)return;
+  const t=manT(v);W.manual[id]=s.value?{t,a:s.value}:t;save();renderShop();toast(s.value?"Rangé dans « "+MAN_AISLES[s.value].replace(/^\S+\s/,"")+" »":"Rayon retiré")});
 setInterval(()=>{if(location.hash==="#courses"&&document.visibilityState==="visible")try{CLOUD.syncNow()}catch(e){}},5000);
 document.getElementById("copyList").addEventListener("click",()=>{
   const ss=W.shopSess??1;
   const title=(ss?"Courses session "+ss+" · ":"Courses · ")+"semaine du "+dateOf(0);
-  const man=Object.values(W.manual||{});
-  const txt=title+"\n\n"+(man.length?"À AJOUTER\n"+man.map(t=>"- "+t).join("\n")+"\n\n":"")+(()=>{const SS=shopState(ss);return SS.list.map(([a,items])=>[a,items.map(([id,q])=>[id,SS.st(a,id,q)]).filter(([,x])=>!x.done)]).filter(([,it])=>it.length).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,x])=>{const d=dayTag(baseOf(a,id));return "- "+I[id].n+" : "+fmt(x.q,I[id].u,true)+(d?" ("+d+")":"")}).join("\n")).join("\n\n")})();
+  const man=Object.entries(W.manual||{}).filter(([id])=>!W.checked["m:"+id]).map(([,v])=>v);
+  const manTx=MAN_ORDER.concat([""]).map(k=>[k,man.filter(v=>manA(v)===k)]).filter(([,a])=>a.length).map(([k,a])=>(k?"À AJOUTER · "+MAN_AISLES[k].replace(/^\S+\s/,"").toUpperCase():"À AJOUTER")+"\n"+a.map(v=>"- "+manT(v)).join("\n")).join("\n\n");
+  const txt=title+"\n\n"+(manTx?manTx+"\n\n":"")+(()=>{const SS=shopState(ss);return SS.list.map(([a,items])=>[a,items.map(([id,q])=>[id,SS.st(a,id,q)]).filter(([,x])=>!x.done)]).filter(([,it])=>it.length).map(([a,items])=>AISLES[a]+"\n"+items.map(([id,x])=>{const d=dayTag(baseOf(a,id));return "- "+I[id].n+" : "+fmt(x.q,I[id].u,true)+(d?" ("+d+")":"")}).join("\n")).join("\n\n")})();
   const done=()=>toast("Liste copiée");
   const fallback=()=>{const ta=document.getElementById("copyArea");ta.value=txt;ta.select();try{document.execCommand("copy");done()}catch(err){toast("Copie impossible, sélectionnez la liste à la main")}};
   try{navigator.clipboard.writeText(txt).then(done,fallback)}catch(err){fallback()}
