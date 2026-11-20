@@ -1154,11 +1154,11 @@ html.ov-on .wishfab{display:none}
 <textarea id="copyArea" style="position:fixed;left:-9999px;top:0" aria-hidden="true" tabindex="-1"></textarea>
 
 <script src="recettes-plus.js?v=20261109b"></script>
-<script src="cuisine.js?v=20261115a"></script>
+<script src="cuisine.js?v=20261120a"></script>
 <script src="cote.js?v=20261113a"></script>
 <script src="desserts.js?v=20261110a"></script>
 <script src="extra.js?v=20261115e"></script>
-<script src="corrections.js?v=20261120a"></script>
+<script src="corrections.js?v=20261120b"></script>
 <script>
 // ---------- Ingrédients ----------
 // u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
@@ -2082,7 +2082,7 @@ Object.assign(BC,QBC);
 (()=>{const X=window.MENUS_COTE;if(!X)return;Object.assign(I,X.I);X.R.forEach(r=>{r.cote=1;r.ctemp=r.temp;r.for=[];r.reg="À côté";if(!RB[r.id])R.push(r);RB[r.id]=r;BC[r.id]={t:[],j:r.w?"Préparé à l'avance ("+r.w+") : sortir du frigo et servir.":"Servir."}})})();
 (()=>{const X=window.MENUS_DESSERTS;if(!X)return;Object.assign(I,X.I);const T=Object.fromEntries(X.T);X.R.forEach(r=>{r.dessert=1;r.pays=T[r.dt]||"Dessert";r.reg="Dessert";r.for=[];RB[r.id]=r;BC[r.id]={t:[],j:""}})})();
 // Corrections de cohérence (corrections.js)
-(()=>{const C=window.MENUS_CORR;if(!C)return;for(const id in C){const r=RB[id],c=C[id];if(!r)continue;if(c.n)r.n=c.n;if(c.st)r.st=r.st.map(t=>c.st.reduce((x,[a,b])=>x.split(a).join(b),t))}})();
+(()=>{const C=window.MENUS_CORR;if(!C)return;for(const id in C){const r=RB[id],c=C[id];if(!r)continue;if(c.n)r.n=c.n;if(c.st)r.st=r.st.map(t=>c.st.reduce((x,[a,b])=>x.split(a).join(b),t));if(c.bt&&BC[id]&&BC[id].t)BC[id].t=BC[id].t.map(([p,t])=>[p,c.bt.reduce((x,[a,b])=>x.split(a).join(b),t)])}})();
 const SIMPLE=new Set(["ssoupecourgette","ssoupecarotte","ssoupepoireau","ssoupetomate","ssoupebrocoli","ssoupepois","ssoupepotiron","ssoupechampi","ssoupevermicelle","scordonbleu","spoissonpane","ssteakfrites","spoulethv","spouletcreme","spatesbeurre","spatesthon","spatestomate","sjambonpuree","sknackis","somelette","soeufscoque","soeufsdurs","stomatesfarcies","sgratincourgette","sraviolis","srizpoulet","ssteakcarottes","spoireauxvinaigrette","squichesimple","spurrecabillaud","spatesbolo","sgratinpdt","wsteak","wsaumon","wpoulettenders","wcurry","whoumous","wjambonchaud","woeuf","ppouletfrites","ppouletpatates","ppouletpatatesdouces","psaucissesplaque","psaumonplaque","pgnocchisfour","ppatesfour","prizfour","pfajitasplaque","pboulettesfour","pcabillaudfour","pcurryfour","ppatatesfarcies","sailesfour","ssaucissesfrites","spateslardons","spouletcurryriz","sescalopepanee","soeufsbrouilles","srizsaute","spoeleepoulet","ssteakhvpdt","sgratinchoufleurs","ssaladecomposee","pouletroti","steakpuree","ksteakhache","kjambonpuree","kcotesporc","saucissepuree","coquillettes","croques","kcroquemadame","komelettejambon","ksoupelegumes","kchoufleursoupe","kcourgettesoupe","kpoiscasses","kwrapjambon","ksaladepates","ksaladeriz","galettes","kcrepessalees","kpetitspoissoupe","ktomatesoupe"]);R.forEach(r=>{if(SIMPLE.has(r.id))r.simple=1});
 // ---------- Assiette toute simple : viande ou poisson + accompagnement + légume ----------
 const MIXP={

@@ -650,11 +650,11 @@ html.ov-on .wishfab{display:none}
 <div class="overlay" id="overlay" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <script src="recettes-plus.js?v=20261109b"></script>
-<script src="cuisine.js?v=20261115a"></script>
+<script src="cuisine.js?v=20261120a"></script>
 <script src="cote.js?v=20261113a"></script>
 <script src="desserts.js?v=20261110a"></script>
 <script src="extra.js?v=20261115e"></script>
-<script src="corrections.js?v=20261120a"></script>
+<script src="corrections.js?v=20261120b"></script>
 <script src="airfryer.js?v=20261117a"></script>
 <script>
 
@@ -1584,7 +1584,7 @@ DS.R.forEach(r=>{dPrep(r);D.push(r);RB[r.id]=r;BC[r.id]={t:[],j:""}});
 const DES_RX=[["glace",/glac|sorbet|granit|esquimau/i],["creme",/cr[èe]me|mousse|panna|tiramisu|riz au lait|flan|verrine|entremets|île|ile flottante|fromage blanc/i],["biscuit",/cookie|biscuit|cr[êe]pe|gaufre|madeleine|sabl[ée]|financier|pain perdu|beignet|pancake|muffin|rocher|tuile/i],["gateau",/g[âa]teau|tarte|cake|crumble|clafoutis|brownie|fondant|cheesecake|charlotte|b[ûu]che|galette|quatre-quarts|far\b|kouign|baba|savarin/i]];
 const guessDt=r=>{const n=r.n||"";for(const [t,rx] of DES_RX)if(rx.test(n))return t;return (r.ing||[]).some(([id])=>I[id]&&I[id].c==="Fruits")?"fruit":"gateau"};
 // Corrections de cohérence (corrections.js)
-(()=>{const C=window.MENUS_CORR;if(!C)return;for(const id in C){const r=RB[id],c=C[id];if(!r)continue;if(c.n)r.n=c.n;if(c.st)r.st=r.st.map(t=>c.st.reduce((x,[a,b])=>x.split(a).join(b),t))}})();
+(()=>{const C=window.MENUS_CORR;if(!C)return;for(const id in C){const r=RB[id],c=C[id];if(!r)continue;if(c.n)r.n=c.n;if(c.st)r.st=r.st.map(t=>c.st.reduce((x,[a,b])=>x.split(a).join(b),t));if(c.bt&&BC[id]&&BC[id].t)BC[id].t=BC[id].t.map(([p,t])=>[p,c.bt.reduce((x,[a,b])=>x.split(a).join(b),t)])}})();
 const SIMPLE=new Set(["ssoupecourgette","ssoupecarotte","ssoupepoireau","ssoupetomate","ssoupebrocoli","ssoupepois","ssoupepotiron","ssoupechampi","ssoupevermicelle","scordonbleu","spoissonpane","ssteakfrites","spoulethv","spouletcreme","spatesbeurre","spatesthon","spatestomate","sjambonpuree","sknackis","somelette","soeufscoque","soeufsdurs","stomatesfarcies","sgratincourgette","sraviolis","srizpoulet","ssteakcarottes","spoireauxvinaigrette","squichesimple","spurrecabillaud","spatesbolo","sgratinpdt","wsteak","wsaumon","wpoulettenders","wcurry","whoumous","wjambonchaud","woeuf","ppouletfrites","ppouletpatates","ppouletpatatesdouces","psaucissesplaque","psaumonplaque","pgnocchisfour","ppatesfour","prizfour","pfajitasplaque","pboulettesfour","pcabillaudfour","pcurryfour","ppatatesfarcies","sailesfour","ssaucissesfrites","spateslardons","spouletcurryriz","sescalopepanee","soeufsbrouilles","srizsaute","spoeleepoulet","ssteakhvpdt","sgratinchoufleurs","ssaladecomposee","pouletroti","steakpuree","ksteakhache","kjambonpuree","kcotesporc","saucissepuree","coquillettes","croques","kcroquemadame","komelettejambon","ksoupelegumes","kchoufleursoupe","kcourgettesoupe","kpoiscasses","kwrapjambon","ksaladepates","ksaladeriz","galettes","kcrepessalees","kpetitspoissoupe","ktomatesoupe"]);R.forEach(r=>{if(SIMPLE.has(r.id))r.simple=1});
 // ---------- Assiette toute simple : viande ou poisson + accompagnement + légume ----------
 const MIXP={
