@@ -1158,6 +1158,7 @@ html.ov-on .wishfab{display:none}
 <script src="cote.js?v=20261113a"></script>
 <script src="desserts.js?v=20261110a"></script>
 <script src="extra.js?v=20261115e"></script>
+<script src="corrections.js?v=20261120a"></script>
 <script>
 // ---------- Ingrédients ----------
 // u: g, ml, pc, cs (c. à soupe), cc (c. à café), gousse, bouquet · k: kcal par unité · s: féculent · c: catégorie de goûts · w/wl: poids moyen d'une pièce
@@ -2080,6 +2081,8 @@ Object.assign(BC,QBC);
 // Recettes « à côté » (cote.js) : sauces, terrines, gravlax, condiments… jamais proposées comme plat du planning
 (()=>{const X=window.MENUS_COTE;if(!X)return;Object.assign(I,X.I);X.R.forEach(r=>{r.cote=1;r.ctemp=r.temp;r.for=[];r.reg="À côté";if(!RB[r.id])R.push(r);RB[r.id]=r;BC[r.id]={t:[],j:r.w?"Préparé à l'avance ("+r.w+") : sortir du frigo et servir.":"Servir."}})})();
 (()=>{const X=window.MENUS_DESSERTS;if(!X)return;Object.assign(I,X.I);const T=Object.fromEntries(X.T);X.R.forEach(r=>{r.dessert=1;r.pays=T[r.dt]||"Dessert";r.reg="Dessert";r.for=[];RB[r.id]=r;BC[r.id]={t:[],j:""}})})();
+// Corrections de cohérence (corrections.js)
+(()=>{const C=window.MENUS_CORR;if(!C)return;for(const id in C){const r=RB[id],c=C[id];if(!r)continue;if(c.n)r.n=c.n;if(c.st)r.st=r.st.map(t=>c.st.reduce((x,[a,b])=>x.split(a).join(b),t))}})();
 const SIMPLE=new Set(["ssoupecourgette","ssoupecarotte","ssoupepoireau","ssoupetomate","ssoupebrocoli","ssoupepois","ssoupepotiron","ssoupechampi","ssoupevermicelle","scordonbleu","spoissonpane","ssteakfrites","spoulethv","spouletcreme","spatesbeurre","spatesthon","spatestomate","sjambonpuree","sknackis","somelette","soeufscoque","soeufsdurs","stomatesfarcies","sgratincourgette","sraviolis","srizpoulet","ssteakcarottes","spoireauxvinaigrette","squichesimple","spurrecabillaud","spatesbolo","sgratinpdt","wsteak","wsaumon","wpoulettenders","wcurry","whoumous","wjambonchaud","woeuf","ppouletfrites","ppouletpatates","ppouletpatatesdouces","psaucissesplaque","psaumonplaque","pgnocchisfour","ppatesfour","prizfour","pfajitasplaque","pboulettesfour","pcabillaudfour","pcurryfour","ppatatesfarcies","sailesfour","ssaucissesfrites","spateslardons","spouletcurryriz","sescalopepanee","soeufsbrouilles","srizsaute","spoeleepoulet","ssteakhvpdt","sgratinchoufleurs","ssaladecomposee","pouletroti","steakpuree","ksteakhache","kjambonpuree","kcotesporc","saucissepuree","coquillettes","croques","kcroquemadame","komelettejambon","ksoupelegumes","kchoufleursoupe","kcourgettesoupe","kpoiscasses","kwrapjambon","ksaladepates","ksaladeriz","galettes","kcrepessalees","kpetitspoissoupe","ktomatesoupe"]);R.forEach(r=>{if(SIMPLE.has(r.id))r.simple=1});
 // ---------- Assiette toute simple : viande ou poisson + accompagnement + légume ----------
 const MIXP={
@@ -2198,7 +2201,8 @@ Object.assign(I.creme,{n:"Crème fraîche 15 %"});I.mozza.n="Mozzarella";I.lardo
 // Options facultatives par recette : un accompagnement en plus, par personne
 const SOUPLIKE=/velouté|soupe|ramen|pho|laksa|harira|bortsch|minestrone|pozole|salade/i;
 function optionsFor(r){
-  if(r.dessert)return [];
+  // Accompagnements optionnels supprimés : ils n'avaient pas de cohérence avec les plats
+  return [];
   // uniquement des ingrédients absents de la recette
   const has=id=>r.ing.some(([x])=>x===id);
   const bread=["baguette","painmie","pita","tortillas","painburger","galette","patepizza","brick","farinemais"].some(has);
