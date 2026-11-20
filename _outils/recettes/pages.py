@@ -39,6 +39,7 @@ def fmt(q, u):
     if u == "cc": return frac(v) + " c. à c."
     if u == "gousse": return frac(v) + (" gousses" if v > 1 else " gousse")
     if u == "bouquet": return frac(v) + (" bouquets" if v > 1 else " bouquet")
+    if u == "tranche": return frac(v) + (" tranches" if v > 1 else " tranche")
     return frac(v)
 
 
@@ -144,5 +145,16 @@ urls += [f"{SITE}/menus/r/{psl[p]}" for p in pays_sorted] + [f"{SITE}/menus/r/{S
 open(os.path.join(ROOT, "sitemap.xml"), "w", encoding="utf-8").write(
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + "".join(f"<url><loc>{u}</loc><lastmod>{today}</lastmod></url>\n" for u in urls) + "</urlset>\n")
+# anciennes adresses (recette renommée) : petite page qui redirige vers la nouvelle
+OLDF = os.path.join(OUT, "slugs.json")
+OLD = json.load(open(sys.argv[2])) if len(sys.argv) > 2 else {}
+nred = 0
+for rid, old in OLD.items():
+    new = SL.get(rid)
+    if new and old != new and not os.path.exists(os.path.join(OUT, old + ".html")):
+        u = f"{SITE}/menus/r/{new}.html"
+        open(os.path.join(OUT, old + ".html"), "w", encoding="utf-8").write(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Recette déplacée</title><link rel="canonical" href="{u}"><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0; url={new}.html"></head><body><p>Cette recette a changé d\'adresse : <a href="{new}.html">{e(new)}</a>.</p></body></html>')
+        nred += 1
+print(nred, "redirections")
 json.dump(SL, open(os.path.join(OUT, "slugs.json"), "w"), ensure_ascii=False)
 print(len(R), "recettes,", len(PAYS), "pays,", len(urls), "URL dans le sitemap")

@@ -5,13 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Thermomot : trouvez le mot secret grâce à la température de vos propositions. Un mot par jour, et tous les jours d'avant.">
 <title>Thermomot</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="canonical" href="https://gamb-it-apps.fr/thermomot/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="GAMB-IT"><meta property="og:url" content="https://gamb-it-apps.fr/thermomot/">
+<meta property="og:title" content="Thermomot — le mot secret du jour"><meta property="og:description" content="Trouvez le mot secret grâce à la température de vos propositions. Un mot par jour, et tous les jours d'avant.">
+<meta property="og:image" content="https://gamb-it-apps.fr/thermomot/og-image.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="fonts/fonts.css?v=1">
 <style>
 /* Layout: a weather-station instrument panel. Game column (thermometer readout + guess log) beside a calendar of past days. */
 :root{
   --bg:#F4F1FB; --surface:#FFFFFF; --sunk:#EDE8F8; --ink:#1E1736; --muted:#675F84; --line:#DDD5F0;
-  --accent:#F2512E; --accent-ink:#FFFFFF; --cold:#2C74E8; --ok:#0F9A63; --warn:#D97F00; --teal:#0E9C9C; --violet:#7B4FE0;
+  --accent:#F2512E; --accent-ink:#FFFFFF; --cold:#2C74E8; --ok:#0F9A63; --warn:#D97F00; --teal:#0B7F7F; --violet:#7B4FE0;
   --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
   --heat:hsl(215 85% 55%);
@@ -103,8 +106,8 @@ tr.flash td{animation:flash 1s ease}
 /* side */
 aside{display:grid;gap:18px}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 4px 18px color-mix(in srgb,var(--violet) 8%,transparent)}
-.panel h3{color:var(--violet)}
-.panel h3{margin:0 0 10px;font-family:var(--f-display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.03em;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.panel h3,.panel h2.calh{color:var(--violet)}
+.panel h3,.panel h2.calh{margin:0 0 10px;font-family:var(--f-display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.03em;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .mnav{display:flex;gap:4px}
 .mnav .btn{min-height:32px;padding:4px 10px}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
@@ -179,6 +182,7 @@ aside{display:grid;gap:18px}
   .log tr.flash{animation:flash 1s ease}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 </style>
 </head>
 <body>
@@ -190,7 +194,7 @@ aside{display:grid;gap:18px}
   </div>
   <div class="datebar">
     <button class="btn" id="prev" type="button" aria-label="Jour précédent">◀</button>
-    <button class="datelabel" id="datelabel" type="button" aria-label="Choisir une date dans le calendrier">—</button>
+    <button class="datelabel" id="datelabel" type="button" title="Choisir une date dans le calendrier">—</button>
     <button class="btn" id="next" type="button" aria-label="Jour suivant">▶</button>
     <button class="btn ghost" id="today" type="button">Auj<span class="long">ourd'hui</span><span class="short">.</span></button>
   </div>
@@ -248,7 +252,7 @@ aside{display:grid;gap:18px}
 
   <aside>
     <section class="panel" id="calpanel">
-      <h3><span id="mlabel">Mois</span><span class="mnav"><button class="btn" id="mprev" type="button" aria-label="Mois précédent">‹</button><button class="btn" id="mnext" type="button" aria-label="Mois suivant">›</button></span></h3>
+      <h2 class="calh"><span id="mlabel">Mois</span><span class="mnav"><button class="btn" id="mprev" type="button" aria-label="Mois précédent">‹</button><button class="btn" id="mnext" type="button" aria-label="Mois suivant">›</button></span></h2>
       <div class="cal" id="cal"></div>
       <div class="legend"><span><i style="background:color-mix(in srgb,var(--ok) 30%,var(--surface));border-color:var(--ok)"></i>Trouvé (coups)</span><span><i style="border:1.5px dashed var(--accent)"></i>En cours</span><span><i style="background:color-mix(in srgb,var(--warn) 24%,var(--surface));border-color:var(--warn)"></i>Abandonné</span></div>
     </section>
@@ -271,7 +275,7 @@ aside{display:grid;gap:18px}
   </aside>
 </div>
 
-<p class="backlink"><a href="../index.html">GAMB-IT</a> · <a href="../confidentialite.html">Confidentialité</a></p>
+<footer><p class="backlink"><a href="../index.html">GAMB-IT</a> · <a href="../confidentialite.html">Confidentialité</a></p></footer>
 
 <script>
 (function(){
@@ -388,7 +392,7 @@ function heatOf(sc){ if(!sc) return 'hsl(215 85% 55%)'; if(sc.per>=1000) return 
 function fmt(t){ return t.toFixed(2).replace('.',',') }
 function renderHeader(){
   const d=toDate(cur);
-  $('datelabel').innerHTML=`<b>${DAYS[d.getDay()]}</b> ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  $('datelabel').innerHTML=`<b>${DAYS[d.getDay()]}</b> ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}<span class="vh"> : choisir une autre date</span>`;
   $('prev').disabled=cur<=FIRST; $('next').disabled=cur>=maxDate(); $('today').disabled=cur===todayStr();
 }
 function rowHtml(x,n,sc,cls){

@@ -5,5 +5,5 @@ import json, sys
 from playwright.sync_api import sync_playwright
 with sync_playwright() as p:
     b = p.chromium.launch(); pg = b.new_page()
-    pg.goto("http://localhost:8098/menus/recettes.html"); pg.wait_for_timeout(1500)
+    pg.goto("http://localhost:8765/menus/recettes.html"); pg.wait_for_timeout(1500)
     json.dump(pg.evaluate("()=>({R,I})"), open(sys.argv[1], "w"), ensure_ascii=False)

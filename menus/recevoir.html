@@ -14,17 +14,16 @@
 <meta property="og:site_name" content="gamb-it-apps.fr">
 <meta property="og:image" content="https://gamb-it-apps.fr/menus/tnc-og-image.png"><meta property="og:title" content="On reçoit">
 <meta property="og:description" content="Plus de 80 idées d'apéro et un plan de bataille pour recevoir sans stress : quantités, courses et horaires.">
+<link rel="canonical" href="https://gamb-it-apps.fr/menus/recevoir.html">
 <meta property="og:url" content="https://gamb-it-apps.fr/menus/recevoir.html">
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="fonts/fonts.css?v=1">
 <style>
 /* Layout : en-tête collant → ouverture (titre + carte d'organisation) → rayons de catégories → grille d'idées ; vue « Mon apéro » : sélection + plan horaire + courses */
 :root{
   --bg:#F4F2F5; --surface:#FFFFFF; --ink:#24172A; --muted:#6B5E70; --line:#E2DAE5;
   --accent:#6B2D5C; --accent-ink:#FFFFFF; --accent-soft:#F1E5EF;
-  --gold:#A8740F; --gold-soft:#FBF0D9; --bad:#A2372A; --bad-soft:#F6E2DE; --ok:#2F7A55;
+  --gold:#87600C; --gold-soft:#FBF0D9; --bad:#A2372A; --bad-soft:#F6E2DE; --ok:#2F7A55;
   --f-display:"Young Serif", Georgia, "Times New Roman", serif;
   --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
@@ -421,7 +420,7 @@ html.ck-on,html.ck-on body{overflow:hidden}
 .gdetail h5,.accform h5{margin:0;font-size:15px}
 .accbtn .gnm{font-weight:600;opacity:.75}
 @media (max-width:720px){.accbtn .gnm{display:none}}
-.tag.chaud{border:1px solid #E9B48A;color:#B85A14;background:#FBEFE4}.tag.froid{border:1px solid #9CC3DA;color:#2C6E91;background:#E7F2F8}
+.tag.chaud{border:1px solid #E9B48A;color:#A44E10;background:#FBEFE4}.tag.froid{border:1px solid #9CC3DA;color:#2C6E91;background:#E7F2F8}
 .mixbox{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--accent-soft);border-radius:12px;padding:12px 14px;margin:0 0 14px;font-size:14px}
 .mixbox>b{color:var(--accent)}
 .mixrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
@@ -472,6 +471,7 @@ html.ov-on .wishfab{display:none}
 .toast{z-index:90;max-width:calc(100vw - 24px)}
 .sharesheet{max-height:min(90vh,calc(100dvh - 32px))}
 @media (max-width:640px){.toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
+.cardtitle{all:unset;cursor:pointer;font:inherit;color:inherit}.cardtitle:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
 </style>
 </head>
 <body>
@@ -1469,8 +1469,8 @@ function renderCats(){
 function card(r){
   const inSel=r.id in P.sel,c=CATS[r.cat];
   const cf=conf(r),sv=served(r);
-  return `<article class="card ${inSel?"in":""} ${cf.length?"risk":""}" style="--cc:${c.c}" data-open="${r.id}" tabindex="0" role="button" aria-label="${esc(r.n)}">
-    <span class="ct">${c.n}</span><h3>${esc(r.n)}</h3>
+  return `<article class="card ${inSel?"in":""} ${cf.length?"risk":""}" style="--cc:${c.c}" data-open="${r.id}">
+    <span class="ct">${c.n}</span><h3><button type="button" class="cardtitle" data-open="${r.id}">${esc(r.n)}</button></h3>
     <div class="meta"><span>${r.t} min</span><span>${r.y} ${unitWord(r,r.y)}</span><span class="num">≈ ${kcalUnit(r)} kcal</span></div>
     ${cf.length?`<span class="warnd" title="${esc(conflictText(cf))}">⚠ Contient : ${esc(conflictText(cf))}</span>`:""}${sv.length?`<span class="pill served">${esc(servedText(sv))}</span>`:""}
     <div class="meta"><span class="pill ${WHEN[r.w][1]}">${WHEN[r.w][0]}</span>${has(r,"w")?'<span class="pill waouh">Effet waouh</span>':""}${has(r,"v")?'<span class="pill">Végétarien</span>':""}${has(r,"k")?'<span class="pill">Les enfants adorent</span>':""}</div>
