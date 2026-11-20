@@ -1339,6 +1339,7 @@ function fmt(q,u,shop){
   let v=shop?Math.ceil(q-0.01):Math.max(0.5,Math.round(q*2)/2);
   if(u==="gousse")return frac(v)+(v>1?" gousses":" gousse");
   if(u==="bouquet")return frac(v)+(v>1?" bouquets":" bouquet");
+  if(u==="tranche")return frac(v)+(v>1?" tranches":" tranche");
   return frac(v);
 }
 const kcalBatch=r=>r.ing.reduce((a,[id,q])=>a+q*I[id].k,0);
@@ -1535,6 +1536,7 @@ function ingLine(i,q){
   const x=I[i],v=fmt(q,x.u),nm=x.n.toLowerCase();
   if(["g","ml","cs","cc","bouquet"].includes(x.u))return v+" "+(/^[aeiouyéèêœh]/.test(nm)?"d'":"de ")+nm;
   if(x.u==="gousse")return v+" d'"+nm;
+  if(x.u==="tranche")return v+" "+(/^[aeiouyéèêœh]/.test(nm)?"d'":"de ")+nm;
   return v+" "+nm;
 }
 function detail(r,pl,open){

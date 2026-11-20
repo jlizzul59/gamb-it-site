@@ -2335,7 +2335,7 @@ function fmt(q,u){
   if(u==="g"||u==="ml"){const v=Math.max(5,Math.round(q/5)*5);if(v>=1000)return (Math.round(v/100)/10).toString().replace(".",",")+(u==="g"?" kg":" L");return v+" "+u}
   const v=Math.max(0.5,Math.round(q*2)/2);
   if(u==="cs")return frac(v)+" c. à s.";if(u==="cc")return frac(v)+" c. à c.";
-  if(u==="gousse")return frac(v)+(v>1?" gousses":" gousse");if(u==="bouquet")return frac(v)+(v>1?" bouquets":" bouquet");
+  if(u==="gousse")return frac(v)+(v>1?" gousses":" gousse");if(u==="bouquet")return frac(v)+(v>1?" bouquets":" bouquet");if(u==="tranche")return frac(v)+(v>1?" tranches":" tranche");
   return frac(v);
 }
 const groupOf=id=>I[id].c||"Autres";
@@ -2660,7 +2660,7 @@ const SHARE={
 let SHARED=null;
 function openShared(tok){let o;try{o=SHARE.dec(tok)}catch(e){toast("Ce lien de recette est abîmé ou incomplet");return}
   if(!o||typeof o.n!=="string"||!Array.isArray(o.ing)){toast("Ce lien ne contient pas de recette");return}
-  const custom={};Object.entries(o.custom||{}).forEach(([k,v])=>{if(/^c_[a-z0-9]{1,40}$/.test(k)&&v&&typeof v.n==="string")custom[k]={n:String(v.n).slice(0,80),r:["bo","fl","cr","co","pa","pl"].includes(v.r)?v.r:"co",u:["g","ml","pc","cs","cc","gousse","bouquet"].includes(v.u)?v.u:"g",k:0,c:"Maison",custom:1}});
+  const custom={};Object.entries(o.custom||{}).forEach(([k,v])=>{if(/^c_[a-z0-9]{1,40}$/.test(k)&&v&&typeof v.n==="string")custom[k]={n:String(v.n).slice(0,80),r:["bo","fl","cr","co","pa","pl"].includes(v.r)?v.r:"co",u:["g","ml","pc","cs","cc","gousse","bouquet","tranche"].includes(v.u)?v.u:"g",k:0,c:"Maison",custom:1}});
   Object.entries(custom).forEach(([k,v])=>{if(!I[k])I[k]=v});
   const r={id:"partage",n:o.n.slice(0,120),t:Math.max(5,Math.min(600,+o.t||30)),p:typeof o.p==="string"?o.p:"vege",for:Array.isArray(o.f)?o.f.filter(x=>x==="l2"||x==="fam"):["l2","fam"],pays:String(o.pays||"France").slice(0,40),
     ing:o.ing.filter(a=>Array.isArray(a)&&I[a[0]]&&isFinite(+a[1])).map(([id,q])=>[id,+q]).slice(0,60),st:(Array.isArray(o.st)?o.st:[]).map(x=>String(x).slice(0,600)).slice(0,40),simple:o.simple?1:undefined,tag:o.tag==="plaisir"?"plaisir":undefined,

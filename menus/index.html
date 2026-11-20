@@ -3104,6 +3104,7 @@ function fmt(q,u,shop){
   const v=shop?Math.ceil(q-0.01):Math.max(0.5,Math.round(q*2)/2);
   if(u==="gousse")return frac(v)+(v>1?" gousses":" gousse");
   if(u==="bouquet")return frac(v)+(v>1?" bouquets":" bouquet");
+  if(u==="tranche")return frac(v)+(v>1?" tranches":" tranche");
   return frac(v);
 }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -3809,14 +3810,14 @@ const MINE=(()=>{
   let edit=null,busy=false,err="",url="",arm="";
   const PROTS=[["poulet","Poulet"],["dinde","Dinde"],["boeuf","Bœuf"],["porc","Porc"],["jambon","Jambon"],["agneau","Agneau"],["colin","Poisson"],["saumon","Saumon"],["crevettes","Crevettes"],["oeuf","Œufs"],["vege","Végétarien"],["dessert","🍰 Dessert"]];
   const SWEET=/g[âa]teau|tarte(?! flamb)|cake|crumble|clafoutis|brownie|fondant|mousse au|cr[èe]me (br[ûu]l|caramel|dessert|anglaise|vanille|chocolat)|tiramisu|panna|cookie|biscuit|cr[êe]pe|gaufre|madeleine|financier|sabl[ée]|muffin|cheesecake|glace|sorbet|granit|compote|riz au lait|flan|pain perdu|charlotte|b[ûu]che|macaron|meringue|beignet|chocolat|caramel|pancake|far breton|quatre-quarts|kouign|pavlova|profiterole|[ée]clair/i;
-  const UNITS={g:"g",ml:"ml",pc:"pièce(s)",cs:"c. à soupe",cc:"c. à café",bouquet:"bouquet",gousse:"gousse"};
+  const UNITS={g:"g",ml:"ml",pc:"pièce(s)",tranche:"tranche(s)",cs:"c. à soupe",cc:"c. à café",bouquet:"bouquet",gousse:"gousse"};
   // Unités proposées dans l'éditeur (chaque ingrédient peut avoir la sienne)
-  const UOPT=[["g","g"],["kg","kg"],["ml","ml"],["cl","cl"],["l","L"],["pc","pièce(s)"],["cs","c. à soupe"],["cc","c. à café"],["pincee","pincée(s)"],["gousse","gousse(s)"],["bouquet","bouquet(s)"]];
+  const UOPT=[["g","g"],["kg","kg"],["ml","ml"],["cl","cl"],["l","L"],["pc","pièce(s)"],["tranche","tranche(s)"],["cs","c. à soupe"],["cc","c. à café"],["pincee","pincée(s)"],["gousse","gousse(s)"],["bouquet","bouquet(s)"]];
   // kg, cl, L et pincée sont ramenés à g, ml et c. à café
   const baseU=(q,u)=>u==="kg"?[q*1000,"g"]:u==="cl"?[q*10,"ml"]:u==="l"?[q*1000,"ml"]:u==="pincee"?[q*0.25,"cc"]:[q,u];
   // Conversion vers l'unité de l'ingrédient du catalogue (null si impossible)
   function toCanon(q,u,id){const x=I[id],cu=x.u;let [v,b]=baseU(q,u);if(b===cu)return v;
-    const vol={g:1,ml:1,cs:15,cc:5},cnt=new Set(["pc","gousse","bouquet"]);
+    const vol={g:1,ml:1,cs:15,cc:5},cnt=new Set(["pc","gousse","bouquet","tranche"]);
     if(vol[b]&&vol[cu]){if((b==="g"||b==="ml")&&(cu==="g"||cu==="ml"))return v;return Math.round(v*vol[b]/vol[cu]*100)/100}
     if(cnt.has(b)&&cnt.has(cu))return v;
     if(cnt.has(b)&&(cu==="g"||cu==="ml")&&x.w)return v*x.w;
@@ -3824,19 +3825,19 @@ const MINE=(()=>{
     return null}
   const unitSel=r=>`<select class="iunit" aria-label="Unité">${UOPT.map(([k,l])=>`<option value="${k}" ${(r.u||"g")===k?"selected":""}>${l}</option>`).join("")}</select>`;
   const slug=t=>norm(t).replace(/[^a-z0-9]+/g,"").slice(0,24)||"x";
-  const blank=()=>({id:"",n:"",for:["l2","fam"],p:"vege",t:30,pays:"France",ing:[],st:[],simple:0,tag:""});
+  const blank=()=>({id:"",n:"",y:4,for:["l2","fam"],p:"vege",t:30,pays:"France",ing:[],st:[],simple:0,tag:""});
   const ingRows=()=>edit.rows;
   function findIng(name){const t=norm(name);if(!t)return null;let best=null,bl=0;Object.entries(I).forEach(([id,x])=>{if(x.custom)return;const nm=norm(x.n).replace(/\s*\(.*?\)/g,"").replace(/s\b/g,"");const w=nm.split(/\s+/).filter(z=>z.length>2);if(!w.length)return;const ok=w.every(z=>t.includes(z.replace(/s$/,"")));if(ok&&nm.length>bl){best=id;bl=nm.length}});return best}
   function parseLine(line,yieldN){
     const L=line.replace(/½/g,"0.5").replace(/¼/g,"0.25").replace(/¾/g,"0.75").replace(/,(\d)/g,".$1");
     const m=L.match(/^\s*(\d+(?:\.\d+)?)(?:\s*[-à]\s*\d+(?:\.\d+)?)?\s*(kg|g|grammes?|cl|ml|l|litres?|c\.?\s*à\s*s\.?|cuill?(?:è|e)res?\s*à\s*soupe|cs|c\.?\s*à\s*c\.?|cuill?(?:è|e)res?\s*à\s*caf(?:é|e)|cc|pinc(?:é|e)es?|gousses?|tranches?|bottes?|bouquets?)?\b\.?\s*(?:d['’]\s*|de\s+la\s+|de\s+l['’]\s*|du\s+|des\s+|de\s+)?(.*)$/i);
     let q=m?+m[1]:0,u=m&&m[2]?m[2].toLowerCase():"",name=(m?m[3]:L).trim();
-    if(/^kg/.test(u)){q*=1000;u="g"}else if(/^(g|gram)/.test(u))u="g";else if(u==="cl"){q*=10;u="ml"}else if(/^(l|litre)/.test(u)){q*=1000;u="ml"}else if(u==="ml")u="ml";else if(/soupe|c\.?\s*à\s*s|^cs/.test(u))u="cs";else if(/caf|c\.?\s*à\s*c|^cc/.test(u))u="cc";else if(/gousse/.test(u))u="gousse";else u=u?"pc":"";
+    if(/^kg/.test(u)){q*=1000;u="g"}else if(/^(g|gram)/.test(u))u="g";else if(u==="cl"){q*=10;u="ml"}else if(/^(l|litre)/.test(u)){q*=1000;u="ml"}else if(u==="ml")u="ml";else if(/soupe|c\.?\s*à\s*s|^cs/.test(u))u="cs";else if(/caf|c\.?\s*à\s*c|^cc/.test(u))u="cc";else if(/gousse/.test(u))u="gousse";else if(/tranche/.test(u))u="tranche";else u=u?"pc":"";
     const id=findIng(name||L);const per=q?Math.round(q/(yieldN||4)*100)/100:0;
     if(id){const iu=I[id].u;let qq=per;if(iu!==u&&u&&iu==="pc"&&u==="g"&&I[id].w)qq=Math.round(per/I[id].w*100)/100;return {id,q:qq||(iu==="g"?50:iu==="ml"?50:1),name:I[id].n,u:iu}}
     return {id:"",q:per||1,name:name||L,u:u&&u!=="gousse"?u:"pc",r:"co"};
   }
-  function toRows(x){return (x.ing||[]).map(([id,q])=>({id,q,name:I[id]?I[id].n:id,u:I[id]?I[id].u:"g",r:I[id]?I[id].r:"co"}))}
+  function toRows(x){const y=x.y||1;return (x.ing||[]).map(([id,q])=>({id,q:Math.round(q*y*100)/100,name:I[id]?I[id].n:id,u:I[id]?I[id].u:"g",r:I[id]?I[id].r:"co"}))}
   function render(){const el=document.getElementById("minebox");if(!el)return;const M=mineRead(),kid=isKid(),list=Object.values(M).sort((a,b)=>a.n.localeCompare(b.n,"fr"));
     if(edit){el.innerHTML=editor();return}
     el.innerHTML=`<div class="sechead"><h2>Ajouter une recette</h2><p class="muted">Collez le lien d'une recette trouvée sur internet (Marmiton, 750g, un blog…) ou écrivez la vôtre. Elle est partagée avec le groupe, rejoint le catalogue et le planning peut la proposer.</p></div>
@@ -3846,11 +3847,12 @@ const MINE=(()=>{
   function editor(){const x=edit;return `<div class="sechead"><h2>${x.id?"Modifier la recette":"Nouvelle recette"}</h2>${x.src?`<p class="muted">Importée de <a href="${esc(x.src)}" target="_blank" rel="noopener">${esc(new URL(x.src).hostname)}</a> : vérifiez les ingrédients, puis enregistrez.</p>`:""}</div>
     <form class="mineform" data-mineform>
       <label class="fl wide">Nom de la recette<input name="n" required maxlength="120" value="${esc(x.n)}" placeholder="Gratin de mamie"></label>
+      <label class="fl">Nombre de personnes<input name="y" type="number" min="1" max="50" step="1" value="${x.y||1}"></label>
       <label class="fl">Temps (min)<input name="t" type="number" min="5" max="600" value="${x.t||30}"></label>
       <label class="fl">Type de plat<select name="p">${PROTS.map(([v,l])=>`<option value="${v}" ${x.p===v?"selected":""}>${l}</option>`).join("")}</select></label>
       <label class="fl">Pour<select name="for"><option value="lf" ${x.for.length===2?"selected":""}>Midi et soir</option><option value="l" ${x.for.length===1&&x.for[0]==="l2"?"selected":""}>Plutôt le midi</option><option value="f" ${x.for.length===1&&x.for[0]==="fam"?"selected":""}>Plutôt le soir</option></select></label>
       <label class="fl">Origine<input name="pays" maxlength="40" value="${esc(x.pays||"France")}"></label>
-      <fieldset class="fl wide"><legend>Ingrédients <small class="muted">(quantités pour 1 personne)</small></legend>
+      <fieldset class="fl wide"><legend>Ingrédients <small class="muted">(quantités pour <span data-ynb>${x.y||1}</span> personne${(x.y||1)>1?"s":""})</small></legend>
         <datalist id="ingList">${Object.values(I).filter(v=>!v.custom).map(v=>`<option value="${esc(v.n)}">`).join("")}</datalist>
         <div class="ingrows">${x.rows.map((r,i)=>`<div class="ingrow" data-row="${i}"><input class="iname" list="ingList" value="${esc(r.name)}" aria-label="Ingrédient"><input class="iq" type="number" step="any" min="0" value="${r.q}" aria-label="Quantité"><span class="iu">${unitSel(r)}</span>${r.id?"":'<small class="newi" title="Pas encore dans notre liste : il sera créé pour votre groupe">nouveau</small>'}<button type="button" class="xdel" data-mine="rowdel|${i}" aria-label="Retirer">×</button></div>`).join("")}</div>
         <button type="button" class="btn sm" data-mine="rowadd">＋ Ingrédient</button></fieldset>
@@ -3860,20 +3862,21 @@ const MINE=(()=>{
       <div class="fl wide mineformbtns"><button class="btn primary" type="submit">Enregistrer</button><button class="btn" type="button" data-mine="cancel">Annuler</button></div>
     </form>`}
   function readForm(){const f=document.querySelector("[data-mineform]");if(!f)return;const g=n=>f.elements[n];
-    edit.n=g("n").value.trim();edit.t=Math.max(5,Math.min(600,+g("t").value||30));edit.p=g("p").value;edit.for={lf:["l2","fam"],l:["l2"],f:["fam"]}[g("for").value];edit.pays=g("pays").value.trim()||"France";
+    edit.n=g("n").value.trim();edit.y=Math.max(1,Math.min(50,Math.round(+g("y").value)||1));edit.t=Math.max(5,Math.min(600,+g("t").value||30));edit.p=g("p").value;edit.for={lf:["l2","fam"],l:["l2"],f:["fam"]}[g("for").value];edit.pays=g("pays").value.trim()||"France";
     edit.st=g("st").value.split(/\n+/).map(z=>z.trim()).filter(Boolean);edit.simple=g("simple").checked?1:0;edit.tag=g("tag").checked?"plaisir":"";
     edit.rows=[...f.querySelectorAll(".ingrow")].map(row=>{const name=row.querySelector(".iname").value.trim(),q=+row.querySelector(".iq").value||0;const known=Object.entries(I).find(([,v])=>!v.custom&&norm(v.n)===norm(name));const un=row.querySelector(".iunit");
       const u=un?un.value:(known?known[1].u:"g");
       return known?{id:known[0],q,name,u}:{id:"",q,name,u,r:"co"}}).filter(r=>r.name)}
   function save(){readForm();if(!edit.n){toast("Donnez un nom à la recette");return}if(!edit.rows.length){toast("Ajoutez au moins un ingrédient");return}
-    const M=mineRead(),id=edit.id||("u"+slug(edit.n)+Date.now().toString(36).slice(-4)),custom={},ing=[];
-    edit.rows.forEach(r=>{let iid=r.id,q=r.q;
+    const Y=edit.y||1,M=mineRead(),id=edit.id||("u"+slug(edit.n)+Date.now().toString(36).slice(-4)),custom={},ing=[];
+    // quantités saisies pour Y personnes, enregistrées pour 1 personne
+    edit.rows.forEach(r=>{let iid=r.id,q=r.q/Y;
       if(iid){const v=toCanon(q,r.u||I[iid].u,iid);if(v!=null)q=v;else{const [bq,bu]=baseU(q,r.u);iid="c_"+slug(r.name)+bu;custom[iid]={n:I[r.id].n,r:I[r.id].r||"co",u:bu,k:0,c:I[r.id].c||"Maison"};q=bq}}
       else{const [bq,bu]=baseU(q,r.u||"g");iid="c_"+slug(r.name);custom[iid]={n:r.name.charAt(0).toUpperCase()+r.name.slice(1),r:r.r||"co",u:bu,k:0,c:"Maison"};q=bq}
-      ing.push([iid,Math.round(q*100)/100])});
-    const a=meAcc();M[id]={id,n:edit.n,for:edit.for,p:edit.p,t:edit.t,pays:edit.pays,reg:(R.find(z=>z.pays===edit.pays)||{}).reg||"France",ing,st:edit.st.length?edit.st:["Suivre la recette."],simple:edit.simple||undefined,tag:edit.tag||undefined,custom,src:edit.src||undefined,by:a&&a.user?a.user.username:"",byName:a&&a.user?a.user.name:"",at:Date.now()};
+      ing.push([iid,Math.round(q*1000)/1000])});
+    const a=meAcc();M[id]={id,n:edit.n,y:Y,for:edit.for,p:edit.p,t:edit.t,pays:edit.pays,reg:(R.find(z=>z.pays===edit.pays)||{}).reg||"France",ing,st:edit.st.length?edit.st:["Suivre la recette."],simple:edit.simple||undefined,tag:edit.tag||undefined,custom,src:edit.src||undefined,by:a&&a.user?a.user.username:"",byName:a&&a.user?a.user.name:"",at:Date.now()};
     try{localStorage.setItem(MRK,JSON.stringify(M))}catch(e){}cloudChanged();loadMine();edit=null;render();toast("Recette enregistrée : elle est dans le catalogue")}
-  async function doImport(u){busy=true;err="";url=u;render();try{const x=await CLOUD.call("POST","/import",{url:u});edit=Object.assign(blank(),{n:x.name,t:x.time||30,st:x.steps,src:u,pays:x.cuisine||"France"});if(SWEET.test(x.name||""))edit.p="dessert";edit.rows=x.ingredients.filter(l=>!/^\s*(sel|poivre|sel,?\s*(et\s*)?poivre|eau)\b[^a-z]*$/i.test(l)&&!/^\s*(sel|poivre)\s*(,|et)\s*(sel|poivre)/i.test(l)).map(l=>parseLine(l,x.yield));url=""}catch(e){err=e.net?"Import impossible sans connexion au serveur (connectez-vous à votre compte).":e.message}busy=false;render()}
+  async function doImport(u){busy=true;err="";url=u;render();try{const x=await CLOUD.call("POST","/import",{url:u});edit=Object.assign(blank(),{n:x.name,y:Math.max(1,Math.min(50,Math.round(+x.yield)||4)),t:x.time||30,st:x.steps,src:u,pays:x.cuisine||"France"});if(SWEET.test(x.name||""))edit.p="dessert";edit.rows=x.ingredients.filter(l=>!/^\s*(sel|poivre|sel,?\s*(et\s*)?poivre|eau)\b[^a-z]*$/i.test(l)&&!/^\s*(sel|poivre)\s*(,|et)\s*(sel|poivre)/i.test(l)).map(l=>parseLine(l,1));url=""}catch(e){err=e.net?"Import impossible sans connexion au serveur (connectez-vous à votre compte).":e.message}busy=false;render()}
   document.addEventListener("click",e=>{
     const om=e.target.closest("[data-open-mine]");if(om){openRecipeAny(om.dataset.openMine);return}
     const sh=e.target.closest("[data-minesh]");if(sh){const x=mineRead()[sh.dataset.minesh],a=meAcc();if(x)SHARE.send(Object.assign({mine:1},x),a&&a.user?a.user.name:"");return}
@@ -3885,12 +3888,13 @@ const MINE=(()=>{
     if(k==="rowadd"){readForm();edit.rows.push({id:"",q:0,name:"",u:"g"});render();const r=document.querySelectorAll(".iname");if(r.length)r[r.length-1].focus();return}
     if(k==="rowdel"){readForm();edit.rows.splice(+a,1);render();return}
   });
+  document.addEventListener("input",e=>{if(e.target.name!=="y"||!e.target.closest("[data-mineform]"))return;const n=Math.max(1,Math.round(+e.target.value)||1),s=document.querySelector("[data-ynb]");if(s){s.textContent=n;s.nextSibling.textContent=" personne"+(n>1?"s":"")+")"}});
   document.addEventListener("change",e=>{const nm=e.target.closest(".ingrow .iname");if(nm&&edit){const i=+nm.closest(".ingrow").dataset.row;readForm();const r=edit.rows[i];if(r&&r.id)r.u=I[r.id].u;render()}});
   document.addEventListener("submit",e=>{if(e.target.closest("[data-mineform]")){e.preventDefault();save()}else if(e.target.closest("[data-mineimp]")){e.preventDefault();const u=document.getElementById("mineUrl").value.trim();if(u)doImport(u)}});
   return {render,parseLine,doImport};
 })();
 function openRecipeAny(id){const r=RB[id];if(!r)return;ov.innerHTML=`<article class="rcard"><button class="close" type="button" data-close>Fermer ×</button><div class="rhead"><small>${esc(r.pays||"")} · ${r.t} min</small><h3>${esc(r.n)}</h3><div class="rfacts"><span class="num">≈ ${kcal(r)} kcal / portion</span><span class="num">≈ ${euro(costPortion(r))} / portion</span>${tagHTML(r)}</div></div>
-  <div class="rbody"><div><h4>Ingrédients (1 personne)</h4><ul class="ing">${r.ing.map(([i,q])=>`<li><span class="num">${fmt(q,I[i].u,false)}</span><span>${esc(I[i].n)}</span></li>`).join("")}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(t=>`<li>${esc(t)}</li>`).join("")}</ol></div></div></article>`;ov.hidden=false}
+  <div class="rbody"><div><h4>Ingrédients (${r.y>1?r.y+" personnes":"1 personne"})</h4><ul class="ings">${r.ing.map(([i,q])=>`<li><span class="num">${fmt(q*(r.y||1),I[i].u,false)}</span><span>${esc(I[i].n)}</span></li>`).join("")}</ul></div><div><h4>Préparation</h4><ol class="steps">${r.st.map(t=>`<li>${esc(t)}</li>`).join("")}</ol></div></div></article>`;ov.hidden=false}
 
 // ---------- Rappels : notifications planifiées, réglables et désactivables ----------
 const RAPDEF={menu:{on:1,h:"10:30"},batch:{on:1,h:"10:00"},gel:{on:1,h:"20:00"},avis:{on:1,h:"21:00"},courses:{on:0,h:"10:00",d:6},valider:{on:1,h:"18:00",d:5}};
